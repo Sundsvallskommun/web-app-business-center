@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../data/database/database.db"
+}
+
+model UserSettings {
+  id                           Int                    @id @default(autoincrement())
+  userId                       String                 @unique
+  feedbackLifespan             String
+  readNotificationsClearedDate DateTime               @default(now())
+  readNotifications            UserReadNotification[]
+}
+
+model UserReadNotification {
+  id     Int          @id @default(autoincrement())
+  user   UserSettings @relation(fields: [userId], references: [userId])
+  userId String // relation scalar field  (used in the `@relation` attribute above)
+  caseId String
+}

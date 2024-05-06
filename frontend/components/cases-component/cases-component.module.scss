@@ -1,0 +1,6 @@
+.caseswrapper {
+  :global(.zebratable-tbody-tr) {
+    // Remove the shadow between "row cards" in mobile view
+    --tw-shadow: none;
+  }
+}

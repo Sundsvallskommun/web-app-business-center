@@ -1,0 +1,61 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import '/public/fonts/fonts.css';
+
+@layer base {
+  .max-width-content {
+    @apply max-w-[140rem];
+  }
+
+  html,
+  body {
+    @apply text-body;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-width-content px-8 lg:px-0;
+  }
+
+  .text-content .ingress {
+    @apply text-xl leading-[1.5];
+  }
+
+  .form-error-message {
+    @apply mb-4;
+  }
+}
+
+@layer utilities {
+  .MuiSvgIcon-root.material-icon {
+    user-select: none;
+    font-size: 1.25em;
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    fill: currentColor;
+    flex-shrink: 0;
+  }
+}
+
+// NOTE: sticky footer
+html,
+body,
+#__next {
+  min-height: 100vh;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+#__next {
+  display: flex;
+  flex-direction: column;
+}
+
+main.container {
+  flex: 1 0 auto;
+}

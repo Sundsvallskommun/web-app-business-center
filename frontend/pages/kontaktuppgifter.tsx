@@ -1,10 +1,9 @@
+import ContentCard from '@components/content-card/content-card';
 import Layout from '@components/layout/layout.component';
-import { FeedbackForm } from '@components/settings-forms/feedback-form';
-import { useEffect, useRef } from 'react';
+import TabMenu from '@components/tabs/tab-menu.component';
 import { HelpTooltip } from '@components/tooltip/help-tooltip.component';
 import Wrapper from '@components/wrapper/wrapper';
-import ContentCard from '@components/content-card/content-card';
-import TabMenu from '@components/tabs/tab-menu.component';
+import { useEffect, useRef } from 'react';
 
 export default function Kontaktuppgifter() {
   const initialFocus = useRef(null);
@@ -38,9 +37,7 @@ export default function Kontaktuppgifter() {
                 </header>
                 <div className="flex-grow w-full lg:w-1/2 flex flex-col">
                   <div className="flex-shrink">
-                    <ContentCard>
-                      <FeedbackForm />
-                    </ContentCard>
+                    <ContentCard>Kontaktuppgifter</ContentCard>
                   </div>
                 </div>
               </div>

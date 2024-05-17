@@ -1,19 +1,18 @@
-import Wrapper from '@components/wrapper/wrapper';
-import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState } from 'react';
 import Layout from '@components/layout/layout.component';
 import MyOverviewSection from '@components/my-overview/my-overview.component';
-import { useAppContext } from '@contexts/app.context';
-import NB_logo from '@public/svg/NB_logo.svg';
-import HeaderImage from '@public/hero-bg.png';
-import { getClosed, getOngoing } from '@services/case-service';
-import { FaqSection } from '@components/faq/faq.component';
-import { WelcomeModal } from '@components/welcome/welcome-modal.component';
-import { useLocalStorageValue } from '@react-hookz/web';
 import TabMenu from '@components/tabs/tab-menu.component';
+import { WelcomeModal } from '@components/welcome/welcome-modal.component';
+import Wrapper from '@components/wrapper/wrapper';
+import { useAppContext } from '@contexts/app.context';
+import HeaderImage from '@public/hero-bg.png';
+import NB_logo from '@public/svg/NB_logo.svg';
+import { useLocalStorageValue } from '@react-hookz/web';
+import { getClosed, getOngoing } from '@services/case-service';
+import Image from 'next/image';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export const Oversikt: React.FC = () => {
-  const { representingEntity, user, cases, notes, reminders, invoices } = useAppContext();
+  const { representingEntity, user, cases, invoices } = useAppContext();
   const initialFocus = useRef(null);
   const [flagInvoices, setFlagInvoices] = useState(false);
 
@@ -108,16 +107,11 @@ export const Oversikt: React.FC = () => {
               user={user}
               ongoing={getOngoing(cases)}
               closed={getClosed(cases)}
-              reminders={reminders}
-              notes={notes}
               invoices={invoices}
               flagInvoices={flagInvoices}
             />
           </div>
         </main>
-        <div className="lg:container m-auto">
-          <FaqSection />
-        </div>
       </Layout>
     </Wrapper>
   );

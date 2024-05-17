@@ -1,8 +1,7 @@
-import { Disclosure } from '@headlessui/react';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { cx } from '@sk-web-gui/react';
 import { useEffect, useState } from 'react';
-import styles from './cases-component.module.scss';
 
 export const CasesComponent: React.FC<{
   header;
@@ -27,16 +26,12 @@ export const CasesComponent: React.FC<{
 
   return (
     <>
-      <Disclosure
-        as="div"
-        className={`${styles.caseswrapper} bg-white shadow-md my-lg py-lg rounded-lg`}
-        defaultOpen={isOpen}
-      >
+      <Disclosure as="div" className={`bg-white shadow-md my-lg py-lg rounded-lg`} defaultOpen={isOpen}>
         {() => {
           return (
             <>
               <div className="px-md md:px-lg">
-                <Disclosure.Button
+                <DisclosureButton
                   onClick={() => {
                     setIsOpen(!isOpen);
                     setDisclosureIsOpenCallback && setDisclosureIsOpenCallback(!isOpen);
@@ -60,24 +55,13 @@ export const CasesComponent: React.FC<{
                       className={cx(`${isOpen ? 'transform -rotate-90' : 'transform rotate-90'}`)}
                     />
                   </div>
-                </Disclosure.Button>
+                </DisclosureButton>
               </div>
-              {isOpen && <Disclosure.Panel static>{children}</Disclosure.Panel>}
+              {isOpen && <DisclosurePanel static>{children}</DisclosurePanel>}
             </>
           );
         }}
       </Disclosure>
-      {/*<div className="mb-xl block lg:hidden">
-        <header className="mx-md md:mx-lg mb-md">
-          <div className="flex justify-between">
-            <h2 className="text-lg">{header}</h2>
-            <span className="text-gray flex justify-between items-center">
-              <HelpTooltip ariaLabel={'Hjälptext'}>{helpText}</HelpTooltip>
-            </span>
-          </div>
-        </header>
-        {children}
-      </div>*/}
     </>
   );
 };

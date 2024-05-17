@@ -6,9 +6,7 @@ import { userMenuGroups } from './userMenuGroups';
 import { useAppContext } from '@contexts/app.context';
 import { NotificationsAlert } from '@components/notifications-alert/notifications-alert.component';
 import Image from 'next/image';
-// import NB_logo from '../../public/nb_logo_morning.png';
 import NB_logo from '../../public/svg/NB_logo.svg';
-import SK_logo from '../../public/svg/SK_logo.svg';
 import { useLocalStorageValue } from '@react-hookz/web';
 import AlertBannerWrapper from '@components/alert-banner/alert-banner-wrapper.component';
 
@@ -109,36 +107,44 @@ export default function Layout({ title, children }: { title: string; children: R
         onConsent={cookieConsentHandler}
       />
 
-      <Footer
-        color="gray"
-        bottomLinks={
-          <>
+      <Footer>
+        <Footer.List>
+          <Footer.ListItem>
+            <Image className="h-[42px] xs:h-[45px] w-auto mt-1" src={NB_logo} alt="Näringslivsbolagets logotyp" />
+          </Footer.ListItem>
+        </Footer.List>
+        <Footer.List className="flex flex-col gap-16">
+          <Footer.ListItem>
+            <label>Sitedata</label>
+          </Footer.ListItem>
+          <Footer.ListItem>
             <NextLink passHref legacyBehavior href={'/tillganglighet'}>
-              <Link>Tillgänglighetsredogörelse</Link>
+              <Link variant="tertiary">Tillgänglighetsredogörelse</Link>
             </NextLink>
+          </Footer.ListItem>
+          <Footer.ListItem>
             <NextLink passHref legacyBehavior href={'/personuppgifter'}>
-              <Link>Behandling av personuppgifter</Link>
+              <Link variant="tertiary">Behandling av personuppgifter</Link>
             </NextLink>
+          </Footer.ListItem>
+          <Footer.ListItem>
             <NextLink passHref legacyBehavior href={'/kakor'}>
-              <Link>Om kakor (Cookies)</Link>
+              <Link variant="tertiary">Om kakor (Cookies)</Link>
             </NextLink>
-          </>
-        }
-      >
-        <div className="flex justify-between md:gap-32">
-          <Image className="h-[40px] xs:h-[42px]  w-auto" src={SK_logo} alt="Sundsvalls Kommun logotyp" />
-          <Image className="h-[42px] xs:h-[45px] w-auto mt-1" src={NB_logo} alt="Näringslivsbolagets logotyp" />
-        </div>
-
-        <div className="footer-contact mt-8 md:mt-0 md:ml-32">
-          <h2 className="text-base leading-lg hidden md:block">Kontakt</h2>
-          <div className="mt-12 md:mt-1 text-sm">
-            Epost:{' '}
-            <Link href="mailto:naringslivsbolaget@sundsvall.se" className="text-white">
-              naringslivsbolaget@sundsvall.se
-            </Link>
-          </div>
-        </div>
+          </Footer.ListItem>
+        </Footer.List>
+        <Footer.List className="flex flex-col gap-16">
+          <Footer.ListItem>
+            <label>Kontakta</label>
+          </Footer.ListItem>
+          <Footer.ListItem>
+            <NextLink passHref legacyBehavior href={'/kakor'}>
+              <Link variant="tertiary" href="mailto:naringslivsbolaget@sundsvall.se">
+                naringslivsbolaget@sundsvall.se
+              </Link>
+            </NextLink>
+          </Footer.ListItem>
+        </Footer.List>
       </Footer>
     </>
   );

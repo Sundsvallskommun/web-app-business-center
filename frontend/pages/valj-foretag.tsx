@@ -148,13 +148,11 @@ export default function Start() {
                   )}
                 </div>
                 {pages > 1 && (
-                  <div className="zebratable-paginationwrapper">
-                    <Pagination
-                      pages={pages}
-                      activePage={currentPage}
-                      changePage={(page: number) => setCurrentPage(page)}
-                    />
-                  </div>
+                  <Pagination
+                    pages={pages}
+                    activePage={currentPage}
+                    changePage={(page: number) => setCurrentPage(page)}
+                  />
                 )}
                 <p className="pt-12 pb-12">
                   *Genom att klicka på Fortsätt godkänner du att Sundsvalls kommun hämtar uppgifter om ditt företag från

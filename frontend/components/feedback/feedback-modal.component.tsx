@@ -1,6 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, FormControl, FormErrorMessage, FormLabel, Textarea, useMessage } from '@sk-web-gui/react';
+import { Button, FormControl, FormErrorMessage, FormLabel, Textarea, useSnackbar } from '@sk-web-gui/react';
 import WarnIfUnsavedChanges from '@utils/warnIfUnsavedChanges';
 import { Fragment, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -29,7 +29,7 @@ export const FeedbackModal: React.FC<{
   const initialFocus = useRef(null);
   const [submitError, setSubmitError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const message = useMessage();
+  const message = useSnackbar();
 
   const {
     control,
@@ -37,7 +37,7 @@ export const FeedbackModal: React.FC<{
     getValues,
     formState,
     formState: { errors },
-  } = useForm<feedbackFormModel>({
+  } = useForm<Partial<feedbackFormModel>>({
     resolver: yupResolver(formSchema),
     defaultValues: useMemo(() => {
       return { ...feedbackForm };
@@ -45,9 +45,12 @@ export const FeedbackModal: React.FC<{
     mode: 'onChange', // NOTE: Needed if we want to disable submit until valid
   });
 
-  const onSubmit = (formData: feedbackFormModel) => {
+  const onSubmit = (formData: Partial<feedbackFormModel>) => {
     setIsLoading(true);
-    sendFeedback(formData).then((success) => {
+    const data = {
+      body: formData.body,
+    };
+    sendFeedback(data).then((success) => {
       if (success) {
         setSubmitError(false);
         message({
@@ -84,7 +87,7 @@ export const FeedbackModal: React.FC<{
           onClose={handleOnClose}
         >
           <div className="min-h-screen px-4 text-center">
-            <Transition.Child
+            <Transition
               as={Fragment}
               enter="ease-out duration-300"
               enterFrom="opacity-0"
@@ -93,14 +96,15 @@ export const FeedbackModal: React.FC<{
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <Dialog.Overlay className="fixed inset-0" />
-            </Transition.Child>
+              {/* The backdrop, rendered as a fixed sibling to the panel container */}
+              <div className="fixed inset-0" aria-hidden="true" />
+            </Transition>
 
             {/* This element is to trick the browser into centering the modal contents. */}
             <span className="inline-block h-screen align-middle" aria-hidden="true">
               &#8203;
             </span>
-            <Transition.Child
+            <Transition
               as={Fragment}
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
@@ -184,7 +188,7 @@ export const FeedbackModal: React.FC<{
                   </form>
                 </WarnIfUnsavedChanges>
               </div>
-            </Transition.Child>
+            </Transition>
           </div>
         </Dialog>
       </Transition>

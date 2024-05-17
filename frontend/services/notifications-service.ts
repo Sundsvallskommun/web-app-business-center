@@ -1,7 +1,6 @@
-import { User } from '@interfaces/user';
+import { FeedbackLifespan, User } from '@interfaces/user';
 import dayjs from 'dayjs';
 import { CasesData, ICase } from '../interfaces/case';
-import { OverviewFormModel, FeedbackLifespan } from './settings-service';
 import { ApiResponse, apiService } from './api-service';
 export interface NotificationAlert {
   id: string;
@@ -26,8 +25,8 @@ export const hasCaseBeenChanged: (user: User, _case: ICase) => boolean = (user, 
     settings?.feedbackLifespan === FeedbackLifespan.oneMonth
       ? 30
       : settings?.feedbackLifespan === FeedbackLifespan.twoWeeks
-      ? 14
-      : 1000;
+        ? 14
+        : 1000;
   const cutOffDate = dayjs().subtract(lookBack, 'day');
   return (
     dayjs(_case.lastStatusChange).isAfter(dayjs(settings.readNotificationsClearedDate)) &&
@@ -48,7 +47,7 @@ export const getReadNotifications: () => Promise<NotificationsResponse> = () => 
   return apiService
     .get<ApiResponse<NotificationResponse[]>>('notifications/read')
     .then((res) => Promise.resolve({ readNotifications: res.data.data }))
-    .catch((e) => ({ readNotifications: [], error: e.response?.status ?? 'UNKNOWN ERROR' } as NotificationsResponse));
+    .catch((e) => ({ readNotifications: [], error: e.response?.status ?? 'UNKNOWN ERROR' }) as NotificationsResponse);
 };
 
 export const setReadNotification: (notification: NotificationResponse) => Promise<boolean> = (notification) => {

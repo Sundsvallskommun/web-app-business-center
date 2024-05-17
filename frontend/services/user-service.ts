@@ -1,7 +1,6 @@
-import { User } from '@interfaces/user';
+import { FeedbackLifespan, User } from '@interfaces/user';
 import dayjs from 'dayjs';
 import { ApiResponse, apiService } from './api-service';
-import { FeedbackLifespan } from './settings-service';
 
 export const emptyUser: User = {
   name: '',

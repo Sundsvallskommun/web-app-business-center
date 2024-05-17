@@ -18,9 +18,6 @@ module.exports = {
       md: '768px',
       lg: '1024px',
     },*/
-    backgroundImage: {
-      main: "url('./public/main-bg.png')",
-    },
     screens: {
       xs: '375px',
 
@@ -40,12 +37,6 @@ module.exports = {
       // => @media (min-width: 1536px) { ... }
     },
   },
-  plugins: [
-    //require('@tailwindcss/typography'),
-    require('@tailwindcss/forms'),
-    require('@sk-web-gui/core')({
-      colors: [],
-      cssBase: true,
-    }),
-  ],
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  presets: [require('@sk-web-gui/core').preset()],
 };

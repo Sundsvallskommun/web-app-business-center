@@ -1,29 +1,13 @@
 import * as AppContext from '@contexts/app.context';
-import {
-  representingEntity,
-  user,
-  userMeta,
-  cases,
-  reminders,
-  notes,
-  feedbackSettings,
-  notificationAlerts,
-  invoices,
-} from './data.mock.js';
+import { representingEntity, user, userMeta, cases, notificationAlerts, invoices } from './data.mock.js';
 
 export const contextValues = {
   isLoggedIn: true,
   setIsLoggedIn: jest.fn(),
-  isLoadingNotes: false,
-  setIsLoadingNotes: jest.fn(),
-  isLoadingReminders: false,
-  setIsLoadingReminders: jest.fn(),
   isLoadingCases: false,
   setIsLoadingCases: jest.fn(),
   representingEntity: representingEntity,
   setRepresentingEntity: jest.fn(),
-  contactSettings: feedbackSettings,
-  setContactSettings: jest.fn(),
   invoices: invoices,
   setInvoices: jest.fn(),
   user: user,
@@ -36,10 +20,6 @@ export const contextValues = {
   setChangedCases: jest.fn(),
   highlightedTableRow: {},
   setHighlightedTableRow: jest.fn(),
-  notes: notes,
-  setNotes: jest.fn(),
-  reminders: reminders,
-  setReminders: jest.fn(),
   notificationAlerts: notificationAlerts,
   setNotificationAlerts: jest.fn(),
   isCookieConsentOpen: true,

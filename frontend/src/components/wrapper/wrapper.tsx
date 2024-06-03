@@ -18,7 +18,12 @@ export const Wrapper: React.FC<{ tabKey?: string; children?: React.ReactNode }> 
   useEffect(() => {
     if (!userIsFetching && userError && !pathname.includes('login')) {
       router.push(`/login?path=${window.location.pathname}`);
-    } else if (!representingIsFetching && representingError && !pathname.includes('/valj-foretag')) {
+    } else if (
+      !representingIsFetching &&
+      representingError &&
+      !pathname.includes('/valj-foretag') &&
+      !pathname.includes('/login')
+    ) {
       router.push('/valj-foretag');
     }
   }, [userIsFetching, userError, representingIsFetching, representingError]);

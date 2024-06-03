@@ -72,7 +72,9 @@ export class RepresentingController {
     req.session.representing = {
       organizationName: selected.organizationName,
       organizationId: fixedGuid,
-      organizationNumber: formatOrgNr(selected.organizationNumber),
+      /** FIXME: This is a test. Trying to a keep the original for better sync. Remove if casestatus and invoices are fetched correctly for both organizationnumbers and personnumbers  */
+      // organizationNumber: formatOrgNr(selected.organizationNumber),
+      organizationNumber: selected.organizationNumber,
       information: businessInformation,
     };
 

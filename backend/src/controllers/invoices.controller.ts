@@ -5,12 +5,12 @@ import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { HttpException } from '@/exceptions/HttpException';
 import { InvoicePdf, InvoicesResponse } from '@/interfaces/invoices.interface';
+import { ApiResponse } from '../interfaces/service';
 
-interface ResponseData {
-  data: InvoicesResponse | InvoicePdf;
-  message: string;
-}
-
+const emptyInvoice = {
+  invoices: [],
+  _meta: undefined,
+};
 @Controller()
 export class InvoicesController {
   private apiService = new ApiService();
@@ -18,7 +18,7 @@ export class InvoicesController {
   @Get('/invoices')
   @OpenAPI({ summary: 'Return a list of invoices for current represented organization' })
   @UseBefore(authMiddleware)
-  async getInvoices(@Req() req: RequestWithUser): Promise<ResponseData> {
+  async getInvoices(@Req() req: RequestWithUser): Promise<ApiResponse<InvoicesResponse>> {
     const { organizationId, organizationNumber } = req?.session?.representing;
 
     if (!organizationId || !organizationNumber) {
@@ -36,20 +36,28 @@ export class InvoicesController {
       // limit: 100, // default
     };
 
-    const url = `invoices/7.1/PUBLIC_ADMINISTRATION`;
-    const res = await this.apiService.get<InvoicesResponse>({ url, params });
+    try {
+      const url = `invoices/7.1/PUBLIC_ADMINISTRATION`;
+      const res = await this.apiService.get<InvoicesResponse>({ url, params });
 
-    if (Array.isArray(res.data) && res.data.length < 1) {
-      throw new HttpException(404, 'Not Found');
+      if (Array.isArray(res.data) && res.data.length < 1) {
+        return { data: emptyInvoice, message: 'success' };
+      }
+
+      return { data: res.data, message: 'success' };
+    } catch (error) {
+      if (error.status === 404) {
+        return { data: emptyInvoice, message: '404 from api, Assumed empty array' };
+      } else {
+        return { data: emptyInvoice, message: 'error' };
+      }
     }
-
-    return { data: res.data, message: 'success' };
   }
 
   @Get('/invoicepdf/:id')
   @OpenAPI({ summary: 'Return the base64 encoded pdf by invoice id' })
   @UseBefore(authMiddleware)
-  async getInvoicePdf(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ResponseData> {
+  async getInvoicePdf(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ApiResponse<InvoicePdf>> {
     if (!id) {
       throw new HttpException(400, 'Bad Request');
     }

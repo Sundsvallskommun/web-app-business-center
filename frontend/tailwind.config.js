@@ -1,9 +1,9 @@
 module.exports = {
-  mode: 'jit',
   content: [
-    './pages/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}',
-    './layouts/**/*.{js,ts,jsx,tsx}',
+    './src/app/**/*.{js,ts,jsx,tsx}',
+    './src/components/**/*.{js,ts,jsx,tsx}',
+    './src/layouts/**/*.{js,ts,jsx,tsx}',
+    './src/utils/**/*.{js,ts,jsx,tsx}',
     './node_modules/@sk-web-gui/*/dist/**/*.js',
   ],
   safelist: [
@@ -35,6 +35,15 @@ module.exports = {
 
       //'2xl': '1536px',
       // => @media (min-width: 1536px) { ... }
+    },
+    extend: {
+      maxWidth: {
+        content: '128rem', // default in core is based on screens
+        'main-content': '106.2rem',
+      },
+      backgroundImage: {
+        'hero-logo': "url('/svg/S_logo.svg')",
+      },
     },
   },
   // eslint-disable-next-line @typescript-eslint/no-var-requires

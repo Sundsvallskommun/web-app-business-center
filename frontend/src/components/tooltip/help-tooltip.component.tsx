@@ -8,7 +8,7 @@ export const HelpTooltip: React.FC<{
   ariaLabel?: string;
   className?: string;
   onlyIcon?: boolean;
-  position?: AnchorProps;
+  position?: AnchorProps & React.ComponentPropsWithoutRef<typeof Tooltip>['position'];
 }> = ({ children, ariaLabel = 'Hjälptext', className, onlyIcon, position = 'left' }) => {
   return (
     <Popover

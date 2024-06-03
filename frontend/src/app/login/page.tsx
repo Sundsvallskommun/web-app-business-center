@@ -2,13 +2,13 @@
 
 import { Button, FormErrorMessage } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import EmptyLayout from '../../components/empty-layout/empty-layout.component';
 import { appName } from '../../utils/app-name';
 import { appURL } from '../../utils/app-url';
 import { useSearchParams } from 'next/navigation';
 
-export default function Start() {
+function Login() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -20,13 +20,6 @@ export default function Start() {
   // Turn on/off automatic login
   const autoLogin = false;
 
-  const initalFocus = useRef(null);
-  const setInitalFocus = () => {
-    setTimeout(() => {
-      initalFocus.current && initalFocus.current.focus();
-    });
-  };
-
   const onLogin = () => {
     // NOTE: send user to login with SSO
     const path = new URLSearchParams(window.location.search).get('path') || '';
@@ -34,7 +27,6 @@ export default function Start() {
   };
 
   useEffect(() => {
-    setInitalFocus();
     setTimeout(() => setMounted(true), 500); // to not flash the login-screen on autologin
     if (isLoggedOut) {
       //
@@ -84,5 +76,13 @@ export default function Start() {
         </main>
       </EmptyLayout>
     </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <Login />
+    </Suspense>
   );
 }

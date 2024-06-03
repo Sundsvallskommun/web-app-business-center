@@ -52,8 +52,6 @@ export const WelcomeModal: React.FC<{
           <Submitbuttons>
             <Button
               type="button"
-              variant="solid"
-              size="lg"
               color="primary"
               className="w-full"
               onClick={() => {

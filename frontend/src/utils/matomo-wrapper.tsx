@@ -18,7 +18,7 @@ export function MatomoWrapper({ children }) {
 
   useEffect(() => {
     if (matomo && !haveInit) {
-      init({ url: MATOMO_URL, siteId: MATOMO_SITE_ID });
+      init({ url: `${MATOMO_URL}`, siteId: `${MATOMO_SITE_ID}` });
       setHaveInit(true);
     }
 

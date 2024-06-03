@@ -46,6 +46,7 @@ export interface AppContextInterface {
   setBusinessEngagements: (businessEngagements: BusinessEngagement[]) => void;
 }
 
+// @ts-expect-error
 const AppContext = createContext<AppContextInterface>(null);
 
 export function AppWrapper({ children }) {

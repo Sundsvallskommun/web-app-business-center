@@ -44,10 +44,10 @@ const NotificationsModal: React.FC<{
           e.status.code === statusCodes.Approved
             ? 'success'
             : e.status.code === statusCodes.Rejected
-            ? 'error'
-            : e.status.code === statusCodes.Ongoing
-            ? 'info'
-            : 'warning';
+              ? 'error'
+              : e.status.code === statusCodes.Ongoing
+                ? 'info'
+                : 'warning';
         return (
           <NotificationComponent clickHandler={closeModal} item={e} type={alertType} key={`notification-${idx}`} />
         );
@@ -56,7 +56,6 @@ const NotificationsModal: React.FC<{
         <Button
           className="hidden lg:flex"
           type="submit"
-          variant="solid"
           size="lg"
           color="primary"
           leftIcon={<DeleteOutlineIcon fontSize="large" className="mr-sm" />}

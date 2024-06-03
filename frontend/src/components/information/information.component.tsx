@@ -15,14 +15,14 @@ export const InformationSection: React.FC<{ orgInfo: OrganisationInfo; user: Use
       <h1 className="text-xl hidden lg:block">Företagsuppgifter</h1>
       <div className="flex flex-col lg:flex-row gap-10 lg:gap-20 justify-start">
         <div>
-          <strong>{orgInfo.orgName}</strong>
+          <strong>{orgInfo.organizationName}</strong>
           <div>
             <strong>Inloggad som:</strong> {user.name}
           </div>
         </div>
         <div>
           <strong>Organisationsnummer:</strong>
-          <div>{orgInfo.orgNumber}</div>
+          <div>{orgInfo.organizationNumber}</div>
         </div>
         {orgInfo?.information?.companyLocation?.address?.street && (
           <div>
@@ -43,7 +43,6 @@ export const InformationSection: React.FC<{ orgInfo: OrganisationInfo; user: Use
           <Button
             className="w-full md:w-auto mt-md"
             color="primary"
-            variant="solid"
             size="lg"
             leftIcon={<BusinessOutlinedIcon className="material-icon mr-sm" aria-hidden="true" />}
           >

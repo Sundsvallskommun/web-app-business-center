@@ -1,4 +1,4 @@
-import { Popover } from '@headlessui/react';
+import { Popover, PopoverButton } from '@headlessui/react';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import { useEffect, useRef } from 'react';
 import { useAppContext } from '@contexts/app.context';
@@ -6,11 +6,11 @@ import { getNotifications } from '@services/notifications-service';
 import NotificationsModal from '../notifications-modal/notifications-modal.component';
 
 export const NotificationsAlert: React.FC = () => {
-  const popoverButtonRef = useRef(null);
+  const popoverButtonRef = useRef<HTMLButtonElement>(null);
   const { notificationAlerts, setNotificationAlerts, cases, user } = useAppContext();
 
   const closeModal = () => {
-    popoverButtonRef.current.click();
+    popoverButtonRef?.current?.click();
   };
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export const NotificationsAlert: React.FC = () => {
   return (
     <Popover className="lg:relative">
       <div className="lg:relative mr-sm sm:mr-md">
-        <Popover.Button
+        <PopoverButton
           ref={popoverButtonRef}
           aria-label={`Det finns ${notificationAlerts.length > 0 ? notificationAlerts.length : 'inga'} nya händelser`}
         >
@@ -39,7 +39,7 @@ export const NotificationsAlert: React.FC = () => {
               ''
             )}
           </div>
-        </Popover.Button>
+        </PopoverButton>
       </div>
 
       <Popover.Panel className="absolute z-10 right-0 left-0 lg:left-auto">

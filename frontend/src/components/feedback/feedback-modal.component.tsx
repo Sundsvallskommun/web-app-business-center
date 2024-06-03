@@ -11,7 +11,7 @@ import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import { sendFeedback } from '@services/feedback-service';
 import Submitbuttons from '@components/button-group/submitbuttons';
 
-interface feedbackFormModel {
+interface FeedbackFormModel {
   body: string;
 }
 
@@ -24,7 +24,7 @@ const formSchema = yup
 export const FeedbackModal: React.FC<{
   isOpen: boolean;
   closeModal: () => void;
-  feedbackForm?: feedbackFormModel;
+  feedbackForm?: FeedbackFormModel;
 }> = ({ isOpen = false, closeModal, feedbackForm = { body: '' } }) => {
   const initialFocus = useRef(null);
   const [submitError, setSubmitError] = useState(false);
@@ -37,16 +37,17 @@ export const FeedbackModal: React.FC<{
     getValues,
     formState,
     formState: { errors },
-  } = useForm<Partial<feedbackFormModel>>({
-    resolver: yupResolver(formSchema),
+  } = useForm<Partial<FeedbackFormModel>>({
+    resolver: yupResolver<Partial<FeedbackFormModel>>(formSchema),
     defaultValues: useMemo(() => {
       return { ...feedbackForm };
     }, [feedbackForm]),
     mode: 'onChange', // NOTE: Needed if we want to disable submit until valid
   });
 
-  const onSubmit = (formData: Partial<feedbackFormModel>) => {
+  const onSubmit = (formData: Partial<FeedbackFormModel>) => {
     setIsLoading(true);
+    if (!formData.body) return;
     const data = {
       body: formData.body,
     };
@@ -173,7 +174,6 @@ export const FeedbackModal: React.FC<{
                     <Submitbuttons>
                       <Button
                         type="submit"
-                        variant="solid"
                         size="lg"
                         color="primary"
                         className="w-full"

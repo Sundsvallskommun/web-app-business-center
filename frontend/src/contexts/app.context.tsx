@@ -59,7 +59,7 @@ export function AppWrapper({ children }) {
   const [cases, setCases] = useState<CasesData>(emptyCaseList);
   const [highlightedTableRow, setHighlightedTableRow] = useState<any>({});
   const [notifications, setNotifications] = useState<ICase[]>([]);
-  const [myPagesMode, setMyPagesMode] = useState<MyPagesMode>(MyPagesMode.PRIVATE);
+  const [myPagesMode, setMyPagesMode] = useState<MyPagesMode>(MyPagesMode.BUSINESS);
   const [businessEngagements, setBusinessEngagements] = useState<BusinessEngagement[]>([]);
 
   return (

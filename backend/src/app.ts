@@ -45,6 +45,7 @@ import { routingControllersToSpec } from 'routing-controllers-openapi';
 import session from 'express-session';
 import swaggerUi from 'swagger-ui-express';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
+import { isValidUrl } from './utils/util';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -197,6 +198,8 @@ class App {
       (req, res, next) => {
         if (req.session.returnTo) {
           req.query.RelayState = req.session.returnTo;
+        } else if (req.query.successRedirect) {
+          req.query.RelayState = req.query.successRedirect;
         }
         next();
       },
@@ -213,41 +216,71 @@ class App {
       res.status(200).send(metadata);
     });
 
-    this.app.get(`${BASE_URL_PREFIX}/saml/logout`, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
-      samlStrategy.logout(req as any, () => {
-        req.logout(err => {
-          if (err) {
-            return next(err);
-          }
-          // FIXME: should we redirect here or should client do it?
-          res.redirect(SAML_LOGOUT_REDIRECT);
+    this.app.get(
+      `${BASE_URL_PREFIX}/saml/logout`,
+      (req, res, next) => {
+        if (req.session.returnTo) {
+          req.query.RelayState = req.session.returnTo;
+        } else if (req.query.successRedirect) {
+          req.query.RelayState = req.query.successRedirect;
+        }
+        next();
+      },
+      (req, res, next) => {
+        const successRedirect = req.query.successRedirect;
+        samlStrategy.logout(req as any, () => {
+          req.logout(err => {
+            if (err) {
+              return next(err);
+            }
+            res.redirect(successRedirect as string);
+          });
         });
-      });
-    });
+      },
+    );
 
     this.app.get(`${BASE_URL_PREFIX}/saml/logout/callback`, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
-      // FIXME: is this enough or do we need to do something more?
       req.logout(err => {
         if (err) {
           return next(err);
         }
-        // FIXME: should we redirect here or should client do it?
-        res.redirect(SAML_LOGOUT_REDIRECT);
+
+        let successRedirect, failureRedirect;
+        if (isValidUrl(req.body.RelayState)) {
+          successRedirect = req.body.RelayState;
+        }
+
+        if (req.session.messages?.length > 0) {
+          failureRedirect = successRedirect + `?failMessage=${req.session.messages[0]}`;
+        } else {
+          failureRedirect = successRedirect + `?failMessage='SAML_UNKNOWN_ERROR'`;
+        }
+        if (failureRedirect) {
+          res.redirect(failureRedirect);
+        } else {
+          res.redirect(successRedirect);
+        }
       });
     });
 
-    this.app.post(
-      `${BASE_URL_PREFIX}/saml/login/callback`,
-      bodyParser.urlencoded({ extended: false }),
-      (req, res, next) => {
-        passport.authenticate('saml', {
-          failureRedirect: SAML_FAILURE_REDIRECT,
-        })(req, res, next);
-      },
-      (req, res) => {
-        res.redirect(SAML_SUCCESS_REDIRECT);
-      },
-    );
+    this.app.post(`${BASE_URL_PREFIX}/saml/login/callback`, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
+      let successRedirect, failureRedirect;
+      if (isValidUrl(req.body.RelayState)) {
+        successRedirect = req.body.RelayState;
+      }
+
+      if (req.session.messages?.length > 0) {
+        failureRedirect = successRedirect + `?failMessage=${req.session.messages[0]}`;
+      } else {
+        failureRedirect = successRedirect + `?failMessage='SAML_UNKNOWN_ERROR'`;
+      }
+
+      passport.authenticate('saml', {
+        successReturnToOrRedirect: successRedirect,
+        failureRedirect: failureRedirect,
+        failureMessage: true,
+      })(req, res, next);
+    });
   }
 
   private initializeRoutes(controllers: Function[]) {

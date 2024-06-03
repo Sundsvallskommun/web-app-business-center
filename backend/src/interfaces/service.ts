@@ -5,3 +5,8 @@ export interface ApiResponseMeta {
   totalRecords: number;
   totalPages: number;
 }
+
+export interface ApiResponse<T> {
+  data: T;
+  message: string;
+}

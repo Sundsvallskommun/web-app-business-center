@@ -1,7 +1,6 @@
-import { useEffect, useRef } from 'react';
-import EmptyLayout from '@components/empty-layout/empty-layout.component';
+import EmptyLayout from '@layouts/empty-layout.component';
+import { Button, Link } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
-import { Link, Button } from '@sk-web-gui/react';
 import { appURL } from '../../utils/app-url';
 
 export const NoRepresent: React.FC = ({}) => {

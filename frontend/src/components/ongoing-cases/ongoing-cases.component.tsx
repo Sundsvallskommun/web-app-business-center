@@ -116,18 +116,14 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       screenReaderOnly: false,
       renderColumn: (value, item) => (
         <div className="text-left">
-          <Fragment>
-            <span className="flex items-center">
-              <Label
-                rounded
-                inverted={item.invoiceStatus?.color !== 'neutral'}
-                color={item.invoiceStatus?.color}
-                className={`whitespace-nowrap `}
-              >
-                {value}
-              </Label>
-            </span>
-          </Fragment>
+          <Label
+            rounded
+            inverted={item.status?.color !== 'neutral'}
+            color={item.status?.color}
+            className={`whitespace-nowrap `}
+          >
+            {value}
+          </Label>
         </div>
       ),
       isColumnSortable: true,

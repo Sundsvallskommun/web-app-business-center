@@ -3,7 +3,7 @@
 import { Button, FormErrorMessage } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
-import EmptyLayout from '../../components/empty-layout/empty-layout.component';
+import EmptyLayout from '../../layouts/empty-layout.component';
 import { appName } from '../../utils/app-name';
 import { appURL } from '../../utils/app-url';
 import { useSearchParams } from 'next/navigation';

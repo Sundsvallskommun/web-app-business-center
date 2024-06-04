@@ -4,7 +4,7 @@ import { BusinessEngagementData } from '@services/organisation-service';
 import { Button, Pagination, Spinner } from '@sk-web-gui/react';
 import { ChangeEvent, useEffect, useState } from 'react';
 
-import EmptyLayout from '@components/empty-layout/empty-layout.component';
+import EmptyLayout from '@layouts/empty-layout.component';
 import { NoRepresent } from '@components/no-represent/no-represent';
 import { useAppContext } from '@contexts/app.context';
 import { getMyPagesModeRoute } from '@utils/pagesModeRoute';

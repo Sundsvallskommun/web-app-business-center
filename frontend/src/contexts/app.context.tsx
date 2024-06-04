@@ -40,6 +40,8 @@ export interface AppContextInterface {
   setNotificationAlerts: (notificationAlerts: ICase[]) => void;
 
   myPagesMode: MyPagesMode;
+  isMyPagesModeBusiness: boolean;
+  isMyPagesModePrivate: boolean;
   setMyPagesMode: (myPagsMode: MyPagesMode) => void;
 
   businessEngagements: BusinessEngagement[];
@@ -49,18 +51,32 @@ export interface AppContextInterface {
 // @ts-expect-error
 const AppContext = createContext<AppContextInterface>(null);
 
+const defaults = {
+  isLoadingInvoices: true,
+  isLoadingCases: true,
+  changedCases: [],
+  user: emptyUser,
+  representingEntity: emptyOrganisationInfo,
+  invoices: emptyInvoicesList,
+  cases: emptyCaseList,
+  highlightedTableRow: {},
+  notificationAlerts: [],
+  myPagesMode: MyPagesMode.BUSINESS,
+  businessEngagements: [],
+};
+
 export function AppWrapper({ children }) {
-  const [isLoadingInvoices, setIsLoadingInvoices] = useState(true);
-  const [isLoadingCases, setIsLoadingCases] = useState(true);
-  const [changedCases, setChangedCases] = useState<ICase[]>([]);
-  const [user, setUser] = useState<User>(emptyUser);
-  const [representingEntity, setRepresentingEntity] = useState<OrganisationInfo>(emptyOrganisationInfo);
-  const [invoices, setInvoices] = useState<InvoicesData>(emptyInvoicesList);
-  const [cases, setCases] = useState<CasesData>(emptyCaseList);
-  const [highlightedTableRow, setHighlightedTableRow] = useState<any>({});
-  const [notifications, setNotifications] = useState<ICase[]>([]);
-  const [myPagesMode, setMyPagesMode] = useState<MyPagesMode>(MyPagesMode.BUSINESS);
-  const [businessEngagements, setBusinessEngagements] = useState<BusinessEngagement[]>([]);
+  const [isLoadingInvoices, setIsLoadingInvoices] = useState(defaults.isLoadingInvoices);
+  const [isLoadingCases, setIsLoadingCases] = useState(defaults.isLoadingCases);
+  const [changedCases, setChangedCases] = useState<ICase[]>(defaults.changedCases);
+  const [user, setUser] = useState<User>(defaults.user);
+  const [representingEntity, setRepresentingEntity] = useState<OrganisationInfo>(defaults.representingEntity);
+  const [invoices, setInvoices] = useState<InvoicesData>(defaults.invoices);
+  const [cases, setCases] = useState<CasesData>(defaults.cases);
+  const [highlightedTableRow, setHighlightedTableRow] = useState<any>(defaults.highlightedTableRow);
+  const [notificationAlerts, setNotificationAlerts] = useState<ICase[]>(defaults.notificationAlerts);
+  const [myPagesMode, setMyPagesMode] = useState<MyPagesMode>(defaults.myPagesMode);
+  const [businessEngagements, setBusinessEngagements] = useState<BusinessEngagement[]>(defaults.businessEngagements);
 
   return (
     <AppContext.Provider
@@ -89,11 +105,15 @@ export function AppWrapper({ children }) {
         highlightedTableRow,
         setHighlightedTableRow: (highlightedTableRow: any) => setHighlightedTableRow(highlightedTableRow),
 
-        notificationAlerts: notifications,
-        setNotificationAlerts: (notificationAlerts: ICase[]) => setNotifications(notificationAlerts),
+        notificationAlerts,
+        setNotificationAlerts: (notificationAlerts: ICase[]) => setNotificationAlerts(notificationAlerts),
 
         myPagesMode,
-        setMyPagesMode: (myPagesMode: MyPagesMode) => setMyPagesMode(myPagesMode),
+        isMyPagesModeBusiness: myPagesMode === MyPagesMode.BUSINESS,
+        isMyPagesModePrivate: myPagesMode === MyPagesMode.PRIVATE,
+        setMyPagesMode: (myPagesMode: MyPagesMode) => {
+          setMyPagesMode(myPagesMode);
+        },
 
         businessEngagements,
         setBusinessEngagements: (businessEngagements: BusinessEngagement[]) =>

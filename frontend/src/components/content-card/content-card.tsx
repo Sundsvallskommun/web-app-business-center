@@ -1,5 +1,11 @@
+import { Card } from '@sk-web-gui/react';
+
 export const ContentCard: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-  return <div className="bg-white shadow-md lg:mt-0 lg:mb-14 p-lg rounded-lg">{children}</div>;
+  return (
+    <Card>
+      <Card.Body className="w-full pt-24 px-24 pb-32">{children}</Card.Body>
+    </Card>
+  );
 };
 
 export default ContentCard;

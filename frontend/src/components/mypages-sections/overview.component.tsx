@@ -1,10 +1,10 @@
-import MyOverviewSection from '../my-overview/my-overview.component';
+import { OngoingCases } from '../ongoing-cases/ongoing-cases.component';
 
 export default function Overview() {
   return (
     <div>
       <h1 className="mb-32">Pågående ärenden</h1>
-      <MyOverviewSection />
+      <OngoingCases />
     </div>
   );
 }

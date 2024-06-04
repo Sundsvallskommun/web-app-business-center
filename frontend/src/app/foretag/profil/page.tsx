@@ -1,5 +1,7 @@
-import Profile from '@components/mypages-sections/profile.component';
+'use client';
 
-export default function Profil(second) {
-  return <Profile />;
+import { ProfileBusiness } from '../../../components/mypages-sections/profile/profile-business.component';
+
+export default function Profil() {
+  return <ProfileBusiness />;
 }

@@ -3,7 +3,7 @@ import { useAppContext } from '@contexts/app.context';
 import { InvoicesData } from '@interfaces/invoice';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { getInvoicePdf } from '@services/invoice-service';
-import { AutoTable, AutoTableHeader, Badge, Button, useSnackbar } from '@sk-web-gui/react';
+import { AutoTable, AutoTableHeader, Badge, Button, Label, useSnackbar } from '@sk-web-gui/react';
 import { statusColorMap } from '@utils/status-color';
 import _ from 'lodash';
 import { Fragment, useEffect, useRef, useState } from 'react';
@@ -83,15 +83,18 @@ export const InvoicesTable: React.FC<{
     {
       label: 'Status',
       sticky: false,
+      property: 'invoiceStatus.label',
       screenReaderOnly: false,
       renderColumn: (value, item) => (
         <div className="text-left">
-          <Fragment>
-            <span className="flex items-center xl:w-[20rem]">
-              <Badge className={`w-[14px] max-h-[14px] h-[14px] ${statusColorMap(item.invoiceStatus.color).bg} mr-2`} />
-              {item.invoiceStatus.label}
-            </span>
-          </Fragment>
+          <Label
+            rounded
+            inverted={item.invoiceStatus?.color !== 'neutral'}
+            color={item.invoiceStatus?.color}
+            className={`whitespace-nowrap `}
+          >
+            {value}
+          </Label>
         </div>
       ),
       isColumnSortable: true,
@@ -152,7 +155,13 @@ export const InvoicesTable: React.FC<{
         )}
         {props.data && props.data?.invoices?.length > 0 && (
           <div>
-            <AutoTable pageSize={9999} footer={false} autodata={props.data?.invoices} autoheaders={headers} />
+            <AutoTable
+              background={false}
+              pageSize={9999}
+              footer={false}
+              autodata={props.data?.invoices}
+              autoheaders={headers}
+            />
           </div>
         )}
       </>

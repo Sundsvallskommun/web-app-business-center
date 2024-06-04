@@ -1,14 +1,13 @@
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { useLocalStorageValue } from '@react-hookz/web';
 import { casesHandler, emptyCaseList, getCasePdf, getClosed } from '@services/case-service';
-import { AutoTable, AutoTableHeader, Badge, Button, useSnackbar } from '@sk-web-gui/react';
-import { statusColorMap } from '@utils/status-color';
+import { AutoTable, AutoTableHeader, Button, Label, useSnackbar } from '@sk-web-gui/react';
 import _ from 'lodash';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useAppContext } from '../../contexts/app.context';
 import { CaseResponse, CasesData } from '../../interfaces/case';
-import { TableWrapper } from '../table-wrapper/table-wrapper.component';
 import { useApi } from '../../services/api-service';
+import { TableWrapper } from '../table-wrapper/table-wrapper.component';
 
 export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
@@ -121,12 +120,14 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
       screenReaderOnly: false,
       renderColumn: (value, item) => (
         <div className="text-left">
-          <Fragment>
-            <span className="flex items-center xl:w-[20rem]">
-              <Badge className={`w-[14px] max-h-[14px] h-[14px] ${statusColorMap(item.status.color).bg} mr-2`} />
-              {value}
-            </span>
-          </Fragment>
+          <Label
+            rounded
+            inverted={item.status?.color !== 'neutral'}
+            color={item.status?.color}
+            className={`whitespace-nowrap `}
+          >
+            {value}
+          </Label>
         </div>
       ),
       isColumnSortable: true,

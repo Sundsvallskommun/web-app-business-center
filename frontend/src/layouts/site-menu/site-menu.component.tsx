@@ -26,9 +26,8 @@ export const SiteMenu = () => {
   });
 
   const switchMyPagesMode = (newMode: MyPagesMode) => {
-    router.push(
-      `${window.location.toString().replace(getMyPagesModeRoute(myPagesMode) || '', getMyPagesModeRoute(newMode) || '')}`
-    );
+    const pathname = `${window.location.pathname.toString().replace(getMyPagesModeRoute(myPagesMode) || '', getMyPagesModeRoute(newMode) || '')}`;
+    router.push(`${window.location.origin}${pathname}`);
   };
 
   const handleRepresentingChange = async (organizationNumber) => {

@@ -1,16 +1,17 @@
-import { CasesComponent } from '@components/cases-component/cases-component';
+import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
 import { useAppContext } from '@contexts/app.context';
 import { CaseResponse, CasesData } from '@interfaces/case';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { useLocalStorageValue } from '@react-hookz/web';
 import { casesHandler, emptyCaseList, getCasePdf, getOngoing } from '@services/case-service';
-import { AutoTable, AutoTableHeader, Badge, Button, useSnackbar } from '@sk-web-gui/react';
+import { AutoTable, AutoTableHeader, Badge, Button, Label, useSnackbar } from '@sk-web-gui/react';
 import { statusColorMap } from '@utils/status-color';
 import _ from 'lodash';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useApi } from '../../services/api-service';
+import dayjs from 'dayjs';
 
-export const OngoingCases: React.FC = () => {
+export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
     url: '/cases',
     method: 'get',
@@ -87,7 +88,7 @@ export const OngoingCases: React.FC = () => {
 
   const headers: Array<AutoTableHeader | string> = [
     {
-      label: 'Ärende',
+      label: 'Namn',
       sticky: true,
       property: 'subject.caseType',
       screenReaderOnly: false,
@@ -95,25 +96,19 @@ export const OngoingCases: React.FC = () => {
         <div className="text-left">
           <Fragment>
             <div>
-              <strong className="block lg:w-[30rem] xl:w-[44rem]">{value}</strong>
+              <strong className="block">{value}</strong>
             </div>
-            <div>
+            {/* <div>
               <small>
                 <span className="pr-md">{item.caseId}</span>
               </small>
-            </div>
+            </div> */}
           </Fragment>
         </div>
       ),
       isColumnSortable: true,
     },
-    {
-      label: 'Senast ändrad',
-      sticky: false,
-      property: 'subject.meta.modified',
-      screenReaderOnly: false,
-      isColumnSortable: true,
-    },
+
     {
       label: 'Status',
       sticky: false,
@@ -122,9 +117,15 @@ export const OngoingCases: React.FC = () => {
       renderColumn: (value, item) => (
         <div className="text-left">
           <Fragment>
-            <span className="flex items-center xl:w-[20rem]">
-              <Badge className={`w-[14px] max-h-[14px] h-[14px] bg-${statusColorMap(item.status.color)} mr-2`} />
-              {value}
+            <span className="flex items-center">
+              <Label
+                rounded
+                inverted={item.invoiceStatus?.color !== 'neutral'}
+                color={item.invoiceStatus?.color}
+                className={`whitespace-nowrap `}
+              >
+                {value}
+              </Label>
             </span>
           </Fragment>
         </div>
@@ -132,25 +133,40 @@ export const OngoingCases: React.FC = () => {
       isColumnSortable: true,
     },
     {
-      label: 'Ärendeknapp',
+      label: 'Ärendenummer',
       sticky: false,
-      screenReaderOnly: true,
-      renderColumn: (value, item) => (
-        <div className="text-right w-full">
-          <Button
-            aria-label={`Hämta PDF för ärende ${item.caseId}`}
-            color="primary"
-            loading={isLoading?.[item.externalCaseId]}
-            loadingText="Hämtar"
-            className="w-full lg:w-auto px-md"
-            onClick={() => getPdf(item.externalCaseId)}
-          >
-            Hämta PDF <FileDownloadOutlinedIcon className="material-icon ml-sm" aria-hidden="true" />
-          </Button>
-        </div>
-      ),
-      isColumnSortable: false,
+      property: 'caseId',
+      screenReaderOnly: false,
+      isColumnSortable: true,
     },
+    {
+      label: 'Senast ändrat',
+      sticky: false,
+      property: 'subject.meta.modified',
+      screenReaderOnly: false,
+      isColumnSortable: true,
+      renderColumn: (value) => <span>{dayjs(value).format('YYYY-MM-DD')}</span>,
+    },
+    // {
+    //   label: 'Ärendeknapp',
+    //   sticky: false,
+    //   screenReaderOnly: true,
+    //   renderColumn: (value, item) => (
+    //     <div className="text-right w-full">
+    //       <Button
+    //         aria-label={`Hämta PDF för ärende ${item.caseId}`}
+    //         color="primary"
+    //         loading={isLoading?.[item.externalCaseId]}
+    //         loadingText="Hämtar"
+    //         className="w-full lg:w-auto px-md"
+    //         onClick={() => getPdf(item.externalCaseId)}
+    //       >
+    //         Hämta PDF <FileDownloadOutlinedIcon className="material-icon ml-sm" aria-hidden="true" />
+    //       </Button>
+    //     </div>
+    //   ),
+    //   isColumnSortable: false,
+    // },
   ];
   const Table = () => {
     return (
@@ -164,7 +180,13 @@ export const OngoingCases: React.FC = () => {
         )}
         {!isFetchingCases && ongoing?.cases?.length > 0 && (
           <div>
-            <AutoTable autodata={ongoing?.cases} autoheaders={headers} />
+            <AutoTable
+              pageSize={9999}
+              footer={false}
+              background={false}
+              autodata={ongoing?.cases}
+              autoheaders={headers}
+            />
           </div>
         )}
       </>
@@ -173,22 +195,9 @@ export const OngoingCases: React.FC = () => {
 
   return (
     <div ref={ref}>
-      <CasesComponent
-        header={
-          <>
-            {isFetchingCases ? (
-              <span>Laddar pågående ärenden</span>
-            ) : (
-              <span>Pågående ärenden ({ongoing?.cases?.length})</span>
-            )}
-          </>
-        }
-        helpText={`Här hittar du ärenden som vi handlägger just nu. Du kan inte förändra eller uppdatera ärenden på den här sidan.`}
-        disclosureIsOpen={disclosureIsOpen}
-        setDisclosureIsOpenCallback={(open) => setDisclosureIsOpen(open)}
-      >
+      <TableWrapper header={header}>
         <Table />
-      </CasesComponent>
+      </TableWrapper>
     </div>
   );
 };

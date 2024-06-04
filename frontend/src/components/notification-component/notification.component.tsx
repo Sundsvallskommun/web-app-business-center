@@ -21,9 +21,9 @@ const NotificationComponent: React.FC<{
     <button
       tabIndex={0}
       className={cx(
-        `${className} mt-md p-sm min-h-28 bg-white border-l-4 align-middle text-left shadow-md border-${statusColorMap(
-          item.status.color
-        )}`
+        `${className} mt-md p-sm min-h-28 bg-white border-l-4 align-middle text-left shadow-md ${
+          statusColorMap(item.status.color).border
+        }`
       )}
       onClick={() => {
         if (clickHandler) {

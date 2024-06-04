@@ -1,17 +1,28 @@
-export const statusColorMap = (color: string): string => {
+export const statusColorMap = (color: string) => {
   // Colors returned here and that is combined with prefixes like "text-.." need to be safelisted
+  let bg = 'bg-neutral-300';
+  let border = 'border-neutral-300';
   switch (color) {
     case 'info':
-      return `info`;
+      bg = 'bg-info';
+      border = 'border-info';
+      break;
     case 'warning':
-      return `warning`;
+      bg = 'bg-warning';
+      border = 'border-warning';
+      break;
     case 'error':
-      return `error`;
+      bg = 'bg-error';
+      border = 'border-error';
+      break;
     case 'neutral':
-      return `neutral-300`;
+      bg = 'bg-neutral-300';
+      border = 'border-neutral-300';
+      break;
     default:
-      return `neutral-300`;
+    //
   }
+  return { bg, border };
 };
 
 export const statusColorMapOrder = (color: string): number => {

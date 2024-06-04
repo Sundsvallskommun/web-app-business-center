@@ -7,10 +7,10 @@ import _ from 'lodash';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useAppContext } from '../../contexts/app.context';
 import { CaseResponse, CasesData } from '../../interfaces/case';
-import { CasesComponent } from '../cases-component/cases-component';
+import { TableWrapper } from '../table-wrapper/table-wrapper.component';
 import { useApi } from '../../services/api-service';
 
-export const ClosedCases: React.FC = () => {
+export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
     url: '/cases',
     method: 'get',
@@ -123,7 +123,7 @@ export const ClosedCases: React.FC = () => {
         <div className="text-left">
           <Fragment>
             <span className="flex items-center xl:w-[20rem]">
-              <Badge className={`w-[14px] max-h-[14px] h-[14px] bg-${statusColorMap(item.status.color)} mr-2`} />
+              <Badge className={`w-[14px] max-h-[14px] h-[14px] ${statusColorMap(item.status.color).bg} mr-2`} />
               {value}
             </span>
           </Fragment>
@@ -165,7 +165,13 @@ export const ClosedCases: React.FC = () => {
         )}
         {!isFetchingCases && closed?.cases?.length > 0 && (
           <div>
-            <AutoTable autodata={closed?.cases} autoheaders={headers} />
+            <AutoTable
+              pageSize={9999}
+              footer={false}
+              background={false}
+              autodata={closed?.cases}
+              autoheaders={headers}
+            />
           </div>
         )}
       </>
@@ -174,22 +180,9 @@ export const ClosedCases: React.FC = () => {
 
   return (
     <div ref={ref}>
-      <CasesComponent
-        header={
-          <>
-            {isFetchingCases ? (
-              <span>Laddar avslutade ärenden</span>
-            ) : (
-              <span>Avslutade ärenden ({closed?.cases?.length})</span>
-            )}
-          </>
-        }
-        helpText={`Här hittar du ärenden som har fått beslut och är avslutade.`}
-        disclosureIsOpen={disclosureIsOpen}
-        setDisclosureIsOpenCallback={(open) => setDisclosureIsOpen(open)}
-      >
+      <TableWrapper header={header}>
         <Table />
-      </CasesComponent>
+      </TableWrapper>
     </div>
   );
 };

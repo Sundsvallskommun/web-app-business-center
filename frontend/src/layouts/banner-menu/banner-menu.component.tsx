@@ -18,7 +18,7 @@ export const BannerMenu: React.FC = () => {
   const myPagesRoute = getMyPagesModeRoute(myPagesMode);
 
   return (
-    <div className="w-full mb-80  bg-vattjom-background-200">
+    <div className="w-full bg-vattjom-background-200">
       <div className="max-w-content mx-auto relative overflow-hidden">
         <div className="absolute w-[20rem] text-vattjom-surface-accent">
           {/** S-logo */}
@@ -31,7 +31,7 @@ export const BannerMenu: React.FC = () => {
         </div>
 
         <div className="max-w-main-content z-10 relative mx-auto pt-[6rem] flex flex-col items-start">
-          <h3 className="text-gray-700 text-h3">Mina sidor</h3>
+          <span className="text-gray-700 text-h3 font-header">Mina sidor</span>
           <span className="text-display-2-md text-vattjom-surface-primary">{representingEntity?.organizationName}</span>
           <MenuBar className="mt-48 self-stretch">
             <MenuBar.Item className="flex items-center justify-center grow" current={pathname.includes('/oversikt')}>

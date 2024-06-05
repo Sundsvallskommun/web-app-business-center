@@ -43,7 +43,11 @@ export const MobileMenu = () => {
             <MyPagesToggle />
           </div>
 
-          <div>{isMyPagesModeBusiness && <MyPagesBusinessSwitch closeCallback={closeHandler} />}</div>
+          {isMyPagesModeBusiness && (
+            <div className="mt-sm mb-lg">
+              <MyPagesBusinessSwitch closeCallback={closeHandler} />
+            </div>
+          )}
 
           <div>
             <MenuVertical.Provider>

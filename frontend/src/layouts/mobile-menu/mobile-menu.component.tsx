@@ -4,13 +4,15 @@ import { Button, Icon, MenuVertical, Modal, cx } from '@sk-web-gui/react';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useBannerMenuItems } from '../banner-menu/banner-menu-items';
-import { MyPagesToggle, useSiteMenuItems } from '../site-menu/site-menu-items';
+import { MyPagesBusinessSwitch, MyPagesToggle, useSiteMenuItems } from '../site-menu/site-menu-items';
+import { useAppContext } from '../../contexts/app.context';
 
 export const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const bannerMenuItems = useBannerMenuItems();
   const siteMenuItems = useSiteMenuItems();
   const pathname = usePathname();
+  const { isMyPagesModeBusiness } = useAppContext();
 
   const openHandler = () => {
     setIsOpen(true);
@@ -40,6 +42,8 @@ export const MobileMenu = () => {
           <div className="absolute left-0 top-0 mt-26 ml-24">
             <MyPagesToggle />
           </div>
+
+          <div>{isMyPagesModeBusiness && <MyPagesBusinessSwitch closeCallback={closeHandler} />}</div>
 
           <div>
             <MenuVertical.Provider>

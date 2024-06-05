@@ -1,6 +1,6 @@
 'use client';
 
-import { MenuBar, Button, Select, Icon } from '@sk-web-gui/react';
+import { MenuBar, Button, Select, Icon, cx } from '@sk-web-gui/react';
 import { MyPagesMode } from '../../interfaces/app';
 import { BusinessEngagement, OrganisationInfo } from '../../interfaces/organisation-info';
 import { useApiService, useApi } from '../../services/api-service';
@@ -8,6 +8,7 @@ import { BusinessEngagementData } from '../../services/organisation-service';
 import { getMyPagesModeRoute } from '../../utils/pagesModeRoute';
 import { useAppContext } from '../../contexts/app.context';
 import { useRouter } from 'next/navigation';
+import { useWindowSize } from '../../utils/use-window-size.hook';
 
 export const useRepresentingSwitch = () => {
   const queryClient = useApiService((s) => s.queryClient);
@@ -54,7 +55,7 @@ export const MyPagesToggle = () => {
   );
 };
 
-export const MyPagesBusinessSwitch = () => {
+export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = ({ closeCallback }) => {
   const { setRepresenting } = useRepresentingSwitch();
   const { data: businessEngagements } = useApi<BusinessEngagementData, Error, BusinessEngagement[]>({
     url: '/businessengagements',
@@ -65,11 +66,17 @@ export const MyPagesBusinessSwitch = () => {
     url: '/representing',
     method: 'get',
   });
+  const windowSize = useWindowSize();
+
+  const setEngagement = (value) => {
+    setRepresenting(value);
+    closeCallback && closeCallback();
+  };
 
   return (
-    <label className="text-label-medium flex items-center gap-sm">
+    <label className={cx('text-label-medium flex items-center gap-sm', windowSize.lg ? 'flex-row' : 'flex-col')}>
       <span className="whitespace-nowrap">Du företräder</span>
-      <Select onSelectValue={setRepresenting} value={representingEntity?.organizationNumber}>
+      <Select className="max-w-full" onSelectValue={setEngagement} value={representingEntity?.organizationNumber}>
         {businessEngagements?.map((engagement) => (
           <Select.Option key={`${engagement.organizationNumber}`} value={engagement.organizationNumber}>
             {engagement.organizationName}

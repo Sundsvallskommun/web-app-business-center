@@ -3,10 +3,12 @@ import { useAppContext } from '@contexts/app.context';
 import { InvoicesData } from '@interfaces/invoice';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { getInvoicePdf } from '@services/invoice-service';
-import { AutoTable, AutoTableHeader, Badge, Button, Label, useSnackbar } from '@sk-web-gui/react';
-import { statusColorMap } from '@utils/status-color';
+import { AutoTable, AutoTableHeader, Button, Label, useSnackbar } from '@sk-web-gui/react';
 import _ from 'lodash';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useWindowSize } from '../../utils/use-window-size.hook';
+import { CardList } from '../cards/cards.component';
+import { InvoiceTableCard } from './invoices-table-card.component';
 
 export const InvoicesTable: React.FC<{
   data?: InvoicesData;
@@ -16,6 +18,7 @@ export const InvoicesTable: React.FC<{
   const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>();
   const message = useSnackbar();
   const ref = useRef<null | HTMLDivElement>(null);
+  const windowSize = useWindowSize();
 
   const { highlightedTableRow, setHighlightedTableRow } = useAppContext();
   const [highlightedItemIndex, setHighlightedItemIndex] = useState<number>();
@@ -155,13 +158,17 @@ export const InvoicesTable: React.FC<{
         )}
         {props.data && props.data?.invoices?.length > 0 && (
           <div>
-            <AutoTable
-              background={false}
-              pageSize={9999}
-              footer={false}
-              autodata={props.data?.invoices}
-              autoheaders={headers}
-            />
+            {windowSize.lg ? (
+              <AutoTable
+                pageSize={9999}
+                footer={false}
+                background={false}
+                autodata={props.data?.invoices}
+                autoheaders={headers}
+              />
+            ) : (
+              <CardList data={props.data?.invoices} Card={InvoiceTableCard} />
+            )}
           </div>
         )}
       </>

@@ -1,29 +1,31 @@
-import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
-import { useAppContext } from '@contexts/app.context';
-import { CaseResponse, CasesData } from '@interfaces/case';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { useLocalStorageValue } from '@react-hookz/web';
-import { casesHandler, emptyCaseList, getCasePdf, getOngoing } from '@services/case-service';
-import { AutoTable, AutoTableHeader, Badge, Button, Label, useSnackbar } from '@sk-web-gui/react';
-import { statusColorMap } from '@utils/status-color';
+import { casesHandler, emptyCaseList, getCasePdf, getClosed } from '@services/case-service';
+import { AutoTable, AutoTableHeader, Button, Label, useSnackbar } from '@sk-web-gui/react';
 import _ from 'lodash';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { useApi } from '../../services/api-service';
-import dayjs from 'dayjs';
+import { useAppContext } from '../../../contexts/app.context';
+import { CaseResponse, CasesData } from '../../../interfaces/case';
+import { useApi } from '../../../services/api-service';
+import { useWindowSize } from '../../../utils/use-window-size.hook';
+import { CaseTableCard } from '../case-table-card.component';
+import { CardList } from '../../cards/cards.component';
+import { TableWrapper } from '../../table-wrapper/table-wrapper.component';
 
-export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
+export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
     url: '/cases',
     method: 'get',
     dataHandler: casesHandler,
   });
-  const ongoing = getOngoing(cases);
+  const closed = getClosed(cases);
 
   const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>();
   const message = useSnackbar();
   const ref = useRef<null | HTMLDivElement>(null);
+  const windowSize = useWindowSize();
 
-  const localstorageKey = 'ongoing-cases-component';
+  const localstorageKey = 'closed-cases-component';
   const { value: disclosureIsOpen, set: setDisclosureIsOpen } = useLocalStorageValue(localstorageKey, {
     defaultValue: false,
     initializeWithValue: true,
@@ -34,7 +36,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
 
   useEffect(() => {
     if (!_.isEmpty(highlightedTableRow)) {
-      const itemIndex = ongoing?.cases?.findIndex(
+      const itemIndex = closed?.cases?.findIndex(
         (item) => item[highlightedTableRow.property] === highlightedTableRow.value
       );
       if (itemIndex !== -1) {
@@ -53,7 +55,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [highlightedTableRow, ongoing?.cases]);
+  }, [highlightedTableRow, closed?.cases]);
 
   const getPdf = (caseId: string) => {
     setIsLoading((old) => {
@@ -88,7 +90,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
 
   const headers: Array<AutoTableHeader | string> = [
     {
-      label: 'Namn',
+      label: 'Ärende',
       sticky: true,
       property: 'subject.caseType',
       screenReaderOnly: false,
@@ -96,19 +98,25 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
         <div className="text-left">
           <Fragment>
             <div>
-              <strong className="block">{value}</strong>
+              <strong className="block lg:w-[30rem] xl:w-[44rem]">{value}</strong>
             </div>
-            {/* <div>
+            <div>
               <small>
                 <span className="pr-md">{item.caseId}</span>
               </small>
-            </div> */}
+            </div>
           </Fragment>
         </div>
       ),
       isColumnSortable: true,
     },
-
+    {
+      label: 'Senast ändrad',
+      sticky: false,
+      property: 'subject.meta.modified',
+      screenReaderOnly: false,
+      isColumnSortable: true,
+    },
     {
       label: 'Status',
       sticky: false,
@@ -129,60 +137,50 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       isColumnSortable: true,
     },
     {
-      label: 'Ärendenummer',
+      label: 'Ärendeknapp',
       sticky: false,
-      property: 'caseId',
-      screenReaderOnly: false,
-      isColumnSortable: true,
+      screenReaderOnly: true,
+      renderColumn: (value, item) => (
+        <div className="text-right w-full">
+          <Button
+            aria-label={`Hämta PDF för ärende ${item.caseId}`}
+            color="primary"
+            loading={isLoading?.[item.externalCaseId]}
+            loadingText="Hämtar"
+            className="w-full lg:w-auto px-md"
+            onClick={() => getPdf(item.externalCaseId)}
+          >
+            Hämta PDF <FileDownloadOutlinedIcon className="material-icon ml-sm" aria-hidden="true" />
+          </Button>
+        </div>
+      ),
+      isColumnSortable: false,
     },
-    {
-      label: 'Senast ändrat',
-      sticky: false,
-      property: 'subject.meta.modified',
-      screenReaderOnly: false,
-      isColumnSortable: true,
-      renderColumn: (value) => <span>{dayjs(value).format('YYYY-MM-DD')}</span>,
-    },
-    // {
-    //   label: 'Ärendeknapp',
-    //   sticky: false,
-    //   screenReaderOnly: true,
-    //   renderColumn: (value, item) => (
-    //     <div className="text-right w-full">
-    //       <Button
-    //         aria-label={`Hämta PDF för ärende ${item.caseId}`}
-    //         color="primary"
-    //         loading={isLoading?.[item.externalCaseId]}
-    //         loadingText="Hämtar"
-    //         className="w-full lg:w-auto px-md"
-    //         onClick={() => getPdf(item.externalCaseId)}
-    //       >
-    //         Hämta PDF <FileDownloadOutlinedIcon className="material-icon ml-sm" aria-hidden="true" />
-    //       </Button>
-    //     </div>
-    //   ),
-    //   isColumnSortable: false,
-    // },
   ];
+
   const Table = () => {
     return (
       <>
-        {ongoing?.cases?.length === 0 && !isFetchingCases ? (
-          <p>Det finns inga pågående ärenden</p>
-        ) : ongoing?.cases?.length > 0 ? (
+        {closed?.cases?.length === 0 && !isFetchingCases ? (
+          <p>Det finns inga avslutade ärenden</p>
+        ) : closed?.cases?.length > 0 ? (
           <></>
         ) : (
-          isFetchingCases && <p>Laddar pågående ärenden</p>
+          isFetchingCases && <p>Laddar avslutade ärenden</p>
         )}
-        {!isFetchingCases && ongoing?.cases?.length > 0 && (
+        {!isFetchingCases && closed?.cases?.length > 0 && (
           <div>
-            <AutoTable
-              pageSize={9999}
-              footer={false}
-              background={false}
-              autodata={ongoing?.cases}
-              autoheaders={headers}
-            />
+            {windowSize.lg ? (
+              <AutoTable
+                pageSize={9999}
+                footer={false}
+                background={false}
+                autodata={closed?.cases}
+                autoheaders={headers}
+              />
+            ) : (
+              <CardList data={closed?.cases} Card={CaseTableCard} />
+            )}
           </div>
         )}
       </>

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 interface WindowSize {
   width?: number;
   height?: number;
+  xxs: boolean;
   xs: boolean;
   sm: boolean;
   md: boolean;
@@ -17,6 +18,7 @@ export function useWindowSize(): WindowSize {
     windowSize: {
       width: undefined,
       height: undefined,
+      xxs: false,
       xs: false,
       sm: false,
       md: false,
@@ -34,6 +36,7 @@ export function useWindowSize(): WindowSize {
         windowSize: {
           width: window.innerWidth,
           height: window.innerHeight,
+          xxs: window.innerWidth >= 320,
           xs: window.innerWidth >= 375,
           sm: window.innerWidth >= 640,
           md: window.innerWidth >= 768,

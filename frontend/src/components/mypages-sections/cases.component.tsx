@@ -1,5 +1,5 @@
-import { ClosedCases } from '../closed-cases/closed-cases.component';
-import { OngoingCases } from '../ongoing-cases/ongoing-cases.component';
+import { ClosedCases } from '../cases/closed-cases/closed-cases.component';
+import { OngoingCases } from '../cases/ongoing-cases/ongoing-cases.component';
 
 export default function Cases() {
   return (

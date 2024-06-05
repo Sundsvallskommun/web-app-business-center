@@ -1,21 +1,19 @@
-import { MenuBar } from '@sk-web-gui/react';
+import { MenuBar, cx } from '@sk-web-gui/react';
 import { usePathname } from 'next/navigation';
-import { useAppContext } from '../../contexts/app.context';
-import { getMyPagesModeRoute } from '../../utils/pagesModeRoute';
-import NextLink from 'next/link';
-import { useApi } from '../../services/api-service';
 import { OrganisationInfo } from '../../interfaces/organisation-info';
+import { useApi } from '../../services/api-service';
+import { useBannerMenuItems } from './banner-menu-items';
+import { useWindowSize } from '../../utils/use-window-size.hook';
 
 export const BannerMenu: React.FC = () => {
-  const { myPagesMode } = useAppContext();
   const pathname = usePathname();
+  const bannerMenuItems = useBannerMenuItems();
+  const windowSize = useWindowSize();
 
   const { data: representingEntity } = useApi<OrganisationInfo>({
     url: '/representing',
     method: 'get',
   });
-
-  const myPagesRoute = getMyPagesModeRoute(myPagesMode);
 
   return (
     <div className="w-full bg-vattjom-background-200">
@@ -30,31 +28,24 @@ export const BannerMenu: React.FC = () => {
           </svg>
         </div>
 
-        <div className="max-w-main-content z-10 relative mx-auto pt-[6rem] flex flex-col items-start">
+        <div className="max-w-main-content z-10 relative mx-auto pl-20 lg:pl-0 pt-[6rem] pl- flex flex-col items-start">
           <span className="text-gray-700 text-h3 font-header">Mina sidor</span>
-          <span className="text-display-2-md text-vattjom-surface-primary">{representingEntity?.organizationName}</span>
-          <MenuBar className="mt-48 self-stretch">
-            <MenuBar.Item className="flex items-center justify-center grow" current={pathname.includes('/oversikt')}>
-              <NextLink className="w-full flex items-center justify-center" href={`${myPagesRoute}/oversikt`}>
-                Översikt
-              </NextLink>
-            </MenuBar.Item>
-            <MenuBar.Item className="flex items-center justify-center grow" current={pathname.includes('/arenden')}>
-              <NextLink className="w-full flex items-center justify-center" href={`${myPagesRoute}/arenden`}>
-                Ärenden
-              </NextLink>
-            </MenuBar.Item>
-            <MenuBar.Item className="flex items-center justify-center grow" current={pathname.includes('/fakturor')}>
-              <NextLink className="w-full flex items-center justify-center" href={`${myPagesRoute}/fakturor`}>
-                Fakturor
-              </NextLink>
-            </MenuBar.Item>
-            <MenuBar.Item className="flex items-center justify-center grow" current={pathname.includes('/profil')}>
-              <NextLink className="w-full flex items-center justify-center" href={`${myPagesRoute}/profil`}>
-                Profil och inställningar
-              </NextLink>
-            </MenuBar.Item>
-          </MenuBar>
+          <span className={cx('text-display-3-sm lg:text-display-2-md text-vattjom-surface-primary xs:mb-32 lg:mb-48')}>
+            {representingEntity?.organizationName}
+          </span>
+          {windowSize.lg && (
+            <MenuBar className="self-stretch">
+              {bannerMenuItems.map((item, index) => (
+                <MenuBar.Item
+                  key={`${index}`}
+                  className="flex items-center justify-center grow"
+                  current={pathname.includes(item.props.href)}
+                >
+                  {item}
+                </MenuBar.Item>
+              ))}
+            </MenuBar>
+          )}
         </div>
       </div>
     </div>

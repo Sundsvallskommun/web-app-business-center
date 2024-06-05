@@ -1,6 +1,6 @@
 import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
 import { useAppContext } from '@contexts/app.context';
-import { InvoicesData } from '@interfaces/invoice';
+import { IInvoice, InvoicesData } from '@interfaces/invoice';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { getInvoicePdf } from '@services/invoice-service';
 import { AutoTable, AutoTableHeader, Button, Label, useSnackbar } from '@sk-web-gui/react';
@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from '../../utils/use-window-size.hook';
 import { CardList } from '../cards/cards.component';
 import { InvoiceTableCard } from './invoices-table-card.component';
+import { GetPdfButton } from './get-pdf-button.component';
 
 export const InvoicesTable: React.FC<{
   data?: InvoicesData;
@@ -16,7 +17,7 @@ export const InvoicesTable: React.FC<{
   isLoadingData: boolean;
 }> = (props) => {
   const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>();
-  const message = useSnackbar();
+  // const message = useSnackbar();
   const ref = useRef<null | HTMLDivElement>(null);
   const windowSize = useWindowSize();
 
@@ -44,36 +45,36 @@ export const InvoicesTable: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightedTableRow, props.data?.invoices]);
 
-  const getPdf = (invoiceNumber: string) => {
-    setIsLoading((old) => {
-      const newObj = { ...old };
-      newObj[invoiceNumber] = true;
-      return newObj;
-    });
-    getInvoicePdf(invoiceNumber)
-      .then((d) => {
-        if (typeof d.error === 'undefined') {
-          const uri = `data:application/pdf;base64,${d.pdf.file}`;
-          const link = document.createElement('a');
-          link.href = uri;
-          link.setAttribute('download', `${invoiceNumber}.pdf`);
-          document.body.appendChild(link);
-          link.click();
-        } else {
-          message({
-            message: 'Det gick inte att hämta filen.',
-            status: 'error',
-          });
-        }
-      })
-      .finally(() => {
-        setIsLoading((old) => {
-          const newObj = { ...old };
-          newObj[invoiceNumber] = false;
-          return newObj;
-        });
-      });
-  };
+  // const getPdf = (invoiceNumber: string) => {
+  //   setIsLoading((old) => {
+  //     const newObj = { ...old };
+  //     newObj[invoiceNumber] = true;
+  //     return newObj;
+  //   });
+  //   getInvoicePdf(invoiceNumber)
+  //     .then((d) => {
+  //       if (typeof d.error === 'undefined') {
+  //         const uri = `data:application/pdf;base64,${d.pdf.file}`;
+  //         const link = document.createElement('a');
+  //         link.href = uri;
+  //         link.setAttribute('download', `${invoiceNumber}.pdf`);
+  //         document.body.appendChild(link);
+  //         link.click();
+  //       } else {
+  //         message({
+  //           message: 'Det gick inte att hämta filen.',
+  //           status: 'error',
+  //         });
+  //       }
+  //     })
+  //     .finally(() => {
+  //       setIsLoading((old) => {
+  //         const newObj = { ...old };
+  //         newObj[invoiceNumber] = false;
+  //         return newObj;
+  //       });
+  //     });
+  // };
 
   const headers: Array<AutoTableHeader | string> = [
     {
@@ -128,18 +129,9 @@ export const InvoicesTable: React.FC<{
       sticky: false,
       property: 'dueDate',
       screenReaderOnly: true,
-      renderColumn: (value, item) => (
+      renderColumn: (value, item: IInvoice) => (
         <div className="text-left">
-          <Button
-            aria-label={`Hämta faktura ${item.invoiceDescription}`}
-            color="primary"
-            loading={isLoading?.[item.invoiceNumber]}
-            loadingText="Hämtar"
-            className="w-full xl:w-auto px-md"
-            onClick={() => getPdf(item.invoiceNumber)}
-          >
-            Hämta faktura <FileDownloadOutlinedIcon className="material-icon ml-sm" aria-hidden="true" />
-          </Button>
+          <GetPdfButton isLoading={isLoading} setIsLoading={setIsLoading} item={item} />
         </div>
       ),
       isColumnSortable: false,

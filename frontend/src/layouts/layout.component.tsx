@@ -106,31 +106,6 @@ export function Layout({ title, children }: { title: string; children: React.Rea
           </Footer.List>
           <Footer.List className="min-w-[19.3rem]">
             <Footer.ListItem>
-              <label>Kategori</label>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link variant="tertiary">Sub content</Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link variant="tertiary">Sub content</Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link variant="tertiary">Sub content</Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link variant="tertiary">Sub content</Link>
-              </NextLink>
-            </Footer.ListItem>
-          </Footer.List>
-          <Footer.List className="min-w-[19.3rem]">
-            <Footer.ListItem>
               <label>Sitedata</label>
             </Footer.ListItem>
             <Footer.ListItem>

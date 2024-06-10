@@ -26,6 +26,12 @@ export class BusinessEngagementController {
   async businessEngagments(@Req() req: RequestWithUser): Promise<ResponseData> {
     const { guid, name } = req?.user;
 
+    const controller = new AbortController();
+    req.on('aborted', () => {
+      controller.abort();
+      req.destroy();
+    });
+
     const url = `businessengagements/1.2/engagements/${guid}`;
     const params = {
       personalName: name,
@@ -48,6 +54,12 @@ export class BusinessEngagementController {
   @OpenAPI({ summary: 'Return businessinformation for current representing organisation' })
   @UseBefore(authMiddleware)
   async businessInformation(@Req() req: RequestWithUser, @QueryParam('engagement') engagement: BusinessEngagement): Promise<InformationResponseData> {
+    const controller = new AbortController();
+    req.on('aborted', () => {
+      controller.abort();
+      req.destroy();
+    });
+
     if (!engagement) {
       throw new HttpException(400, 'Bad Request - No choices');
     }

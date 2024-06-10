@@ -5,10 +5,11 @@ import { MyPagesMode } from '../../interfaces/app';
 import { BusinessEngagement, OrganisationInfo } from '../../interfaces/organisation-info';
 import { useApiService, useApi } from '../../services/api-service';
 import { BusinessEngagementData } from '../../services/organisation-service';
-import { getMyPagesModeRoute } from '../../utils/pagesModeRoute';
 import { useAppContext } from '../../contexts/app.context';
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from '../../utils/use-window-size.hook';
+import { appURL } from '../../utils/app-url';
+import { newMyPagesModePathname } from '../../utils/pagesModeRoute';
 
 export const useRepresentingSwitch = () => {
   const queryClient = useApiService((s) => s.queryClient);
@@ -39,8 +40,8 @@ export const MyPagesToggle = () => {
   const router = useRouter();
 
   const switchMyPagesMode = (newMode: MyPagesMode) => {
-    const pathname = `${window.location.pathname.toString().replace(getMyPagesModeRoute(myPagesMode) || '', getMyPagesModeRoute(newMode) || '')}`;
-    router.push(`${window.location.origin}${pathname}`);
+    const pathname = newMyPagesModePathname(newMode);
+    router.push(`${appURL()}${pathname}`);
   };
 
   return (

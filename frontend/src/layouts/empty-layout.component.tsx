@@ -16,7 +16,7 @@ export default function EmptyLayout({ title, children }) {
 
       <AlertBannerWrapper />
 
-      <div className="bg-background-100 min-h-screen">{children}</div>
+      <div className="bg-background-content min-h-screen">{children}</div>
     </>
   );
 }

@@ -72,12 +72,12 @@ function Login() {
 
   return (
     <EntryLayout title="Logga in">
-      <div className="max-w-[64rem]">
+      <div className="w-full max-w-[64rem]">
         <CardElevated>
           <Main>
             <CenterDiv className="pt-24 px-8 pb-8">
               <div className="max-w-[34.7rem]">
-                <h1 className="text-h2-lg">Välj hur du vill logga in</h1>
+                <h1 className="text-center text-h2-sm lg:text-h2-lg">Välj hur du vill logga in</h1>
                 <MenuBar className="mt-24 self-stretch">
                   <MenuBar.Item current={isMyPagesModePrivate} className="flex items-center justify-center grow">
                     <Button className="w-full" onClick={() => setMyPagesMode(MyPagesMode.PRIVATE)}>

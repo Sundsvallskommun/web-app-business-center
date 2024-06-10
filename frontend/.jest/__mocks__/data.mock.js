@@ -1,6 +1,4 @@
 import { closedCasesLabels, ongoingCasesLabels } from '@services/case-service';
-import { noteLabels } from '@services/notes-service';
-import { remindersLabels } from '@services/reminder-service';
 import { invoicesLabels } from '@services/invoice-service';
 
 export const user = {
@@ -112,72 +110,6 @@ export const ongoingCases = {
 export const closedCases = {
   cases: [handledMockCaseClosedA, handledMockCaseClosedB],
   labels: closedCasesLabels,
-};
-
-export const handledMockNotes = [
-  {
-    heading: 'subject',
-    note: 'body',
-    caseId: 'caseId',
-    caseLink: 'caseLink',
-    created: 'created',
-    reminderDate: '',
-    caseType: 'caseType',
-    externalCaseId: 'externalCaseId',
-    isReminder: false,
-    id: 'id',
-    createdBy: 'createdBy',
-  },
-];
-
-export const notes = {
-  notes: handledMockNotes,
-  labels: noteLabels,
-};
-
-export const mockReminder = {
-  heading: 'action',
-  note: 'note',
-  caseId: 'caseId',
-  caseLink: 'caseLink',
-  reminderDate: 'reminderDate',
-  caseType: 'caseType',
-  externalCaseId: 'externalCaseId',
-  isReminder: true,
-  id: 'reminderId',
-  createdBy: 'createdBy',
-};
-
-export const reminders = {
-  reminders: [mockReminder],
-  labels: remindersLabels,
-};
-
-export const feedbackSettings = {
-  id: 'id',
-  contacts: [
-    {
-      alias: 'alias',
-      contactMethods: {
-        SMS: [
-          {
-            contactMethod: 'SMS',
-            destination: '0701740605',
-            sendFeedback: true,
-            alias: 'alias',
-          },
-        ],
-        EMAIL: [
-          {
-            contactMethod: 'EMAIL',
-            destination: 'a@example.com',
-            sendFeedback: false,
-            alias: 'alias',
-          },
-        ],
-      },
-    },
-  ],
 };
 
 export const userMeta = {

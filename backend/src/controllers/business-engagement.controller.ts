@@ -25,6 +25,7 @@ export class BusinessEngagementController {
   @UseBefore(authMiddleware)
   async businessEngagments(@Req() req: RequestWithUser): Promise<ResponseData> {
     const { guid, name } = req?.user;
+
     const url = `businessengagements/1.2/engagements/${guid}`;
     const params = {
       personalName: name,

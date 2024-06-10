@@ -15,5 +15,6 @@ declare module 'express-session' {
     representing?: RepresentingEntity;
     passport?: any;
     representingChoices?: BusinessEngagement[];
+    messages: string[];
   }
 }

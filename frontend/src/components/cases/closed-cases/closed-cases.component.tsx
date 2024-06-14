@@ -11,6 +11,7 @@ import { useWindowSize } from '../../../utils/use-window-size.hook';
 import { CaseTableCard } from '../case-table-card.component';
 import { CardList } from '../../cards/cards.component';
 import { TableWrapper } from '../../table-wrapper/table-wrapper.component';
+import dayjs from 'dayjs';
 
 export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
@@ -111,11 +112,12 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
       isColumnSortable: true,
     },
     {
-      label: 'Senast ändrad',
+      label: 'Registrerat',
       sticky: false,
-      property: 'subject.meta.modified',
+      property: 'subject.meta.created',
       screenReaderOnly: false,
       isColumnSortable: true,
+      renderColumn: (value) => <span>{dayjs(value).format('YYYY-MM-DD')}</span>,
     },
     {
       label: 'Status',

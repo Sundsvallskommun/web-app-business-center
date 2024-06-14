@@ -100,11 +100,6 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
             <div>
               <strong className="block">{value}</strong>
             </div>
-            {/* <div>
-              <small>
-                <span className="pr-md">{item.caseId}</span>
-              </small>
-            </div> */}
           </Fragment>
         </div>
       ),
@@ -136,6 +131,11 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       property: 'caseId',
       screenReaderOnly: false,
       isColumnSortable: true,
+      renderColumn: (value) => (
+        <div className="text-left">
+          <div className="break-all hyphens-auto max-w-[25ch]">{value}</div>
+        </div>
+      ),
     },
     {
       label: 'Senast ändrat',

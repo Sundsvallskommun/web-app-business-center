@@ -83,6 +83,7 @@ export const InvoicesTable: React.FC<{
       property: 'invoiceDescription',
       screenReaderOnly: false,
       isColumnSortable: true,
+      renderColumn: (value) => <div className="text-left text-small font-bold lg:w-[14rem]">{value}</div>,
     },
     {
       label: 'Status',
@@ -90,7 +91,7 @@ export const InvoicesTable: React.FC<{
       property: 'invoiceStatus.label',
       screenReaderOnly: false,
       renderColumn: (value, item) => (
-        <div className="text-left">
+        <div className="text-left lg:w-[14rem]">
           <Label
             rounded
             inverted={item.invoiceStatus?.color !== 'neutral'}
@@ -109,20 +110,23 @@ export const InvoicesTable: React.FC<{
       property: 'dueDate',
       screenReaderOnly: false,
       isColumnSortable: true,
+      renderColumn: (value) => <div className="text-left lg:w-[12rem]">{value}</div>,
     },
     {
-      label: 'Fakturabelopp',
+      label: 'Belopp',
       sticky: false,
       property: 'totalAmount',
       screenReaderOnly: false,
       isColumnSortable: true,
+      renderColumn: (value) => <div className="text-left lg:w-[8rem]">{value}</div>,
     },
     {
-      label: 'Fakturanummer/OCR-nummer',
+      label: 'Fakturanummer/OCR',
       sticky: false,
       property: 'ocrNumber',
       screenReaderOnly: false,
       isColumnSortable: true,
+      renderColumn: (value) => <div className="text-left lg:w-[14rem]">{value}</div>,
     },
     {
       label: 'Hämta faktura',
@@ -130,7 +134,7 @@ export const InvoicesTable: React.FC<{
       property: 'dueDate',
       screenReaderOnly: true,
       renderColumn: (value, item: IInvoice) => (
-        <div className="text-left">
+        <div className="text-left lg:w-[14rem]">
           <GetPdfButton isLoading={isLoading} setIsLoading={setIsLoading} item={item} />
         </div>
       ),

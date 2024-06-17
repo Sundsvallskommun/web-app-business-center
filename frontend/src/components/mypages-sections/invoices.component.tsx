@@ -41,7 +41,7 @@ export default function Invoices() {
           if (dayjs(invoice.dueDate).isAfter(dayjs())) {
             amount.amountOverdue = +invoice.totalAmount;
           }
-          return { amountToPay, amountOverdue };
+          return amount;
         },
         { amountToPay: 0, amountOverdue: 0 }
       );

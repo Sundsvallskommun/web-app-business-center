@@ -71,7 +71,9 @@ export function Layout({ title, children }: { title: string; children: React.Rea
         <Footer className="bg-background-200">
           <Footer.Content>
             <Footer.LogoWrapper>
-              <Logo aria-label="Sundsvalls kommun logotyp" />
+              <a target="_blank" href={'https://sundsvall.se'}>
+                <Logo aria-label="Sundsvalls kommun logotyp" />
+              </a>
             </Footer.LogoWrapper>
             <Footer.ListWrapper>
               <Footer.List className="min-w-[19.3rem]">

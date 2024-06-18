@@ -2,7 +2,7 @@
 
 import AlertBannerWrapper from '@components/alert-banner/alert-banner-wrapper.component';
 import { useLocalStorageValue } from '@react-hookz/web';
-import { CookieConsent, Footer, Icon, Link, Spinner } from '@sk-web-gui/react';
+import { CookieConsent, Footer, Icon, Link, Logo, Spinner } from '@sk-web-gui/react';
 import Head from 'next/head';
 import NextLink from 'next/link';
 import { useEffect, useState } from 'react';
@@ -69,98 +69,93 @@ export function Layout({ title, children }: { title: string; children: React.Rea
       <div className="root-container">
         {children}
         <Footer className="bg-background-200">
-          <Footer.List className="min-w-[19.3rem]">
-            <Footer.ListItem>
-              <label>Kategori</label>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link variant="tertiary">Sub content</Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link variant="tertiary">Sub content</Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link variant="tertiary">Sub content</Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link variant="tertiary">Sub content</Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link variant="tertiary">Sub content</Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link variant="tertiary">Sub content</Link>
-              </NextLink>
-            </Footer.ListItem>
-          </Footer.List>
-          <Footer.List className="min-w-[19.3rem]">
-            <Footer.ListItem>
-              <label>Sitedata</label>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'/tillganglighet'}>
-                <Link variant="tertiary">Tillgänglighetsredogörelse</Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'/personuppgifter'}>
-                <Link variant="tertiary">Behandling av personuppgifter</Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'/kakor'}>
-                <Link variant="tertiary">Om kakor (Cookies)</Link>
-              </NextLink>
-            </Footer.ListItem>
-          </Footer.List>
-          <Footer.List className="min-w-[19.3rem]">
-            <Footer.ListItem>
-              <label>Följ oss</label>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link className="flex items-center gap-8" variant="tertiary">
-                  <Icon name="facebook" />
-                  <span>Facebook</span>
-                </Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link className="flex items-center gap-8" variant="tertiary">
-                  <Icon name="instagram" />
-                  <span>Instagram</span>
-                </Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link className="flex items-center gap-8" variant="tertiary">
-                  <Icon name="linkedin" />
-                  <span>Linkedin</span>
-                </Link>
-              </NextLink>
-            </Footer.ListItem>
-            <Footer.ListItem>
-              <NextLink passHref legacyBehavior href={'#'}>
-                <Link className="flex items-center gap-8" variant="tertiary">
-                  <Icon name="youtube" />
-                  <span>Youtube</span>
-                </Link>
-              </NextLink>
-            </Footer.ListItem>
-          </Footer.List>
+          <Footer.Content>
+            <Footer.LogoWrapper>
+              <Logo aria-label="Sundsvalls kommun logotyp" />
+            </Footer.LogoWrapper>
+            <Footer.ListWrapper>
+              <Footer.List className="min-w-[19.3rem]">
+                <Footer.ListItem>
+                  <label>Kontakt</label>
+                </Footer.ListItem>
+                <Footer.ListItem>
+                  <NextLink passHref legacyBehavior href={'tel:+460611-xxxx'}>
+                    <Link variant="tertiary">0611-xxxx</Link>
+                  </NextLink>
+                </Footer.ListItem>
+                <Footer.ListItem>
+                  <NextLink passHref legacyBehavior href={'mailto:inkorg@sundsvall.se'}>
+                    <Link variant="tertiary">inkorg@sundsvall.se</Link>
+                  </NextLink>
+                </Footer.ListItem>
+                <Footer.ListItem className="w-full">
+                  <span>Norrmalmsgatan 4, 852 34 Sundsvall</span>
+                </Footer.ListItem>
+              </Footer.List>
+              <Footer.List className="min-w-[19.3rem]">
+                <Footer.ListItem>
+                  <label>Om innehållet</label>
+                </Footer.ListItem>
+                <Footer.ListItem>
+                  <NextLink passHref legacyBehavior href={'/om-webbplatsen'}>
+                    <Link variant="tertiary">Om webbplatsen</Link>
+                  </NextLink>
+                </Footer.ListItem>
+                <Footer.ListItem>
+                  <NextLink passHref legacyBehavior href={'/kakor'}>
+                    <Link variant="tertiary">Kakor (Cookies)</Link>
+                  </NextLink>
+                </Footer.ListItem>
+                <Footer.ListItem>
+                  <NextLink passHref legacyBehavior href={'/tillganglighet'}>
+                    <Link variant="tertiary">Tillgänglighet</Link>
+                  </NextLink>
+                </Footer.ListItem>
+                <Footer.ListItem>
+                  <NextLink passHref legacyBehavior href={'/personuppgifter'}>
+                    <Link variant="tertiary">Personuppgifter</Link>
+                  </NextLink>
+                </Footer.ListItem>
+              </Footer.List>
+              <Footer.List className="min-w-[19.3rem]">
+                <Footer.ListItem>
+                  <label>Följ oss</label>
+                </Footer.ListItem>
+                <Footer.ListItem>
+                  <NextLink passHref legacyBehavior href={'#'}>
+                    <Link className="flex items-center gap-8" variant="tertiary">
+                      <Icon name="facebook" />
+                      <span>Facebook</span>
+                    </Link>
+                  </NextLink>
+                </Footer.ListItem>
+                <Footer.ListItem>
+                  <NextLink passHref legacyBehavior href={'#'}>
+                    <Link className="flex items-center gap-8" variant="tertiary">
+                      <Icon name="instagram" />
+                      <span>Instagram</span>
+                    </Link>
+                  </NextLink>
+                </Footer.ListItem>
+                <Footer.ListItem>
+                  <NextLink passHref legacyBehavior href={'#'}>
+                    <Link className="flex items-center gap-8" variant="tertiary">
+                      <Icon name="linkedin" />
+                      <span>Linkedin</span>
+                    </Link>
+                  </NextLink>
+                </Footer.ListItem>
+                <Footer.ListItem>
+                  <NextLink passHref legacyBehavior href={'#'}>
+                    <Link className="flex items-center gap-8" variant="tertiary">
+                      <Icon name="youtube" />
+                      <span>Youtube</span>
+                    </Link>
+                  </NextLink>
+                </Footer.ListItem>
+              </Footer.List>
+            </Footer.ListWrapper>
+          </Footer.Content>
         </Footer>
       </div>
 

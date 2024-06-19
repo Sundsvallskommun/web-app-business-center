@@ -13,11 +13,11 @@ import { Divider } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 
 export default function Invoices() {
-  const { data: invoices = emptyInvoicesList, isLoading: invoicesIsLoading } = useApi<
-    InvoicesResponse,
-    Error,
-    InvoicesData
-  >({
+  const {
+    data: invoices = emptyInvoicesList,
+    isLoading: invoicesIsLoading,
+    isFetching: invoicesIsFetching,
+  } = useApi<InvoicesResponse, Error, InvoicesData>({
     url: '/invoices',
     method: 'get',
     dataHandler: invoicesHandler,
@@ -54,41 +54,50 @@ export default function Invoices() {
     }
   }, [invoiceMemo]);
 
-  return (
-    <div className="flex flex-col gap-[6.4rem]">
+  if (!invoicesIsLoading && invoices.invoices.length < 1) {
+    return (
       <div>
         <h1>Fakturor</h1>
-        <p>
-          Jorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet
-          odio mattis.
-        </p>
-        <div className="mt-32">
-          <div className="flex flex-col gap-4">
-            <span>Att betala</span>
-            <strong className="text-lead">{`${amountToPay} kr`}</strong>
-          </div>
-          <Divider className="my-md" />
-          <div className="flex flex-col gap-4">
-            <span>Varav förfallet belopp</span>
-            <strong className="text-lead">{`${amountOverdue} kr`}</strong>
+        <p>Du har inga fakturor än, men så fort det finns något att betala kan du se det här.</p>
+      </div>
+    );
+  } else if (!invoicesIsLoading) {
+    return (
+      <div className="flex flex-col gap-[6.4rem]">
+        <div>
+          <h1>Fakturor</h1>
+          <p>
+            Jorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet
+            odio mattis.
+          </p>
+          <div className="mt-32">
+            <div className="flex flex-col gap-4">
+              <span>Att betala</span>
+              <strong className="text-lead">{`${amountToPay} kr`}</strong>
+            </div>
+            <Divider className="my-md" />
+            <div className="flex flex-col gap-4">
+              <span>Varav förfallet belopp</span>
+              <strong className="text-lead">{`${amountOverdue} kr`}</strong>
+            </div>
           </div>
         </div>
+        <InvoicesTable
+          data={notPaidInvoices}
+          heading={<h2 className="text-h3">Obetalda</h2>}
+          isFetchingData={invoicesIsFetching}
+        />
+        <InvoicesTable
+          data={paidInvoices}
+          heading={<h2 className="text-h3">Betalda</h2>}
+          isFetchingData={invoicesIsFetching}
+        />
+        <InvoicesTable
+          data={otherInvoices}
+          heading={<h2 className="text-h3">Övriga</h2>}
+          isFetchingData={invoicesIsFetching}
+        />
       </div>
-      <InvoicesTable
-        data={notPaidInvoices}
-        heading={<h2 className="text-h3">Obetalda</h2>}
-        isLoadingData={invoicesIsLoading}
-      />
-      <InvoicesTable
-        data={paidInvoices}
-        heading={<h2 className="text-h3">Betalda</h2>}
-        isLoadingData={invoicesIsLoading}
-      />
-      <InvoicesTable
-        data={otherInvoices}
-        heading={<h2 className="text-h3">Övriga</h2>}
-        isLoadingData={invoicesIsLoading}
-      />
-    </div>
-  );
+    );
+  } else return <></>;
 }

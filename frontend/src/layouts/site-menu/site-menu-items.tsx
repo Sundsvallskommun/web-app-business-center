@@ -91,8 +91,8 @@ export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = (
           </PopupMenu.Button>
           <PopupMenu.Panel autoAlign autoPosition className="z-50">
             <PopupMenu.Items>
-              {businessEngagements?.map((engagement) => (
-                <PopupMenu.Item>
+              {businessEngagements?.map((engagement, index) => (
+                <PopupMenu.Item key={`${index}`}>
                   <Button
                     rightIcon={<Icon name="arrow-right" />}
                     onClick={() => setEngagement(engagement.organizationNumber)}

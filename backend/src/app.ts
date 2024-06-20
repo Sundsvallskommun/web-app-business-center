@@ -22,7 +22,7 @@ import {
 import { Strategy, VerifiedCallback } from 'passport-saml';
 import { getMetadataArgsStorage, useExpressServer } from 'routing-controllers';
 import { logger, stream } from '@utils/logger';
-
+import { existsSync, mkdirSync } from 'fs';
 import ApiService from '@/services/api.service';
 import { HttpException } from './exceptions/HttpException';
 import { Profile } from './interfaces/profile.interface';
@@ -44,6 +44,7 @@ import session from 'express-session';
 import swaggerUi from 'swagger-ui-express';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import { isValidUrl } from './utils/util';
+import { join } from 'path';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -147,6 +148,8 @@ class App {
     this.env = NODE_ENV || 'development';
     this.port = PORT || 3000;
     this.swaggerEnabled = SWAGGER_ENABLED || false;
+
+    this.initializeDataFolders();
 
     this.initializeMiddlewares();
     this.initializeRoutes(Controllers);
@@ -327,6 +330,21 @@ class App {
 
   private initializeErrorHandling() {
     this.app.use(errorMiddleware);
+  }
+
+  private initializeDataFolders() {
+    const databaseDir: string = join(__dirname, '../data/database');
+    if (!existsSync(databaseDir)) {
+      mkdirSync(databaseDir, { recursive: true });
+    }
+    const logsDir: string = join(__dirname, '../data/logs');
+    if (!existsSync(logsDir)) {
+      mkdirSync(logsDir, { recursive: true });
+    }
+    const sessionsDir: string = join(__dirname, '../data/sessions');
+    if (!existsSync(sessionsDir)) {
+      mkdirSync(sessionsDir, { recursive: true });
+    }
   }
 }
 

@@ -37,7 +37,7 @@ const statusMap = {
   PARTIALLY_PAID: { label: 'Delvis betald', color: 'warning' },
 
   REMINDER: { label: 'Påminnelse', color: 'error' },
-  DEBT_COLLECTION: { label: 'Gått till inkasso', color: 'error' },
+  DEBT_COLLECTION: { label: 'Förfallen', color: 'error' },
 };
 
 export const mapStatus = (s: InvoiceStatus) => {

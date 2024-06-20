@@ -46,8 +46,8 @@ export const GetPdfButton: React.FC<{
   return (
     <Button
       aria-label={`Hämta faktura ${item.invoiceDescription}`}
-      size="lg"
-      variant="secondary"
+      size="sm"
+      variant="tertiary"
       loading={isLoading?.[item.invoiceNumber]}
       loadingText="Hämtar"
       className="w-full xl:w-auto px-md"

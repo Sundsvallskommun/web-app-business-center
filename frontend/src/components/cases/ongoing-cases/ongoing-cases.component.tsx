@@ -137,9 +137,9 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       ),
     },
     {
-      label: 'Senast ändrat',
+      label: 'Registrerat',
       sticky: false,
-      property: 'subject.meta.modified',
+      property: 'subject.meta.created',
       screenReaderOnly: false,
       isColumnSortable: true,
       renderColumn: (value) => <span className="lg:w-[18.9rem]">{dayjs(value).format('YYYY-MM-DD')}</span>,

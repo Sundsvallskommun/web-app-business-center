@@ -143,7 +143,7 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
       property: 'subject.meta.created',
       screenReaderOnly: false,
       isColumnSortable: true,
-      renderColumn: (value) => <span>{dayjs(value).format('YYYY-MM-DD')}</span>,
+      renderColumn: (value) => <span className="text-left lg:w-[18.9rem]">{dayjs(value).format('YYYY-MM-DD')}</span>,
     },
     // {
     //   label: 'Ärendeknapp',

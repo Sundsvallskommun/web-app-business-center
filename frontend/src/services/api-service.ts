@@ -11,7 +11,7 @@ import {
   useQuery,
 } from '@tanstack/react-query';
 import { apiURL } from '@utils/api-url';
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
@@ -68,7 +68,13 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false, // default: true
       refetchOnMount: false,
       staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 0,
+      retry: (failureCount, error: AxiosError) => {
+        console.log(`Response Code: ${error.response?.status} failureCount: ${failureCount}`);
+        const shouldRetry = error.response?.status === 500 && failureCount < 3;
+        if (shouldRetry) console.log('Retrying ....!');
+        // retry on 500 errors for max 3 times
+        return shouldRetry;
+      },
     },
   },
 });

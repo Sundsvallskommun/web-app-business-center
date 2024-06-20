@@ -11,6 +11,7 @@ import { useWindowSize } from '../../../utils/use-window-size.hook';
 import { CaseTableCard } from '../case-table-card.component';
 import { CardList } from '../../cards/cards.component';
 import { TableWrapper } from '../../table-wrapper/table-wrapper.component';
+import dayjs from 'dayjs';
 
 export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
@@ -90,31 +91,19 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
 
   const headers: Array<AutoTableHeader | string> = [
     {
-      label: 'Ärende',
+      label: 'Namn',
       sticky: true,
       property: 'subject.caseType',
       screenReaderOnly: false,
       renderColumn: (value, item) => (
-        <div className="text-left">
+        <div className="text-left lg:w-[35rem]">
           <Fragment>
             <div>
-              <strong className="block lg:w-[30rem] xl:w-[44rem]">{value}</strong>
-            </div>
-            <div>
-              <small>
-                <span className="pr-md">{item.caseId}</span>
-              </small>
+              <strong className="block">{value}</strong>
             </div>
           </Fragment>
         </div>
       ),
-      isColumnSortable: true,
-    },
-    {
-      label: 'Senast ändrad',
-      sticky: false,
-      property: 'subject.meta.modified',
-      screenReaderOnly: false,
       isColumnSortable: true,
     },
     {
@@ -123,7 +112,7 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
       property: 'status.label',
       screenReaderOnly: false,
       renderColumn: (value, item) => (
-        <div className="text-left">
+        <div className="text-left lg:w-[18.9rem]">
           <Label
             rounded
             inverted={item.status?.color !== 'neutral'}
@@ -137,25 +126,45 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
       isColumnSortable: true,
     },
     {
-      label: 'Ärendeknapp',
+      label: 'Ärendenummer',
       sticky: false,
-      screenReaderOnly: true,
-      renderColumn: (value, item) => (
-        <div className="text-right w-full">
-          <Button
-            aria-label={`Hämta PDF för ärende ${item.caseId}`}
-            color="primary"
-            loading={isLoading?.[item.externalCaseId]}
-            loadingText="Hämtar"
-            className="w-full lg:w-auto px-md"
-            onClick={() => getPdf(item.externalCaseId)}
-          >
-            Hämta PDF <FileDownloadOutlinedIcon className="material-icon ml-sm" aria-hidden="true" />
-          </Button>
+      property: 'caseId',
+      screenReaderOnly: false,
+      isColumnSortable: true,
+      renderColumn: (value) => (
+        <div className="text-left lg:w-[18.9rem]">
+          <div className="break-all hyphens-auto max-w-[25ch]">{value}</div>
         </div>
       ),
-      isColumnSortable: false,
     },
+    {
+      label: 'Registrerat',
+      sticky: false,
+      property: 'subject.meta.created',
+      screenReaderOnly: false,
+      isColumnSortable: true,
+      renderColumn: (value) => <span className="text-left lg:w-[18.9rem]">{dayjs(value).format('YYYY-MM-DD')}</span>,
+    },
+    // {
+    //   label: 'Ärendeknapp',
+    //   sticky: false,
+    //   screenReaderOnly: true,
+    //   renderColumn: (value, item) => (
+    //     <div className="text-right w-full">
+    //       <Button
+    //         aria-label={`Hämta PDF för ärende ${item.caseId}`}
+    //         color="primary"
+    //         loading={isLoading?.[item.externalCaseId]}
+    //         loadingText="Hämtar"
+    //         className="w-full lg:w-auto px-md"
+    //         onClick={() => getPdf(item.externalCaseId)}
+    //       >
+    //         Hämta PDF <FileDownloadOutlinedIcon className="material-icon ml-sm" aria-hidden="true" />
+    //       </Button>
+    //     </div>
+    //   ),
+    //   isColumnSortable: false,
+    // },
   ];
 
   const Table = () => {

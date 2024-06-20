@@ -1,13 +1,14 @@
 'use client';
 
-import { MenuBar, Button, Select, Icon, cx } from '@sk-web-gui/react';
+import { Button, Icon, MenuBar, PopupMenu, cx } from '@sk-web-gui/react';
+import { useRouter } from 'next/navigation';
+import { useAppContext } from '../../contexts/app.context';
 import { MyPagesMode } from '../../interfaces/app';
 import { BusinessEngagement, OrganisationInfo } from '../../interfaces/organisation-info';
-import { useApiService, useApi } from '../../services/api-service';
+import { useApi, useApiService } from '../../services/api-service';
 import { BusinessEngagementData } from '../../services/organisation-service';
-import { getMyPagesModeRoute } from '../../utils/pagesModeRoute';
-import { useAppContext } from '../../contexts/app.context';
-import { useRouter } from 'next/navigation';
+import { appURL } from '../../utils/app-url';
+import { newMyPagesModePathname } from '../../utils/pagesModeRoute';
 import { useWindowSize } from '../../utils/use-window-size.hook';
 
 export const useRepresentingSwitch = () => {
@@ -39,8 +40,8 @@ export const MyPagesToggle = () => {
   const router = useRouter();
 
   const switchMyPagesMode = (newMode: MyPagesMode) => {
-    const pathname = `${window.location.pathname.toString().replace(getMyPagesModeRoute(myPagesMode) || '', getMyPagesModeRoute(newMode) || '')}`;
-    router.push(`${window.location.origin}${pathname}`);
+    const pathname = newMyPagesModePathname(newMode);
+    router.push(`${appURL()}${pathname}`);
   };
 
   return (
@@ -74,15 +75,36 @@ export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = (
   };
 
   return (
-    <label className={cx('text-label-medium flex items-center gap-sm', windowSize.lg ? 'flex-row' : 'flex-col')}>
+    <label
+      className={cx('text-label-medium flex items-center gap-sm relative', windowSize.lg ? 'flex-row' : 'flex-col')}
+    >
       <span className="whitespace-nowrap">Du företräder</span>
-      <Select className="max-w-full" onSelectValue={setEngagement} value={representingEntity?.organizationNumber}>
-        {businessEngagements?.map((engagement) => (
-          <Select.Option key={`${engagement.organizationNumber}`} value={engagement.organizationNumber}>
-            {engagement.organizationName}
-          </Select.Option>
-        ))}
-      </Select>
+      <div className="relative">
+        <PopupMenu type="menu">
+          <PopupMenu.Button
+            variant="secondary"
+            className="bg-transparent"
+            aria-label={`${representingEntity?.organizationName}, Välj företag`}
+            rightIcon={<Icon name="chevron-down" />}
+          >
+            {representingEntity?.organizationName}
+          </PopupMenu.Button>
+          <PopupMenu.Panel autoAlign autoPosition className="z-50">
+            <PopupMenu.Items>
+              {businessEngagements?.map((engagement, index) => (
+                <PopupMenu.Item key={`${index}`}>
+                  <Button
+                    rightIcon={<Icon name="arrow-right" />}
+                    onClick={() => setEngagement(engagement.organizationNumber)}
+                  >
+                    {engagement.organizationName}
+                  </Button>
+                </PopupMenu.Item>
+              ))}
+            </PopupMenu.Items>
+          </PopupMenu.Panel>
+        </PopupMenu>
+      </div>
     </label>
   );
 };
@@ -91,9 +113,6 @@ export const useSiteMenuItems = () => {
   const router = useRouter();
 
   return [
-    <Button className="text-gray-900" showBackground={false} variant="tertiary" leftIcon={<Icon name="headphones" />}>
-      Kontakta oss
-    </Button>,
     <Button
       className="text-gray-900"
       onClick={() => router.push('/logout')}

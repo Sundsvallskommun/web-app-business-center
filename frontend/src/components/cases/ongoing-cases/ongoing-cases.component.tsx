@@ -95,29 +95,23 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       property: 'subject.caseType',
       screenReaderOnly: false,
       renderColumn: (value, item) => (
-        <div className="text-left">
+        <div className="text-left lg:w-[35rem]">
           <Fragment>
             <div>
               <strong className="block">{value}</strong>
             </div>
-            {/* <div>
-              <small>
-                <span className="pr-md">{item.caseId}</span>
-              </small>
-            </div> */}
           </Fragment>
         </div>
       ),
       isColumnSortable: true,
     },
-
     {
       label: 'Status',
       sticky: false,
       property: 'status.label',
       screenReaderOnly: false,
       renderColumn: (value, item) => (
-        <div className="text-left">
+        <div className="text-left lg:w-[18.9rem]">
           <Label
             rounded
             inverted={item.status?.color !== 'neutral'}
@@ -136,14 +130,19 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       property: 'caseId',
       screenReaderOnly: false,
       isColumnSortable: true,
+      renderColumn: (value) => (
+        <div className="text-left lg:w-[18.9rem]">
+          <div className="break-all hyphens-auto max-w-[25ch]">{value}</div>
+        </div>
+      ),
     },
     {
-      label: 'Senast ändrat',
+      label: 'Registrerat',
       sticky: false,
-      property: 'subject.meta.modified',
+      property: 'subject.meta.created',
       screenReaderOnly: false,
       isColumnSortable: true,
-      renderColumn: (value) => <span>{dayjs(value).format('YYYY-MM-DD')}</span>,
+      renderColumn: (value) => <span className="lg:w-[18.9rem]">{dayjs(value).format('YYYY-MM-DD')}</span>,
     },
     // {
     //   label: 'Ärendeknapp',

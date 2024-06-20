@@ -6,6 +6,19 @@ import { OpenAPI } from 'routing-controllers-openapi';
 import { HttpException } from '@/exceptions/HttpException';
 import { InvoicePdf, InvoicesResponse } from '@/interfaces/invoices.interface';
 import { ApiResponse } from '../interfaces/service';
+import { mockedInvoices } from './tmp_mocks/invoices';
+import { NODE_ENV } from '../config';
+
+const tmpTestInvoices = {
+  invoices: mockedInvoices,
+  _meta: {
+    page: 1,
+    limit: 100,
+    count: mockedInvoices.length,
+    totalRecords: mockedInvoices.length,
+    totalPages: 1,
+  },
+};
 
 const emptyInvoice = {
   invoices: [],
@@ -44,7 +57,10 @@ export class InvoicesController {
         return { data: emptyInvoice, message: 'success' };
       }
 
-      return { data: res.data, message: 'success' };
+      // Remove when mockedInvoices can be removed (test-invoices from api)
+      const data = NODE_ENV === 'development' ? tmpTestInvoices : res.data;
+
+      return { data: data, message: 'success' };
     } catch (error) {
       if (error.status === 404) {
         return { data: emptyInvoice, message: '404 from api, Assumed empty array' };

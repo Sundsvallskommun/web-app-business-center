@@ -113,9 +113,6 @@ export const useSiteMenuItems = () => {
   const router = useRouter();
 
   return [
-    <Button className="text-gray-900" showBackground={false} variant="tertiary" leftIcon={<Icon name="headphones" />}>
-      Kontakta oss
-    </Button>,
     <Button
       className="text-gray-900"
       onClick={() => router.push('/logout')}

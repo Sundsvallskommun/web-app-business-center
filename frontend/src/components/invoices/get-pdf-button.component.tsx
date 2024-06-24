@@ -2,6 +2,7 @@ import { Button, useSnackbar } from '@sk-web-gui/react';
 import { getInvoicePdf } from '../../services/invoice-service';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { IInvoice } from '../../interfaces/invoice';
+import { useWindowSize } from '../../utils/use-window-size.hook';
 
 export const GetPdfButton: React.FC<{
   isLoading?: { [key: string]: boolean };
@@ -9,6 +10,7 @@ export const GetPdfButton: React.FC<{
   item: IInvoice;
 }> = ({ isLoading, setIsLoading, item }) => {
   const message = useSnackbar();
+  const windowSize = useWindowSize();
 
   const getPdf = (invoiceNumber: string) => {
     setIsLoading &&
@@ -46,13 +48,12 @@ export const GetPdfButton: React.FC<{
   return (
     <Button
       aria-label={`Hämta faktura ${item.invoiceDescription}`}
-      size="sm"
-      variant="tertiary"
+      size={windowSize.lg ? 'sm' : 'lg'}
+      variant="secondary"
       loading={isLoading?.[item.invoiceNumber]}
       loadingText="Hämtar"
-      className="w-full xl:w-auto px-md"
       onClick={() => getPdf(item.invoiceNumber)}
-      rightIcon={<FileDownloadOutlinedIcon className="material-icon ml-sm" aria-hidden="true" />}
+      rightIcon={<FileDownloadOutlinedIcon />}
     >
       Hämta faktura
     </Button>

@@ -95,7 +95,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       property: 'subject.caseType',
       screenReaderOnly: false,
       renderColumn: (value, item) => (
-        <div className="text-left lg:w-[35rem]">
+        <div className="text-left">
           <Fragment>
             <div>
               <strong className="block">{value}</strong>
@@ -111,7 +111,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       property: 'status.label',
       screenReaderOnly: false,
       renderColumn: (value, item) => (
-        <div className="text-left lg:w-[18.9rem]">
+        <div className="text-left">
           <Label
             rounded
             inverted={item.status?.color !== 'neutral'}
@@ -131,7 +131,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       screenReaderOnly: false,
       isColumnSortable: true,
       renderColumn: (value) => (
-        <div className="text-left lg:w-[18.9rem]">
+        <div className="text-left">
           <div className="break-all hyphens-auto max-w-[25ch]">{value}</div>
         </div>
       ),
@@ -142,7 +142,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       property: 'subject.meta.created',
       screenReaderOnly: false,
       isColumnSortable: true,
-      renderColumn: (value) => <span className="lg:w-[18.9rem]">{dayjs(value).format('YYYY-MM-DD')}</span>,
+      renderColumn: (value) => <span className="text-left">{dayjs(value).format('YYYY-MM-DD')}</span>,
     },
     // {
     //   label: 'Ärendeknapp',
@@ -179,6 +179,8 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
           <div>
             {windowSize.lg ? (
               <AutoTable
+                className="[&_table]:table-fixed [&_table>*>tr>*:nth-child(1)]:w-[40rem] [&_table>*>tr>*:nth-child(1)]:max-w-[40rem]"
+                wrappingBorder
                 pageSize={9999}
                 footer={false}
                 background={false}

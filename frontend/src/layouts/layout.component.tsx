@@ -75,26 +75,49 @@ export function Layout({ title, children }: { title: string; children: React.Rea
                 <Logo aria-label="Sundsvalls kommun logotyp" />
               </a>
             </Footer.LogoWrapper>
-            <Footer.ListWrapper>
-              <Footer.List className="min-w-[19.3rem]">
+            <Footer.ListWrapper className="ml-80 gap-x-80 [&_.sk-footer-list-item]:w-full">
+              <Footer.List>
                 <Footer.ListItem>
-                  <label>Kontakt</label>
+                  <label>Kontakta oss</label>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'tel:+460611-xxxx'}>
-                    <Link variant="tertiary">0611-xxxx</Link>
+                  <NextLink passHref legacyBehavior href={'tel:+4660191000'}>
+                    <Link variant="tertiary">060-19 10 00</Link>
                   </NextLink>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'mailto:inkorg@sundsvall.se'}>
-                    <Link variant="tertiary">inkorg@sundsvall.se</Link>
+                  <NextLink passHref legacyBehavior href={'mailto:kontakt@sundsvall.se'}>
+                    <Link variant="tertiary">kontakt@sundsvall.se</Link>
                   </NextLink>
                 </Footer.ListItem>
                 <Footer.ListItem className="w-full">
-                  <span>Norrmalmsgatan 4, 852 34 Sundsvall</span>
+                  <span>Organisationsnummer: 212000-2411</span>
                 </Footer.ListItem>
               </Footer.List>
-              <Footer.List className="min-w-[19.3rem]">
+              <Footer.List>
+                <Footer.ListItem>
+                  <label>Besök oss</label>
+                </Footer.ListItem>
+                <Footer.ListItem className="w-full">
+                  <span>Sundsvalls kommun</span>
+                </Footer.ListItem>
+                <Footer.ListItem className="w-full">
+                  <span>Norrmalmsgatan 4, 851 85 Sundsvall</span>
+                </Footer.ListItem>
+                <Footer.ListItem className="w-full">
+                  <span>
+                    Kommunhuset:{' '}
+                    <Link
+                      className="text-body"
+                      href="https://sundsvall.se/kommun-och-politik/kommunfakta/kommunhuset---oppettider-och-karta"
+                      external
+                    >
+                      Öppettider och karta
+                    </Link>
+                  </span>
+                </Footer.ListItem>
+              </Footer.List>
+              <Footer.List>
                 <Footer.ListItem>
                   <label>Om innehållet</label>
                 </Footer.ListItem>
@@ -114,44 +137,15 @@ export function Layout({ title, children }: { title: string; children: React.Rea
                   </NextLink>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'/personuppgifter'}>
-                    <Link variant="tertiary">Personuppgifter</Link>
-                  </NextLink>
-                </Footer.ListItem>
-              </Footer.List>
-              <Footer.List className="min-w-[19.3rem]">
-                <Footer.ListItem>
-                  <label>Följ oss</label>
-                </Footer.ListItem>
-                <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'#'}>
-                    <Link className="flex items-center gap-8" variant="tertiary">
-                      <Icon name="facebook" />
-                      <span>Facebook</span>
-                    </Link>
-                  </NextLink>
-                </Footer.ListItem>
-                <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'#'}>
-                    <Link className="flex items-center gap-8" variant="tertiary">
-                      <Icon name="instagram" />
-                      <span>Instagram</span>
-                    </Link>
-                  </NextLink>
-                </Footer.ListItem>
-                <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'#'}>
-                    <Link className="flex items-center gap-8" variant="tertiary">
-                      <Icon name="linkedin" />
-                      <span>Linkedin</span>
-                    </Link>
-                  </NextLink>
-                </Footer.ListItem>
-                <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'#'}>
-                    <Link className="flex items-center gap-8" variant="tertiary">
-                      <Icon name="youtube" />
-                      <span>Youtube</span>
+                  <NextLink
+                    passHref
+                    legacyBehavior
+                    href={
+                      'https://sundsvall.se/kommun-och-politik/overklaga-beslut-rattssakerhet/behandling-av-personuppgifter'
+                    }
+                  >
+                    <Link variant="tertiary" external>
+                      Personuppgifter
                     </Link>
                   </NextLink>
                 </Footer.ListItem>

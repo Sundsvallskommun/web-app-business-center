@@ -78,16 +78,15 @@ export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = (
     <label
       className={cx('text-label-medium flex items-center gap-sm relative', windowSize.lg ? 'flex-row' : 'flex-col')}
     >
-      <span className="whitespace-nowrap">Du företräder</span>
       <div className="relative">
         <PopupMenu type="menu">
           <PopupMenu.Button
             variant="secondary"
             className="bg-transparent"
-            aria-label={`${representingEntity?.organizationName}, Välj företag`}
+            aria-label={`${representingEntity?.organizationName} vald, byt organisation`}
             rightIcon={<Icon name="chevron-down" />}
           >
-            {representingEntity?.organizationName}
+            Byt organisation
           </PopupMenu.Button>
           <PopupMenu.Panel autoAlign autoPosition className="z-50">
             <PopupMenu.Items>

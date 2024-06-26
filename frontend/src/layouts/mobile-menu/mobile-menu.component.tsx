@@ -4,7 +4,7 @@ import { Button, Divider, Icon, MenuVertical, Modal, cx } from '@sk-web-gui/reac
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAppContext } from '../../contexts/app.context';
-import { RepresentingMode } from '../../interfaces/app';
+import { RepresentingEntity, RepresentingMode } from '../../interfaces/app';
 import { appURL } from '../../utils/app-url';
 import { newRepresentingModePathname } from '../../utils/representingModeRoute';
 import { useBannerMenuItems } from '../banner-menu/banner-menu-items';
@@ -27,6 +27,11 @@ export const MobileMenu = () => {
     dataHandler: (data?: BusinessEngagementData) => data?.engagements ?? [],
   });
 
+  const { data: representingEntity } = useApi<RepresentingEntity>({
+    url: '/representing',
+    method: 'get',
+  });
+
   const openHandler = () => {
     setIsOpen(true);
   };
@@ -43,7 +48,7 @@ export const MobileMenu = () => {
   };
 
   const setEngagement = (value) => {
-    setRepresenting(value);
+    setRepresenting({ organizationNumber: value });
     setIsOpen(false);
   };
 
@@ -72,9 +77,9 @@ export const MobileMenu = () => {
           leaveTo: 'translate-x-full',
         }}
       >
-        <Modal.Content className="grow overflow-y-scroll">
+        <Modal.Content className="grow overflow-y-scroll gap-24">
           <MenuVertical.Provider>
-            <MenuVertical.Nav className="grow">
+            <MenuVertical.Nav>
               <MenuVertical>
                 {bannerMenuItems.map((item, index) => (
                   <MenuVertical.Item
@@ -85,22 +90,32 @@ export const MobileMenu = () => {
                     {item}
                   </MenuVertical.Item>
                 ))}
+              </MenuVertical>
+            </MenuVertical.Nav>
+          </MenuVertical.Provider>
+          <Divider className="m-0 grow-0" />
+          <MenuVertical.Provider
+            current={isRepresentingModeBusiness ? representingEntity?.BUSINESS?.organizationNumber : undefined}
+          >
+            <MenuVertical.Nav className="grow">
+              <MenuVertical>
+                {isRepresentingModeBusiness && (
+                  <MenuVertical.Item>
+                    <MenuVertical>
+                      <MenuVertical.SubmenuButton size="medium">
+                        <a href="#">Byt organisation</a>
+                      </MenuVertical.SubmenuButton>
+                      {businessEngagements?.map((engagement, index) => (
+                        <MenuVertical.Item key={`${index}`} menuIndex={`${engagement.organizationNumber}`}>
+                          <button onClick={() => setEngagement(engagement.organizationNumber)}>
+                            <span className="text-left">{engagement.organizationName}</span>
+                          </button>
+                        </MenuVertical.Item>
+                      ))}
+                    </MenuVertical>
+                  </MenuVertical.Item>
+                )}
 
-                <MenuVertical.Item role="separator" />
-                <MenuVertical.Item>
-                  <MenuVertical>
-                    <MenuVertical.SubmenuButton size="medium">
-                      <a href="#">Byt organisation</a>
-                    </MenuVertical.SubmenuButton>
-                    {businessEngagements?.map((engagement, index) => (
-                      <MenuVertical.Item key={`${index}`}>
-                        <button onClick={() => setEngagement(engagement.organizationNumber)}>
-                          <span className="text-left">{engagement.organizationName}</span>
-                        </button>
-                      </MenuVertical.Item>
-                    ))}
-                  </MenuVertical>
-                </MenuVertical.Item>
                 <MenuVertical.Item>
                   <button onClick={switchRepresentingMode}>
                     <span className="flex justify-between">

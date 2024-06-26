@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAppContext } from '../../contexts/app.context';
-import { getMyPagesModeRoute } from '../../utils/pagesModeRoute';
+import { getRepresentingModeRoute } from '../../utils/representingModeRoute';
 
 export default function Index() {
-  const { myPagesMode } = useAppContext();
+  const { representingMode } = useAppContext();
   const router = useRouter();
   useEffect(() => {
-    router.push(`${getMyPagesModeRoute(myPagesMode)}/oversikt`);
+    router.push(`${getRepresentingModeRoute(representingMode)}/oversikt`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return <></>;

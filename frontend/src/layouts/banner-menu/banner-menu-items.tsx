@@ -1,10 +1,10 @@
 import NextLink from 'next/link';
 import { useAppContext } from '../../contexts/app.context';
-import { getMyPagesModeRoute } from '../../utils/pagesModeRoute';
+import { getRepresentingModeRoute } from '../../utils/representingModeRoute';
 
 export const useBannerMenuItems = () => {
-  const { myPagesMode } = useAppContext();
-  const myPagesRoute = getMyPagesModeRoute(myPagesMode);
+  const { representingMode } = useAppContext();
+  const myPagesRoute = getRepresentingModeRoute(representingMode);
   return [
     <NextLink className="w-full flex items-center justify-center" href={`${myPagesRoute}/oversikt`}>
       Översikt

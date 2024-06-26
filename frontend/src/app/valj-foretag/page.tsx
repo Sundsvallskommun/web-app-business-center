@@ -1,21 +1,22 @@
 'use client';
 
-import { BusinessEngagementData } from '@services/organisation-service';
-import { Button, Icon, RadioButton, Spinner, Table } from '@sk-web-gui/react';
-import { ChangeEvent, useEffect, useState } from 'react';
 import { NoRepresent } from '@components/no-represent/no-represent';
 import { useAppContext } from '@contexts/app.context';
-import { getMyPagesModeRoute } from '@utils/pagesModeRoute';
+import { BusinessEngagementData } from '@services/organisation-service';
+import { Button, Icon, RadioButton, Spinner, Table } from '@sk-web-gui/react';
+import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useRouter } from 'next/navigation';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { CardElevated } from '../../components/cards/card-elevated.component';
-import { BusinessEngagement, OrganisationInfo } from '../../interfaces/organisation-info';
+import { BusinessEngagement } from '../../interfaces/organisation-info';
 import { EntryLayout } from '../../layouts/entry-layout.component';
 import Main from '../../layouts/main.component';
+import { useRepresentingSwitch } from '../../layouts/site-menu/site-menu-items';
 import { useApi } from '../../services/api-service';
 
 export default function ValjForetag() {
   const router = useRouter();
-  const { myPagesMode } = useAppContext();
+  const { representingMode } = useAppContext();
   const [error, setError] = useState('');
 
   const { data: businessEngagements, isLoading: businessEngagementsIsLoading } = useApi<
@@ -27,10 +28,7 @@ export default function ValjForetag() {
     method: 'get',
     dataHandler: (data?: BusinessEngagementData) => data?.engagements ?? [],
   });
-  const representingMutation = useApi<OrganisationInfo>({
-    url: '/representing',
-    method: 'post',
-  });
+  const { setRepresenting } = useRepresentingSwitch();
 
   const [choosen, setChoosen] = useState('');
 
@@ -46,9 +44,9 @@ export default function ValjForetag() {
   };
 
   const onContinue = async () => {
-    const res = await representingMutation.mutateAsync({ organizationNumber: choosen });
+    const res = await setRepresenting({ organizationNumber: choosen });
     if (!res.error) {
-      router.push(`${getMyPagesModeRoute(myPagesMode)}`);
+      router.push(getRepresentingModeRoute(representingMode));
     } else {
       setError('Misslyckades med att välja företag');
     }

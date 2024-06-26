@@ -3,54 +3,65 @@
 import { Button, Icon, MenuBar, PopupMenu, cx } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../contexts/app.context';
-import { MyPagesMode } from '../../interfaces/app';
-import { BusinessEngagement, OrganisationInfo } from '../../interfaces/organisation-info';
+import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../../interfaces/app';
+import { BusinessEngagement } from '../../interfaces/organisation-info';
 import { useApi, useApiService } from '../../services/api-service';
 import { BusinessEngagementData } from '../../services/organisation-service';
 import { appURL } from '../../utils/app-url';
-import { newMyPagesModePathname } from '../../utils/pagesModeRoute';
+import { newRepresentingModePathname } from '../../utils/representingModeRoute';
 import { useWindowSize } from '../../utils/use-window-size.hook';
 
 export const useRepresentingSwitch = () => {
   const queryClient = useApiService((s) => s.queryClient);
-  const representingMutation = useApi<OrganisationInfo>({
+  const representingMutation = useApi<RepresentingEntityDto>({
     url: '/representing',
     method: 'post',
   });
 
-  const setRepresenting = async (organizationNumber) => {
-    const res = await representingMutation.mutateAsync({ organizationNumber });
+  const invalidateQueries = () => {
+    queryClient.invalidateQueries({
+      queryKey: ['/cases'],
+      refetchType: 'all',
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['/invoices'],
+      refetchType: 'all',
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['/representing'],
+      refetchType: 'all',
+    });
+  };
+
+  const setRepresenting = async (representingDto: RepresentingEntityDto) => {
+    const res = await representingMutation.mutateAsync(representingDto);
     if (!res.error) {
-      queryClient.invalidateQueries({
-        queryKey: ['/cases'],
-        refetchType: 'all',
-      });
-      queryClient.invalidateQueries({
-        queryKey: ['/invoices'],
-        refetchType: 'all',
-      });
+      invalidateQueries();
+      return res;
+    } else {
+      return { error: true };
     }
   };
 
-  return { setRepresenting };
+  return { setRepresenting, invalidateQueries, representingMutation };
 };
 
 export const MyPagesToggle = () => {
-  const { myPagesMode } = useAppContext();
+  const { representingMode } = useAppContext();
   const router = useRouter();
 
-  const switchMyPagesMode = (newMode: MyPagesMode) => {
-    const pathname = newMyPagesModePathname(newMode);
+  const switchRepresentingMode = (newMode: RepresentingMode) => {
+    const pathname = newRepresentingModePathname(newMode);
     router.push(`${appURL()}${pathname}`);
   };
 
   return (
-    <MenuBar showBackground current={myPagesMode}>
-      <MenuBar.Item menuIndex={MyPagesMode.PRIVATE}>
-        <Button onClick={() => switchMyPagesMode(MyPagesMode.PRIVATE)}>Privat</Button>
+    <MenuBar showBackground current={representingMode}>
+      <MenuBar.Item menuIndex={RepresentingMode.PRIVATE}>
+        <Button onClick={() => switchRepresentingMode(RepresentingMode.PRIVATE)}>Privat</Button>
       </MenuBar.Item>
-      <MenuBar.Item menuIndex={MyPagesMode.BUSINESS}>
-        <Button onClick={() => switchMyPagesMode(MyPagesMode.BUSINESS)}>Företag</Button>
+      <MenuBar.Item menuIndex={RepresentingMode.BUSINESS}>
+        <Button onClick={() => switchRepresentingMode(RepresentingMode.BUSINESS)}>Företag</Button>
       </MenuBar.Item>
     </MenuBar>
   );
@@ -63,14 +74,14 @@ export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = (
     method: 'get',
     dataHandler: (data?: BusinessEngagementData) => data?.engagements ?? [],
   });
-  const { data: representingEntity } = useApi<OrganisationInfo>({
+  const { data: representingEntity } = useApi<RepresentingEntity>({
     url: '/representing',
     method: 'get',
   });
   const windowSize = useWindowSize();
 
   const setEngagement = (value) => {
-    setRepresenting(value);
+    setRepresenting({ organizationNumber: value });
     closeCallback && closeCallback();
   };
 
@@ -84,10 +95,10 @@ export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = (
           <PopupMenu.Button
             variant="secondary"
             className="bg-transparent"
-            aria-label={`${representingEntity?.organizationName}, Välj företag`}
+            aria-label={`${representingEntity?.BUSINESS?.organizationName}, Välj företag`}
             rightIcon={<Icon name="chevron-down" />}
           >
-            {representingEntity?.organizationName}
+            {representingEntity?.BUSINESS?.organizationName}
           </PopupMenu.Button>
           <PopupMenu.Panel autoAlign autoPosition className="z-50">
             <PopupMenu.Items>

@@ -4,7 +4,7 @@ import { useAppContext } from '../../contexts/app.context';
 import { MyPagesBusinessSwitch, MyPagesToggle, useSiteMenuItems } from './site-menu-items';
 
 export const SiteMenu = () => {
-  const { isMyPagesModeBusiness } = useAppContext();
+  const { isRepresentingModeBusiness } = useAppContext();
   const siteMenuItems = useSiteMenuItems();
 
   return (
@@ -13,7 +13,7 @@ export const SiteMenu = () => {
         {siteMenuItems.map((item, index) => (
           <li key={`${index}`}>{item}</li>
         ))}
-        {isMyPagesModeBusiness && (
+        {isRepresentingModeBusiness && (
           <li>
             <MyPagesBusinessSwitch />
           </li>

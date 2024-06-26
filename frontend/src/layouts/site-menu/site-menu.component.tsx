@@ -10,9 +10,6 @@ export const SiteMenu = () => {
   return (
     <nav aria-label="Site menu" className="flex items-center">
       <ul className="flex items-center gap-24">
-        {siteMenuItems.map((item, index) => (
-          <li key={`${index}`}>{item}</li>
-        ))}
         {isMyPagesModeBusiness && (
           <li>
             <MyPagesBusinessSwitch />
@@ -21,6 +18,9 @@ export const SiteMenu = () => {
         <li>
           <MyPagesToggle />
         </li>
+        {siteMenuItems.map((item, index) => (
+          <li key={`${index}`}>{item}</li>
+        ))}
       </ul>
     </nav>
   );

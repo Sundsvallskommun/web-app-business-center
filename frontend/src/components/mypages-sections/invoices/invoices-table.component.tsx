@@ -1,9 +1,8 @@
+import { CardList } from '@components/cards/cards.component';
 import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
 import { IInvoice, InvoicesData } from '@interfaces/invoice';
-import { AutoTable, AutoTableHeader, Label } from '@sk-web-gui/react';
+import { AutoTable, AutoTableHeader, Label, useThemeQueries } from '@sk-web-gui/react';
 import { useRef, useState } from 'react';
-import { useWindowSize } from '@utils/use-window-size.hook';
-import { CardList } from '@components/cards/cards.component';
 import { GetPdfButton } from './get-pdf-button.component';
 import { InvoiceTableCard } from './invoices-table-card.component';
 
@@ -14,7 +13,7 @@ export const InvoicesTable: React.FC<{
 }> = (props) => {
   const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>();
   const ref = useRef<null | HTMLDivElement>(null);
-  const windowSize = useWindowSize();
+  const { isMinDesktop } = useThemeQueries();
 
   const headers: Array<AutoTableHeader | string> = [
     {
@@ -94,7 +93,7 @@ export const InvoicesTable: React.FC<{
         )}
         {props.data && props.data?.invoices?.length > 0 && (
           <div>
-            {windowSize.lg ? (
+            {isMinDesktop ? (
               <AutoTable
                 className="[&_table]:table-fixed"
                 wrappingBorder

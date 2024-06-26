@@ -1,8 +1,7 @@
-import { Button, useSnackbar } from '@sk-web-gui/react';
-import { getInvoicePdf } from '@services/invoice-service';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { IInvoice } from '@interfaces/invoice';
-import { useWindowSize } from '@utils/use-window-size.hook';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import { getInvoicePdf } from '@services/invoice-service';
+import { Button, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
 
 export const GetPdfButton: React.FC<{
   isLoading?: { [key: string]: boolean };
@@ -10,7 +9,7 @@ export const GetPdfButton: React.FC<{
   item: IInvoice;
 }> = ({ isLoading, setIsLoading, item }) => {
   const message = useSnackbar();
-  const windowSize = useWindowSize();
+  const { isMinDesktop } = useThemeQueries();
 
   const getPdf = (invoiceNumber: string) => {
     setIsLoading &&
@@ -48,7 +47,7 @@ export const GetPdfButton: React.FC<{
   return (
     <Button
       aria-label={`Hämta faktura ${item.invoiceDescription}`}
-      size={windowSize.lg ? 'sm' : 'lg'}
+      size={isMinDesktop ? 'sm' : 'lg'}
       variant="secondary"
       loading={isLoading?.[item.invoiceNumber]}
       loadingText="Hämtar"

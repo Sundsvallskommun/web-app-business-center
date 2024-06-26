@@ -3,7 +3,7 @@
 import { NoRepresent } from '@components/no-represent/no-represent';
 import { useAppContext } from '@contexts/app.context';
 import { BusinessEngagementData } from '@services/organisation-service';
-import { Button, Icon, RadioButton, Spinner, Table, cx } from '@sk-web-gui/react';
+import { Button, Icon, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -13,13 +13,12 @@ import { EntryLayout } from '../../layouts/entry-layout.component';
 import Main from '../../layouts/main.component';
 import { useRepresentingSwitch } from '../../layouts/site-menu/site-menu-items';
 import { useApi } from '../../services/api-service';
-import { useWindowSize } from '../../utils/use-window-size.hook';
 
 export default function ValjForetag() {
   const router = useRouter();
   const { representingMode } = useAppContext();
   const [error, setError] = useState('');
-  const windowSize = useWindowSize();
+  const { isMinDesktop } = useThemeQueries();
 
   const { data: businessEngagements, isLoading: businessEngagementsIsLoading } = useApi<
     BusinessEngagementData,
@@ -96,9 +95,9 @@ export default function ValjForetag() {
                       <div className="row-header-name">Inga företag hittades</div>
                     </div>
                   ) : (
-                    <Table background className={cx('mt-40', !windowSize.lg && '[&_.sk-table-thead]:sr-only')}>
+                    <Table background className={cx('mt-40', !isMinDesktop && '[&_.sk-table-thead]:sr-only')}>
                       <Table.Header className="bg-background-200">
-                        {windowSize.lg ? (
+                        {isMinDesktop ? (
                           <>
                             <Table.HeaderColumn className="sr-only">Välj</Table.HeaderColumn>
                             <Table.HeaderColumn>Namn</Table.HeaderColumn>
@@ -112,10 +111,10 @@ export default function ValjForetag() {
                         {businessEngagements?.map((e, idx) => (
                           <Table.Row
                             key={`org-${e.organizationNumber}-${e.organizationName}`}
-                            className={cx('[&>td]:text-base [&>td]:cursor-default', !windowSize.lg && '[&>td]:h-full')}
+                            className={cx('[&>td]:text-base [&>td]:cursor-default', !isMinDesktop && '[&>td]:h-full')}
                             onClick={() => onChoice(e)}
                           >
-                            {windowSize.lg ? (
+                            {isMinDesktop ? (
                               <>
                                 <Table.Column>
                                   <RadioButton

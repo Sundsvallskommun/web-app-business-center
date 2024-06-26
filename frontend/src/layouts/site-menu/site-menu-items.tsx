@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Icon, MenuBar, PopupMenu, cx } from '@sk-web-gui/react';
+import { Button, Icon, MenuBar, PopupMenu, cx, useThemeQueries } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../contexts/app.context';
 import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../../interfaces/app';
@@ -9,7 +9,6 @@ import { useApi, useApiService } from '../../services/api-service';
 import { BusinessEngagementData } from '../../services/organisation-service';
 import { appURL } from '../../utils/app-url';
 import { newRepresentingModePathname } from '../../utils/representingModeRoute';
-import { useWindowSize } from '../../utils/use-window-size.hook';
 
 export const useRepresentingSwitch = () => {
   const queryClient = useApiService((s) => s.queryClient);
@@ -78,7 +77,7 @@ export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = (
     url: '/representing',
     method: 'get',
   });
-  const windowSize = useWindowSize();
+  const { isMinDesktop } = useThemeQueries();
 
   const setEngagement = (value) => {
     setRepresenting({ organizationNumber: value });
@@ -87,7 +86,7 @@ export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = (
 
   return (
     <label
-      className={cx('text-label-medium flex items-center gap-sm relative', windowSize.lg ? 'flex-row' : 'flex-col')}
+      className={cx('text-label-medium flex items-center gap-sm relative', isMinDesktop ? 'flex-row' : 'flex-col')}
     >
       <div className="relative">
         <PopupMenu type="menu">

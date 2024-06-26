@@ -1,15 +1,14 @@
-import { MenuBar, cx } from '@sk-web-gui/react';
+import { MenuBar, cx, useThemeQueries } from '@sk-web-gui/react';
 import { usePathname } from 'next/navigation';
 import { SLogo } from '../../components/logos/s-logo.component';
 import { RepresentingEntity, RepresentingMode } from '../../interfaces/app';
 import { useApi } from '../../services/api-service';
-import { useWindowSize } from '../../utils/use-window-size.hook';
 import { useBannerMenuItems } from './banner-menu-items';
 
 export const BannerMenu: React.FC = () => {
   const pathname = usePathname();
   const bannerMenuItems = useBannerMenuItems();
-  const windowSize = useWindowSize();
+  const { isMinDesktop } = useThemeQueries();
 
   const { data: representingEntity } = useApi<RepresentingEntity>({
     url: '/representing',
@@ -30,7 +29,7 @@ export const BannerMenu: React.FC = () => {
               ? representingEntity?.BUSINESS?.organizationName
               : representingEntity?.PRIVATE?.name}
           </span>
-          {windowSize.lg && (
+          {isMinDesktop && (
             <MenuBar className="self-stretch">
               {bannerMenuItems.map((item, index) => (
                 <MenuBar.Item

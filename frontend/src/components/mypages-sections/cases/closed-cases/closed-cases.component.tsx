@@ -1,17 +1,15 @@
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-import { useLocalStorageValue } from '@react-hookz/web';
-import { casesHandler, emptyCaseList, getCasePdf, getClosed } from '@services/case-service';
-import { AutoTable, AutoTableHeader, Button, Label, useSnackbar } from '@sk-web-gui/react';
-import _ from 'lodash';
-import { Fragment, useEffect, useRef, useState } from 'react';
-import { useAppContext } from '@contexts/app.context';
-import { CaseResponse, CasesData } from '@interfaces/case';
-import { useApi } from '@services/api-service';
-import { useWindowSize } from '@utils/use-window-size.hook';
-import { CaseTableCard } from '../case-table-card.component';
 import { CardList } from '@components/cards/cards.component';
 import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
+import { useAppContext } from '@contexts/app.context';
+import { CaseResponse, CasesData } from '@interfaces/case';
+import { useLocalStorageValue } from '@react-hookz/web';
+import { useApi } from '@services/api-service';
+import { casesHandler, emptyCaseList, getCasePdf, getClosed } from '@services/case-service';
+import { AutoTable, AutoTableHeader, Label, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
+import _ from 'lodash';
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { CaseTableCard } from '../case-table-card.component';
 
 export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
@@ -24,7 +22,7 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
   const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>();
   const message = useSnackbar();
   const ref = useRef<null | HTMLDivElement>(null);
-  const windowSize = useWindowSize();
+  const { isMinDesktop } = useThemeQueries();
 
   const localstorageKey = 'closed-cases-component';
   const { value: disclosureIsOpen, set: setDisclosureIsOpen } = useLocalStorageValue(localstorageKey, {
@@ -179,7 +177,7 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
         )}
         {!isFetchingCases && closed?.cases?.length > 0 && (
           <div>
-            {windowSize.lg ? (
+            {isMinDesktop ? (
               <AutoTable
                 className="[&_table]:table-fixed [&_table>*>tr>*:nth-child(1)]:w-[40rem] [&_table>*>tr>*:nth-child(1)]:max-w-[40rem]"
                 wrappingBorder

@@ -234,6 +234,10 @@ export function useApi<
       {
         queryKey,
         queryFn: defaultQueryCall,
+        throwOnError: (error) => {
+          handleError(error);
+          return false;
+        },
         ...queryOptions,
       },
       _queryClient
@@ -250,6 +254,7 @@ export function useApi<
         onSuccess: (result, body, context) => {
           _queryClient.setQueryData<TQueryFnData & { error?: DefaultError }>(queryKey, result);
         },
+        onError: handleError,
         ...mutationOptions,
       },
       _queryClient

@@ -1,7 +1,7 @@
 'use client';
 
 import { BusinessEngagementData } from '@services/organisation-service';
-import { Button, Icon, RadioButton, Spinner, Table } from '@sk-web-gui/react';
+import { Button, Icon, RadioButton, Spinner, Table, cx } from '@sk-web-gui/react';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { NoRepresent } from '@components/no-represent/no-represent';
 import { useAppContext } from '@contexts/app.context';
@@ -12,11 +12,13 @@ import { BusinessEngagement, OrganisationInfo } from '../../interfaces/organisat
 import { EntryLayout } from '../../layouts/entry-layout.component';
 import Main from '../../layouts/main.component';
 import { useApi } from '../../services/api-service';
+import { useWindowSize } from '../../utils/use-window-size.hook';
 
 export default function ValjForetag() {
   const router = useRouter();
   const { myPagesMode } = useAppContext();
   const [error, setError] = useState('');
+  const windowSize = useWindowSize();
 
   const { data: businessEngagements, isLoading: businessEngagementsIsLoading } = useApi<
     BusinessEngagementData,
@@ -40,9 +42,9 @@ export default function ValjForetag() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pages, setPages] = useState<number>(1);
 
-  const onChoice = (event: ChangeEvent<HTMLInputElement>) => {
+  const onChoice = (engagement: BusinessEngagement) => {
     setError('');
-    setChoosen(event.target?.value ?? '');
+    setChoosen(engagement.organizationNumber);
   };
 
   const onContinue = async () => {
@@ -96,20 +98,60 @@ export default function ValjForetag() {
                       <div className="row-header-name">Inga företag hittades</div>
                     </div>
                   ) : (
-                    <Table background>
+                    <Table background className={cx('mt-40', !windowSize.lg && '[&_.sk-table-thead]:sr-only')}>
                       <Table.Header className="bg-background-200">
-                        <Table.HeaderColumn>Namn</Table.HeaderColumn>
-                        <Table.HeaderColumn>Organisationsnummer</Table.HeaderColumn>
+                        {windowSize.lg ? (
+                          <>
+                            <Table.HeaderColumn className="sr-only">Välj</Table.HeaderColumn>
+                            <Table.HeaderColumn>Namn</Table.HeaderColumn>
+                            <Table.HeaderColumn>Organisationsnummer</Table.HeaderColumn>
+                          </>
+                        ) : (
+                          <Table.HeaderColumn>Välj organisation</Table.HeaderColumn>
+                        )}
                       </Table.Header>
                       <Table.Body>
                         {businessEngagements?.map((e, idx) => (
-                          <Table.Row key={`org-${e.organizationNumber}-${e.organizationName}`}>
-                            <Table.Column>
-                              <RadioButton onChange={onChoice} value={e.organizationNumber} name="entity">
-                                {e.organizationName}
-                              </RadioButton>
-                            </Table.Column>
-                            <Table.Column>{e.organizationNumber}</Table.Column>
+                          <Table.Row
+                            key={`org-${e.organizationNumber}-${e.organizationName}`}
+                            className={cx('[&>td]:text-base [&>td]:cursor-default', !windowSize.lg && '[&>td]:h-full')}
+                            onClick={() => onChoice(e)}
+                          >
+                            {windowSize.lg ? (
+                              <>
+                                <Table.Column>
+                                  <RadioButton
+                                    onChange={() => ({})}
+                                    checked={e.organizationNumber === choosen}
+                                    name="entity"
+                                    aria-label={`${e.organizationName}, välj organisation`}
+                                  />
+                                </Table.Column>
+                                <Table.Column>{e.organizationName}</Table.Column>
+                                <Table.Column>{e.organizationNumber}</Table.Column>
+                              </>
+                            ) : (
+                              <Table.Column>
+                                <div className="flex gap-16 py-8">
+                                  <RadioButton
+                                    onChange={() => ({})}
+                                    checked={e.organizationNumber === choosen}
+                                    name="entity"
+                                    aria-label={`${e.organizationName}, välj organisation`}
+                                  />
+                                  <div className="grow flex flex-col gap-8">
+                                    <div className="flex flex-col gap-y-4">
+                                      <div>Namn</div>
+                                      <div className="font-bold">{e.organizationName}</div>
+                                    </div>
+                                    <div className="flex flex-col gap-y-4">
+                                      <div>Organisationsnummer</div>
+                                      <div className="font-bold">{e.organizationNumber}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </Table.Column>
+                            )}
                           </Table.Row>
                         ))}
                       </Table.Body>

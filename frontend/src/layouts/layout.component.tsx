@@ -53,7 +53,7 @@ export function Layout({ title, children }: { title: string; children: React.Rea
                 <Logo aria-label="Sundsvalls kommun logotyp" />
               </a>
             </Footer.LogoWrapper>
-            <Footer.ListWrapper className="ml-80 gap-x-80 [&_.sk-footer-list-item]:w-full">
+            <Footer.ListWrapper className="desktop:ml-80 gap-x-80 [&_.sk-footer-list-item]:w-full">
               <Footer.List>
                 <Footer.ListItem>
                   <label>Kontakta oss</label>

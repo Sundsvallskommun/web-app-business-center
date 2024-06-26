@@ -1,5 +1,5 @@
 import { Card, Label } from '@sk-web-gui/react';
-import { ICase } from '../../interfaces/case';
+import { ICase } from '@interfaces/case';
 
 export const CaseTableCard: React.FC<{ item: ICase }> = ({ item }) => {
   return (

@@ -1,5 +1,5 @@
 import { Button, Card, Icon, Label } from '@sk-web-gui/react';
-import { IInvoice } from '../../interfaces/invoice';
+import { IInvoice } from '@interfaces/invoice';
 import dayjs from 'dayjs';
 import { GetPdfButton } from './get-pdf-button.component';
 import { useState } from 'react';

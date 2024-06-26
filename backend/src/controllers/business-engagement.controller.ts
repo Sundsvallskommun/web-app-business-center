@@ -24,7 +24,7 @@ export class BusinessEngagementController {
   @OpenAPI({ summary: 'Return a list of business engagements for current logged in user' })
   @UseBefore(authMiddleware)
   async businessEngagments(@Req() req: RequestWithUser): Promise<ResponseData> {
-    const { guid, name } = req?.user;
+    const { partyId, name } = req?.user;
 
     const controller = new AbortController();
     req.on('aborted', () => {
@@ -32,7 +32,7 @@ export class BusinessEngagementController {
       req.destroy();
     });
 
-    const url = `businessengagements/1.2/engagements/${guid}`;
+    const url = `businessengagements/1.2/engagements/${partyId}`;
     const params = {
       personalName: name,
       serviceName: 'Mina Sidor',
@@ -45,7 +45,7 @@ export class BusinessEngagementController {
     }
 
     // NOTE: set representing to session so we can use it to lookup later
-    req.session.representingChoices = res.data && res.data.engagements ? res.data.engagements : [];
+    req.session.representingBusinessChoices = res.data && res.data.engagements ? res.data.engagements : [];
 
     return { data: res.data, message: 'success' };
   }

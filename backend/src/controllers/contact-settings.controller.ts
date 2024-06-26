@@ -1,12 +1,13 @@
-import { Body, Controller, Get, HttpCode, OnUndefined, Patch, Post, QueryParam, Req, UseBefore } from 'routing-controllers';
-import authMiddleware from '@middlewares/auth.middleware';
-import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
+import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
-import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
 import { validationMiddleware } from '@/middlewares/validation.middleware';
 import ApiService from '@/services/api.service';
-import { HttpException } from '@/exceptions/HttpException';
+import authMiddleware from '@middlewares/auth.middleware';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Body, Controller, Get, HttpCode, OnUndefined, Patch, Post, QueryParam, Req, UseBefore } from 'routing-controllers';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
+import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
 
 export class ContactSettingChannel {
   @IsString()
@@ -109,9 +110,9 @@ export class ContactSettingsController {
     @QueryParam('limit', { required: false }) limit?: number,
     @QueryParam('page', { required: false }) page?: number,
   ): Promise<ResponseData> {
-    const { organizationId } = req?.session?.representing;
+    const { representing } = req?.session;
 
-    if (!organizationId) {
+    if (!getRepresentingPartyId(representing)) {
       throw new HttpException(403, 'Forbidden');
     }
 
@@ -119,7 +120,7 @@ export class ContactSettingsController {
     //        or do we want to have a load more button in UI?
     const url = 'contactsettings/1.0/settings';
     const params = {
-      partyId: organizationId,
+      partyId: getRepresentingPartyId(representing),
       page: page ?? 1,
       limit: limit ?? 100, // NOTE: 100 is max it seems
     };
@@ -151,12 +152,12 @@ export class ContactSettingsController {
     // See comment in @Get() handler for why this is mapped
     const mappedContactChannels = this.mapSendFeedbackToDisabled(contactChannels);
 
-    const { guid } = req.user;
-    const { organizationId } = req?.session?.representing;
+    const { partyId: userPartyId } = req.user;
+    const { representing } = req?.session;
     const newContactSettings: NewContactSettings = {
       alias: 'My contact settings',
-      partyId: organizationId,
-      createdById: guid,
+      partyId: getRepresentingPartyId(representing),
+      createdById: userPartyId,
       contactChannels: mappedContactChannels,
     };
     const url = `contactsettings/1.0/settings`;

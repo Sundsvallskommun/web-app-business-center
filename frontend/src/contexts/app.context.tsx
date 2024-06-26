@@ -9,7 +9,7 @@ import { emptyInvoicesList } from '@services/invoice-service';
 import { emptyOrganisationInfo } from '@services/organisation-service';
 import { emptyUser } from '@services/user-service';
 import { createContext, useContext, useState } from 'react';
-import { MyPagesMode } from '../interfaces/app';
+import { RepresentingMode } from '../interfaces/app';
 
 export interface AppContextInterface {
   isLoadingInvoices: boolean;
@@ -39,10 +39,10 @@ export interface AppContextInterface {
   notificationAlerts: ICase[];
   setNotificationAlerts: (notificationAlerts: ICase[]) => void;
 
-  myPagesMode: MyPagesMode;
-  isMyPagesModeBusiness: boolean;
-  isMyPagesModePrivate: boolean;
-  setMyPagesMode: (myPagsMode: MyPagesMode) => void;
+  representingMode: RepresentingMode;
+  isRepresentingModeBusiness: boolean;
+  isRepresentingModePrivate: boolean;
+  setRepresentingMode: (myPagsMode: RepresentingMode) => void;
 
   businessEngagements: BusinessEngagement[];
   setBusinessEngagements: (businessEngagements: BusinessEngagement[]) => void;
@@ -61,7 +61,7 @@ const defaults = {
   cases: emptyCaseList,
   highlightedTableRow: {},
   notificationAlerts: [],
-  myPagesMode: MyPagesMode.BUSINESS,
+  representingMode: RepresentingMode.BUSINESS,
   businessEngagements: [],
 };
 
@@ -75,7 +75,7 @@ export function AppWrapper({ children }) {
   const [cases, setCases] = useState<CasesData>(defaults.cases);
   const [highlightedTableRow, setHighlightedTableRow] = useState<any>(defaults.highlightedTableRow);
   const [notificationAlerts, setNotificationAlerts] = useState<ICase[]>(defaults.notificationAlerts);
-  const [myPagesMode, setMyPagesMode] = useState<MyPagesMode>(defaults.myPagesMode);
+  const [representingMode, setRepresentingMode] = useState<RepresentingMode>(defaults.representingMode);
   const [businessEngagements, setBusinessEngagements] = useState<BusinessEngagement[]>(defaults.businessEngagements);
 
   return (
@@ -108,12 +108,10 @@ export function AppWrapper({ children }) {
         notificationAlerts,
         setNotificationAlerts: (notificationAlerts: ICase[]) => setNotificationAlerts(notificationAlerts),
 
-        myPagesMode,
-        isMyPagesModeBusiness: myPagesMode === MyPagesMode.BUSINESS,
-        isMyPagesModePrivate: myPagesMode === MyPagesMode.PRIVATE,
-        setMyPagesMode: (myPagesMode: MyPagesMode) => {
-          setMyPagesMode(myPagesMode);
-        },
+        representingMode,
+        isRepresentingModeBusiness: representingMode === RepresentingMode.BUSINESS,
+        isRepresentingModePrivate: representingMode === RepresentingMode.PRIVATE,
+        setRepresentingMode: (representingMode: RepresentingMode) => setRepresentingMode(representingMode),
 
         businessEngagements,
         setBusinessEngagements: (businessEngagements: BusinessEngagement[]) =>

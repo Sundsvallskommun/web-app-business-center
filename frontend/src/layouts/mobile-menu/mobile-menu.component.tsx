@@ -4,9 +4,9 @@ import { Button, Divider, Icon, MenuVertical, Modal, cx } from '@sk-web-gui/reac
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAppContext } from '../../contexts/app.context';
-import { MyPagesMode } from '../../interfaces/app';
+import { RepresentingMode } from '../../interfaces/app';
 import { appURL } from '../../utils/app-url';
-import { newMyPagesModePathname } from '../../utils/pagesModeRoute';
+import { newRepresentingModePathname } from '../../utils/representingModeRoute';
 import { useBannerMenuItems } from '../banner-menu/banner-menu-items';
 import { useRepresentingSwitch } from '../site-menu/site-menu-items';
 import { useApi } from '../../services/api-service';
@@ -17,7 +17,7 @@ export const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const bannerMenuItems = useBannerMenuItems();
   const pathname = usePathname();
-  const { isMyPagesModeBusiness } = useAppContext();
+  const { isRepresentingModeBusiness } = useAppContext();
   const router = useRouter();
   const { setRepresenting } = useRepresentingSwitch();
 
@@ -35,8 +35,10 @@ export const MobileMenu = () => {
     setIsOpen(false);
   };
 
-  const switchMyPagesMode = () => {
-    const pathname = newMyPagesModePathname(isMyPagesModeBusiness ? MyPagesMode.PRIVATE : MyPagesMode.BUSINESS);
+  const switchRepresentingMode = () => {
+    const pathname = newRepresentingModePathname(
+      isRepresentingModeBusiness ? RepresentingMode.PRIVATE : RepresentingMode.BUSINESS
+    );
     router.push(`${appURL()}${pathname}`);
   };
 
@@ -94,9 +96,9 @@ export const MobileMenu = () => {
                   </MenuVertical>
                 </MenuVertical.Item>
                 <MenuVertical.Item>
-                  <button onClick={switchMyPagesMode}>
+                  <button onClick={switchRepresentingMode}>
                     <span className="flex justify-between">
-                      <span className="grow text-left font-bold">{`Till Mina sidor ${isMyPagesModeBusiness ? 'privat' : 'företag'}`}</span>
+                      <span className="grow text-left font-bold">{`Till Mina sidor ${isRepresentingModeBusiness ? 'privat' : 'företag'}`}</span>
                       <Icon name="arrow-right" />
                     </span>
                   </button>

@@ -21,7 +21,6 @@ export interface ApiResponse<T> {
 }
 
 export const handleError = (error) => {
-  console.log('handleError, error', error);
   if (error?.response?.status === 401 && !window?.location.pathname.includes('login')) {
     window.location.href = `/login?path=${window.location.pathname}&failMessage=${error.response.data.message}`;
   }
@@ -66,7 +65,6 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false, // default: true
-      refetchOnMount: false,
       staleTime: 1000 * 60 * 5, // 5 minutes
       retry: (failureCount, error: AxiosError) => {
         console.log(`Response Code: ${error.response?.status} failureCount: ${failureCount}`);

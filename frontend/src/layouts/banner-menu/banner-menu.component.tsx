@@ -1,17 +1,17 @@
 import { MenuBar, cx } from '@sk-web-gui/react';
 import { usePathname } from 'next/navigation';
-import { OrganisationInfo } from '../../interfaces/organisation-info';
-import { useApi } from '../../services/api-service';
-import { useBannerMenuItems } from './banner-menu-items';
-import { useWindowSize } from '../../utils/use-window-size.hook';
 import { SLogo } from '../../components/logos/s-logo.component';
+import { RepresentingEntity, RepresentingMode } from '../../interfaces/app';
+import { useApi } from '../../services/api-service';
+import { useWindowSize } from '../../utils/use-window-size.hook';
+import { useBannerMenuItems } from './banner-menu-items';
 
 export const BannerMenu: React.FC = () => {
   const pathname = usePathname();
   const bannerMenuItems = useBannerMenuItems();
   const windowSize = useWindowSize();
 
-  const { data: representingEntity } = useApi<OrganisationInfo>({
+  const { data: representingEntity } = useApi<RepresentingEntity>({
     url: '/representing',
     method: 'get',
   });
@@ -26,7 +26,9 @@ export const BannerMenu: React.FC = () => {
         <div className="max-w-main-content z-10 relative mx-auto pl-20 lg:pl-0 pt-[6rem] pl- flex flex-col items-start">
           <span className="text-gray-700 text-h3 font-header">Mina sidor</span>
           <span className={cx('text-display-3-sm lg:text-display-2-md text-vattjom-surface-primary xs:mb-32 lg:mb-48')}>
-            {representingEntity?.organizationName}
+            {representingEntity?.mode === RepresentingMode.BUSINESS
+              ? representingEntity?.BUSINESS?.organizationName
+              : representingEntity?.PRIVATE?.name}
           </span>
           {windowSize.lg && (
             <MenuBar className="self-stretch">

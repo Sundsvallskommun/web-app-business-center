@@ -8,6 +8,10 @@ import { MyPagesMode } from '../../interfaces/app';
 import { appURL } from '../../utils/app-url';
 import { newMyPagesModePathname } from '../../utils/pagesModeRoute';
 import { useBannerMenuItems } from '../banner-menu/banner-menu-items';
+import { useRepresentingSwitch } from '../site-menu/site-menu-items';
+import { useApi } from '../../services/api-service';
+import { BusinessEngagementData } from '../../services/organisation-service';
+import { BusinessEngagement } from '../../interfaces/organisation-info';
 
 export const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -15,6 +19,13 @@ export const MobileMenu = () => {
   const pathname = usePathname();
   const { isMyPagesModeBusiness } = useAppContext();
   const router = useRouter();
+  const { setRepresenting } = useRepresentingSwitch();
+
+  const { data: businessEngagements } = useApi<BusinessEngagementData, Error, BusinessEngagement[]>({
+    url: '/businessengagements',
+    method: 'get',
+    dataHandler: (data?: BusinessEngagementData) => data?.engagements ?? [],
+  });
 
   const openHandler = () => {
     setIsOpen(true);
@@ -27,6 +38,11 @@ export const MobileMenu = () => {
   const switchMyPagesMode = () => {
     const pathname = newMyPagesModePathname(isMyPagesModeBusiness ? MyPagesMode.PRIVATE : MyPagesMode.BUSINESS);
     router.push(`${appURL()}${pathname}`);
+  };
+
+  const setEngagement = (value) => {
+    setRepresenting(value);
+    setIsOpen(false);
   };
 
   useEffect(() => {
@@ -46,9 +62,9 @@ export const MobileMenu = () => {
         closeButtonProps={{ size: 'lg', className: cx('-mr-md') }}
         label={<h1 className="text-h4-md mb-0">Meny</h1>}
       >
-        <Modal.Content className="grow">
+        <Modal.Content className="grow overflow-y-scroll">
           <MenuVertical.Provider>
-            <MenuVertical.Nav>
+            <MenuVertical.Nav className="grow">
               <MenuVertical>
                 {bannerMenuItems.map((item, index) => (
                   <MenuVertical.Item
@@ -68,9 +84,13 @@ export const MobileMenu = () => {
                     <MenuVertical.SubmenuButton size="medium">
                       <a href="#">Byt organisation</a>
                     </MenuVertical.SubmenuButton>
-                    <MenuVertical.Item key={`test`}>
-                      <a href="#">test</a>
-                    </MenuVertical.Item>
+                    {businessEngagements?.map((engagement, index) => (
+                      <MenuVertical.Item key={`${index}`}>
+                        <button onClick={() => setEngagement(engagement.organizationNumber)}>
+                          <span className="text-left">{engagement.organizationName}</span>
+                        </button>
+                      </MenuVertical.Item>
+                    ))}
                   </MenuVertical>
                 </MenuVertical.Item>
                 <MenuVertical.Item>
@@ -84,8 +104,6 @@ export const MobileMenu = () => {
               </MenuVertical>
             </MenuVertical.Nav>
           </MenuVertical.Provider>
-        </Modal.Content>
-        <Modal.Footer>
           <div className="mt-md w-full">
             <Button
               className="w-full"
@@ -97,7 +115,7 @@ export const MobileMenu = () => {
               Logga ut
             </Button>
           </div>
-        </Modal.Footer>
+        </Modal.Content>
       </Modal>
     </div>
   );

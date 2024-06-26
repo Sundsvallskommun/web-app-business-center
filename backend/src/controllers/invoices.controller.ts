@@ -1,13 +1,14 @@
+import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
+import { InvoicePdf, InvoicesResponse } from '@/interfaces/invoices.interface';
 import ApiService from '@/services/api.service';
 import authMiddleware from '@middlewares/auth.middleware';
 import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
-import { HttpException } from '@/exceptions/HttpException';
-import { InvoicePdf, InvoicesResponse } from '@/interfaces/invoices.interface';
-import { ApiResponse } from '../interfaces/service';
-import { mockedInvoices } from './tmp_mocks/invoices';
 import { NODE_ENV } from '../config';
+import { ApiResponse } from '../interfaces/service';
+import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
+import { mockedInvoices } from './tmp_mocks/invoices';
 
 const tmpTestInvoices = {
   invoices: mockedInvoices,
@@ -32,9 +33,9 @@ export class InvoicesController {
   @OpenAPI({ summary: 'Return a list of invoices for current represented organization' })
   @UseBefore(authMiddleware)
   async getInvoices(@Req() req: RequestWithUser): Promise<ApiResponse<InvoicesResponse>> {
-    const { organizationId, organizationNumber } = req?.session?.representing;
+    const { representing } = req?.session;
 
-    if (!organizationId || !organizationNumber) {
+    if (!getRepresentingPartyId(representing)) {
       throw new HttpException(400, 'Bad Request');
     }
 
@@ -42,7 +43,7 @@ export class InvoicesController {
     invoiceDateFrom.setMonth(invoiceDateFrom.getMonth() - 12); // 12 months back
 
     const params = {
-      partyId: organizationId,
+      partyId: getRepresentingPartyId(representing),
       organizationNumber: 2120002411, // Issuer, municipality
       invoiceDateFrom: invoiceDateFrom.toISOString().split('T')[0],
       // page: 1, // default

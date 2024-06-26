@@ -110,18 +110,19 @@ const samlStrategy = new Strategy(
       }
 
       const findUser = {
-        guid: personId,
+        partyId: personId,
+        personNumber: personNumber,
         name: `${givenName} ${surname}`,
         givenName: givenName,
         surname: surname,
       };
 
-      const userSettings = await prisma.userSettings.findFirst({ where: { userId: findUser.guid } });
+      const userSettings = await prisma.userSettings.findFirst({ where: { userId: findUser.partyId } });
       // Create user settings for new users
       if (!userSettings) {
         await prisma.userSettings.create({
           data: {
-            userId: findUser.guid,
+            userId: findUser.partyId,
             feedbackLifespan: 'oneMonth',
             readNotificationsClearedDate: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
           },
@@ -319,7 +320,7 @@ class App {
         },
       },
       info: {
-        description: 'Mina Sidor För Företag',
+        description: 'Mina Sidor',
         title: 'API',
         version: '1.0.0',
       },

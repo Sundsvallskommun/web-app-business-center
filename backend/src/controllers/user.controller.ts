@@ -30,14 +30,14 @@ export class UserController {
 
     let userSettings = await prisma.userSettings.findFirst({
       where: {
-        userId: req.user.guid,
+        userId: req.user.partyId,
       },
     });
 
     if (!userSettings) {
       userSettings = await prisma.userSettings.create({
         data: {
-          userId: req.user.guid,
+          userId: req.user.partyId,
           feedbackLifespan: 'oneMonth',
           readNotificationsClearedDate: new Date().toISOString(),
         },
@@ -60,11 +60,11 @@ export class UserController {
   @OpenAPI({ summary: 'Patch user settings' })
   @UseBefore(authMiddleware, validationMiddleware(PatchUserSettingsDto, 'body'))
   async patchSettings(@Req() req: RequestWithUser, @Body() userData: PatchUserSettingsDto): Promise<void> {
-    const { guid } = req.user;
+    const { partyId } = req.user;
 
     const newSettings = await prisma.userSettings.update({
       where: {
-        userId: guid,
+        userId: partyId,
       },
       data: userData,
     });

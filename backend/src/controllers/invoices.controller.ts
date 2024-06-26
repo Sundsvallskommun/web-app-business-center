@@ -5,7 +5,6 @@ import ApiService from '@/services/api.service';
 import authMiddleware from '@middlewares/auth.middleware';
 import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
-import { NODE_ENV } from '../config';
 import { ApiResponse } from '../interfaces/service';
 import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
 import { mockedInvoices } from './tmp_mocks/invoices';
@@ -54,14 +53,12 @@ export class InvoicesController {
       const url = `invoices/7.1/PUBLIC_ADMINISTRATION`;
       const res = await this.apiService.get<InvoicesResponse>({ url, params });
 
-      if (Array.isArray(res.data) && res.data.length < 1) {
-        return { data: emptyInvoice, message: 'success' };
+      if (res.data && Array.isArray(res.data?.invoices) && res.data.invoices.length < 1) {
+        // Remove when mockedInvoices can be removed (test-invoices from api)
+        return { data: tmpTestInvoices, message: 'success' };
       }
 
-      // Remove when mockedInvoices can be removed (test-invoices from api)
-      const data = NODE_ENV === 'development' ? tmpTestInvoices : res.data;
-
-      return { data: data, message: 'success' };
+      return { data: res.data, message: 'success' };
     } catch (error) {
       if (error.status === 404) {
         return { data: emptyInvoice, message: '404 from api, Assumed empty array' };

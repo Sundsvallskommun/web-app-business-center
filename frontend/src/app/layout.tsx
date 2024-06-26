@@ -1,49 +1,44 @@
-'use client';
-
-import { AppWrapper } from '@contexts/app.context';
-import { GuiProvider, defaultTheme } from '@sk-web-gui/react';
-import { MatomoWrapper } from '@utils/matomo-wrapper';
-import dayjs from 'dayjs';
 import 'dayjs/locale/se';
-import updateLocale from 'dayjs/plugin/updateLocale';
-import utc from 'dayjs/plugin/utc';
+import _ from 'lodash';
+import { headers } from 'next/headers';
+import { Metadata } from 'next/types';
 import '../../tailwind.scss';
-import { Wrapper } from '../components/wrapper/wrapper';
+import MyAppLayout from '../components/app/layout.component';
+import { RepresentingMode } from '../interfaces/app';
+import { appName } from '../utils/app-name';
+import { getRepresentingModeName } from '../utils/representingModeRoute';
 
-dayjs.extend(utc);
-dayjs.locale('se');
-dayjs.extend(updateLocale);
-dayjs.updateLocale('se', {
-  months: [
-    'Januari',
-    'Februari',
-    'Mars',
-    'April',
-    'Maj',
-    'Juni',
-    'Juli',
-    'Augusti',
-    'September',
-    'Oktober',
-    'November',
-    'December',
-  ],
-  monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'],
-  weekdaysMin: ['S', 'M', 'T', 'O', 'T', 'F', 'L'],
-});
+const routeName = () => {
+  const headersList = headers();
+  const pathname = headersList.get('x-pathname') || '';
+  return pathname
+    .split('/')
+    .map((x) => {
+      switch (x) {
+        case getRepresentingModeName(RepresentingMode.BUSINESS, { urlFriendly: true }):
+          x = getRepresentingModeName(RepresentingMode.BUSINESS);
+          break;
+        case 'arenden':
+          x = 'ärenden';
+          break;
+        case 'oversikt':
+          x = 'översikt';
+          break;
+        default:
+        //
+      }
+      return _.capitalize(x);
+    })
+    .join(' - ');
+};
 
-export default function MyApp({ children }) {
-  return (
-    <html lang="se">
-      <body>
-        <GuiProvider theme={defaultTheme}>
-          <AppWrapper>
-            <Wrapper>
-              <MatomoWrapper>{children}</MatomoWrapper>
-            </Wrapper>
-          </AppWrapper>
-        </GuiProvider>
-      </body>
-    </html>
-  );
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: `${appName()}${routeName()}`,
+    description: 'Ärenden, fakturor, kontaktinställningar samlat på ett ställe.',
+  };
+}
+
+export default function Index({ children }) {
+  return <MyAppLayout>{children}</MyAppLayout>;
 }

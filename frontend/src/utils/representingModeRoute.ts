@@ -1,11 +1,22 @@
 import { RepresentingMode } from '../interfaces/app';
 
+export const getRepresentingModeName = (representingMode: RepresentingMode, options = { urlFriendly: false }) => {
+  switch (representingMode) {
+    case RepresentingMode.PRIVATE:
+      return 'privat';
+    case RepresentingMode.BUSINESS:
+      return options.urlFriendly ? 'foretag' : 'företag';
+    default:
+      return '';
+  }
+};
+
 export const getRepresentingModeRoute = (representingMode: RepresentingMode) => {
   switch (representingMode) {
     case RepresentingMode.PRIVATE:
-      return '/privat';
+      return `/${getRepresentingModeName(RepresentingMode.PRIVATE, { urlFriendly: true })}`;
     case RepresentingMode.BUSINESS:
-      return '/foretag';
+      return `/${getRepresentingModeName(RepresentingMode.BUSINESS, { urlFriendly: true })}`;
     default:
       return '';
   }

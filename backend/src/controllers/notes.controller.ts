@@ -1,12 +1,13 @@
-import { Body, Param, Delete, Controller, Get, HttpCode, Post, Req, Patch, UseBefore, OnUndefined } from 'routing-controllers';
-import authMiddleware from '@middlewares/auth.middleware';
 import { HttpException } from '@/exceptions/HttpException';
-import { OpenAPI } from 'routing-controllers-openapi';
 import { RequestWithUser } from '@/interfaces/auth.interface';
-import { validationMiddleware } from '@/middlewares/validation.middleware';
-import { IsString } from 'class-validator';
-import ApiService from '@/services/api.service';
 import { ApiResponseMeta } from '@/interfaces/service';
+import { validationMiddleware } from '@/middlewares/validation.middleware';
+import ApiService from '@/services/api.service';
+import authMiddleware from '@middlewares/auth.middleware';
+import { IsString } from 'class-validator';
+import { Body, Controller, Delete, Get, HttpCode, OnUndefined, Param, Patch, Post, Req, UseBefore } from 'routing-controllers';
+import { OpenAPI } from 'routing-controllers-openapi';
+import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
 
 interface Response {
   data: NoteApiResponse;
@@ -69,9 +70,9 @@ export class NotesController {
   @OpenAPI({ summary: 'Get a list of notes for current logged in user' })
   @UseBefore(authMiddleware)
   async notes(@Req() req: RequestWithUser): Promise<Response> {
-    const { organizationId } = req?.session?.representing;
+    const { representing } = req?.session;
     const url = `notes/3.1/notes`;
-    const params = { partyId: organizationId, municipalityId: `2281` };
+    const params = { partyId: getRepresentingPartyId(representing), municipalityId: `2281` };
     const res = await this.apiService.get<NoteApiResponse>({ url, params });
     if (Array.isArray(res.data?.notes) && res.data?.notes.length < 1) {
       throw new HttpException(404, 'Not Found');
@@ -85,7 +86,7 @@ export class NotesController {
   @UseBefore(authMiddleware, validationMiddleware(CreateNoteDto, 'body'))
   async newNote(@Req() req: RequestWithUser, @Body() userData: CreateNoteDto): Promise<any> {
     const { user } = req;
-    const { organizationId } = req?.session?.representing;
+    const { representing } = req?.session;
 
     const newNote: NewNote = {
       ...userData,
@@ -93,7 +94,7 @@ export class NotesController {
       role: 'BUSINESS_USER',
       clientId: 'MP_BUSINESS',
       municipalityId: `2281`,
-      partyId: organizationId,
+      partyId: getRepresentingPartyId(representing),
       createdBy: user.name,
     };
     const url = 'notes/3.1/notes';
@@ -107,7 +108,7 @@ export class NotesController {
   @UseBefore(authMiddleware, validationMiddleware(CreateNoteDto, 'body'))
   async editNote(@Req() req: RequestWithUser, @Param('id') id: string, @Body() userData: CreateNoteDto): Promise<void> {
     const { user } = req;
-    const { organizationId } = req?.session?.representing;
+    const { representing } = req?.session;
 
     const editNote: EditNote = {
       ...userData,
@@ -115,7 +116,7 @@ export class NotesController {
       role: 'BUSINESS_USER',
       clientId: 'MP_BUSINESS',
       municipalityId: `2281`,
-      partyId: organizationId,
+      partyId: getRepresentingPartyId(representing),
       modifiedBy: user.name,
     };
 

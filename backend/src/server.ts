@@ -3,7 +3,6 @@ import { IndexController } from '@controllers/index.controller';
 import { CaseController } from '@controllers/case.controller';
 import validateEnv from '@utils/validateEnv';
 import { BusinessEngagementController } from '@controllers/business-engagement.controller';
-import { RemindInformController } from '@controllers/remind-inform.controller';
 import { NotesController } from '@controllers/notes.controller';
 import { RepresentingController } from '@controllers/representing.controller';
 import { UserController } from '@controllers/user.controller';
@@ -19,7 +18,6 @@ const app = new App([
   IndexController,
   CaseController,
   BusinessEngagementController,
-  RemindInformController,
   NotesController,
   RepresentingController,
   UserController,

@@ -1,27 +1,27 @@
 'use client';
 
 import { Button, Divider, FormErrorMessage, MenuBar } from '@sk-web-gui/react';
-import { useRouter } from 'next/navigation';
-import { Suspense, useEffect, useRef, useState } from 'react';
-import EmptyLayout from '../../layouts/empty-layout.component';
-import { appName } from '../../utils/app-name';
-import { appURL } from '../../utils/app-url';
-import { useSearchParams } from 'next/navigation';
-import { SLogo } from '../../components/logos/s-logo.component';
-import { EntryLayout } from '../../layouts/entry-layout.component';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 import { CardElevated } from '../../components/cards/card-elevated.component';
-import { CenterDiv } from '../../layouts/center-div.component';
-import Main from '../../layouts/main.component';
 import { useAppContext } from '../../contexts/app.context';
-import { MyPagesMode } from '../../interfaces/app';
-import { getMyPagesMode, getMyPagesModeRoute, newMyPagesModePathname } from '../../utils/pagesModeRoute';
+import { RepresentingMode } from '../../interfaces/app';
+import { CenterDiv } from '../../layouts/center-div.component';
+import { EntryLayout } from '../../layouts/entry-layout.component';
+import Main from '../../layouts/main.component';
+import { appURL } from '../../utils/app-url';
+import {
+  getRepresentingMode,
+  getRepresentingModeRoute,
+  newRepresentingModePathname,
+} from '../../utils/representingModeRoute';
 
 function Login() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState('');
-  const [mounted, setMounted] = useState(false);
   const searchParams = useSearchParams();
-  const { myPagesMode, setMyPagesMode, isMyPagesModeBusiness, isMyPagesModePrivate } = useAppContext();
+  const { representingMode, setRepresentingMode, isRepresentingModeBusiness, isRepresentingModePrivate } =
+    useAppContext();
 
   const isLoggedOut = searchParams.get('loggedout') === '';
   const failMessage = searchParams.get('failMessage');
@@ -32,7 +32,11 @@ function Login() {
   const onLogin = () => {
     // NOTE: send user to login with SSO
     const path = searchParams.get('path') || '';
-    const myPagesAdjustedPathname = path ? newMyPagesModePathname(myPagesMode, path) : getMyPagesModeRoute(myPagesMode);
+    const myPagesAdjustedPathname =
+      path.startsWith(getRepresentingModeRoute(RepresentingMode.BUSINESS)) ||
+      path.startsWith(getRepresentingModeRoute(RepresentingMode.PRIVATE))
+        ? newRepresentingModePathname(representingMode, path)
+        : getRepresentingModeRoute(representingMode);
     router.push(
       `${process.env.NEXT_PUBLIC_API_URL}/saml/login?successRedirect=${`${appURL()}${myPagesAdjustedPathname}`}`
     );
@@ -40,14 +44,13 @@ function Login() {
 
   useEffect(() => {
     const path = searchParams.get('path') || '';
-    const wantedMyPagesMode = getMyPagesMode(path);
-    if (wantedMyPagesMode !== null) {
-      setMyPagesMode(wantedMyPagesMode);
+    const wantedRepresentingMode = getRepresentingMode(path);
+    if (wantedRepresentingMode !== null) {
+      setRepresentingMode(wantedRepresentingMode);
     }
   }, [searchParams]);
 
   useEffect(() => {
-    setTimeout(() => setMounted(true), 500); // to not flash the login-screen on autologin
     if (isLoggedOut) {
       //
     } else {
@@ -79,13 +82,13 @@ function Login() {
               <div className="max-w-[34.7rem]">
                 <h1 className="text-center text-h2-sm lg:text-h2-lg">Välj hur du vill logga in</h1>
                 <MenuBar className="mt-24 self-stretch">
-                  <MenuBar.Item current={isMyPagesModePrivate} className="flex items-center justify-center grow">
-                    <Button className="w-full" onClick={() => setMyPagesMode(MyPagesMode.PRIVATE)}>
+                  <MenuBar.Item current={isRepresentingModePrivate} className="flex items-center justify-center grow">
+                    <Button className="w-full" onClick={() => setRepresentingMode(RepresentingMode.PRIVATE)}>
                       Privat
                     </Button>
                   </MenuBar.Item>
-                  <MenuBar.Item current={isMyPagesModeBusiness} className="flex items-center justify-center grow">
-                    <Button className="w-full" onClick={() => setMyPagesMode(MyPagesMode.BUSINESS)}>
+                  <MenuBar.Item current={isRepresentingModeBusiness} className="flex items-center justify-center grow">
+                    <Button className="w-full" onClick={() => setRepresentingMode(RepresentingMode.BUSINESS)}>
                       Företag
                     </Button>
                   </MenuBar.Item>

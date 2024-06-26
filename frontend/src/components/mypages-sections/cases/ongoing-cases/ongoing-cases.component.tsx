@@ -7,9 +7,9 @@ import { AutoTable, AutoTableHeader, Label, useSnackbar } from '@sk-web-gui/reac
 import dayjs from 'dayjs';
 import _ from 'lodash';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { useApi } from '../../../services/api-service';
-import { useWindowSize } from '../../../utils/use-window-size.hook';
-import { CardList } from '../../cards/cards.component';
+import { useApi } from '@services/api-service';
+import { useWindowSize } from '@utils/use-window-size.hook';
+import { CardList } from '@components/cards/cards.component';
 import { CaseTableCard } from '../case-table-card.component';
 
 export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {

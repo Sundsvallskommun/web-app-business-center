@@ -4,13 +4,13 @@ import { casesHandler, emptyCaseList, getCasePdf, getClosed } from '@services/ca
 import { AutoTable, AutoTableHeader, Button, Label, useSnackbar } from '@sk-web-gui/react';
 import _ from 'lodash';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { useAppContext } from '../../../contexts/app.context';
-import { CaseResponse, CasesData } from '../../../interfaces/case';
-import { useApi } from '../../../services/api-service';
-import { useWindowSize } from '../../../utils/use-window-size.hook';
+import { useAppContext } from '@contexts/app.context';
+import { CaseResponse, CasesData } from '@interfaces/case';
+import { useApi } from '@services/api-service';
+import { useWindowSize } from '@utils/use-window-size.hook';
 import { CaseTableCard } from '../case-table-card.component';
-import { CardList } from '../../cards/cards.component';
-import { TableWrapper } from '../../table-wrapper/table-wrapper.component';
+import { CardList } from '@components/cards/cards.component';
+import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
 import dayjs from 'dayjs';
 
 export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {

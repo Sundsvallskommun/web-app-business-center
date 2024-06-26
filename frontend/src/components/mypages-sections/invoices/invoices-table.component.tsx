@@ -2,8 +2,8 @@ import { TableWrapper } from '@components/table-wrapper/table-wrapper.component'
 import { IInvoice, InvoicesData } from '@interfaces/invoice';
 import { AutoTable, AutoTableHeader, Label } from '@sk-web-gui/react';
 import { useRef, useState } from 'react';
-import { useWindowSize } from '../../utils/use-window-size.hook';
-import { CardList } from '../cards/cards.component';
+import { useWindowSize } from '@utils/use-window-size.hook';
+import { CardList } from '@components/cards/cards.component';
 import { GetPdfButton } from './get-pdf-button.component';
 import { InvoiceTableCard } from './invoices-table-card.component';
 

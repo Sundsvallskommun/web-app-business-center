@@ -1,4 +1,4 @@
-import { InvoicesTable } from '@components/invoices/invoices-table.component';
+import { InvoicesTable } from './invoices/invoices-table.component';
 import { InvoicesData, InvoicesResponse } from '@interfaces/invoice';
 import {
   emptyInvoicesList,

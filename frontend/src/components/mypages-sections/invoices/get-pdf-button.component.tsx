@@ -1,8 +1,8 @@
 import { Button, useSnackbar } from '@sk-web-gui/react';
-import { getInvoicePdf } from '../../services/invoice-service';
+import { getInvoicePdf } from '@services/invoice-service';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-import { IInvoice } from '../../interfaces/invoice';
-import { useWindowSize } from '../../utils/use-window-size.hook';
+import { IInvoice } from '@interfaces/invoice';
+import { useWindowSize } from '@utils/use-window-size.hook';
 
 export const GetPdfButton: React.FC<{
   isLoading?: { [key: string]: boolean };

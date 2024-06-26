@@ -59,10 +59,18 @@ export const MobileMenu = () => {
 
       <Modal
         show={isOpen}
-        className="absolute rounded-0 pt-30 right-0 top-0 w-[calc(100%_-_4.4rem)] h-dvh"
+        className="fixed rounded-0 pt-30 right-0 top-0 w-[calc(100%_-_4.4rem)] h-dvh"
         onClose={closeHandler}
         closeButtonProps={{ size: 'lg', className: cx('-mr-md') }}
         label={<h1 className="text-h4-md mb-0">Meny</h1>}
+        contentTransitionProps={{
+          enter: 'transform transition ease-out duration-200',
+          enterFrom: 'translate-x-full',
+          enterTo: 'translate-x-0',
+          leave: 'transform transition ease-in duration-100',
+          leaveFrom: 'translate-x-0',
+          leaveTo: 'translate-x-full',
+        }}
       >
         <Modal.Content className="grow overflow-y-scroll">
           <MenuVertical.Provider>
@@ -78,9 +86,7 @@ export const MobileMenu = () => {
                   </MenuVertical.Item>
                 ))}
 
-                <MenuVertical.Item>
-                  <Divider className="my-24" />
-                </MenuVertical.Item>
+                <MenuVertical.Item role="separator" />
                 <MenuVertical.Item>
                   <MenuVertical>
                     <MenuVertical.SubmenuButton size="medium">

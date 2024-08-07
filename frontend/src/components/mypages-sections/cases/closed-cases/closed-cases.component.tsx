@@ -1,14 +1,11 @@
 import { CardList } from '@components/cards/cards.component';
 import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
-import { useAppContext } from '@contexts/app.context';
 import { CaseResponse, CasesData } from '@interfaces/case';
-import { useLocalStorageValue } from '@react-hookz/web';
 import { useApi } from '@services/api-service';
 import { casesHandler, emptyCaseList, getCasePdf, getClosed } from '@services/case-service';
 import { AutoTable, AutoTableHeader, Label, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
-import _ from 'lodash';
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { CaseTableCard } from '../case-table-card.component';
 
 export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
@@ -23,38 +20,6 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
   const message = useSnackbar();
   const ref = useRef<null | HTMLDivElement>(null);
   const { isMinDesktop } = useThemeQueries();
-
-  const localstorageKey = 'closed-cases-component';
-  const { value: disclosureIsOpen, set: setDisclosureIsOpen } = useLocalStorageValue(localstorageKey, {
-    defaultValue: false,
-    initializeWithValue: true,
-  });
-  const { highlightedTableRow, setHighlightedTableRow } = useAppContext();
-  const [highlightedItemIndex, setHighlightedItemIndex] = useState<number>();
-  const [timeoutRef, setTimeoutRef] = useState<string | number | NodeJS.Timeout>();
-
-  useEffect(() => {
-    if (!_.isEmpty(highlightedTableRow)) {
-      const itemIndex = closed?.cases?.findIndex(
-        (item) => item[highlightedTableRow.property] === highlightedTableRow.value
-      );
-      if (itemIndex !== -1) {
-        setHighlightedItemIndex(itemIndex);
-        ref?.current?.scrollIntoView({ behavior: 'smooth' });
-        if (!disclosureIsOpen) {
-          setDisclosureIsOpen(true);
-        }
-        if (timeoutRef) clearTimeout(timeoutRef);
-        setTimeoutRef(
-          setTimeout(() => {
-            setHighlightedTableRow({});
-            setHighlightedItemIndex(undefined);
-          }, 20000)
-        );
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [highlightedTableRow, closed?.cases]);
 
   const getPdf = (caseId: string) => {
     setIsLoading((old) => {

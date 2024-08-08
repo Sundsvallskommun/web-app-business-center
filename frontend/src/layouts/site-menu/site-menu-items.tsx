@@ -8,7 +8,7 @@ import { BusinessEngagement } from '../../interfaces/organisation-info';
 import { useApi, useApiService } from '../../services/api-service';
 import { BusinessEngagementData } from '../../services/organisation-service';
 import { appURL } from '../../utils/app-url';
-import { newRepresentingModePathname } from '../../utils/representingModeRoute';
+import { getRepresentingModeRoute, newRepresentingModePathname } from '../../utils/representingModeRoute';
 
 export const useRepresentingSwitch = () => {
   const queryClient = useApiService((s) => s.queryClient);
@@ -16,19 +16,20 @@ export const useRepresentingSwitch = () => {
     url: '/representing',
     method: 'post',
   });
+  const router = useRouter();
 
   const invalidateQueries = () => {
     queryClient.invalidateQueries({
       queryKey: ['/cases'],
-      refetchType: 'all',
     });
     queryClient.invalidateQueries({
       queryKey: ['/invoices'],
-      refetchType: 'all',
     });
     queryClient.invalidateQueries({
       queryKey: ['/representing'],
-      refetchType: 'all',
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['/contactsettings'],
     });
   };
 
@@ -38,6 +39,7 @@ export const useRepresentingSwitch = () => {
       invalidateQueries();
       return res;
     } else {
+      router.push(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/valj-foretag`);
       return { error: true };
     }
   };

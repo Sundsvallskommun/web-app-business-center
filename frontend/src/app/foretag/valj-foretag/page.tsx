@@ -7,12 +7,12 @@ import { Button, Icon, RadioButton, Spinner, Table, cx, useThemeQueries } from '
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { CardElevated } from '../../components/cards/card-elevated.component';
-import { BusinessEngagement } from '../../interfaces/organisation-info';
-import { EntryLayout } from '../../layouts/entry-layout.component';
-import Main from '../../layouts/main.component';
-import { useRepresentingSwitch } from '../../layouts/site-menu/site-menu-items';
-import { useApi } from '../../services/api-service';
+import { CardElevated } from '@components/cards/card-elevated.component';
+import { BusinessEngagement } from '@interfaces/organisation-info';
+import { EntryLayout } from '@layouts/entry-layout.component';
+import Main from '@layouts/main.component';
+import { useRepresentingSwitch } from '@layouts/site-menu/site-menu-items';
+import { useApi } from '@services/api-service';
 
 export default function ValjForetag() {
   const router = useRouter();

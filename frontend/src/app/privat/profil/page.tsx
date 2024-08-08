@@ -1,6 +1,6 @@
 'use client';
 
-import { ProfilePrivate } from '../../../components/mypages-sections/profile/profile-private.component';
+import { ProfilePrivate } from '../../../components/mypages-sections/profile/profile.component';
 
 export default function Profil() {
   return <ProfilePrivate />;

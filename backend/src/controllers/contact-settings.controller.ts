@@ -35,7 +35,7 @@ export class ContactSettingsController {
       disabled: userData.notifications.phone_disabled,
       alias: 'default',
     };
-    return [emailSettings, phoneSettings];
+    return [...(userData.email ? [emailSettings] : []), ...(userData.phone ? [phoneSettings] : [])];
   };
 
   @Get('/contactsettings')

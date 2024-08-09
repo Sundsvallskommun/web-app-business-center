@@ -95,7 +95,7 @@ export class ClientContactSetting {
   @IsString()
   @IsOptional()
   name: User['name'];
-  @IsEmail()
+  @IsString()
   @IsOptional()
   @IsNullable()
   email: User['email'] | null;

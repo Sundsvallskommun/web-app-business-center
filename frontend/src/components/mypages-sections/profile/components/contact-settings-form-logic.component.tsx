@@ -38,7 +38,7 @@ interface ContactSettingsFormLogicProps {
   onSubmitFailed?: () => void;
 }
 
-const phoneRegExp = /^\+46\d{9}$/;
+const phoneRegExp = /^(?:\+46\d{9})?$/;
 
 let formSchema = yup
   .object<ClientContactSetting>({

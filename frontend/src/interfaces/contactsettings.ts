@@ -18,10 +18,11 @@ export interface ClientContactSettingAddress {
 }
 
 export interface ClientContactSetting {
+  id?: string | null;
   name: User['name'];
   email: string | null;
   phone: string | null;
-  address: ClientContactSettingAddress | null;
-  notifications: ClientContactSettingNotifications;
-  decicionsAndDocuments: ClientContactSettingDecicionsAndDocuments;
+  address?: ClientContactSettingAddress | null;
+  notifications?: ClientContactSettingNotifications | null;
+  decicionsAndDocuments?: ClientContactSettingDecicionsAndDocuments | null;
 }

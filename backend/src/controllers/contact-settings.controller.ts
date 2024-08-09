@@ -2,18 +2,41 @@ import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import ApiService from '@/services/api.service';
 import authMiddleware from '@middlewares/auth.middleware';
-import { Controller, Get, QueryParam, Req, UseBefore } from 'routing-controllers';
+import { Body, Controller, Get, HttpCode, OnUndefined, Param, Patch, Post, QueryParam, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { MUNICIPALITY_ID } from '../config';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ResponseData } from '../interfaces/service';
-import { ClientContactSetting, ContactSetting } from '../responses/contactsettings.response';
+import { validationMiddleware } from '../middlewares/validation.middleware';
+import {
+  ClientContactSetting,
+  ContactSetting,
+  ContactSettingChannel,
+  NewContactSettings,
+  UpdateContactSettings,
+} from '../responses/contactsettings.response';
 import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
 import { getBusinessAddress, getBusinessName, getEmailSettingsFromChannels, getPhoneSettingsFromChannels } from './contact-settings/utils';
 
 @Controller()
 export class ContactSettingsController {
   private apiService = new ApiService();
+
+  getContactSettingChannels = (userData: ClientContactSetting) => {
+    const emailSettings: ContactSettingChannel = {
+      contactMethod: 'EMAIL',
+      destination: userData.email,
+      disabled: userData.notifications.email_disabled,
+      alias: 'default',
+    };
+    const phoneSettings: ContactSettingChannel = {
+      contactMethod: 'SMS',
+      destination: userData.phone,
+      disabled: userData.notifications.phone_disabled,
+      alias: 'default',
+    };
+    return [emailSettings, phoneSettings];
+  };
 
   @Get('/contactsettings')
   @OpenAPI({ summary: 'Return a list of contact settings' })
@@ -50,10 +73,13 @@ export class ContactSettingsController {
       }
     }
 
-    const emailSettings = getEmailSettingsFromChannels(res?.data?.[0]?.contactChannels);
-    const phoneSettings = getPhoneSettingsFromChannels(res?.data?.[0]?.contactChannels);
+    const apiData = res?.data?.[0];
+
+    const emailSettings = getEmailSettingsFromChannels(apiData.contactChannels);
+    const phoneSettings = getPhoneSettingsFromChannels(apiData.contactChannels);
 
     const data: ClientContactSetting = {
+      id: apiData.id,
       name: null,
       address: null,
       email: emailSettings.email,
@@ -63,8 +89,8 @@ export class ContactSettingsController {
         phone_disabled: phoneSettings.phone_disabled,
       },
       decicionsAndDocuments: {
-        digitalInbox: false,
-        myPages: false,
+        digitalInbox: true,
+        myPages: true,
         snailmail: false,
       },
     };
@@ -96,42 +122,36 @@ export class ContactSettingsController {
     return { data: data, message: 'success' };
   }
 
-  // @Post('/contactsettings')
-  // @HttpCode(201)
-  // @OpenAPI({ summary: 'Create contact settings for current logged in user' })
-  // @UseBefore(authMiddleware, validationMiddleware(UpdateContactSettingsDto, 'body'))
-  // async newContactSettings(@Req() req: RequestWithUser, @Body() userData: UpdateContactSettingsDto): Promise<any> {
-  //   const { contactChannels } = userData;
+  @Post('/contactsettings')
+  @HttpCode(201)
+  @OpenAPI({ summary: 'Create contact settings for current logged in user' })
+  @UseBefore(authMiddleware, validationMiddleware(ClientContactSetting, 'body'))
+  async newContactSettings(@Req() req: RequestWithUser, @Body() userData: ClientContactSetting): Promise<any> {
+    const { representing } = req?.session;
+    const newContactSettings: NewContactSettings = {
+      alias: 'default',
+      partyId: getRepresentingPartyId(representing),
+      createdById: req.user.partyId,
+      contactChannels: this.getContactSettingChannels(userData),
+    };
+    const url = `contactsettings/2.0/${MUNICIPALITY_ID}/settings`;
+    const res = await this.apiService.post<any>({ url, data: newContactSettings });
 
-  //   // See comment in @Get() handler for why this is mapped
-  //   const mappedContactChannels = this.mapSendFeedbackToDisabled(contactChannels);
+    return { data: res.data, message: 'created' };
+  }
 
-  //   const { partyId: userPartyId } = req.user;
-  //   const { representing } = req?.session;
-  //   const newContactSettings: NewContactSettings = {
-  //     alias: 'My contact settings',
-  //     partyId: getRepresentingPartyId(representing),
-  //     createdById: userPartyId,
-  //     contactChannels: mappedContactChannels,
-  //   };
-  //   const url = `contactsettings/1.0/settings`;
-  //   const res = await this.apiService.post<any>({ url, data: newContactSettings });
+  @Patch('/contactsettings')
+  @OnUndefined(204)
+  @OpenAPI({ summary: 'Update contact settings for current logged in user' })
+  @UseBefore(authMiddleware, validationMiddleware(ClientContactSetting, 'body'))
+  async editContactSettings(@Req() req: RequestWithUser, @Body() userData: ClientContactSetting): Promise<ResponseData<ClientContactSetting>> {
+    if (!userData.id) {
+      throw new HttpException(400, 'Bad Request');
+    }
+    const editedContactSettings: UpdateContactSettings = { alias: 'default', contactChannels: this.getContactSettingChannels(userData) };
+    const url = `contactsettings/2.0/${MUNICIPALITY_ID}/settings/${userData.id}`;
+    const res = await this.apiService.patch<any>({ url, data: editedContactSettings });
 
-  //   return { data: res.data, message: 'created' };
-  // }
-
-  // @Patch('/contactsettings')
-  // @OnUndefined(204)
-  // @OpenAPI({ summary: 'Update contact settings for current logged in user' })
-  // @UseBefore(authMiddleware, validationMiddleware(UpdateContactSettingsDto, 'body'))
-  // async editContactSettings(@Req() req: RequestWithUser, @Body() userData: UpdateContactSettingsDto): Promise<void> {
-  //   const { contactChannels, id } = userData;
-
-  //   // See comment in @Get() handler for why this is mapped
-  //   const mappedContactChannels = this.mapSendFeedbackToDisabled(contactChannels);
-
-  //   const editedContactSettings: UpdateContactSettings = { alias: 'My contact settings', contactChannels: mappedContactChannels };
-  //   const url = `contactsettings/1.0/settings/${id}`;
-  //   await this.apiService.patch<any>({ url, data: editedContactSettings });
-  // }
+    return { data: res.data, message: 'updated' };
+  }
 }

@@ -90,6 +90,10 @@ export class ClientContactSettingAddress implements Omit<Address, 'careOf'> {
 
 export class ClientContactSetting {
   @IsString()
+  @IsOptional()
+  id: string | null;
+  @IsString()
+  @IsOptional()
   name: User['name'];
   @IsEmail()
   @IsOptional()
@@ -106,8 +110,10 @@ export class ClientContactSetting {
   address: ClientContactSettingAddress | null;
   @ValidateNested({ each: true })
   @Type(() => ClientContactSettingNotifications)
+  @IsOptional()
   notifications: ClientContactSettingNotifications;
   @ValidateNested({ each: true })
   @Type(() => ClientContactSettingDecicionsAndDocuments)
+  @IsOptional()
   decicionsAndDocuments: ClientContactSettingDecicionsAndDocuments;
 }

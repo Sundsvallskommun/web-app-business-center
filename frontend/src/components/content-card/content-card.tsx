@@ -23,6 +23,6 @@ export const ContentCardBody: React.FC<{ children?: React.ReactNode }> = ({ chil
   return <div className="p-24"> {children}</div>;
 };
 
-export const ContactDetails: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
+export const ContactDetailsGrid: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return <div className="flex flex-wrap gap-x-[12rem] gap-y-40"> {children}</div>;
 };

@@ -24,8 +24,6 @@ export const handleError = (error) => {
   if (error?.response?.status === 401 && !window?.location.pathname.includes('login')) {
     window.location.href = `/login?path=${window.location.pathname}&failMessage=${error.response.data.message}`;
   }
-
-  // throw error;
 };
 
 const defaultOptions = {
@@ -224,10 +222,16 @@ export function useApi<
       dataHandler(res.data.data)
     );
 
-  const defaultMutationCall = async (body: UseApiProps['body']) =>
-    defaultApiCall<TQueryFnData>({ url, method, body, axiosParameters })
-      .then((res) => dataHandler(res.data.data))
-      .catch((error) => ({ error }));
+  const defaultMutationCall = async (body: UseApiProps['body']) => {
+    try {
+      return defaultApiCall<TQueryFnData>({ url, method, body, axiosParameters }).then((res) =>
+        dataHandler(res.data.data)
+      );
+    } catch (error) {
+      handleError(error);
+      return { error };
+    }
+  };
 
   if (method === 'get') {
     return useQuery(
@@ -254,7 +258,10 @@ export function useApi<
         onSuccess: (result, body, context) => {
           _queryClient.setQueryData<TQueryFnData & { error?: DefaultError }>(queryKey, result);
         },
-        onError: handleError,
+        throwOnError: (error) => {
+          handleError(error);
+          return false;
+        },
         ...mutationOptions,
       },
       _queryClient

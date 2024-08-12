@@ -1,7 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from '@sk-web-gui/react';
 import _ from 'lodash';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, UseFormReturn, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { useApi, useApiService } from '../../../../services/api-service';
@@ -96,10 +96,28 @@ export default function ContactSettingsFormLogic({
   const queryClient = useApiService((s) => s.queryClient);
 
   const isPatch = useCallback(() => {
-    return typeof formData.id === 'string';
+    return typeof formData?.id === 'string';
   }, [formData]);
 
   const { handleSubmit, reset } = context;
+
+  const prevObjectRef = useRef();
+
+  useEffect(() => {
+    if (!_.isEqual(prevObjectRef.current, formData)) {
+      const newDefaultValues = _.merge(JSON.parse(JSON.stringify(formData)), {
+        notifications: {
+          email_disabled: !formData?.notifications?.email_disabled,
+          phone_disabled: !formData?.notifications?.phone_disabled,
+        },
+      });
+
+      reset(newDefaultValues);
+
+      //@ts-ignore undefined issue, is defined within useEffect
+      prevObjectRef.current = formData;
+    }
+  }, [formData, reset]);
 
   const _onSubmit = async (values: Partial<ClientContactSetting>) => {
     if (onSubmit) {
@@ -107,12 +125,12 @@ export default function ContactSettingsFormLogic({
     } else {
       const apiCall = isPatch() ? await patchMutation.mutateAsync : await postMutation.mutateAsync;
       const data: Partial<ClientContactSetting> = _.merge(formData, {
-        id: formData.id,
+        id: formData?.id,
         email: values.email,
         phone: values.phone,
         notifications: {
-          email_disabled: values.notifications?.email_disabled,
-          phone_disabled: values.notifications?.phone_disabled,
+          email_disabled: !values.notifications?.email_disabled,
+          phone_disabled: !values.notifications?.phone_disabled,
         },
         decicionsAndDocuments: {
           digitalInbox: values.decicionsAndDocuments?.digitalInbox,
@@ -139,10 +157,6 @@ export default function ContactSettingsFormLogic({
       }
     }
   };
-
-  useEffect(() => {
-    reset(formData);
-  }, [formData, reset]);
 
   return (
     <FormProvider {...context}>

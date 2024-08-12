@@ -1,5 +1,5 @@
+import { ContactSettingChannel } from '../../interfaces/contact-settings';
 import { RepresentingEntity } from '../../interfaces/representing.interface';
-import { ContactSettingChannel } from '../contact-settings.controller';
 
 const emptyEmailSettings = {
   email: null,

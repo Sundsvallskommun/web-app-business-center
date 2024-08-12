@@ -8,16 +8,11 @@ import { MUNICIPALITY_ID } from '../config';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ResponseData } from '../interfaces/service';
 import { validationMiddleware } from '../middlewares/validation.middleware';
-import {
-  ClientContactSetting,
-  ContactSetting,
-  ContactSettingChannel,
-  NewContactSettings,
-  UpdateContactSettings,
-} from '../responses/contactsettings.response';
+import { ClientContactSetting } from '../responses/contactsettings.response';
 import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
 import { getBusinessAddress, getBusinessName, getEmailSettingsFromChannels, getPhoneSettingsFromChannels } from './contact-settings/utils';
 import _ from 'lodash';
+import { ContactSetting, ContactSettingChannel, NewContactSettings, UpdateContactSettings } from '../interfaces/contact-settings';
 
 @Controller()
 export class ContactSettingsController {

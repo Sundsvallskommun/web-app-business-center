@@ -17,6 +17,7 @@ import {
 } from '../responses/contactsettings.response';
 import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
 import { getBusinessAddress, getBusinessName, getEmailSettingsFromChannels, getPhoneSettingsFromChannels } from './contact-settings/utils';
+import _ from 'lodash';
 
 @Controller()
 export class ContactSettingsController {
@@ -137,7 +138,11 @@ export class ContactSettingsController {
     const url = `contactsettings/2.0/${MUNICIPALITY_ID}/settings`;
     const res = await this.apiService.post<any>({ url, data: newContactSettings });
 
-    return { data: res.data, message: 'created' };
+    const data = _.merge(userData, {
+      id: res.data?.id,
+    });
+
+    return { data: data, message: 'created' };
   }
 
   @Patch('/contactsettings')
@@ -152,6 +157,10 @@ export class ContactSettingsController {
     const url = `contactsettings/2.0/${MUNICIPALITY_ID}/settings/${userData.id}`;
     const res = await this.apiService.patch<any>({ url, data: editedContactSettings });
 
-    return { data: res.data, message: 'updated' };
+    const data = _.merge(userData, {
+      id: res.data?.id,
+    });
+
+    return { data: data, message: 'updated' };
   }
 }

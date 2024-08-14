@@ -3,7 +3,7 @@
 import { NoRepresent } from '@components/no-represent/no-represent';
 import { useAppContext } from '@contexts/app.context';
 import { BusinessEngagementData } from '@services/organisation-service';
-import { Button, Icon, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
+import { Button, Icon, Pagination, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -18,7 +18,7 @@ export default function ValjForetag() {
   const router = useRouter();
   const { representingMode } = useAppContext();
   const [error, setError] = useState('');
-  const { isMinDesktop } = useThemeQueries();
+  const { isMinDesktop, isMinSmallDevice } = useThemeQueries();
 
   const { data: businessEngagements, isLoading: businessEngagementsIsLoading } = useApi<
     BusinessEngagementData,
@@ -33,9 +33,8 @@ export default function ValjForetag() {
 
   const [choosen, setChoosen] = useState('');
 
-  const pageSize = 5;
+  const pageSize = 10;
 
-  // const [managedRows, setManagedRows] = useState<BusinessEngagement[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pages, setPages] = useState<number>(1);
 
@@ -56,8 +55,6 @@ export default function ValjForetag() {
   useEffect(() => {
     if (businessEngagements) {
       setPages(Math.ceil(businessEngagements.length / pageSize));
-      // const startIndex = currentPage * pageSize - pageSize;
-      // setManagedRows(businessEngagements.slice(startIndex, startIndex + pageSize));
     }
   }, [currentPage, businessEngagements, pageSize]);
 
@@ -78,7 +75,11 @@ export default function ValjForetag() {
           </div>
         </main>
       ) : (
-        <EntryLayout title="Välj företag">
+        <EntryLayout
+          title="Välj företag"
+          logoClasses="hidden medium-device:block"
+          className="!py-0 !medium-device:py-40 !px-0"
+        >
           <div className="w-full max-w-[73.8rem]">
             <CardElevated className="py-24 lg:py-40 px-14 lg:px-80">
               <Main>
@@ -108,50 +109,62 @@ export default function ValjForetag() {
                         )}
                       </Table.Header>
                       <Table.Body>
-                        {businessEngagements?.map((e, idx) => (
-                          <Table.Row
-                            key={`org-${e.organizationNumber}-${e.organizationName}`}
-                            className={cx('[&>td]:text-base [&>td]:cursor-default', !isMinDesktop && '[&>td]:h-full')}
-                            onClick={() => onChoice(e)}
-                          >
-                            {isMinDesktop ? (
-                              <>
+                        {businessEngagements
+                          ?.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                          .map((e, idx) => (
+                            <Table.Row
+                              key={`org-${e.organizationNumber}-${e.organizationName}`}
+                              className={cx('[&>td]:text-base [&>td]:cursor-default', !isMinDesktop && '[&>td]:h-full')}
+                              onClick={() => onChoice(e)}
+                            >
+                              {isMinDesktop ? (
+                                <>
+                                  <Table.Column>
+                                    <RadioButton
+                                      onChange={() => ({})}
+                                      checked={e.organizationNumber === choosen}
+                                      name="entity"
+                                      aria-label={`${e.organizationName}, välj organisation`}
+                                    />
+                                  </Table.Column>
+                                  <Table.Column>{e.organizationName}</Table.Column>
+                                  <Table.Column>{e.organizationNumber}</Table.Column>
+                                </>
+                              ) : (
                                 <Table.Column>
-                                  <RadioButton
-                                    onChange={() => ({})}
-                                    checked={e.organizationNumber === choosen}
-                                    name="entity"
-                                    aria-label={`${e.organizationName}, välj organisation`}
-                                  />
-                                </Table.Column>
-                                <Table.Column>{e.organizationName}</Table.Column>
-                                <Table.Column>{e.organizationNumber}</Table.Column>
-                              </>
-                            ) : (
-                              <Table.Column>
-                                <div className="flex gap-16 py-8">
-                                  <RadioButton
-                                    onChange={() => ({})}
-                                    checked={e.organizationNumber === choosen}
-                                    name="entity"
-                                    aria-label={`${e.organizationName}, välj organisation`}
-                                  />
-                                  <div className="grow flex flex-col gap-8">
-                                    <div className="flex flex-col gap-y-4">
-                                      <div>Namn</div>
-                                      <div className="font-bold">{e.organizationName}</div>
-                                    </div>
-                                    <div className="flex flex-col gap-y-4">
-                                      <div>Organisationsnummer</div>
-                                      <div className="font-bold">{e.organizationNumber}</div>
+                                  <div className="flex gap-16 py-8">
+                                    <RadioButton
+                                      onChange={() => ({})}
+                                      checked={e.organizationNumber === choosen}
+                                      name="entity"
+                                      aria-label={`${e.organizationName}, välj organisation`}
+                                    />
+                                    <div className="grow flex flex-col gap-8">
+                                      <div className="flex flex-col gap-y-4">
+                                        <div>Namn</div>
+                                        <div className="font-bold">{e.organizationName}</div>
+                                      </div>
+                                      <div className="flex flex-col gap-y-4">
+                                        <div>Organisationsnummer</div>
+                                        <div className="font-bold">{e.organizationNumber}</div>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              </Table.Column>
-                            )}
-                          </Table.Row>
-                        ))}
+                                </Table.Column>
+                              )}
+                            </Table.Row>
+                          ))}
                       </Table.Body>
+                      <Table.Footer>
+                        <Pagination
+                          className="w-full flex justify-center"
+                          pagesBefore={isMinSmallDevice ? 1 : 0}
+                          pagesAfter={isMinSmallDevice ? 1 : 0}
+                          pages={pages}
+                          activePage={currentPage}
+                          changePage={(page) => setCurrentPage(page)}
+                        />
+                      </Table.Footer>
                     </Table>
                   )}
                   <p className="pt-12 pb-12">

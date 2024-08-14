@@ -1,14 +1,14 @@
 'use client';
 
 import { AppWrapper } from '@contexts/app.context';
-import { GuiProvider, defaultTheme } from '@sk-web-gui/react';
+import { ConfirmationDialogContextProvider, GuiProvider, defaultTheme } from '@sk-web-gui/react';
 import { MatomoWrapper } from '@utils/matomo-wrapper';
 import dayjs from 'dayjs';
 import 'dayjs/locale/se';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import utc from 'dayjs/plugin/utc';
 import '../../../tailwind.scss';
-import { Wrapper } from '@components/wrapper/wrapper';
+import { LoginGuard } from './login-guard';
 
 dayjs.extend(utc);
 dayjs.locale('se');
@@ -37,11 +37,13 @@ export default function MyAppLayout({ children }) {
     <html lang="se">
       <body>
         <GuiProvider theme={defaultTheme}>
-          <AppWrapper>
-            <Wrapper>
-              <MatomoWrapper>{children}</MatomoWrapper>
-            </Wrapper>
-          </AppWrapper>
+          <ConfirmationDialogContextProvider>
+            <AppWrapper>
+              <LoginGuard>
+                <MatomoWrapper>{children}</MatomoWrapper>
+              </LoginGuard>
+            </AppWrapper>
+          </ConfirmationDialogContextProvider>
         </GuiProvider>
       </body>
     </html>

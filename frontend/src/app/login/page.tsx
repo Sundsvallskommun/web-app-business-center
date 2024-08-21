@@ -16,6 +16,14 @@ import {
   newRepresentingModePathname,
 } from '../../utils/representingModeRoute';
 
+const getAdjustedPathname = (path: string, representingMode: RepresentingMode) => {
+  if (path.includes('valj-foretag')) return getRepresentingModeRoute(representingMode);
+  return path.startsWith(getRepresentingModeRoute(RepresentingMode.BUSINESS)) ||
+    path.startsWith(getRepresentingModeRoute(RepresentingMode.PRIVATE))
+    ? newRepresentingModePathname(representingMode, path)
+    : getRepresentingModeRoute(representingMode);
+};
+
 function Login() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState('');
@@ -32,11 +40,8 @@ function Login() {
   const onLogin = () => {
     // NOTE: send user to login with SSO
     const path = searchParams.get('path') || '';
-    const myPagesAdjustedPathname =
-      path.startsWith(getRepresentingModeRoute(RepresentingMode.BUSINESS)) ||
-      path.startsWith(getRepresentingModeRoute(RepresentingMode.PRIVATE))
-        ? newRepresentingModePathname(representingMode, path)
-        : getRepresentingModeRoute(representingMode);
+    const myPagesAdjustedPathname = getAdjustedPathname(path, representingMode);
+
     router.push(
       `${process.env.NEXT_PUBLIC_API_URL}/saml/login?successRedirect=${`${appURL()}${myPagesAdjustedPathname}`}`
     );

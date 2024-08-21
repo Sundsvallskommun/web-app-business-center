@@ -3,12 +3,13 @@
 import { Spinner } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useAppContext } from '../../contexts/app.context';
-import { RepresentingEntity, RepresentingMode } from '../../interfaces/app';
-import { DefaultLayout } from '../../layouts/default-layout.component';
-import { PagesLayout } from '../../layouts/pages-layout.component';
-import { useRepresentingSwitch } from '../../layouts/site-menu/site-menu-items';
-import { useApi } from '../../services/api-service';
+import { useAppContext } from '../../../contexts/app.context';
+import { RepresentingEntity, RepresentingMode } from '../../../interfaces/app';
+import { DefaultLayout } from '../../../layouts/default-layout.component';
+import { PagesLayout } from '../../../layouts/pages-layout.component';
+import { useRepresentingSwitch } from '../../../layouts/site-menu/site-menu-items';
+import { useApi } from '../../../services/api-service';
+import { getRepresentingModeRoute } from '../../../utils/representingModeRoute';
 
 export default function Layout({ children }) {
   const { setRepresentingMode, representingMode } = useAppContext();
@@ -43,7 +44,7 @@ export default function Layout({ children }) {
           representingEntity &&
           representingEntity.BUSINESS === undefined)
       ) {
-        router.push(`/valj-foretag`);
+        router.push(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/valj-foretag`);
       }
     }
   }, [representingMode, representingIsLoading, representingIsFetching]);

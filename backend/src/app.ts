@@ -45,6 +45,7 @@ import swaggerUi from 'swagger-ui-express';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import { isValidUrl } from './utils/util';
 import { join } from 'path';
+import { additionalConverters } from './utils/custom-validation-classes';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -99,7 +100,7 @@ const samlStrategy = new Strategy(
 
     try {
       const personNumber = profile.citizenIdentifier;
-      const citizenResult = await apiService.get<any>({ url: `citizen/1.0/person/${personNumber}/guid` });
+      const citizenResult = await apiService.get<any>({ url: `citizen/2.0/${personNumber}/guid` });
       const { data: personId } = citizenResult;
 
       if (!personId) {
@@ -302,6 +303,7 @@ class App {
     const schemas = validationMetadatasToSchemas({
       classTransformerMetadataStorage: defaultMetadataStorage,
       refPointerPrefix: '#/components/schemas/',
+      additionalConverters: additionalConverters,
     });
 
     const routingControllersOptions = {

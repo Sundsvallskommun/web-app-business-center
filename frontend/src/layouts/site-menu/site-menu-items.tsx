@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Icon, MenuBar, PopupMenu, cx, useThemeQueries } from '@sk-web-gui/react';
+import { Button, Icon, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../contexts/app.context';
 import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../../interfaces/app';
@@ -66,7 +66,7 @@ export const MyPagesToggle = () => {
   );
 };
 
-export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = ({ closeCallback }) => {
+export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = ({ submitCallback }) => {
   const { setRepresenting } = useRepresentingSwitch();
   const { data: businessEngagements } = useApi<BusinessEngagementData, Error, BusinessEngagement[]>({
     url: '/businessengagements',
@@ -81,38 +81,55 @@ export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = (
 
   const setEngagement = (value) => {
     setRepresenting({ organizationNumber: value });
-    closeCallback && closeCallback();
+    submitCallback && submitCallback(); // not working on mobile ?
   };
 
   return (
     <label
       className={cx('text-label-medium flex items-center gap-sm relative', isMinDesktop ? 'flex-row' : 'flex-col')}
     >
-      <div className="relative">
-        <PopupMenu type="menu">
-          <PopupMenu.Button
-            variant="secondary"
-            className="bg-transparent"
-            aria-label={`Byt organisation, nuvarande: ${representingEntity?.BUSINESS?.organizationName}`}
-            rightIcon={<Icon name="chevron-down" />}
-          >
-            Byt organisation
-          </PopupMenu.Button>
-          <PopupMenu.Panel autoAlign autoPosition className="z-50">
-            <PopupMenu.Items>
+      <div className="relative w-full">
+        {isMinDesktop ? (
+          <PopupMenu type="menu">
+            <PopupMenu.Button
+              variant="secondary"
+              className="bg-transparent"
+              aria-label={`Byt organisation, nuvarande: ${representingEntity?.BUSINESS?.organizationName}`}
+              rightIcon={<Icon name="chevron-down" />}
+            >
+              Byt organisation
+            </PopupMenu.Button>
+            <PopupMenu.Panel autoAlign autoPosition className="z-50">
+              <PopupMenu.Items>
+                {businessEngagements?.map((engagement, index) => (
+                  <PopupMenu.Item key={`${index}`}>
+                    <Button
+                      rightIcon={<Icon name="arrow-right" />}
+                      onClick={() => setEngagement(engagement.organizationNumber)}
+                    >
+                      {engagement.organizationName}
+                    </Button>
+                  </PopupMenu.Item>
+                ))}
+              </PopupMenu.Items>
+            </PopupMenu.Panel>
+          </PopupMenu>
+        ) : (
+          <>
+            <div className="w-full mb-4">Byt företag</div>
+            <Select
+              value={representingEntity?.BUSINESS?.organizationNumber}
+              className="w-full"
+              onSelectValue={(organizationNumber) => setEngagement(organizationNumber)}
+            >
               {businessEngagements?.map((engagement, index) => (
-                <PopupMenu.Item key={`${index}`}>
-                  <Button
-                    rightIcon={<Icon name="arrow-right" />}
-                    onClick={() => setEngagement(engagement.organizationNumber)}
-                  >
-                    {engagement.organizationName}
-                  </Button>
-                </PopupMenu.Item>
+                <Select.Option key={`${index}`} value={engagement.organizationNumber}>
+                  {engagement.organizationName}
+                </Select.Option>
               ))}
-            </PopupMenu.Items>
-          </PopupMenu.Panel>
-        </PopupMenu>
+            </Select>
+          </>
+        )}
       </div>
     </label>
   );

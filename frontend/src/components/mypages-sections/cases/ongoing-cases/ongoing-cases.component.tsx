@@ -4,9 +4,9 @@ import { CaseResponse, CasesData } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { casesHandler, emptyCaseList, getCasePdf, getOngoing } from '@services/case-service';
 import { AutoTable, AutoTableHeader, Label, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
-import dayjs from 'dayjs';
 import { Fragment, useRef, useState } from 'react';
 import { CaseTableCard } from '../case-table-card.component';
+import { getDateString } from '../utils';
 
 export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
@@ -106,7 +106,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       property: 'subject.meta.created',
       screenReaderOnly: false,
       isColumnSortable: true,
-      renderColumn: (value) => <span className="text-left">{dayjs(value).format('YYYY-MM-DD')}</span>,
+      renderColumn: (value) => <span className="text-left">{getDateString(value)}</span>,
     },
     // {
     //   label: 'Ärendeknapp',

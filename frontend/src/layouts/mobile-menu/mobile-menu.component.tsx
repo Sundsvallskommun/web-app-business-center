@@ -85,7 +85,7 @@ export const MobileMenu = () => {
                   <MenuVertical.Item
                     className="font-bold"
                     key={`${index}`}
-                    current={window?.location.href.includes(item.props.href)}
+                    current={pathname?.includes(item.props.href)}
                   >
                     {item}
                   </MenuVertical.Item>

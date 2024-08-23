@@ -1,3 +1,5 @@
+'use client';
+
 import { Header, useThemeQueries } from '@sk-web-gui/react';
 import { Layout } from './layout.component';
 import { SiteMenu } from './site-menu/site-menu.component';

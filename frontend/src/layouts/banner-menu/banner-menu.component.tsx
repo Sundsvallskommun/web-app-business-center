@@ -1,3 +1,5 @@
+'use client';
+
 import { MenuBar, cx, useThemeQueries } from '@sk-web-gui/react';
 import { usePathname } from 'next/navigation';
 import { SLogo } from '../../components/logos/s-logo.component';

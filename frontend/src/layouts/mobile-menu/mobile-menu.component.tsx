@@ -3,52 +3,20 @@
 import { Button, Divider, Icon, MenuVertical, Modal, cx } from '@sk-web-gui/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useAppContext } from '../../contexts/app.context';
-import { RepresentingEntity, RepresentingMode } from '../../interfaces/app';
-import { appURL } from '../../utils/app-url';
-import { newRepresentingModePathname } from '../../utils/representingModeRoute';
 import { useBannerMenuItems } from '../banner-menu/banner-menu-items';
-import { useRepresentingSwitch } from '../site-menu/site-menu-items';
-import { useApi } from '../../services/api-service';
-import { BusinessEngagementData } from '../../services/organisation-service';
-import { BusinessEngagement } from '../../interfaces/organisation-info';
+import { MyPagesBusinessSwitch } from '../site-menu/site-menu-items';
 
 export const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const bannerMenuItems = useBannerMenuItems();
   const pathname = usePathname();
-  const { isRepresentingModeBusiness } = useAppContext();
   const router = useRouter();
-  const { setRepresenting } = useRepresentingSwitch();
-
-  const { data: businessEngagements } = useApi<BusinessEngagementData, Error, BusinessEngagement[]>({
-    url: '/businessengagements',
-    method: 'get',
-    dataHandler: (data?: BusinessEngagementData) => data?.engagements ?? [],
-  });
-
-  const { data: representingEntity } = useApi<RepresentingEntity>({
-    url: '/representing',
-    method: 'get',
-  });
 
   const openHandler = () => {
     setIsOpen(true);
   };
 
   const closeHandler = () => {
-    setIsOpen(false);
-  };
-
-  const switchRepresentingMode = () => {
-    const pathname = newRepresentingModePathname(
-      isRepresentingModeBusiness ? RepresentingMode.PRIVATE : RepresentingMode.BUSINESS
-    );
-    router.push(`${appURL()}${pathname}`);
-  };
-
-  const setEngagement = (value) => {
-    setRepresenting({ organizationNumber: value });
     setIsOpen(false);
   };
 
@@ -94,39 +62,7 @@ export const MobileMenu = () => {
             </MenuVertical.Nav>
           </MenuVertical.Provider>
           <Divider className="m-0 grow-0" />
-          <MenuVertical.Provider
-            current={isRepresentingModeBusiness ? representingEntity?.BUSINESS?.organizationNumber : undefined}
-          >
-            <MenuVertical.Nav className="grow">
-              <MenuVertical>
-                {isRepresentingModeBusiness && (
-                  <MenuVertical.Item>
-                    <MenuVertical>
-                      <MenuVertical.SubmenuButton size="medium">
-                        <a href="#">Byt organisation</a>
-                      </MenuVertical.SubmenuButton>
-                      {businessEngagements?.map((engagement, index) => (
-                        <MenuVertical.Item key={`${index}`} menuIndex={`${engagement.organizationNumber}`}>
-                          <button onClick={() => setEngagement(engagement.organizationNumber)}>
-                            <span className="text-left">{engagement.organizationName}</span>
-                          </button>
-                        </MenuVertical.Item>
-                      ))}
-                    </MenuVertical>
-                  </MenuVertical.Item>
-                )}
-
-                <MenuVertical.Item>
-                  <button onClick={switchRepresentingMode}>
-                    <span className="flex justify-between">
-                      <span className="grow text-left font-bold">{`Till Mina sidor ${isRepresentingModeBusiness ? 'privat' : 'företag'}`}</span>
-                      <Icon name="arrow-right" />
-                    </span>
-                  </button>
-                </MenuVertical.Item>
-              </MenuVertical>
-            </MenuVertical.Nav>
-          </MenuVertical.Provider>
+          <MyPagesBusinessSwitch submitCallback={() => setIsOpen(false)} />
           <div className="mt-md w-full">
             <Button
               className="w-full"

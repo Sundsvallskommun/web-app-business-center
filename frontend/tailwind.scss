@@ -16,7 +16,7 @@
 
 @layer components {
   .container {
-    @apply max-w-content px-8 lg:px-0 w-full;
+    @apply max-w-content px-20 desktop:px-0 w-full;
   }
 
   .text-content .ingress {

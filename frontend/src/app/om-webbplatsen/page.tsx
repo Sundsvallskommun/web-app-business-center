@@ -11,7 +11,7 @@ export default function OmWebbplatsen() {
         Jorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet
         odio mattis.
       </div>
-      <div className="mt-56 flex gap-24 justify-start text-body">
+      <div className="mt-56 flex flex-col large-device:flex-row gap-24 justify-start text-body">
         <Card useHoverEffect href="/om-webbplatsen/kakor" layout="horizontal">
           <Card.Body>
             <Card.Header>

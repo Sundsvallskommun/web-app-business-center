@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import FullscreenMainSpinner from '../../components/spinner/fullscreen-main-spinner.component';
 import { useAppContext } from '../../contexts/app.context';
 import { RepresentingEntity, RepresentingMode } from '../../interfaces/app';
 import { DefaultLayout } from '../../layouts/default-layout.component';
 import { PagesLayout } from '../../layouts/pages-layout.component';
 import { useRepresentingSwitch } from '../../layouts/site-menu/site-menu-items';
-import { Spinner } from '@sk-web-gui/react';
 import { useApi } from '../../services/api-service';
 
 export default function Layout({ children }) {
@@ -25,13 +25,7 @@ export default function Layout({ children }) {
   }, []);
 
   if (!mounted || representingEntity === undefined || representingEntity.PRIVATE === undefined) {
-    return (
-      <main>
-        <div className="w-screen h-screen flex items-center justify-center">
-          <Spinner aria-label="Laddar information" />
-        </div>
-      </main>
-    );
+    return <FullscreenMainSpinner />;
   }
 
   return (

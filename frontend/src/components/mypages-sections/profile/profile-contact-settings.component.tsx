@@ -45,58 +45,6 @@ export const ContactSettings = () => {
                 </FormControl>
               )}
             </ConnectForm>
-
-            <ConnectForm>
-              {({ register }) => (
-                <FormControl fieldset>
-                  <FormLabel className="text-large">Beslut och dokument</FormLabel>
-                  <Checkbox.Group>
-                    <>
-                      <Checkbox
-                        {...register('decicionsAndDocuments.digitalInbox')}
-                        aria-describedby="decicionsAndDocuments.digitalInbox-helptext"
-                      >
-                        <div>Digital brevlåda</div>
-                      </Checkbox>
-                      <FormHelperText
-                        id="decicionsAndDocuments.digitalInbox-helptext"
-                        className={checkboxDescribedbyTextClasses}
-                      >
-                        Brev och fakturor kommer till den digitala brevlådan du är ansluten till.
-                      </FormHelperText>
-                    </>
-                    <>
-                      <Checkbox
-                        {...register('decicionsAndDocuments.myPages')}
-                        aria-describedby="decicionsAndDocuments.myPages-helptext"
-                      >
-                        <div>Mina sidor</div>
-                      </Checkbox>
-                      <FormHelperText
-                        id="decicionsAndDocuments.myPages-helptext"
-                        className={checkboxDescribedbyTextClasses}
-                      >
-                        Vi mejlar dig när det finns något nytt att läsa eller betala.
-                      </FormHelperText>
-                    </>
-                    <>
-                      <Checkbox
-                        {...register('decicionsAndDocuments.snailmail')}
-                        aria-describedby="decicionsAndDocuments.snailmail-helptext"
-                      >
-                        <div>Brev</div>
-                      </Checkbox>
-                      <FormHelperText
-                        id="decicionsAndDocuments.snailmail-helptext"
-                        className={checkboxDescribedbyTextClasses}
-                      >
-                        Brev och fakturor kommer hem till dig i brevlådan.
-                      </FormHelperText>
-                    </>
-                  </Checkbox.Group>
-                </FormControl>
-              )}
-            </ConnectForm>
           </div>
           {isEdit && (
             <div className="mt-56">

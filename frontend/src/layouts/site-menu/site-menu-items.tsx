@@ -48,10 +48,13 @@ export const useRepresentingSwitch = () => {
 };
 
 export const MyPagesToggle = () => {
-  const { representingMode } = useAppContext();
+  const { representingMode, setRepresentingMode } = useAppContext();
   const router = useRouter();
+  const { setRepresenting } = useRepresentingSwitch();
 
   const switchRepresentingMode = (newMode: RepresentingMode) => {
+    setRepresentingMode(newMode);
+    setRepresenting({ mode: newMode });
     const pathname = newRepresentingModePathname(newMode);
     router.push(`${appURL()}${pathname}`);
   };

@@ -7,6 +7,7 @@ import { AutoTable, AutoTableHeader, Label, useThemeQueries } from '@sk-web-gui/
 import dayjs from 'dayjs';
 import { Fragment, useRef } from 'react';
 import { CaseTableCard } from '../case-table-card.component';
+import { getDateString } from '../utils';
 
 export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
@@ -72,7 +73,7 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
       property: 'subject.meta.created',
       screenReaderOnly: false,
       isColumnSortable: true,
-      renderColumn: (value) => <span className="text-left">{dayjs(value).format('YYYY-MM-DD')}</span>,
+      renderColumn: (value) => <span className="text-left">{getDateString(value)}</span>,
     },
   ];
 

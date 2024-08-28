@@ -2,7 +2,7 @@
 
 import AlertBannerWrapper from '@components/alert-banner/alert-banner-wrapper.component';
 import { useLocalStorageValue } from '@react-hookz/web';
-import { CookieConsent, Footer, Icon, Link, Logo } from '@sk-web-gui/react';
+import { CookieConsent, Footer, Link, Logo } from '@sk-web-gui/react';
 import Head from 'next/head';
 import NextLink from 'next/link';
 

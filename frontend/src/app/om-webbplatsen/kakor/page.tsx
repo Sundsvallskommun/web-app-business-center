@@ -91,7 +91,7 @@ export default function Kakor() {
           <div>
             <h2 className="text-h4-md">Hantera kakor</h2>
             <p className="my-16">
-              Du kan ta bort kakor i din webbläsare eller via nedan länk "Hantera kakor (cookies)"
+              Du kan ta bort kakor i din webbläsare eller via nedan länk &quot;Hantera kakor (cookies)&quot;
             </p>
             <Button className="mt-16" color="vattjom" onClick={handleCookies}>
               Hanter kakor (cookies)

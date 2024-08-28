@@ -22,6 +22,7 @@ export default function Layout({ children }) {
     setRepresenting({ mode: RepresentingMode.PRIVATE });
     setRepresentingMode(RepresentingMode.PRIVATE);
     setMounted(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!mounted || representingEntity === undefined || representingEntity.PRIVATE === undefined) {

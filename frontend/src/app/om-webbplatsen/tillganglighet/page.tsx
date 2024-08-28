@@ -1,6 +1,6 @@
 'use client';
 
-import { Breadcrumb, Button, Link } from '@sk-web-gui/react';
+import { Breadcrumb, Link } from '@sk-web-gui/react';
 import { PagesBreadcrumbsLayout } from '../../../layouts/pages-breadcrumbs-layout.component';
 
 const pageName = 'Tillgänglighet';

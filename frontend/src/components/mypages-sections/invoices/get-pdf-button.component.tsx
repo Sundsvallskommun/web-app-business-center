@@ -1,7 +1,6 @@
 import { IInvoice } from '@interfaces/invoice';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { getInvoicePdf } from '@services/invoice-service';
-import { Button, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
+import { Button, Icon, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
 
 export const GetPdfButton: React.FC<{
   isLoading?: { [key: string]: boolean };
@@ -12,12 +11,13 @@ export const GetPdfButton: React.FC<{
   const { isMinDesktop } = useThemeQueries();
 
   const getPdf = (invoiceNumber: string) => {
-    setIsLoading &&
+    if (setIsLoading) {
       setIsLoading((old) => {
         const newObj = { ...old };
         newObj[invoiceNumber] = true;
         return newObj;
       });
+    }
     getInvoicePdf(invoiceNumber)
       .then((d) => {
         if (typeof d.error === 'undefined') {
@@ -35,12 +35,13 @@ export const GetPdfButton: React.FC<{
         }
       })
       .finally(() => {
-        setIsLoading &&
+        if (setIsLoading) {
           setIsLoading((old) => {
             const newObj = { ...old };
             newObj[invoiceNumber] = false;
             return newObj;
           });
+        }
       });
   };
 
@@ -52,7 +53,7 @@ export const GetPdfButton: React.FC<{
       loading={isLoading?.[item.invoiceNumber]}
       loadingText="Hämtar"
       onClick={() => getPdf(item.invoiceNumber)}
-      rightIcon={<FileDownloadOutlinedIcon />}
+      rightIcon={<Icon name="arrow-down-to-line" />}
     >
       Hämta faktura
     </Button>

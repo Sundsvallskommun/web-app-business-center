@@ -1,12 +1,10 @@
-import { Button, Checkbox, FormControl, FormHelperText, FormLabel, Icon } from '@sk-web-gui/react';
+import { Button, Checkbox, FormControl, FormLabel, Icon } from '@sk-web-gui/react';
 import { useState } from 'react';
 import { ClientContactSetting } from '../../../interfaces/contactsettings';
 import { useApi } from '../../../services/api-service';
 import ContentCard, { ContentCardBody, ContentCardHeader } from '../../content-card/content-card';
 import { ConnectForm } from '../../form/connect-form.component';
 import ContactSettingsFormLogic from './components/contact-settings-form-logic.component';
-
-const checkboxDescribedbyTextClasses = 'sk-form-checkbox-label ml-24 pl-8 mt-4';
 
 export const ContactSettings = () => {
   const { data: contactsettings } = useApi<ClientContactSetting>({ url: '/contactsettings', method: 'get' });

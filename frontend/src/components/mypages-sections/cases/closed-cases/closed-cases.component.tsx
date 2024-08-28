@@ -4,7 +4,6 @@ import { CaseResponse, CasesData } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { casesHandler, emptyCaseList, getClosed } from '@services/case-service';
 import { AutoTable, AutoTableHeader, Label, useThemeQueries } from '@sk-web-gui/react';
-import dayjs from 'dayjs';
 import { Fragment, useRef } from 'react';
 import { CaseTableCard } from '../case-table-card.component';
 import { getDateString } from '../utils';

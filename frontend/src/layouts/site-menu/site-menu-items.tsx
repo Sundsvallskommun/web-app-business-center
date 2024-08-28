@@ -86,7 +86,7 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
 
   const setEngagement = (value) => {
     setRepresenting({ organizationNumber: value });
-    if (closeCallback) closeCallback();
+    if (submitCallback) submitCallback();
   };
 
   return (

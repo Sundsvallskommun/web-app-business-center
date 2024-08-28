@@ -83,7 +83,7 @@ export const MyPagesBusinessSwitch: React.FC<{ closeCallback?: () => void }> = (
 
   const setEngagement = (value) => {
     setRepresenting({ organizationNumber: value });
-    closeCallback && closeCallback();
+    if (closeCallback) closeCallback();
   };
 
   return (
@@ -125,6 +125,7 @@ export const useSiteMenuItems = () => {
 
   return [
     <Button
+      key={`site-menu-items-0`}
       className="text-gray-900"
       onClick={() => router.push('/logout')}
       showBackground={false}

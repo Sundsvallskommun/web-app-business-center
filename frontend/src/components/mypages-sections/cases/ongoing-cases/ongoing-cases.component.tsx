@@ -2,10 +2,10 @@ import { CardList } from '@components/cards/cards.component';
 import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
 import { CaseResponse, CasesData } from '@interfaces/case';
 import { useApi } from '@services/api-service';
-import { casesHandler, emptyCaseList, getCasePdf, getOngoing } from '@services/case-service';
-import { AutoTable, AutoTableHeader, Label, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
+import { casesHandler, emptyCaseList, getOngoing } from '@services/case-service';
+import { AutoTable, AutoTableHeader, Label, useThemeQueries } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
-import { Fragment, useRef, useState } from 'react';
+import { Fragment, useRef } from 'react';
 import { CaseTableCard } from '../case-table-card.component';
 
 export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
@@ -17,40 +17,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
   const ongoing = getOngoing(cases);
   const { isMinDesktop } = useThemeQueries();
 
-  const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>();
-  const message = useSnackbar();
   const ref = useRef<null | HTMLDivElement>(null);
-
-  const getPdf = (caseId: string) => {
-    setIsLoading((old) => {
-      const newObj = { ...old };
-      newObj[caseId] = true;
-      return newObj;
-    });
-    getCasePdf(caseId)
-      .then((d) => {
-        if (typeof d.error === 'undefined') {
-          const uri = `data:application/pdf;base64,${d.pdf.base64}`;
-          const link = document.createElement('a');
-          link.href = uri;
-          link.setAttribute('download', `${caseId}.pdf`);
-          document.body.appendChild(link);
-          link.click();
-        } else {
-          message({
-            message: 'Det gick inte att hämta filen.',
-            status: 'error',
-          });
-        }
-      })
-      .finally(() => {
-        setIsLoading((old) => {
-          const newObj = { ...old };
-          newObj[caseId] = false;
-          return newObj;
-        });
-      });
-  };
 
   const headers: Array<AutoTableHeader | string> = [
     {
@@ -58,7 +25,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       sticky: true,
       property: 'subject.caseType',
       screenReaderOnly: false,
-      renderColumn: (value, item) => (
+      renderColumn: (value) => (
         <div className="text-left">
           <Fragment>
             <div>
@@ -108,26 +75,6 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       isColumnSortable: true,
       renderColumn: (value) => <span className="text-left">{dayjs(value).format('YYYY-MM-DD')}</span>,
     },
-    // {
-    //   label: 'Ärendeknapp',
-    //   sticky: false,
-    //   screenReaderOnly: true,
-    //   renderColumn: (value, item) => (
-    //     <div className="text-right w-full">
-    //       <Button
-    //         aria-label={`Hämta PDF för ärende ${item.caseId}`}
-    //         color="primary"
-    //         loading={isLoading?.[item.externalCaseId]}
-    //         loadingText="Hämtar"
-    //         className="w-full lg:w-auto px-md"
-    //         onClick={() => getPdf(item.externalCaseId)}
-    //       >
-    //         Hämta PDF <FileDownloadOutlinedIcon className="material-icon ml-sm" aria-hidden="true" />
-    //       </Button>
-    //     </div>
-    //   ),
-    //   isColumnSortable: false,
-    // },
   ];
   const Table = () => {
     return (

@@ -1,11 +1,11 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from '@sk-web-gui/react';
 import _ from 'lodash';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { FormProvider, UseFormReturn, useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import { useApi, useApiService } from '../../../../services/api-service';
 import { ClientContactSetting } from '../../../../interfaces/contactsettings';
+import { useApi, useApiService } from '../../../../services/api-service';
 
 const defaultContactSettingsForm: Partial<ClientContactSetting> = {
   name: undefined,
@@ -40,7 +40,7 @@ interface ContactSettingsFormLogicProps {
 
 const phoneRegExp = /^(?:\+46\d{9})?$/;
 
-let formSchema = yup
+const formSchema = yup
   .object<ClientContactSetting>({
     name: yup.string().nullable().optional(),
     email: yup.string().email('E-postadress har fel format').nullable().optional(),
@@ -114,7 +114,7 @@ export default function ContactSettingsFormLogic({
 
       reset(newDefaultValues);
 
-      //@ts-ignore undefined issue, is defined within useEffect
+      /** @ts-expect-error undefined issue, is defined within useEffect */
       prevObjectRef.current = formData;
     }
   }, [formData, reset]);
@@ -147,13 +147,13 @@ export default function ContactSettingsFormLogic({
           message: 'Uppgifterna sparades.',
           status: 'success',
         });
-        onSubmitSuccess && onSubmitSuccess();
+        if (onSubmitSuccess) onSubmitSuccess();
       } else {
         snackBar({
           message: 'Det gick inte att spara uppgifterna.',
           status: 'error',
         });
-        onSubmitFailed && onSubmitFailed();
+        if (onSubmitFailed) onSubmitFailed();
       }
     }
   };

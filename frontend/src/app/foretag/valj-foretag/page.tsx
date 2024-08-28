@@ -109,51 +109,49 @@ export default function ValjForetag() {
                         )}
                       </Table.Header>
                       <Table.Body>
-                        {businessEngagements
-                          ?.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-                          .map((e, idx) => (
-                            <Table.Row
-                              key={`org-${e.organizationNumber}-${e.organizationName}`}
-                              className={cx('[&>td]:text-base [&>td]:cursor-default', !isMinDesktop && '[&>td]:h-full')}
-                              onClick={() => onChoice(e)}
-                            >
-                              {isMinDesktop ? (
-                                <>
-                                  <Table.Column>
-                                    <RadioButton
-                                      onChange={() => ({})}
-                                      checked={e.organizationNumber === choosen}
-                                      name="entity"
-                                      aria-label={`${e.organizationName}, välj organisation`}
-                                    />
-                                  </Table.Column>
-                                  <Table.Column>{e.organizationName}</Table.Column>
-                                  <Table.Column>{e.organizationNumber}</Table.Column>
-                                </>
-                              ) : (
+                        {businessEngagements?.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((e) => (
+                          <Table.Row
+                            key={`org-${e.organizationNumber}-${e.organizationName}`}
+                            className={cx('[&>td]:text-base [&>td]:cursor-default', !isMinDesktop && '[&>td]:h-full')}
+                            onClick={() => onChoice(e)}
+                          >
+                            {isMinDesktop ? (
+                              <>
                                 <Table.Column>
-                                  <div className="flex gap-16 py-8">
-                                    <RadioButton
-                                      onChange={() => ({})}
-                                      checked={e.organizationNumber === choosen}
-                                      name="entity"
-                                      aria-label={`${e.organizationName}, välj organisation`}
-                                    />
-                                    <div className="grow flex flex-col gap-8">
-                                      <div className="flex flex-col gap-y-4">
-                                        <div>Namn</div>
-                                        <div className="font-bold">{e.organizationName}</div>
-                                      </div>
-                                      <div className="flex flex-col gap-y-4">
-                                        <div>Organisationsnummer</div>
-                                        <div className="font-bold">{e.organizationNumber}</div>
-                                      </div>
+                                  <RadioButton
+                                    onChange={() => ({})}
+                                    checked={e.organizationNumber === choosen}
+                                    name="entity"
+                                    aria-label={`${e.organizationName}, välj organisation`}
+                                  />
+                                </Table.Column>
+                                <Table.Column>{e.organizationName}</Table.Column>
+                                <Table.Column>{e.organizationNumber}</Table.Column>
+                              </>
+                            ) : (
+                              <Table.Column>
+                                <div className="flex gap-16 py-8">
+                                  <RadioButton
+                                    onChange={() => ({})}
+                                    checked={e.organizationNumber === choosen}
+                                    name="entity"
+                                    aria-label={`${e.organizationName}, välj organisation`}
+                                  />
+                                  <div className="grow flex flex-col gap-8">
+                                    <div className="flex flex-col gap-y-4">
+                                      <div>Namn</div>
+                                      <div className="font-bold">{e.organizationName}</div>
+                                    </div>
+                                    <div className="flex flex-col gap-y-4">
+                                      <div>Organisationsnummer</div>
+                                      <div className="font-bold">{e.organizationNumber}</div>
                                     </div>
                                   </div>
-                                </Table.Column>
-                              )}
-                            </Table.Row>
-                          ))}
+                                </div>
+                              </Table.Column>
+                            )}
+                          </Table.Row>
+                        ))}
                       </Table.Body>
                       <Table.Footer>
                         <Pagination

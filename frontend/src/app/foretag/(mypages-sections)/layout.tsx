@@ -47,6 +47,7 @@ export default function Layout({ children }) {
         router.push(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/valj-foretag`);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [representingMode, representingIsLoading, representingIsFetching]);
 
   if (!mounted || representingEntity === undefined || representingEntity.BUSINESS === undefined) {

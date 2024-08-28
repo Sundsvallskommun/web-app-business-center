@@ -22,7 +22,7 @@ export const getRepresentingModeRoute = (representingMode: RepresentingMode) => 
   }
 };
 
-var myPagesRegex = new RegExp(
+const myPagesRegex = new RegExp(
   getRepresentingModeRoute(RepresentingMode.PRIVATE) + '|' + getRepresentingModeRoute(RepresentingMode.BUSINESS),
   'gi'
 );

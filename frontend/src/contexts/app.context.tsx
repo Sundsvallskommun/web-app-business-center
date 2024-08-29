@@ -1,7 +1,11 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { RepresentingMode } from '../interfaces/app';
+import { newRepresentingModePathname } from '../utils/representingModeRoute';
+import { appURL } from '../utils/app-url';
+import { useRepresentingSwitch } from '../layouts/site-menu/site-menu-items';
+import { useRouter } from 'next/navigation';
 
 export interface AppContextStates {
   representingMode: RepresentingMode;
@@ -28,11 +32,33 @@ export const defaults: AppContextStates = {
 };
 
 export function AppWrapper({ children }) {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
   const [representingMode, setRepresentingMode] = useState<RepresentingMode>(defaults.representingMode);
+
+  const { setRepresenting } = useRepresentingSwitch();
+
+  const switchRepresentingMode = async (newMode: RepresentingMode) => {
+    await setRepresenting({ mode: newMode });
+    const pathname = newRepresentingModePathname(newMode);
+    router.push(`${appURL()}${pathname}`);
+  };
 
   const resetContextDefaults = () => {
     setRepresentingMode(defaults.representingMode);
   };
+
+  useEffect(() => {
+    if (mounted) {
+      switchRepresentingMode(representingMode);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [representingMode]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <AppContext.Provider

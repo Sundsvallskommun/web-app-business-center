@@ -1,5 +1,8 @@
 import { RepresentingMode } from '../interfaces/app';
 
+export const getSwitchedRepresentingMode = (representingMode: RepresentingMode) =>
+  representingMode === RepresentingMode.BUSINESS ? RepresentingMode.PRIVATE : RepresentingMode.BUSINESS;
+
 export const getRepresentingModeName = (representingMode: RepresentingMode, options = { urlFriendly: false }) => {
   switch (representingMode) {
     case RepresentingMode.PRIVATE:

@@ -7,8 +7,7 @@ import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../
 import { BusinessEngagement } from '../../interfaces/organisation-info';
 import { useApi, useApiService } from '../../services/api-service';
 import { BusinessEngagementData } from '../../services/organisation-service';
-import { appURL } from '../../utils/app-url';
-import { getRepresentingModeRoute, newRepresentingModePathname } from '../../utils/representingModeRoute';
+import { getRepresentingModeRoute } from '../../utils/representingModeRoute';
 
 export const useRepresentingSwitch = () => {
   const queryClient = useApiService((s) => s.queryClient);
@@ -49,23 +48,14 @@ export const useRepresentingSwitch = () => {
 
 export const MyPagesToggle = () => {
   const { representingMode, setRepresentingMode } = useAppContext();
-  const router = useRouter();
-  const { setRepresenting } = useRepresentingSwitch();
-
-  const switchRepresentingMode = (newMode: RepresentingMode) => {
-    setRepresentingMode(newMode);
-    setRepresenting({ mode: newMode });
-    const pathname = newRepresentingModePathname(newMode);
-    router.push(`${appURL()}${pathname}`);
-  };
 
   return (
     <MenuBar showBackground current={representingMode}>
       <MenuBar.Item menuIndex={RepresentingMode.PRIVATE}>
-        <Button onClick={() => switchRepresentingMode(RepresentingMode.PRIVATE)}>Privat</Button>
+        <Button onClick={() => setRepresentingMode(RepresentingMode.PRIVATE)}>Privat</Button>
       </MenuBar.Item>
       <MenuBar.Item menuIndex={RepresentingMode.BUSINESS}>
-        <Button onClick={() => switchRepresentingMode(RepresentingMode.BUSINESS)}>Företag</Button>
+        <Button onClick={() => setRepresentingMode(RepresentingMode.BUSINESS)}>Företag</Button>
       </MenuBar.Item>
     </MenuBar>
   );

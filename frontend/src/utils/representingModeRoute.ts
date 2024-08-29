@@ -30,7 +30,9 @@ const myPagesRegex = new RegExp(
   'gi'
 );
 
-export const getRepresentingMode = (pathname: string): RepresentingMode | null => {
+export const getRepresentingMode = (
+  pathname: string = window.location.pathname.toString()
+): RepresentingMode | null => {
   if (pathname.match(getRepresentingModeRoute(RepresentingMode.PRIVATE)) !== null) return RepresentingMode.PRIVATE;
   if (pathname.match(getRepresentingModeRoute(RepresentingMode.BUSINESS)) !== null) return RepresentingMode.BUSINESS;
   return null;

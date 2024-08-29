@@ -11,7 +11,7 @@ import { getRepresentingModeRoute } from '../../utils/representingModeRoute';
 
 export const useRepresentingSwitch = () => {
   const queryClient = useApiService((s) => s.queryClient);
-  const representingMutation = useApi<RepresentingEntityDto>({
+  const representingMutation = useApi<RepresentingEntity>({
     url: '/representing',
     method: 'post',
   });
@@ -36,11 +36,10 @@ export const useRepresentingSwitch = () => {
     const res = await representingMutation.mutateAsync(representingDto);
     if (!res.error) {
       invalidateQueries();
-      return res;
     } else {
       router.push(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/valj-foretag`);
-      return { error: true };
     }
+    return res;
   };
 
   return { setRepresenting, invalidateQueries, representingMutation };

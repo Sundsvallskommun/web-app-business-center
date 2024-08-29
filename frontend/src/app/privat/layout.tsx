@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import FullscreenMainSpinner from '../../components/spinner/fullscreen-main-spinner.component';
 import { useAppContext } from '../../contexts/app.context';
@@ -7,7 +8,6 @@ import { RepresentingEntity, RepresentingMode } from '../../interfaces/app';
 import { DefaultLayout } from '../../layouts/default-layout.component';
 import { PagesLayout } from '../../layouts/pages-layout.component';
 import { useApi } from '../../services/api-service';
-import { useRouter } from 'next/navigation';
 
 export default function Layout({ children }) {
   const { representingMode, setRepresentingMode } = useAppContext();

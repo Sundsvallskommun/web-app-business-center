@@ -1,11 +1,12 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { RepresentingMode } from '../interfaces/app';
-import { newRepresentingModePathname } from '../utils/representingModeRoute';
-import { appURL } from '../utils/app-url';
-import { useRepresentingSwitch } from '../layouts/site-menu/site-menu-items';
 import { useRouter } from 'next/navigation';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { RepresentingEntity, RepresentingMode } from '../interfaces/app';
+import { useRepresentingSwitch } from '../layouts/site-menu/site-menu-items';
+import { useApi } from '../services/api-service';
+import { appURL } from '../utils/app-url';
+import { getRepresentingMode, newRepresentingModePathname } from '../utils/representingModeRoute';
 
 export interface AppContextStates {
   representingMode: RepresentingMode;
@@ -26,23 +27,37 @@ const AppContext = createContext<AppContext>(null);
 export const DEFAULT_REPRESENTING_MODE = RepresentingMode.BUSINESS;
 
 export const defaults: AppContextStates = {
-  representingMode: RepresentingMode.BUSINESS,
+  representingMode: DEFAULT_REPRESENTING_MODE,
   isRepresentingModeBusiness: DEFAULT_REPRESENTING_MODE === RepresentingMode.BUSINESS,
   isRepresentingModePrivate: DEFAULT_REPRESENTING_MODE !== RepresentingMode.BUSINESS,
 };
 
 export function AppWrapper({ children }) {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
   const [representingMode, setRepresentingMode] = useState<RepresentingMode>(defaults.representingMode);
 
   const { setRepresenting } = useRepresentingSwitch();
+  const {
+    data: representingEntity,
+    isLoading: representingIsLoading,
+    isFetching: representingIsFetching,
+  } = useApi<RepresentingEntity>({
+    url: '/representing',
+    method: 'get',
+  });
 
   const switchRepresentingMode = async (newMode: RepresentingMode) => {
-    await setRepresenting({ mode: newMode });
-    const pathname = newRepresentingModePathname(newMode);
-    router.push(`${appURL()}${pathname}`);
+    if (newMode !== representingMode) {
+      setRepresentingMode(newMode);
+      if (newMode !== undefined) {
+        if (getRepresentingMode() !== newMode) {
+          const pathname = newRepresentingModePathname(newMode);
+          router.push(`${appURL()}${pathname}`);
+        }
+      }
+      setRepresenting({ mode: newMode });
+    }
   };
 
   const resetContextDefaults = () => {
@@ -50,21 +65,19 @@ export function AppWrapper({ children }) {
   };
 
   useEffect(() => {
-    if (mounted) {
-      switchRepresentingMode(representingMode);
+    if (!representingIsLoading && !representingIsFetching) {
+      if (representingEntity?.mode === undefined) {
+        setRepresenting({ mode: defaults.representingMode });
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [representingMode]);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  }, [representingIsLoading, representingIsFetching]);
 
   return (
     <AppContext.Provider
       value={{
         representingMode,
-        setRepresentingMode: (representingMode: RepresentingMode) => setRepresentingMode(representingMode),
+        setRepresentingMode: (representingMode: RepresentingMode) => switchRepresentingMode(representingMode),
         isRepresentingModeBusiness: representingMode === RepresentingMode.BUSINESS,
         isRepresentingModePrivate: representingMode === RepresentingMode.PRIVATE,
         resetContextDefaults,

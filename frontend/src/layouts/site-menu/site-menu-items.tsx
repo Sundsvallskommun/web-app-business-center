@@ -7,8 +7,7 @@ import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../
 import { BusinessEngagement } from '../../interfaces/organisation-info';
 import { useApi, useApiService } from '../../services/api-service';
 import { BusinessEngagementData } from '../../services/organisation-service';
-import { appURL } from '../../utils/app-url';
-import { getRepresentingModeRoute, newRepresentingModePathname } from '../../utils/representingModeRoute';
+import { getRepresentingModeRoute } from '../../utils/representingModeRoute';
 
 export const useRepresentingSwitch = () => {
   const queryClient = useApiService((s) => s.queryClient);
@@ -48,21 +47,15 @@ export const useRepresentingSwitch = () => {
 };
 
 export const MyPagesToggle = () => {
-  const { representingMode } = useAppContext();
-  const router = useRouter();
-
-  const switchRepresentingMode = (newMode: RepresentingMode) => {
-    const pathname = newRepresentingModePathname(newMode);
-    router.push(`${appURL()}${pathname}`);
-  };
+  const { representingMode, setRepresentingMode } = useAppContext();
 
   return (
     <MenuBar showBackground current={representingMode}>
       <MenuBar.Item menuIndex={RepresentingMode.PRIVATE}>
-        <Button onClick={() => switchRepresentingMode(RepresentingMode.PRIVATE)}>Privat</Button>
+        <Button onClick={() => setRepresentingMode(RepresentingMode.PRIVATE)}>Privat</Button>
       </MenuBar.Item>
       <MenuBar.Item menuIndex={RepresentingMode.BUSINESS}>
-        <Button onClick={() => switchRepresentingMode(RepresentingMode.BUSINESS)}>Företag</Button>
+        <Button onClick={() => setRepresentingMode(RepresentingMode.BUSINESS)}>Företag</Button>
       </MenuBar.Item>
     </MenuBar>
   );
@@ -83,7 +76,7 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
 
   const setEngagement = (value) => {
     setRepresenting({ organizationNumber: value });
-    submitCallback && submitCallback(); // not working on mobile ?
+    if (submitCallback) submitCallback();
   };
 
   return (
@@ -142,6 +135,7 @@ export const useSiteMenuItems = () => {
 
   return [
     <Button
+      key={`site-menu-items-0`}
       className="text-gray-900"
       onClick={() => router.push('/logout')}
       showBackground={false}

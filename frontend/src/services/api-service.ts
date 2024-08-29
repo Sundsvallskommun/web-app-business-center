@@ -33,27 +33,22 @@ const defaultOptions = {
   withCredentials: true,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const get = <T>(url: string, data: any = undefined, options?: { [key: string]: any }) =>
+const get = <T>(url: string, options?: { [key: string]: unknown }) =>
   axios.get<T>(apiURL(url), { ...defaultOptions, ...options });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const post = <T>(url: string, data: any = undefined, options?: { [key: string]: any }) => {
+const post = <T>(url: string, data: unknown = undefined, options?: { [key: string]: unknown }) => {
   return axios.post<T>(apiURL(url), data, { ...defaultOptions, ...options });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const remove = <T>(url: string, data: any = undefined, options?: { [key: string]: any }) => {
+const remove = <T>(url: string, options?: { [key: string]: unknown }) => {
   return axios.delete<T>(apiURL(url), { ...defaultOptions, ...options });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const patch = <T>(url: string, data: any = undefined, options?: { [key: string]: any }) => {
+const patch = <T>(url: string, data: unknown = undefined, options?: { [key: string]: unknown }) => {
   return axios.patch<T>(apiURL(url), data, { ...defaultOptions, ...options });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const put = <T>(url: string, data: any = undefined, options?: { [key: string]: any }) => {
+const put = <T>(url: string, data: unknown = undefined, options?: { [key: string]: unknown }) => {
   return axios.put<T>(apiURL(url), data, { ...defaultOptions, ...options });
 };
 
@@ -79,13 +74,11 @@ interface State {
   queryClient: QueryClient;
 }
 
-interface Actions {}
-
 const initialState: State = {
   queryClient: queryClient,
 };
 
-export const useApiService = create<State & Actions>()(
+export const useApiService = create<State>()(
   devtools(
     () => ({
       ...initialState,
@@ -234,6 +227,7 @@ export function useApi<
   };
 
   if (method === 'get') {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     return useQuery(
       {
         queryKey,
@@ -247,6 +241,7 @@ export function useApi<
       _queryClient
     ) as UseApiResult<TQueryFnData, TError, TData, TMethod, TContext>;
   } else {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     return useMutation(
       {
         mutationFn: defaultMutationCall,
@@ -255,7 +250,7 @@ export function useApi<
           const newBody = { ...body };
           return { newBody };
         },
-        onSuccess: (result, body, context) => {
+        onSuccess: (result) => {
           _queryClient.setQueryData<TQueryFnData & { error?: DefaultError }>(queryKey, result);
         },
         throwOnError: (error) => {

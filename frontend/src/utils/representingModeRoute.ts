@@ -1,5 +1,8 @@
 import { RepresentingMode } from '../interfaces/app';
 
+export const getSwitchedRepresentingMode = (representingMode: RepresentingMode) =>
+  representingMode === RepresentingMode.BUSINESS ? RepresentingMode.PRIVATE : RepresentingMode.BUSINESS;
+
 export const getRepresentingModeName = (representingMode: RepresentingMode, options = { urlFriendly: false }) => {
   switch (representingMode) {
     case RepresentingMode.PRIVATE:
@@ -22,7 +25,7 @@ export const getRepresentingModeRoute = (representingMode: RepresentingMode) => 
   }
 };
 
-var myPagesRegex = new RegExp(
+const myPagesRegex = new RegExp(
   getRepresentingModeRoute(RepresentingMode.PRIVATE) + '|' + getRepresentingModeRoute(RepresentingMode.BUSINESS),
   'gi'
 );

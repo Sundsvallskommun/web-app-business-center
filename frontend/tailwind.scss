@@ -16,7 +16,7 @@
 
 @layer components {
   .container {
-    @apply max-w-content px-8 lg:px-0 w-full;
+    @apply max-w-content px-20 desktop:px-0 w-full;
   }
 
   .text-content .ingress {
@@ -61,6 +61,24 @@ body {
   @apply flex flex-col items-center;
 }
 
-.main-container {
-  @apply max-w-main-content grow w-full flex flex-col items-center my-80;
+@layer components {
+  .main-container {
+    @apply max-w-main-content grow w-full flex flex-col items-center my-80;
+  }
+  .text-content {
+    @apply flex flex-col max-w-[76.4rem];
+
+    * + p,
+    * + ul {
+      @apply mt-16 mb-0;
+    }
+
+    ul {
+      @apply ml-16 list-disc;
+
+      li + li {
+        @apply mt-16;
+      }
+    }
+  }
 }

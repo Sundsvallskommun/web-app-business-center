@@ -53,6 +53,7 @@ function Login() {
     if (wantedRepresentingMode !== null) {
       setRepresentingMode(wantedRepresentingMode);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   useEffect(() => {

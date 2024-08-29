@@ -2,7 +2,7 @@
 
 import AlertBannerWrapper from '@components/alert-banner/alert-banner-wrapper.component';
 import { useLocalStorageValue } from '@react-hookz/web';
-import { CookieConsent, Footer, Icon, Link, Logo } from '@sk-web-gui/react';
+import { CookieConsent, Footer, Link, Logo } from '@sk-web-gui/react';
 import Head from 'next/head';
 import NextLink from 'next/link';
 
@@ -105,12 +105,12 @@ export function Layout({ title, children }: { title: string; children: React.Rea
                   </NextLink>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'/kakor'}>
+                  <NextLink passHref legacyBehavior href={'/om-webbplatsen/kakor'}>
                     <Link variant="tertiary">Kakor (Cookies)</Link>
                   </NextLink>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'/tillganglighet'}>
+                  <NextLink passHref legacyBehavior href={'/om-webbplatsen/tillganglighet'}>
                     <Link variant="tertiary">Tillgänglighet</Link>
                   </NextLink>
                 </Footer.ListItem>

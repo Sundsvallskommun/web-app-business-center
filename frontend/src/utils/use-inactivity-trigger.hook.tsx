@@ -17,6 +17,7 @@ export const useInactivityTrigger = ({
       clearTimeout(timerRef.current);
     }
     timerRef.current = window.setTimeout(() => triggerCondition && trigger(resetTimer), timeout) as unknown as number;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger, timeout]);
 
   useEffect(() => {

@@ -1,37 +1,43 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import FullscreenMainSpinner from '../../components/spinner/fullscreen-main-spinner.component';
 import { useAppContext } from '../../contexts/app.context';
 import { RepresentingEntity, RepresentingMode } from '../../interfaces/app';
 import { DefaultLayout } from '../../layouts/default-layout.component';
 import { PagesLayout } from '../../layouts/pages-layout.component';
-import { useRepresentingSwitch } from '../../layouts/site-menu/site-menu-items';
-import { Spinner } from '@sk-web-gui/react';
 import { useApi } from '../../services/api-service';
+import { useRouter } from 'next/navigation';
 
 export default function Layout({ children }) {
-  const { setRepresentingMode } = useAppContext();
-  const { setRepresenting } = useRepresentingSwitch();
+  const { representingMode, setRepresentingMode } = useAppContext();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const { data: representingEntity } = useApi<RepresentingEntity>({
+  const {
+    data: representingEntity,
+    error: representingError,
+    isLoading: representingIsLoading,
+    isFetching: representingIsFetching,
+  } = useApi<RepresentingEntity>({
     url: '/representing',
     method: 'get',
   });
 
   useEffect(() => {
-    setRepresenting({ mode: RepresentingMode.PRIVATE });
-    setRepresentingMode(RepresentingMode.PRIVATE);
+    if (!representingIsLoading && !representingIsFetching) {
+      if (representingMode !== RepresentingMode.PRIVATE) {
+        setRepresentingMode(RepresentingMode.PRIVATE);
+      }
+      if (representingError) {
+        router.push('/login');
+      }
+    }
     setMounted(true);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [representingIsLoading, representingIsFetching]);
 
   if (!mounted || representingEntity === undefined || representingEntity.PRIVATE === undefined) {
-    return (
-      <main>
-        <div className="w-screen h-screen flex items-center justify-center">
-          <Spinner aria-label="Laddar information" />
-        </div>
-      </main>
-    );
+    return <FullscreenMainSpinner />;
   }
 
   return (

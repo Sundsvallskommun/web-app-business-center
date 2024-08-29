@@ -3,6 +3,9 @@
 import { Button, Divider, Icon, MenuVertical, Modal, cx } from '@sk-web-gui/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useAppContext } from '../../contexts/app.context';
+import { RepresentingMode } from '../../interfaces/app';
+import { getSwitchedRepresentingMode } from '../../utils/representingModeRoute';
 import { useBannerMenuItems } from '../banner-menu/banner-menu-items';
 import { MyPagesBusinessSwitch } from '../site-menu/site-menu-items';
 
@@ -11,6 +14,7 @@ export const MobileMenu = () => {
   const bannerMenuItems = useBannerMenuItems();
   const pathname = usePathname();
   const router = useRouter();
+  const { representingMode, setRepresentingMode } = useAppContext();
 
   const openHandler = () => {
     setIsOpen(true);
@@ -53,7 +57,7 @@ export const MobileMenu = () => {
                   <MenuVertical.Item
                     className="font-bold"
                     key={`${index}`}
-                    current={window?.location.href.includes(item.props.href)}
+                    current={pathname?.includes(item.props.href)}
                   >
                     {item}
                   </MenuVertical.Item>
@@ -62,19 +66,31 @@ export const MobileMenu = () => {
             </MenuVertical.Nav>
           </MenuVertical.Provider>
           <Divider className="m-0 grow-0" />
+          <Button
+            className="w-full"
+            onClick={() => {
+              setRepresentingMode(getSwitchedRepresentingMode(representingMode));
+              setIsOpen(false);
+            }}
+            showBackground={false}
+            variant="tertiary"
+            rightIcon={<Icon name="arrow-right" />}
+          >
+            Till Mina sidor {representingMode === RepresentingMode.BUSINESS ? 'privat' : 'företag'}
+          </Button>
           <MyPagesBusinessSwitch submitCallback={() => setIsOpen(false)} />
-          <div className="mt-md w-full">
-            <Button
-              className="w-full"
-              onClick={() => router.push('/logout')}
-              showBackground={false}
-              variant="secondary"
-              leftIcon={<Icon name="log-out" />}
-            >
-              Logga ut
-            </Button>
-          </div>
         </Modal.Content>
+        <Modal.Footer>
+          <Button
+            className="w-full"
+            onClick={() => router.push('/logout')}
+            showBackground={false}
+            variant="secondary"
+            leftIcon={<Icon name="log-out" />}
+          >
+            Logga ut
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );

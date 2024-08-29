@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+import ApiService from '@/services/api.service';
 import {
   BASE_URL_PREFIX,
   CREDENTIALS,
@@ -19,33 +20,32 @@ import {
   SESSION_MEMORY,
   SWAGGER_ENABLED,
 } from '@config';
-import { Strategy, VerifiedCallback } from 'passport-saml';
-import { getMetadataArgsStorage, useExpressServer } from 'routing-controllers';
+import errorMiddleware from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
-import { existsSync, mkdirSync } from 'fs';
-import ApiService from '@/services/api.service';
-import { HttpException } from './exceptions/HttpException';
-import { Profile } from './interfaces/profile.interface';
+import prisma from '@utils/prisma';
 import bodyParser from 'body-parser';
+import { defaultMetadataStorage } from 'class-transformer/cjs/storage';
+import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import createFileStore from 'session-file-store';
-import createMemoryStore from 'memorystore';
-import { defaultMetadataStorage } from 'class-transformer/cjs/storage';
-import errorMiddleware from '@middlewares/error.middleware';
 import express from 'express';
+import session from 'express-session';
+import { existsSync, mkdirSync } from 'fs';
 import helmet from 'helmet';
 import hpp from 'hpp';
+import createMemoryStore from 'memorystore';
 import morgan from 'morgan';
 import passport from 'passport';
-import prisma from '@utils/prisma';
-import { routingControllersToSpec } from 'routing-controllers-openapi';
-import session from 'express-session';
-import swaggerUi from 'swagger-ui-express';
-import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
-import { isValidUrl } from './utils/util';
+import { Strategy, VerifiedCallback } from 'passport-saml';
 import { join } from 'path';
+import { getMetadataArgsStorage, useExpressServer } from 'routing-controllers';
+import { routingControllersToSpec } from 'routing-controllers-openapi';
+import createFileStore from 'session-file-store';
+import swaggerUi from 'swagger-ui-express';
+import { HttpException } from './exceptions/HttpException';
+import { Profile } from './interfaces/profile.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
+import { isValidUrl } from './utils/util';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -189,6 +189,9 @@ class App {
         resave: false,
         saveUninitialized: false,
         store: sessionStore,
+        cookie: {
+          sameSite: 'lax',
+        },
       }),
     );
 

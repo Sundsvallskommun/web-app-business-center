@@ -25,6 +25,7 @@ export const ongoingCasesLabels = [
   { label: 'Ärendeknapp', screenReaderOnly: true, sortable: false },
 ];
 
+// getCaseStatus i confluence
 export const statusMapCases = {
   Inskickat: { code: statusCodes.Ongoing, color: 'info' },
   'Tilldelat för handläggning': { code: statusCodes.Ongoing, color: 'info' },

@@ -21,7 +21,13 @@ export const representingPrivateDefault = {
   name: 'name',
 };
 
-export const getRepresentingEntity: (options?: RepresentingEntity) => ApiResponse<RepresentingEntity> = (options) => ({
+export const getRepresentingEntity: (options?: RepresentingEntity) => ApiResponse<RepresentingEntity> = (
+  options = {
+    BUSINESS: representingBusinessDefault,
+    PRIVATE: representingPrivateDefault,
+    mode: RepresentingMode.PRIVATE,
+  }
+) => ({
   data: {
     BUSINESS: options?.BUSINESS ?? representingBusinessDefault,
     PRIVATE: options?.PRIVATE ?? representingPrivateDefault,

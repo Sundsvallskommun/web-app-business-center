@@ -1,19 +1,18 @@
 import { RepresentingMode } from '@interfaces/app';
 import { InvoicesResponse } from '@interfaces/invoice';
 import { ApiResponse } from '@services/api-service';
-import { getGeneratedInvoices } from 'cypress/fixtures/utils';
-import { representingModeDefault } from 'cypress/support/e2e';
+import { generatedInvoices } from 'cypress/fixtures/utils';
 
 export const getInvoices: (representingMode: RepresentingMode) => ApiResponse<InvoicesResponse> = (
   representingMode = representingModeDefault
 ) => ({
   data: {
-    invoices: getGeneratedInvoices(representingMode),
+    invoices: generatedInvoices,
     _meta: {
       page: 1,
       limit: 100,
-      count: getGeneratedInvoices(representingMode).length,
-      totalRecords: getGeneratedInvoices(representingMode).length,
+      count: generatedInvoices.length,
+      totalRecords: generatedInvoices.length,
       totalPages: 1,
     },
   },

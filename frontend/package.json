@@ -50,7 +50,6 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-methods": "^7.18.6",
-    "@cypress/code-coverage": "^3.12.46",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "16.1.0",

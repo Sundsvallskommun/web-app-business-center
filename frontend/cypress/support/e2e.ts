@@ -20,7 +20,7 @@ beforeEach(() => {
   cy.viewport('macbook-16');
   cy.intercept('GET', '**/api/me', getMe).as('getUser');
   cy.intercept('GET', '**/api/representing', getRepresentingEntity()).as('getRepresenting');
-  cy.intercept('POST', '**/api/representing', getRepresentingEntity()).as('postRepresentingPRIVATE');
+  cy.intercept('POST', '**/api/representing', getRepresentingEntity()).as('postRepresenting');
   cy.intercept('GET', '**/api/businessengagements', getBusinessEngagements).as('getBusinessEngagements');
   cy.intercept('GET', '**/api/cases', getCases).as('getCases');
   cy.intercept('GET', '**/api/invoices', getInvoices).as('getInvoices');

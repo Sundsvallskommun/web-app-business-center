@@ -20,7 +20,7 @@ export interface ICase {
 
 export interface CasesData {
   cases: ICase[];
-  labels: { label: string; screenReaderOnly: boolean; sortable: boolean; shownForStatus: statusCodes }[];
+  labels: { label: string; screenReaderOnly: boolean; sortable: boolean }[];
 }
 
 export interface CasePdf {

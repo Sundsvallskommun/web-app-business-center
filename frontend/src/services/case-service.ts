@@ -18,15 +18,14 @@ export const emptyCaseList: CasesData = {
 };
 
 export const ongoingCasesLabels = [
-  { label: 'Ärende', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  // { label: 'Ansvarig förvaltning', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  { label: 'Senast ändrat', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  { label: 'Status', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  { label: 'Skapa egen påminnelse', screenReaderOnly: false, sortable: false, shownForStatus: statusCodes.Any },
-  { label: 'Ärendeknapp', screenReaderOnly: true, sortable: false, shownForStatus: statusCodes.Any },
+  { label: 'Ärende', screenReaderOnly: false, sortable: true },
+  { label: 'Senast ändrat', screenReaderOnly: false, sortable: true },
+  { label: 'Status', screenReaderOnly: false, sortable: true },
+  { label: 'Skapa egen påminnelse', screenReaderOnly: false, sortable: false },
+  { label: 'Ärendeknapp', screenReaderOnly: true, sortable: false },
 ];
 
-const statusMap = {
+export const statusMap = {
   Inskickat: { code: statusCodes.Ongoing, color: 'info' },
   'Tilldelat för handläggning': { code: statusCodes.Ongoing, color: 'info' },
   'Under behandling': { code: statusCodes.Ongoing, color: 'info' },
@@ -85,14 +84,11 @@ export const getOngoing: (cs: CasesData) => CasesData = (cs) => ({
 });
 
 export const closedCasesLabels = [
-  { label: 'Ärende', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  // { label: 'Ansvarig förvaltning', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  { label: 'Senast ändrat', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  { label: 'Status', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  // { label: 'Giltigt från', sortable: true, shownForStatus: statusCodes.Approved },
-  // { label: 'Giltigt till och med', sortable: true, shownForStatus: statusCodes.Approved },
-  { label: 'Skapa egen påminnelse', screenReaderOnly: false, sortable: false, shownForStatus: statusCodes.Any },
-  { label: 'Ärendeknapp', screenReaderOnly: true, sortable: false, shownForStatus: statusCodes.Any },
+  { label: 'Ärende', screenReaderOnly: false, sortable: true },
+  { label: 'Senast ändrat', screenReaderOnly: false, sortable: true },
+  { label: 'Status', screenReaderOnly: false, sortable: true },
+  { label: 'Skapa egen påminnelse', screenReaderOnly: false, sortable: false },
+  { label: 'Ärendeknapp', screenReaderOnly: true, sortable: false },
 ];
 
 export const getClosed: (cs: CasesData) => CasesData = (cs) => ({

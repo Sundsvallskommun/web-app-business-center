@@ -13,7 +13,7 @@ export interface RepresentingEntityDto {
 export interface RepresentingEntity {
   PRIVATE?: RepresentingPrivateEntity;
   BUSINESS?: RepresentingBusinessEntity;
-  mode: RepresentingMode;
+  mode?: RepresentingMode;
 }
 
 export interface RepresentingBusinessEntity {

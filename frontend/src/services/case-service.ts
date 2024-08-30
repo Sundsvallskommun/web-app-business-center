@@ -25,7 +25,7 @@ export const ongoingCasesLabels = [
   { label: 'Ärendeknapp', screenReaderOnly: true, sortable: false },
 ];
 
-export const statusMap = {
+export const statusMapCases = {
   Inskickat: { code: statusCodes.Ongoing, color: 'info' },
   'Tilldelat för handläggning': { code: statusCodes.Ongoing, color: 'info' },
   'Under behandling': { code: statusCodes.Ongoing, color: 'info' },
@@ -48,8 +48,8 @@ export const statusMap = {
 };
 
 export const mapStatus = (s: string) => {
-  return Object.keys(statusMap).includes(s)
-    ? { code: statusMap[s].code, color: statusMap[s].color, label: s }
+  return Object.keys(statusMapCases).includes(s)
+    ? { code: statusMapCases[s].code, color: statusMapCases[s].color, label: s }
     : { code: statusCodes.Ongoing, color: 'neutral', label: s };
 };
 

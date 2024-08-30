@@ -1,7 +1,7 @@
 import { RepresentingEntity, RepresentingMode } from '@interfaces/app';
 import { ApiResponse } from '@services/api-service';
 
-const businessDefault = {
+export const representingBusinessDefault = {
   organizationName: 'organizationName',
   organizationNumber: 'organizationNumber',
   information: {
@@ -16,12 +16,16 @@ const businessDefault = {
   },
 };
 
-const privateDefault = {
+export const representingPrivateDefault = {
   name: 'name',
 };
 
 export const getRepresentingEntity: (options?: RepresentingEntity) => ApiResponse<RepresentingEntity> = (
-  options = { BUSINESS: businessDefault, PRIVATE: privateDefault, mode: RepresentingMode.PRIVATE }
+  options = {
+    BUSINESS: representingBusinessDefault,
+    PRIVATE: representingPrivateDefault,
+    mode: RepresentingMode.PRIVATE,
+  }
 ) => ({
   data: {
     BUSINESS: options.BUSINESS,

@@ -32,7 +32,10 @@ export const BannerMenu: React.FC = () => {
               : representingEntity?.PRIVATE?.name}
           </span>
           {isMinDesktop && (
-            <MenuBar className="self-stretch">
+            <MenuBar
+              className="self-stretch"
+              aria-label={`Undersidor ${representingEntity?.mode === RepresentingMode.BUSINESS ? 'företag' : 'privat'}`}
+            >
               {bannerMenuItems.map((item, index) => (
                 <MenuBar.Item
                   key={`${index}`}

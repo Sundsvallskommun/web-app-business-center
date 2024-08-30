@@ -12,6 +12,10 @@ export const getContactSettings: ApiResponse<ClientContactSetting> = {
       postcode: 'postcode',
       city: 'city',
     },
+    notifications: {
+      email_disabled: false,
+      phone_disabled: false,
+    },
   },
   message: 'success',
 };

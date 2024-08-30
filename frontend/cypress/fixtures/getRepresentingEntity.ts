@@ -1,26 +1,32 @@
 import { RepresentingEntity, RepresentingMode } from '@interfaces/app';
 import { ApiResponse } from '@services/api-service';
 
-export const getRepresentingEntity: (mode?: RepresentingMode) => ApiResponse<RepresentingEntity> = (mode = 0) => ({
-  data: {
-    BUSINESS: {
-      organizationName: 'organizationName',
-      organizationNumber: 'organizationNumber',
-      information: {
-        companyLocation: {
-          address: {
-            city: 'city',
-            street: 'street',
-            postcode: 'postcode',
-            careOf: 'careOf',
-          },
-        },
+const businessDefault = {
+  organizationName: 'organizationName',
+  organizationNumber: 'organizationNumber',
+  information: {
+    companyLocation: {
+      address: {
+        city: 'city',
+        street: 'street',
+        postcode: 'postcode',
+        careOf: 'careOf',
       },
     },
-    PRIVATE: {
-      name: 'name',
-    },
-    mode: mode,
+  },
+};
+
+const privateDefault = {
+  name: 'name',
+};
+
+export const getRepresentingEntity: (options?: RepresentingEntity) => ApiResponse<RepresentingEntity> = (
+  options = { BUSINESS: businessDefault, PRIVATE: privateDefault, mode: RepresentingMode.PRIVATE }
+) => ({
+  data: {
+    BUSINESS: options.BUSINESS,
+    PRIVATE: options.PRIVATE,
+    mode: options.mode,
   },
   message: '',
 });

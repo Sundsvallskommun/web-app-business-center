@@ -12,8 +12,4 @@ export const defaultOverviewsSettings: OverviewFormModel = {
 };
 export interface User {
   name: string;
-  userSettings: {
-    feedbackLifespan: FeedbackLifespan;
-    readNotificationsClearedDate: string;
-  };
 }

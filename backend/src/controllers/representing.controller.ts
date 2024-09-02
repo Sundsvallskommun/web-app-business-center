@@ -95,6 +95,10 @@ export class RepresentingController {
       req.session.representing.PRIVATE = this.getDefaultPRIVATE(req);
     }
 
+    if (representing.mode === RepresentingMode.BUSINESS && !representing.BUSINESS) {
+      throw new HttpException(400, 'Representing not set');
+    }
+
     return { data: this.getRepresentingToSend(req.session.representing), message: 'success' };
   }
 
@@ -107,10 +111,6 @@ export class RepresentingController {
     let newRepresenting = representing;
 
     if (selectedRepresenting.organizationNumber !== undefined) {
-      // const { representingBusinessChoices } = req?.session;
-      // const selected = this.getSelected(representingBusinessChoices, selectedRepresenting, 'organizationNumber');
-      // const businessInformation = await this.getBusinessInformation(req, selected);
-
       const data: RepresentingEntity = {
         BUSINESS: await this.getDefaultBUSINESS(req),
         PRIVATE: newRepresenting?.PRIVATE,

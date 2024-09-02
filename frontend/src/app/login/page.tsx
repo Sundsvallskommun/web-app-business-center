@@ -10,19 +10,7 @@ import { CenterDiv } from '../../layouts/center-div.component';
 import { EntryLayout } from '../../layouts/entry-layout.component';
 import Main from '../../layouts/main.component';
 import { appURL } from '../../utils/app-url';
-import {
-  getRepresentingMode,
-  getRepresentingModeRoute,
-  newRepresentingModePathname,
-} from '../../utils/representingModeRoute';
-
-const getAdjustedPathname = (path: string, representingMode: RepresentingMode) => {
-  if (path.includes('valj-foretag')) return getRepresentingModeRoute(representingMode);
-  return path.startsWith(getRepresentingModeRoute(RepresentingMode.BUSINESS)) ||
-    path.startsWith(getRepresentingModeRoute(RepresentingMode.PRIVATE))
-    ? newRepresentingModePathname(representingMode, path)
-    : getRepresentingModeRoute(representingMode);
-};
+import { getAdjustedPathname, getRepresentingMode, getRepresentingModeRoute } from '../../utils/representingModeRoute';
 
 function Login() {
   const router = useRouter();
@@ -40,8 +28,8 @@ function Login() {
   const onLogin = () => {
     // NOTE: send user to login with SSO
     const path = searchParams.get('path') || '';
-    const myPagesAdjustedPathname = getAdjustedPathname(path, representingMode);
-
+    const myPagesAdjustedPathname =
+      getAdjustedPathname(path, representingMode) || getRepresentingModeRoute(representingMode);
     router.push(
       `${process.env.NEXT_PUBLIC_API_URL}/saml/login?successRedirect=${`${appURL()}${myPagesAdjustedPathname}&representingMode=${representingMode}`}`
     );

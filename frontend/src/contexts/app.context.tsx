@@ -6,7 +6,12 @@ import { RepresentingEntity, RepresentingMode } from '../interfaces/app';
 import { useRepresentingSwitch } from '../layouts/site-menu/site-menu-items';
 import { useApi } from '../services/api-service';
 import { appURL } from '../utils/app-url';
-import { getRepresentingMode, newRepresentingModePathname } from '../utils/representingModeRoute';
+import {
+  getRepresentingMode,
+  isBusinessMode,
+  isPrivateMode,
+  newRepresentingModePathname,
+} from '../utils/representingModeRoute';
 
 export interface AppContextStates {
   representingMode: RepresentingMode;
@@ -24,12 +29,12 @@ export interface AppContext extends AppContextStates, AppContextActions {}
 // @ts-expect-error it wont be null upon init because it's set within AppWrapper
 const AppContext = createContext<AppContext>(null);
 
-export const DEFAULT_REPRESENTING_MODE = RepresentingMode.BUSINESS;
+export const DEFAULT_REPRESENTING_MODE: RepresentingMode = RepresentingMode.PRIVATE;
 
 export const defaults: AppContextStates = {
   representingMode: DEFAULT_REPRESENTING_MODE,
-  isRepresentingModeBusiness: DEFAULT_REPRESENTING_MODE === RepresentingMode.BUSINESS,
-  isRepresentingModePrivate: DEFAULT_REPRESENTING_MODE !== RepresentingMode.BUSINESS,
+  isRepresentingModeBusiness: isBusinessMode(DEFAULT_REPRESENTING_MODE),
+  isRepresentingModePrivate: isPrivateMode(DEFAULT_REPRESENTING_MODE),
 };
 
 export function AppWrapper({ children }) {

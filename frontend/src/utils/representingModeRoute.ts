@@ -1,5 +1,15 @@
 import { RepresentingMode } from '../interfaces/app';
 
+export const isBusinessMode = (mode: RepresentingMode) => mode === RepresentingMode.BUSINESS;
+export const isPrivateMode = (mode: RepresentingMode) => mode === RepresentingMode.PRIVATE;
+
+export const getAdjustedPathname = (path: string, representingMode: RepresentingMode) => {
+  return path.startsWith(getRepresentingModeRoute(RepresentingMode.BUSINESS)) ||
+    path.startsWith(getRepresentingModeRoute(RepresentingMode.PRIVATE))
+    ? newRepresentingModePathname(representingMode, path)
+    : path;
+};
+
 export const getSwitchedRepresentingMode = (representingMode: RepresentingMode) =>
   representingMode === RepresentingMode.BUSINESS ? RepresentingMode.PRIVATE : RepresentingMode.BUSINESS;
 

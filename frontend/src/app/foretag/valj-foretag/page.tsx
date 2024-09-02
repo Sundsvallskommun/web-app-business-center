@@ -1,24 +1,26 @@
 'use client';
 
+import { CardElevated } from '@components/cards/card-elevated.component';
 import { NoRepresent } from '@components/no-represent/no-represent';
 import { useAppContext } from '@contexts/app.context';
-import { BusinessEngagementData } from '@services/organisation-service';
-import { Button, Icon, Pagination, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
-import { getRepresentingModeRoute } from '@utils/representingModeRoute';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { CardElevated } from '@components/cards/card-elevated.component';
+import { RepresentingMode } from '@interfaces/app';
 import { BusinessEngagement } from '@interfaces/organisation-info';
 import { EntryLayout } from '@layouts/entry-layout.component';
 import Main from '@layouts/main.component';
 import { useRepresentingSwitch } from '@layouts/site-menu/site-menu-items';
 import { useApi } from '@services/api-service';
+import { BusinessEngagementData } from '@services/organisation-service';
+import { Button, Icon, Pagination, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
+import { getAdjustedPathname } from '@utils/representingModeRoute';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function ValjForetag() {
   const router = useRouter();
   const { representingMode } = useAppContext();
   const [error, setError] = useState('');
   const { isMinDesktop, isMinSmallDevice } = useThemeQueries();
+  const searchParams = useSearchParams();
 
   const { data: businessEngagements, isLoading: businessEngagementsIsLoading } = useApi<
     BusinessEngagementData,
@@ -44,9 +46,11 @@ export default function ValjForetag() {
   };
 
   const onContinue = async () => {
-    const res = await setRepresenting({ organizationNumber: choosen });
+    const res = await setRepresenting({ organizationNumber: choosen, mode: RepresentingMode.BUSINESS });
     if (!res.error) {
-      router.push(getRepresentingModeRoute(representingMode));
+      const path = searchParams.get('path') || '';
+      const myPagesAdjustedPathname = getAdjustedPathname(path, representingMode);
+      router.push(myPagesAdjustedPathname);
     } else {
       setError('Misslyckades med att välja företag');
     }

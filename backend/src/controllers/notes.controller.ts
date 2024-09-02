@@ -7,6 +7,7 @@ import { validationMiddleware } from '@/middlewares/validation.middleware';
 import { IsString } from 'class-validator';
 import ApiService from '@/services/api.service';
 import { ApiResponseMeta } from '@/interfaces/service';
+import { MUNICIPALITY_ID } from '@/config';
 
 interface Response {
   data: NoteApiResponse;
@@ -37,13 +38,11 @@ export interface NoteResponse {
 export type NewNoteOmittedTypes = 'created' | 'modified' | 'modifiedBy';
 export interface NewNote extends Omit<NoteResponse, NewNoteOmittedTypes> {
   partyId: string;
-  municipalityId: string;
 }
 
 export type EditNoteOmittedTypes = 'created' | 'modified' | 'createdBy';
 export interface EditNote extends Omit<NoteResponse, EditNoteOmittedTypes> {
   partyId: string;
-  municipalityId: string;
 }
 
 export class CreateNoteDto {
@@ -70,7 +69,7 @@ export class NotesController {
   @UseBefore(authMiddleware)
   async notes(@Req() req: RequestWithUser): Promise<Response> {
     const { organizationId } = req?.session?.representing;
-    const url = `notes/3.1/notes`;
+    const url = `notes/4.0/${MUNICIPALITY_ID}/notes`;
     const params = { partyId: organizationId, municipalityId: `2281` };
     const res = await this.apiService.get<NoteApiResponse>({ url, params });
     if (Array.isArray(res.data?.notes) && res.data?.notes.length < 1) {
@@ -92,11 +91,10 @@ export class NotesController {
       context: 'MP_BUSINESS_NOTES',
       role: 'BUSINESS_USER',
       clientId: 'MP_BUSINESS',
-      municipalityId: `2281`,
       partyId: organizationId,
       createdBy: user.name,
     };
-    const url = 'notes/3.1/notes';
+    const url = `notes/4.0/${MUNICIPALITY_ID}/notes`;
     const res = await this.apiService.post({ url, data: newNote });
     return { data: res.data, message: 'created' };
   }
@@ -114,12 +112,11 @@ export class NotesController {
       context: 'MP_BUSINESS_NOTES',
       role: 'BUSINESS_USER',
       clientId: 'MP_BUSINESS',
-      municipalityId: `2281`,
       partyId: organizationId,
       modifiedBy: user.name,
     };
 
-    const url = `notes/3.1/notes/${id}`;
+    const url = `notes/4.0/${MUNICIPALITY_ID}/notes/${id}`;
     await this.apiService.patch({ url, data: editNote });
   }
 
@@ -128,7 +125,7 @@ export class NotesController {
   @OpenAPI({ summary: 'Remove a note for current logged in user' })
   @UseBefore(authMiddleware)
   async deleteNote(@Req() req: RequestWithUser, @Param('id') id: string): Promise<void> {
-    const url = `notes/3.1/notes/${id}`;
+    const url = `notes/4.0/${MUNICIPALITY_ID}/notes/${id}`;
     await this.apiService.delete({ url });
   }
 }

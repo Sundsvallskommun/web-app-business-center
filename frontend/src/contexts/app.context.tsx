@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { RepresentingEntity, RepresentingMode } from '../interfaces/app';
 import { useRepresentingSwitch } from '../layouts/site-menu/site-menu-items';
 import { useApi } from '../services/api-service';
@@ -38,40 +38,29 @@ export function AppWrapper({ children }) {
   const [representingMode, setRepresentingMode] = useState<RepresentingMode>(defaults.representingMode);
 
   const { setRepresenting } = useRepresentingSwitch();
-  const {
-    data: representingEntity,
-    isLoading: representingIsLoading,
-    isFetching: representingIsFetching,
-  } = useApi<RepresentingEntity>({
+  const { data: representingEntity } = useApi<RepresentingEntity>({
     url: '/representing',
     method: 'get',
   });
 
   const switchRepresentingMode = async (newMode: RepresentingMode) => {
-    if (newMode !== representingMode) {
-      setRepresentingMode(newMode);
-      if (newMode !== undefined) {
-        if (getRepresentingMode() !== newMode) {
-          const pathname = newRepresentingModePathname(newMode);
-          router.push(`${appURL()}${pathname}`);
-        }
+    const routeRepresentingMode = getRepresentingMode();
+    if (routeRepresentingMode !== null && routeRepresentingMode !== newMode) {
+      const pathname = newRepresentingModePathname(newMode);
+      router.push(`${appURL()}${pathname}`);
+    } else {
+      if (newMode !== representingMode) {
+        setRepresentingMode(newMode);
       }
-      setRepresenting({ mode: newMode });
+      if (representingEntity?.mode !== newMode) {
+        setRepresenting({ mode: newMode });
+      }
     }
   };
 
   const resetContextDefaults = () => {
     setRepresentingMode(defaults.representingMode);
   };
-
-  useEffect(() => {
-    if (!representingIsLoading && !representingIsFetching) {
-      if (representingEntity?.mode === undefined) {
-        setRepresenting({ mode: defaults.representingMode });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [representingIsLoading, representingIsFetching]);
 
   return (
     <AppContext.Provider

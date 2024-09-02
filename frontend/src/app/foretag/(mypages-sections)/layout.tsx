@@ -29,8 +29,8 @@ export default function Layout({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!representingIsLoading && !representingIsFetching) {
-      if (representingMode !== RepresentingMode.BUSINESS) {
+    if (mounted && !representingIsLoading && !representingIsFetching) {
+      if (representingEntity?.mode !== RepresentingMode.BUSINESS || representingMode !== RepresentingMode.BUSINESS) {
         setRepresentingMode(RepresentingMode.BUSINESS);
       }
       if (
@@ -43,7 +43,7 @@ export default function Layout({ children }) {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [representingIsLoading, representingIsFetching]);
+  }, [mounted, representingIsLoading, representingIsFetching]);
 
   if (!mounted || representingEntity === undefined || representingEntity.BUSINESS === undefined) {
     return <FullscreenMainSpinner />;

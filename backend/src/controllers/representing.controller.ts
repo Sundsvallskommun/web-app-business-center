@@ -46,6 +46,25 @@ export class RepresentingController {
 
   fixGuid = guid => guid?.replace(/[^a-zA-Z0-9-]/g, '');
 
+  getDefaultPRIVATE = (req: RequestWithUser) => ({
+    partyId: this.fixGuid(req.user.partyId),
+    personNumber: req.user.personNumber,
+    name: req.user.name,
+  });
+
+  getDefaultBUSINESS = async (req: RequestWithUser) => {
+    const { representingBusinessChoices } = req?.session;
+    const selected = this.getSelected(representingBusinessChoices, req.body, 'organizationNumber');
+    const businessInformation = await this.getBusinessInformation(req, selected);
+
+    return {
+      partyId: this.fixGuid(selected.organizationId),
+      organizationName: selected.organizationName,
+      organizationNumber: selected.organizationNumber,
+      information: businessInformation,
+    };
+  };
+
   getRepresentingToSend: (representing: RepresentingEntity) => RepresentingEntityClient = newRepresenting => ({
     BUSINESS: newRepresenting?.BUSINESS
       ? {
@@ -72,7 +91,11 @@ export class RepresentingController {
       throw new HttpException(403, 'Forbidden');
     }
 
-    return { data: this.getRepresentingToSend(representing), message: 'success' };
+    if (!representing.PRIVATE) {
+      req.session.representing.PRIVATE = this.getDefaultPRIVATE(req);
+    }
+
+    return { data: this.getRepresentingToSend(req.session.representing), message: 'success' };
   }
 
   @Post('/representing')
@@ -84,17 +107,12 @@ export class RepresentingController {
     let newRepresenting = representing;
 
     if (selectedRepresenting.organizationNumber !== undefined) {
-      const { representingBusinessChoices } = req?.session;
-      const selected = this.getSelected(representingBusinessChoices, selectedRepresenting, 'organizationNumber');
-      const businessInformation = await this.getBusinessInformation(req, selected);
+      // const { representingBusinessChoices } = req?.session;
+      // const selected = this.getSelected(representingBusinessChoices, selectedRepresenting, 'organizationNumber');
+      // const businessInformation = await this.getBusinessInformation(req, selected);
 
       const data: RepresentingEntity = {
-        BUSINESS: {
-          partyId: this.fixGuid(selected.organizationId),
-          organizationName: selected.organizationName,
-          organizationNumber: selected.organizationNumber,
-          information: businessInformation,
-        },
+        BUSINESS: await this.getDefaultBUSINESS(req),
         PRIVATE: newRepresenting?.PRIVATE,
         mode: newRepresenting?.mode,
       };
@@ -105,15 +123,9 @@ export class RepresentingController {
       selectedRepresenting.mode === RepresentingMode.PRIVATE ||
       selectedRepresenting.mode === undefined
     ) {
-      const { user } = req;
-
       const data: RepresentingEntity = {
         BUSINESS: newRepresenting?.BUSINESS,
-        PRIVATE: {
-          partyId: this.fixGuid(user.partyId),
-          personNumber: user.personNumber,
-          name: user.name,
-        },
+        PRIVATE: this.getDefaultPRIVATE(req),
         mode: newRepresenting?.mode,
       };
       newRepresenting = data;

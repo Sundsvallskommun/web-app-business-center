@@ -43,7 +43,7 @@ function Login() {
     const myPagesAdjustedPathname = getAdjustedPathname(path, representingMode);
 
     router.push(
-      `${process.env.NEXT_PUBLIC_API_URL}/saml/login?successRedirect=${`${appURL()}${myPagesAdjustedPathname}`}`
+      `${process.env.NEXT_PUBLIC_API_URL}/saml/login?successRedirect=${`${appURL()}${myPagesAdjustedPathname}&representingMode=${representingMode}`}`
     );
   };
 

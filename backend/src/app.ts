@@ -46,6 +46,7 @@ import { HttpException } from './exceptions/HttpException';
 import { Profile } from './interfaces/profile.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
 import { isValidUrl } from './utils/util';
+import { RepresentingMode } from './interfaces/representing.interface';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -206,6 +207,11 @@ class App {
           req.query.RelayState = req.session.returnTo;
         } else if (req.query.successRedirect) {
           req.query.RelayState = req.query.successRedirect;
+        }
+        if (req.query.representingMode) {
+          req.session.representing = {
+            mode: parseInt(req.query.representingMode as string) as RepresentingMode,
+          };
         }
         next();
       },

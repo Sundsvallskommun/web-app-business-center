@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import FullscreenMainSpinner from '../../components/spinner/fullscreen-main-spinner.component';
 import { useAppContext } from '../../contexts/app.context';
@@ -11,11 +10,9 @@ import { useApi } from '../../services/api-service';
 
 export default function Layout({ children }) {
   const { representingMode, setRepresentingMode } = useAppContext();
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const {
     data: representingEntity,
-    error: representingError,
     isLoading: representingIsLoading,
     isFetching: representingIsFetching,
   } = useApi<RepresentingEntity>({
@@ -24,17 +21,17 @@ export default function Layout({ children }) {
   });
 
   useEffect(() => {
-    if (!representingIsLoading && !representingIsFetching) {
-      if (representingMode !== RepresentingMode.PRIVATE) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !representingIsLoading && !representingIsFetching) {
+      if (representingEntity?.mode !== RepresentingMode.PRIVATE || representingMode !== RepresentingMode.PRIVATE) {
         setRepresentingMode(RepresentingMode.PRIVATE);
       }
-      if (representingError) {
-        router.push('/login');
-      }
     }
-    setMounted(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [representingIsLoading, representingIsFetching]);
+  }, [mounted, representingIsLoading, representingIsFetching]);
 
   if (!mounted || representingEntity === undefined || representingEntity.PRIVATE === undefined) {
     return <FullscreenMainSpinner />;

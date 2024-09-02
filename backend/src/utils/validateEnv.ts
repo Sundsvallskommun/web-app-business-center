@@ -30,6 +30,7 @@ const validateEnv = () => {
     SAML_PRIVATE_KEY: str(),
     SAML_PUBLIC_KEY: str(),
     FEEDBACK_EMAIL: emails(),
+    MUNICIPALITY_ID: str(),
   });
 };
 

@@ -43,14 +43,23 @@ export function AppWrapper({ children }) {
   const [representingMode, setRepresentingMode] = useState<RepresentingMode>(defaults.representingMode);
 
   const { setRepresenting } = useRepresentingSwitch();
+  const { data: representingEntity } = useApi<RepresentingEntity>({
+    url: '/representing',
+    method: 'get',
+  });
 
   const switchRepresentingMode = async (newMode: RepresentingMode) => {
-    setRepresentingMode(newMode);
     const routeRepresentingMode = getRepresentingMode();
     if (routeRepresentingMode !== null && routeRepresentingMode !== newMode) {
       const pathname = newRepresentingModePathname(newMode);
       router.push(`${appURL()}${pathname}`);
-      setRepresenting({ mode: newMode });
+    } else {
+      if (newMode !== representingMode) {
+        setRepresentingMode(newMode);
+      }
+      if (representingEntity?.mode !== newMode) {
+        setRepresenting({ mode: newMode });
+      }
     }
   };
 

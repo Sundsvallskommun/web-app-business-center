@@ -1,5 +1,6 @@
-import { RepresentingEntity, RepresentingMode } from '@interfaces/app';
+import { RepresentingEntity } from '@interfaces/app';
 import { ApiResponse } from '@services/api-service';
+import { representingModeDefault } from 'cypress/support/e2e';
 
 export const representingBusinessDefault = {
   organizationName: 'organizationName',
@@ -20,17 +21,11 @@ export const representingPrivateDefault = {
   name: 'name',
 };
 
-export const getRepresentingEntity: (options?: RepresentingEntity) => ApiResponse<RepresentingEntity> = (
-  options = {
-    BUSINESS: representingBusinessDefault,
-    PRIVATE: representingPrivateDefault,
-    mode: RepresentingMode.PRIVATE,
-  }
-) => ({
+export const getRepresentingEntity: (options?: RepresentingEntity) => ApiResponse<RepresentingEntity> = (options) => ({
   data: {
-    BUSINESS: options.BUSINESS,
-    PRIVATE: options.PRIVATE,
-    mode: options.mode,
+    BUSINESS: options?.BUSINESS ?? representingBusinessDefault,
+    PRIVATE: options?.PRIVATE ?? representingPrivateDefault,
+    mode: options?.mode ?? representingModeDefault,
   },
   message: '',
 });

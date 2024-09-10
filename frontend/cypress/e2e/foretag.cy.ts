@@ -1,19 +1,10 @@
 import { RepresentingMode } from '@interfaces/app';
-import { testCases, testContactSettings, testOngoingCases } from 'cypress/e2e/utils';
-import { getRepresentingEntity, representingBusinessDefault } from 'cypress/fixtures/getRepresentingEntity';
+import { testCases, testContactSettings, testInvoices, testOngoingCases } from 'cypress/e2e/utils';
+import { setIntercepts } from 'cypress/support/e2e';
 
 describe('Företag', () => {
   beforeEach(() => {
-    cy.intercept(
-      'GET',
-      '**/api/representing',
-      getRepresentingEntity({ BUSINESS: representingBusinessDefault, mode: RepresentingMode.BUSINESS })
-    ).as('getRepresenting');
-    cy.intercept(
-      'POST',
-      '**/api/representing',
-      getRepresentingEntity({ BUSINESS: representingBusinessDefault, mode: RepresentingMode.BUSINESS })
-    ).as('postRepresenting');
+    setIntercepts(RepresentingMode.BUSINESS);
     cy.visit('/foretag');
   });
   it('should render #content and h1', () => {
@@ -21,29 +12,31 @@ describe('Företag', () => {
     cy.get('h1').should('exist');
   });
   it('should render /foretag/oversikt as default page', () => {
+    cy.contains('[role="menuitem"]', 'Översikt').should('exist');
     cy.wait('@getCases').then(() => {
       cy.url().should('include', '/foretag/oversikt');
-      testOngoingCases();
+      testOngoingCases(RepresentingMode.BUSINESS);
     });
   });
   it('should render Ärenden when clicked', () => {
     cy.contains('[role="menuitem"]', 'Ärenden').click();
     cy.wait('@getCases').then(() => {
       cy.url().should('include', '/foretag/arenden');
-      testCases();
+      testCases(RepresentingMode.BUSINESS);
     });
   });
   it('should render Fakturor when clicked', () => {
     cy.contains('[role="menuitem"]', 'Fakturor').click();
     cy.wait('@getInvoices').then(() => {
       cy.url().should('include', '/foretag/fakturor');
+      testInvoices(RepresentingMode.BUSINESS);
     });
   });
   it('should render Profil och inställningar when clicked', () => {
     cy.contains('[role="menuitem"]', 'Profil och inställningar').click();
     cy.wait('@getContactSettings').then(() => {
       cy.url().should('include', '/foretag/profil');
-      testContactSettings();
+      testContactSettings(RepresentingMode.BUSINESS);
     });
   });
 });

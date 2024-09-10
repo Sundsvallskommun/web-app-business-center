@@ -9,6 +9,12 @@ import updateLocale from 'dayjs/plugin/updateLocale';
 import utc from 'dayjs/plugin/utc';
 import '../../../tailwind.scss';
 import { LoginGuard } from './login-guard';
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import { appName } from '@utils/app-name';
+import { getRepresentingModeName } from '@utils/representingModeRoute';
+import { RepresentingMode } from '@interfaces/app';
+import _ from 'lodash';
 
 dayjs.extend(utc);
 dayjs.locale('se');
@@ -32,7 +38,35 @@ dayjs.updateLocale('se', {
   weekdaysMin: ['S', 'M', 'T', 'O', 'T', 'F', 'L'],
 });
 
+const routeName = (pathname) => {
+  return pathname
+    .split('/')
+    .map((x) => {
+      switch (x) {
+        case getRepresentingModeName(RepresentingMode.BUSINESS, { urlFriendly: true }):
+          x = getRepresentingModeName(RepresentingMode.BUSINESS);
+          break;
+        case 'arenden':
+          x = 'ärenden';
+          break;
+        case 'oversikt':
+          x = 'översikt';
+          break;
+        default:
+        //
+      }
+      return _.capitalize(x);
+    })
+    .join(' - ');
+};
+
 export default function MyAppLayout({ children }) {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    document.title = `${appName()}${routeName(pathname)}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
   return (
     <html lang="se">
       <body>

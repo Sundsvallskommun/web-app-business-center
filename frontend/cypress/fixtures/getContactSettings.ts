@@ -1,10 +1,13 @@
+import { RepresentingMode } from '@interfaces/app';
 import { ClientContactSetting } from '@interfaces/contactsettings';
 import { ApiResponse } from '@services/api-service';
-import { getMe } from 'cypress/fixtures/getMe';
+import { representingModeDefault } from 'cypress/support/e2e';
 
-export const getContactSettings: ApiResponse<ClientContactSetting> = {
+export const getContactSettings: (representingMode: RepresentingMode) => ApiResponse<ClientContactSetting> = (
+  representingMode = representingModeDefault
+) => ({
   data: {
-    name: getMe.data.name,
+    name: `name-${RepresentingMode[representingMode]}`,
     email: 'test@example.com',
     phone: '+46701740605',
     address: {
@@ -18,4 +21,4 @@ export const getContactSettings: ApiResponse<ClientContactSetting> = {
     },
   },
   message: 'success',
-};
+});

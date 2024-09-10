@@ -1,0 +1,9 @@
+{
+  "extends": "@istanbuljs/nyc-config-typescript",
+  "excludeAfterRemap": true,
+  "check-coverage": true,
+  "reporter": ["lcov", "json", "json-summary"],
+  "report-dir": "./coverage",
+  "include": ["src/**"],
+  "exclude": ["node_modules/**", "**/.next/**"]
+}

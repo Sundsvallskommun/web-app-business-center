@@ -1,10 +1,14 @@
+import { RepresentingMode } from '@interfaces/app';
 import { CaseResponse } from '@interfaces/case';
 import { ApiResponse } from '@services/api-service';
+import { representingModeDefault } from 'cypress/support/e2e';
 
-export const getCases: ApiResponse<CaseResponse[]> = {
+export const getCases: (representingMode?: RepresentingMode) => ApiResponse<CaseResponse[]> = (
+  representingMode = representingModeDefault
+) => ({
   data: [
     {
-      caseType: 'caseTypeInskickat',
+      caseType: `caseType-Inskickat-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Inskickat',
@@ -13,7 +17,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeTilldelat för handläggning',
+      caseType: `caseType-Tilldelat för handläggning-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Tilldelat för handläggning',
@@ -22,7 +26,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeUnder behandling',
+      caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Under behandling',
@@ -31,7 +35,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeKomplettering behövs',
+      caseType: `caseType-Komplettering behövs-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Komplettering behövs',
@@ -40,7 +44,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypePåminnelse om komplettering',
+      caseType: `caseType-Påminnelse om komplettering-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Påminnelse om komplettering',
@@ -49,7 +53,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeKomplettering inkommen, behandling fortsätter',
+      caseType: `caseType-Komplettering inkommen, behandling fortsätter-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Komplettering inkommen, behandling fortsätter',
@@ -58,7 +62,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeBeslut finns, se separat information',
+      caseType: `caseType-Beslut finns, se separat information-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Beslut finns, se separat information',
@@ -67,7 +71,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeVäntar på komplettering',
+      caseType: `caseType-Väntar på komplettering-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Väntar på komplettering',
@@ -76,7 +80,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeKompletterad',
+      caseType: `caseType-Kompletterad-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Kompletterad',
@@ -85,7 +89,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeKlart',
+      caseType: `caseType-Klart-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Klart',
@@ -94,7 +98,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeAvslutat',
+      caseType: `caseType-Avslutat-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Avslutat',
@@ -103,7 +107,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeÄrendet arkiveras',
+      caseType: `caseType-Ärendet arkiveras-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Ärendet arkiveras',
@@ -112,7 +116,7 @@ export const getCases: ApiResponse<CaseResponse[]> = {
       isOpenEErrand: true,
     },
     {
-      caseType: 'caseTypeSparat ärende',
+      caseType: `caseType-Sparat ärende-${RepresentingMode[representingMode]}`,
       externalCaseId: 'externalCaseId',
       id: 'id',
       status: 'Sparat ärende',
@@ -122,4 +126,4 @@ export const getCases: ApiResponse<CaseResponse[]> = {
     },
   ],
   message: 'success',
-};
+});

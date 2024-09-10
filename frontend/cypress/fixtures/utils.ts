@@ -1,5 +1,7 @@
+import { RepresentingMode } from '@interfaces/app';
 import { InvoiceStatus } from '@interfaces/invoice';
 import { statusMapInvoices } from '@services/invoice-service';
+import { representingModeDefault } from 'cypress/support/e2e';
 
 const baseInvoice = {
   dueDate: '2024-08-30',
@@ -32,9 +34,10 @@ const baseInvoice = {
   invoiceOrigin: 'COMMERCIAL',
 };
 
-export const generatedInvoices = Object.keys(statusMapInvoices).map((status) => ({
-  ...baseInvoice,
-  invoiceStatus: status as InvoiceStatus,
-  invoiceDescription: status,
-  invoiceName: `faktura-999-${status.toLowerCase()}.pdf`,
-}));
+export const getGeneratedInvoices = (representingMode: RepresentingMode = representingModeDefault) =>
+  Object.keys(statusMapInvoices).map((status) => ({
+    ...baseInvoice,
+    invoiceStatus: status as InvoiceStatus,
+    invoiceDescription: `${status}-${RepresentingMode[representingMode]}`,
+    invoiceName: `faktura-999-${status.toLowerCase()}.pdf`,
+  }));

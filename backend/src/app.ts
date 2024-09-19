@@ -99,7 +99,7 @@ const samlStrategy = new Strategy(
 
     try {
       const personNumber = profile.citizenIdentifier;
-      const citizenResult = await apiService.get<any>({ url: `citizen/1.0/person/${personNumber}/guid` });
+      const citizenResult = await apiService.get<any>({ url: `citizen/2.0/${personNumber}/guid` });
       const { data: personId } = citizenResult;
 
       if (!personId) {

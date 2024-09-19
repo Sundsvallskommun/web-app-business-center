@@ -3,7 +3,7 @@ import { OpenAPI } from 'routing-controllers-openapi';
 import { validationMiddleware } from '@middlewares/validation.middleware';
 import { IsString } from 'class-validator';
 import sanitizeHtml from 'sanitize-html';
-import { FEEDBACK_EMAIL } from '@config';
+import { FEEDBACK_EMAIL, MUNICIPALITY_ID } from '@config';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
 
@@ -66,10 +66,9 @@ export class FeedbackController {
         emailAddress: email,
         subject: 'Feedback för Mina sidor företag',
         message: message(userData.body),
-        // FIXME: seems like html message gets wrong encoding? ÅÄÖ not working.
         htmlMessage: base64Encode(messageHTML(userData.body)),
       };
-      const url = 'messaging/3.0/email';
+      const url = `messaging/5.0/${MUNICIPALITY_ID}/email`;
       const res = await this.apiService.post({ url, data: sendFeedback });
     });
 

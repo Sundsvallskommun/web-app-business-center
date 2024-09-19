@@ -5,6 +5,7 @@ import authMiddleware from '@middlewares/auth.middleware';
 import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { HttpException } from '@/exceptions/HttpException';
+import { MUNICIPALITY_ID } from '@/config';
 
 interface ResponseData {
   data: Case[] | CasePdf;
@@ -25,7 +26,7 @@ export class CaseController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    const url = `casestatus/2.0/${organizationNumber}/statuses`;
+    const url = `casestatus/3.0/${MUNICIPALITY_ID}/${organizationNumber}/statuses`;
     const res = await this.apiService.get<Case[]>({ url });
 
     if (Array.isArray(res.data) && res.data.length < 1) {
@@ -43,7 +44,7 @@ export class CaseController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    const url = `casestatus/2.0/${id}/pdf`;
+    const url = `casestatus/3.0/${MUNICIPALITY_ID}/${id}/pdf`;
     const res = await this.apiService.get<CasePdf>({ url });
 
     return { data: res.data, message: 'success' };

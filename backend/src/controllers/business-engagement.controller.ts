@@ -1,3 +1,4 @@
+import { MUNICIPALITY_ID } from '@/config';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { BusinessEngagement } from '@/interfaces/business-engagement';
@@ -32,7 +33,7 @@ export class BusinessEngagementController {
       req.destroy();
     });
 
-    const url = `businessengagements/1.2/engagements/${partyId}`;
+    const url = `businessengagements/2.0/${MUNICIPALITY_ID}/engagements/${partyId}`;
     const params = {
       personalName: name,
       serviceName: 'Mina Sidor',
@@ -71,7 +72,7 @@ export class BusinessEngagementController {
       throw new HttpException(500, 'Internal Server Error - Data not complete');
     }
 
-    const url = `businessengagements/1.2/information/${engagement.organizationId}`;
+    const url = `businessengagements/2.0/${MUNICIPALITY_ID}/information/${engagement.organizationId}`;
     const params = {
       organizationName: engagement.organizationName,
       serviceName: 'Mina Sidor',

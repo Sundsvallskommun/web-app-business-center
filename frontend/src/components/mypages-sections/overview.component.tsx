@@ -1,10 +1,9 @@
-import { OngoingCases } from './cases/ongoing-cases/ongoing-cases.component';
+import { Todos } from '@components/mypages-sections/overview/todo/todos.component';
 
 export default function Overview() {
   return (
     <div>
-      <h1 className="mb-32">Pågående ärenden</h1>
-      <OngoingCases />
+      <Todos />
     </div>
   );
 }

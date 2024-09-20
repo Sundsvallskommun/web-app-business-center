@@ -97,6 +97,14 @@ export const getClosed: (cs: CasesData) => CasesData = (cs) => ({
   cases: cs.cases.filter((c) => c.status.code === statusCodes.Rejected || c.status.code === statusCodes.Approved),
 });
 
+export const getCasesInNeedOfData: (cs: CasesData) => CasesData = (cs) => ({
+  ...cs,
+  labels: ongoingCasesLabels,
+  cases: cs.cases.filter((c) =>
+    ['Väntar på komplettering', 'Påminnelse om komplettering', 'Komplettering behövs'].includes(c.status.label)
+  ),
+});
+
 export const getCasePdf: (caseId: string) => Promise<CasePdfData> = (caseId) =>
   apiService
     .get<ApiResponse<CasePdf>>(`casepdf/${caseId}`)

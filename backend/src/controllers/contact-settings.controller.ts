@@ -7,6 +7,7 @@ import { Type } from 'class-transformer';
 import { validationMiddleware } from '@/middlewares/validation.middleware';
 import ApiService from '@/services/api.service';
 import { HttpException } from '@/exceptions/HttpException';
+import { MUNICIPALITY_ID } from '@/config';
 
 export class ContactSettingChannel {
   @IsString()
@@ -117,7 +118,7 @@ export class ContactSettingsController {
 
     // FIXME: we probably want to go thru all pages?
     //        or do we want to have a load more button in UI?
-    const url = 'contactsettings/1.0/settings';
+    const url = `contactsettings/2.0/${MUNICIPALITY_ID}/settings`;
     const params = {
       partyId: organizationId,
       page: page ?? 1,
@@ -159,7 +160,7 @@ export class ContactSettingsController {
       createdById: guid,
       contactChannels: mappedContactChannels,
     };
-    const url = `contactsettings/1.0/settings`;
+    const url = `contactsettings/2.0/${MUNICIPALITY_ID}/settings`;
     const res = await this.apiService.post<any>({ url, data: newContactSettings });
 
     return { data: res.data, message: 'created' };
@@ -176,7 +177,7 @@ export class ContactSettingsController {
     const mappedContactChannels = this.mapSendFeedbackToDisabled(contactChannels);
 
     const editedContactSettings: UpdateContactSettings = { alias: 'My contact settings', contactChannels: mappedContactChannels };
-    const url = `contactsettings/1.0/settings/${id}`;
+    const url = `contactsettings/2.0/${MUNICIPALITY_ID}/settings/${id}`;
     await this.apiService.patch<any>({ url, data: editedContactSettings });
   }
 }

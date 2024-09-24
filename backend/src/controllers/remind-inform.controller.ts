@@ -1,3 +1,4 @@
+import { MUNICIPALITY_ID } from '@/config';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { validationMiddleware } from '@/middlewares/validation.middleware';
@@ -63,7 +64,7 @@ export class RemindInformController {
   async reminders(@Req() req: RequestWithUser, @Res() response: any): Promise<ResponseData> {
     const { organizationId } = req?.session?.representing;
 
-    const url = `reminders/3.0/reminders/parties/${organizationId}`;
+    const url = `reminders/4.0/${MUNICIPALITY_ID}/reminders/parties/${organizationId}`;
     const res = await this.apiService.get<ReminderResponse[]>({ url });
 
     if (Array.isArray(res.data) && res.data.length < 1) {
@@ -86,7 +87,7 @@ export class RemindInformController {
       partyId: organizationId,
       createdBy: user.name,
     };
-    const url = `reminders/3.0/reminders`;
+    const url = `reminders/4.0/${MUNICIPALITY_ID}/reminders`;
     const res = await this.apiService.post<ReminderResponse[]>({ url, data: newReminder });
 
     return { data: res.data, message: 'success' };
@@ -106,7 +107,7 @@ export class RemindInformController {
       modifiedBy: user.name,
     };
 
-    const url = `reminders/3.0/reminders/${id}`;
+    const url = `reminders/4.0/${MUNICIPALITY_ID}/reminders/${id}`;
     await this.apiService.patch<ReminderResponse[]>({ url, data: editReminder });
   }
 
@@ -115,7 +116,7 @@ export class RemindInformController {
   @OpenAPI({ summary: 'Remove a reminder for current logged in user' })
   @UseBefore(authMiddleware)
   async deleteNote(@Req() req: RequestWithUser, @Param('id') id: string): Promise<void> {
-    const url = `reminders/3.0/reminders/${id}`;
+    const url = `reminders/4.0/${MUNICIPALITY_ID}/reminders/${id}`;
     await this.apiService.delete({ url });
   }
 }

@@ -53,24 +53,25 @@ export const mapStatus = (s: string) => {
     : { code: statusCodes.Ongoing, color: 'neutral', label: s };
 };
 
-export const handleCaseResponse: (data: CaseResponse[]) => ICase[] = (data) =>
-  data.map((n: CaseResponse) => ({
-    externalCaseId: n.externalCaseId,
-    caseId: n.id,
-    subject: {
-      caseType: n.caseType,
-      meta: {
-        created: n.firstSubmitted,
-        modified: n.lastStatusChange,
-      },
+export const handleCase = (n: CaseResponse) => ({
+  externalCaseId: n.externalCaseId,
+  caseId: n.id,
+  subject: {
+    caseType: n.caseType,
+    meta: {
+      created: n.firstSubmitted,
+      modified: n.lastStatusChange,
     },
-    department: '--',
-    validFrom: '--',
-    validTo: '--',
-    serviceDate: '--',
-    status: mapStatus(n.status),
-    lastStatusChange: n.lastStatusChange,
-  }));
+  },
+  department: '--',
+  validFrom: '--',
+  validTo: '--',
+  serviceDate: '--',
+  status: mapStatus(n.status),
+  lastStatusChange: n.lastStatusChange,
+});
+
+export const handleCaseResponse: (data: CaseResponse[]) => ICase[] = (data) => data.map(handleCase);
 
 export const casesHandler = (data) => ({
   cases: handleCaseResponse(data),

@@ -34,7 +34,8 @@ export const LoginGuard: React.FC<{ tabKey?: string; children?: React.ReactNode 
 
   useEffect(() => {
     if (!userIsFetching && userError && !pathname.includes('login')) {
-      router.push(`/login?path=${window.location.pathname}`);
+      const path = !window.location.pathname.includes('logout') ? window.location.pathname : '/';
+      router.push(`/login?path=${path}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userIsFetching, userError]);

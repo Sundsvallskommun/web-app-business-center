@@ -1,14 +1,25 @@
 import { TodoCase } from '@components/mypages-sections/overview/todo/todo-case.component';
-import { dataToTodo } from '@components/mypages-sections/overview/todo/utils';
 import { CaseResponse, CasesData, ICase } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { casesHandler, getCasesInNeedOfData } from '@services/case-service';
-import { Divider } from '@sk-web-gui/react';
+import { Divider, useThemeQueries } from '@sk-web-gui/react';
+import { Fragment } from 'react';
+import styles from './todos.module.scss';
 
 export enum TodoType {
   CONTRACT,
   MESSAGE,
   CASE,
+}
+
+export function dataToTodo<TTodoType = TodoType>(
+  data: TodoItem<TTodoType>['data'],
+  type: TodoItem<TTodoType>['type']
+): TodoItem<TTodoType> {
+  return {
+    type: type,
+    data: data,
+  };
 }
 
 export interface TodoItem<TTodoType = TodoType> {
@@ -25,39 +36,39 @@ export const Todos = () => {
   const todoCases: TodoItem<TodoType.CASE>[] = cases
     ? getCasesInNeedOfData(cases)?.cases.map((data) => dataToTodo<TodoType.CASE>(data, TodoType.CASE))
     : [];
-
   const TodoItems = [...todoCases];
+  const { isMinDesktop } = useThemeQueries();
 
   return (
     <section>
       <h1>Att göra</h1>
-      {casesIsFetching ? (
-        <p>Laddar att göra</p>
-      ) : todoCases.length < 1 ? (
-        <p>Här finns inget att göra</p>
-      ) : (
-        <>
-          <p>Här visas något som man kan skriva om här</p>
-          <div className="mt-40">
-            <Divider />
+      <p className="text-lead">Här visas något som man kan skriva om här.</p>
+      <div className={styles['todos']}>
+        {casesIsFetching ? (
+          <p className="text-secondary">Laddar att göra</p>
+        ) : todoCases.length < 1 ? (
+          <p className="text-secondary">Här finns inget att göra</p>
+        ) : (
+          <>
+            {isMinDesktop && <Divider />}
             {TodoItems.map((todo, index) => {
               let TodoComponent: React.ReactElement;
               switch (todo.type) {
                 case TodoType.CASE:
-                  TodoComponent = <TodoCase key={`${index}`} data={todo.data} />;
+                  TodoComponent = <TodoCase data={todo.data} />;
               }
 
               return (
-                <>
+                <Fragment key={`${index}`}>
                   {TodoComponent}
-                  {index < TodoItems.length - 1 && <Divider />}
-                </>
+                  {index < TodoItems.length - 1 && isMinDesktop && <Divider />}
+                </Fragment>
               );
             })}
-            <Divider />
-          </div>
-        </>
-      )}
+            {isMinDesktop && <Divider />}
+          </>
+        )}
+      </div>
     </section>
   );
 };

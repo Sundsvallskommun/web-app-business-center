@@ -1,15 +1,22 @@
-import { Button } from '@sk-web-gui/react';
+import { Button, Icon } from '@sk-web-gui/react';
+import styles from './todos.module.scss';
 
 export const TodoMessage = () => {
   return (
-    <div className="flex items-center gap-x-md">
-      <div>MESSAGE</div>
-      <div className="grow my-md">
-        <h2 className="text-h4-md">Nytt meddelande på ärende X</h2>
-        <p>Du har ett nytt meddelande på ditt ärende Bygglov - Komplementbyggnad #X</p>
+    <div className={styles['todo']}>
+      <div className={styles['todo-type']}>
+        <Icon className={styles['todo-type-icon']} name="mail" />
       </div>
-      <div>
-        <Button color="vattjom">Till meddelandet</Button>
+      <div className={styles['todo-content']}>
+        <h2 className={styles['todo-content-heading']}>Nytt meddelande på ärende X</h2>
+        <p className={styles['todo-content-text']}>
+          Du har ett nytt meddelande på ditt ärende Bygglov - Komplementbyggnad #X
+        </p>
+      </div>
+      <div className={styles['todo-action']}>
+        <Button className={styles['todo-action-button']} color="vattjom" aria-label={`MEDDELANDE, till meddelandet`}>
+          Till meddelandet
+        </Button>
       </div>
     </div>
   );

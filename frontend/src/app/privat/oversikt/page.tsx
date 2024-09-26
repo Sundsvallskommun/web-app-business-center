@@ -1,7 +1,12 @@
 'use client';
 
 import Overview from '@components/mypages-sections/overview.component';
+import { PagesLayout } from '@layouts/pages-layout.component';
 
 export default function Oversikt() {
-  return <Overview />;
+  return (
+    <PagesLayout>
+      <Overview />
+    </PagesLayout>
+  );
 }

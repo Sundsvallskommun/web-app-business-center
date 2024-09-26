@@ -3,7 +3,7 @@ import { RequestWithUser } from '@/interfaces/auth.interface';
 import { Case, CasePdf } from '@/interfaces/case.interface';
 import ApiService from '@/services/api.service';
 import authMiddleware from '@middlewares/auth.middleware';
-import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
+import { Controller, Get, Param, QueryParam, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
@@ -17,7 +17,7 @@ export class CaseController {
   @Get('/cases')
   @OpenAPI({ summary: 'Return a list of cases for current logged in user' })
   @UseBefore(authMiddleware)
-  async cases(@Req() req: RequestWithUser): Promise<ApiResponse<Case[]>> {
+  async getCases(@Req() req: RequestWithUser): Promise<ApiResponse<Case[]>> {
     const { representing } = req?.session;
 
     if (representing?.mode === RepresentingMode.BUSINESS) {
@@ -45,10 +45,31 @@ export class CaseController {
     }
   }
 
+  @Get('/cases/:id')
+  @OpenAPI({ summary: 'Return a case' })
+  @UseBefore(authMiddleware)
+  async getCase(@Param('id') id: number): Promise<ApiResponse<Case | null>> {
+    if (!id) {
+      throw new HttpException(400, 'Bad Request');
+    }
+
+    try {
+      const url = `casestatus/3.0/${MUNICIPALITY_ID}/${id}/status`;
+      const res = await this.apiService.get<Case>({ url });
+      if (!res.data) {
+        return { data: null, message: 'error' };
+      }
+
+      return { data: res.data, message: 'success' };
+    } catch (error) {
+      return { data: null, message: 'error' };
+    }
+  }
+
   @Get('/casepdf/:id')
   @OpenAPI({ summary: 'Return the base64 encoded pdf by case id' })
   @UseBefore(authMiddleware)
-  async casePdf(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ApiResponse<CasePdf>> {
+  async getCasePdf(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ApiResponse<CasePdf>> {
     if (!id) {
       throw new HttpException(400, 'Bad Request');
     }

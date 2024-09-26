@@ -1,4 +1,5 @@
 import { MUNICIPALITY_ID } from '@/config';
+import { getApiBase } from '@/config/api-config';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { Case, CasePdf } from '@/interfaces/case.interface';
@@ -9,7 +10,6 @@ import { OpenAPI } from 'routing-controllers-openapi';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
-import { getApiBase } from '@/config/api-config';
 @Controller()
 export class CaseController {
   private apiService = new ApiService();
@@ -62,7 +62,7 @@ export class CaseController {
       }
 
       return { data: res.data, message: 'success' };
-    } catch (error) {
+    } catch {
       return { data: null, message: 'error' };
     }
   }

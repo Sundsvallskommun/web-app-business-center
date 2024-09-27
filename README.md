@@ -12,6 +12,7 @@ Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumer
 | Citizen             |     2.0 |
 | Messaging           |     5.0 |
 | Invoices            |     8.0 |
+| SimulatorServer     |     2.0 |
 
 ## Utveckling
 

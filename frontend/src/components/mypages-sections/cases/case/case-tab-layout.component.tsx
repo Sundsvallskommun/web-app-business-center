@@ -1,5 +1,5 @@
-import CaseInformation from '@components/mypages-sections/cases/case/information.component';
-import CaseMeddelanden from '@components/mypages-sections/cases/case/meddelanden.component';
+import CaseInformation from '@components/mypages-sections/cases/case/information/information.component';
+import CaseMeddelanden from '@components/mypages-sections/cases/case/meddelanden/meddelanden.component';
 import { useAppContext } from '@contexts/app.context';
 import { MenuBar } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';

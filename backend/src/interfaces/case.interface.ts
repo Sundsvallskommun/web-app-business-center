@@ -1,11 +1,11 @@
 export interface Case {
-  caseType: string;
-  serviceName: string;
   id: string;
+  externalCaseId: string;
+  caseType: string;
   status: string;
-  lastStatusChange: string;
   firstSubmitted: string;
-  isOpenEErrand: boolean;
+  lastStatusChange: string;
+  openEErrand: boolean;
 }
 
 export interface CasePdf {

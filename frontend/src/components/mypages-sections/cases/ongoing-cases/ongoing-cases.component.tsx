@@ -1,12 +1,14 @@
 import { CardList } from '@components/cards/cards.component';
 import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
+import { useAppContext } from '@contexts/app.context';
 import { CaseResponse, CasesData } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { casesHandler, emptyCaseList, getOngoing } from '@services/case-service';
-import { AutoTable, AutoTableHeader, Label, useThemeQueries } from '@sk-web-gui/react';
+import { AutoTable, AutoTableHeader, Button, Icon, Label, useThemeQueries } from '@sk-web-gui/react';
+import { getRepresentingModeRoute } from '@utils/representingModeRoute';
+import NextLink from 'next/link';
 import { Fragment, useRef } from 'react';
 import { CaseTableCard } from '../case-table-card.component';
-import { getDateString } from '../utils';
 
 export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
@@ -16,7 +18,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
   });
   const ongoing = getOngoing(cases);
   const { isMinDesktop } = useThemeQueries();
-
+  const { representingMode } = useAppContext();
   const ref = useRef<null | HTMLDivElement>(null);
 
   const headers: Array<AutoTableHeader | string> = [
@@ -68,14 +70,23 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       ),
     },
     {
-      label: 'Registrerat',
+      label: 'Visa ärende',
       sticky: false,
-      property: 'subject.meta.created',
-      screenReaderOnly: false,
-      isColumnSortable: true,
-      renderColumn: (value) => <span className="text-left">{getDateString(value)}</span>,
+      property: 'externalCaseId',
+      screenReaderOnly: true,
+      isColumnSortable: false,
+      renderColumn: (value) => (
+        <div className="w-full text-right">
+          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${value}`}>
+            <Button size="sm" showBackground variant="tertiary" as="span" rightIcon={<Icon name="arrow-right" />}>
+              Visa
+            </Button>
+          </NextLink>
+        </div>
+      ),
     },
   ];
+
   const Table = () => {
     return (
       <>

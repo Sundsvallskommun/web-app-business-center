@@ -86,11 +86,8 @@ export const getOngoing: (cs: CasesData) => CasesData = (cs) => ({
 
 export const closedCasesLabels = [
   { label: 'Ärende', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  // { label: 'Ansvarig förvaltning', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
   { label: 'Senast ändrat', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
   { label: 'Status', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  // { label: 'Giltigt från', sortable: true, shownForStatus: statusCodes.Approved },
-  // { label: 'Giltigt till och med', sortable: true, shownForStatus: statusCodes.Approved },
   { label: 'Skapa egen påminnelse', screenReaderOnly: false, sortable: false, shownForStatus: statusCodes.Any },
   { label: 'Ärendeknapp', screenReaderOnly: true, sortable: false, shownForStatus: statusCodes.Any },
 ];
@@ -99,6 +96,14 @@ export const getClosed: (cs: CasesData) => CasesData = (cs) => ({
   ...cs,
   labels: closedCasesLabels,
   cases: cs.cases.filter((c) => c.status.code === statusCodes.Rejected || c.status.code === statusCodes.Approved),
+});
+
+export const getCasesInNeedOfData: (cs: CasesData) => CasesData = (cs) => ({
+  ...cs,
+  labels: ongoingCasesLabels,
+  cases: cs.cases.filter((c) =>
+    ['Väntar på komplettering', 'Påminnelse om komplettering', 'Komplettering behövs'].includes(c.status.label)
+  ),
 });
 
 export const getCasePdf: (caseId: string) => Promise<CasePdfData> = (caseId) =>

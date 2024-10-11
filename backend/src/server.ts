@@ -10,12 +10,14 @@ import { FeedbackController } from '@controllers/feedback.controller';
 import { InvoicesController } from './controllers/invoices.controller';
 import { HealthController } from './controllers/health.controller';
 import { ContactSettingsController } from './controllers/contact-settings.controller';
+import { CaseDataController } from '@/controllers/case-data.controller';
 
 validateEnv();
 
 const app = new App([
   IndexController,
   CaseController,
+  CaseDataController,
   BusinessEngagementController,
   RepresentingController,
   UserController,

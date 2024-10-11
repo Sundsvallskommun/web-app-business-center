@@ -7,6 +7,7 @@ Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumer
 | API                 | Version |
 | ------------------- | ------: |
 | Business Engagments |     2.0 |
+| CaseData            |     8.0 |
 | CaseStatus          |     3.0 |
 | ContactSettings     |     2.0 |
 | Citizen             |     2.0 |

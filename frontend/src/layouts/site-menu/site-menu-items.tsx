@@ -93,7 +93,7 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
             >
               Byt organisation
             </PopupMenu.Button>
-            <PopupMenu.Panel autoAlign autoPosition className="z-50">
+            <PopupMenu.Panel className="z-50">
               <PopupMenu.Items>
                 {businessEngagements?.map((engagement, index) => (
                   <PopupMenu.Item key={`${index}`}>

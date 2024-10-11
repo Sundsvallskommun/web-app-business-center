@@ -1,5 +1,6 @@
 import CaseMessage from '@components/mypages-sections/cases/case/meddelanden/case-message.component';
 import { Button, Divider } from '@sk-web-gui/react';
+import { Fragment } from 'react';
 
 export default function CaseMessages() {
   return (
@@ -9,10 +10,10 @@ export default function CaseMessages() {
         <Divider className="m-0" />
         {[...Array.from([1, 2, 3])].map((x, index) => {
           return (
-            <>
-              <CaseMessage key={`${index}`} />
+            <Fragment key={`${index}`}>
+              <CaseMessage />
               {index < 2 && <Divider className="m-0" />}
-            </>
+            </Fragment>
           );
         })}
         <Divider className="m-0" />

@@ -3,5 +3,5 @@
 import CaseLayout from '@components/mypages-sections/cases/case/case-layout.component';
 
 export default function layout({ params, children }) {
-  return <CaseLayout caseId={params.caseId}>{children}</CaseLayout>;
+  return <CaseLayout externalCaseId={params.externalCaseId}>{children}</CaseLayout>;
 }

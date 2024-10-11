@@ -10,7 +10,13 @@ export enum CaseCurrentTab {
   MEDDELANDEN,
 }
 
-export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { caseId: number; currentTab: string }) {
+export default function CaseTabLayout({
+  externalCaseId,
+  currentTab: _currentTab,
+}: {
+  externalCaseId: number;
+  currentTab: string;
+}) {
   const { representingMode } = useAppContext();
   const currentTab = _currentTab
     ? Object.keys(CaseCurrentTab)
@@ -22,12 +28,12 @@ export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { cas
     <div>
       <MenuBar current={currentTab} showBackground>
         <MenuBar.Item tabIndex={CaseCurrentTab.INFORMATION}>
-          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/information`}>
+          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${externalCaseId}/information`}>
             Information
           </NextLink>
         </MenuBar.Item>
         <MenuBar.Item tabIndex={CaseCurrentTab.MEDDELANDEN}>
-          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/meddelanden`}>
+          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${externalCaseId}/meddelanden`}>
             Meddelanden
           </NextLink>
         </MenuBar.Item>

@@ -6,7 +6,7 @@ import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import NextLink from 'next/link';
 
 export enum CaseCurrentTab {
-  INFORMATION,
+  UPPGIFTER,
   MEDDELANDEN,
 }
 
@@ -22,14 +22,14 @@ export default function CaseTabLayout({
     ? Object.keys(CaseCurrentTab)
         .filter((key) => isNaN(Number(key)))
         .indexOf(_currentTab[0].toUpperCase())
-    : CaseCurrentTab.INFORMATION; /** default tab */
+    : CaseCurrentTab.UPPGIFTER; /** default tab */
 
   return (
     <div>
       <MenuBar current={currentTab} showBackground>
-        <MenuBar.Item tabIndex={CaseCurrentTab.INFORMATION}>
-          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${externalCaseId}/information`}>
-            Information
+        <MenuBar.Item tabIndex={CaseCurrentTab.UPPGIFTER}>
+          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${externalCaseId}/uppgifter`}>
+            Uppgifter
           </NextLink>
         </MenuBar.Item>
         <MenuBar.Item tabIndex={CaseCurrentTab.MEDDELANDEN}>
@@ -39,7 +39,7 @@ export default function CaseTabLayout({
         </MenuBar.Item>
       </MenuBar>
       <div className="mt-40">
-        {currentTab === CaseCurrentTab.INFORMATION ? (
+        {currentTab === CaseCurrentTab.UPPGIFTER ? (
           <CaseInformation />
         ) : currentTab === CaseCurrentTab.MEDDELANDEN ? (
           <CaseMeddelanden />

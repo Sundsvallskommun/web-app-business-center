@@ -1486,6 +1486,7 @@
   dependencies:
     "@sk-web-gui/theme" "2.3.1"
     "@sk-web-gui/utils" "2.0.1"
+    lucide-react "^0.372.0"
 
 "@sk-web-gui/filter@1.1.7":
   version "1.1.7"
@@ -1495,6 +1496,7 @@
     "@sk-web-gui/badge" "1.0.4"
     "@sk-web-gui/forms" "2.1.2"
     "@sk-web-gui/utils" "2.0.1"
+    lucide-react "^0.372.0"
 
 "@sk-web-gui/forms@2.1.2":
   version "2.1.2"
@@ -1678,6 +1680,7 @@
     "@sk-web-gui/tooltip" "1.0.5"
     "@sk-web-gui/user-menu" "1.0.23"
     "@sk-web-gui/utils" "2.0.1"
+    lucide-react "^0.372.0"
 
 "@sk-web-gui/searchfield@2.1.11":
   version "2.1.11"

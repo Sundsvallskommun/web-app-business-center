@@ -1,4 +1,4 @@
-import { Button, Icon } from '@sk-web-gui/react';
+import { Button, LucideIcon } from '@sk-web-gui/react';
 
 export default function CaseMessageFiles() {
   return (
@@ -7,7 +7,7 @@ export default function CaseMessageFiles() {
         const iconType = 'file' || 'image'; // FIXME: implement filetype check
         return (
           <Button
-            leftIcon={<Icon name={iconType} />}
+            leftIcon={<LucideIcon name={iconType} />}
             variant="tertiary"
             size="sm"
             key={`${index}`}

@@ -1,11 +1,11 @@
-import { Button, Icon } from '@sk-web-gui/react';
+import { Button, LucideIcon } from '@sk-web-gui/react';
 import styles from './todos.module.scss';
 
 export const TodoContract = () => {
   return (
     <div className={styles['todo']}>
       <div className={styles['todo-type']}>
-        <Icon className={styles['todo-type-icon']} name="file-plus-2" />
+        <LucideIcon className={styles['todo-type-icon']} name="file-plus-2" />
       </div>
       <div className={styles['todo-content']}>
         <h2 className={styles['todo-content-heading']}>Förnya avtal X</h2>

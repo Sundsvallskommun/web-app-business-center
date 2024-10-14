@@ -1,4 +1,4 @@
-import { Button, Checkbox, FormControl, FormLabel, Icon } from '@sk-web-gui/react';
+import { Button, Checkbox, FormControl, FormLabel, LucideIcon } from '@sk-web-gui/react';
 import { useState } from 'react';
 import { ClientContactSetting } from '../../../interfaces/contactsettings';
 import { useApi } from '../../../services/api-service';
@@ -22,7 +22,7 @@ export const ContactSettings = () => {
           size="md"
           variant="tertiary"
           showBackground={false}
-          leftIcon={<Icon name={isEdit ? 'x' : 'pen'} />}
+          leftIcon={<LucideIcon name={isEdit ? 'x' : 'pen'} />}
           onClick={() => setIsEdit((isEdit) => !isEdit)}
         >
           {isEdit ? 'Avbryt' : 'Redigera'}

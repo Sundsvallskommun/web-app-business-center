@@ -1,4 +1,4 @@
-import { Button, Card, Icon, Label } from '@sk-web-gui/react';
+import { Button, Card, LucideIcon, Label } from '@sk-web-gui/react';
 import { IInvoice } from '@interfaces/invoice';
 import dayjs from 'dayjs';
 import { GetPdfButton } from './get-pdf-button.component';
@@ -57,7 +57,7 @@ export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
               iconButton
               onClick={() => setOpen((open) => !open)}
             >
-              <Icon name={open ? 'chevron-up' : 'chevron-down'} />
+              <LucideIcon name={open ? 'chevron-up' : 'chevron-down'} />
             </Button>
           </div>
         </div>

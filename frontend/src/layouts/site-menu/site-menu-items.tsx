@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Icon, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
+import { Button, LucideIcon, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../contexts/app.context';
 import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../../interfaces/app';
@@ -89,7 +89,7 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
               variant="secondary"
               className="bg-transparent"
               aria-label={`Byt organisation, nuvarande: ${representingEntity?.BUSINESS?.organizationName}`}
-              rightIcon={<Icon name="chevron-down" />}
+              rightIcon={<LucideIcon name="chevron-down" />}
             >
               Byt organisation
             </PopupMenu.Button>
@@ -98,7 +98,7 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
                 {businessEngagements?.map((engagement, index) => (
                   <PopupMenu.Item key={`${index}`}>
                     <Button
-                      rightIcon={<Icon name="arrow-right" />}
+                      rightIcon={<LucideIcon name="arrow-right" />}
                       onClick={() => setEngagement(engagement.organizationNumber)}
                     >
                       {engagement.organizationName}
@@ -139,7 +139,7 @@ export const useSiteMenuItems = () => {
       onClick={() => router.push('/logout')}
       showBackground={false}
       variant="tertiary"
-      leftIcon={<Icon name="log-out" />}
+      leftIcon={<LucideIcon name="log-out" />}
     >
       Logga ut
     </Button>,

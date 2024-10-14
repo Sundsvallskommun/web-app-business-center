@@ -10,7 +10,7 @@ import Main from '@layouts/main.component';
 import { useRepresentingSwitch } from '@layouts/site-menu/site-menu-items';
 import { useApi } from '@services/api-service';
 import { BusinessEngagementData } from '@services/organisation-service';
-import { Button, Icon, Pagination, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
+import { Button, LucideIcon, Pagination, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
 import { getAdjustedPathname, getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -182,7 +182,7 @@ export default function ValjForetag() {
                     color="vattjom"
                     disabled={!choosen}
                     onClick={() => onContinue()}
-                    rightIcon={<Icon name="arrow-right" />}
+                    rightIcon={<LucideIcon name="arrow-right" />}
                   >
                     Fortsätt
                   </Button>

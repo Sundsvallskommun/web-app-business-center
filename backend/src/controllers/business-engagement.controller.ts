@@ -1,3 +1,4 @@
+import { MUNICIPALITY_ID } from '@/config';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { BusinessEngagement } from '@/interfaces/business-engagement';
@@ -24,8 +25,15 @@ export class BusinessEngagementController {
   @OpenAPI({ summary: 'Return a list of business engagements for current logged in user' })
   @UseBefore(authMiddleware)
   async businessEngagments(@Req() req: RequestWithUser): Promise<ResponseData> {
-    const { guid, name } = req?.user;
-    const url = `businessengagements/1.2/engagements/${guid}`;
+    const { partyId, name } = req?.user;
+
+    const controller = new AbortController();
+    req.on('aborted', () => {
+      controller.abort();
+      req.destroy();
+    });
+
+    const url = `businessengagements/2.0/${MUNICIPALITY_ID}/engagements/${partyId}`;
     const params = {
       personalName: name,
       serviceName: 'Mina Sidor',
@@ -38,7 +46,7 @@ export class BusinessEngagementController {
     }
 
     // NOTE: set representing to session so we can use it to lookup later
-    req.session.representingChoices = res.data && res.data.engagements ? res.data.engagements : [];
+    req.session.representingBusinessChoices = res.data && res.data.engagements ? res.data.engagements : [];
 
     return { data: res.data, message: 'success' };
   }
@@ -47,6 +55,12 @@ export class BusinessEngagementController {
   @OpenAPI({ summary: 'Return businessinformation for current representing organisation' })
   @UseBefore(authMiddleware)
   async businessInformation(@Req() req: RequestWithUser, @QueryParam('engagement') engagement: BusinessEngagement): Promise<InformationResponseData> {
+    const controller = new AbortController();
+    req.on('aborted', () => {
+      controller.abort();
+      req.destroy();
+    });
+
     if (!engagement) {
       throw new HttpException(400, 'Bad Request - No choices');
     }
@@ -58,7 +72,7 @@ export class BusinessEngagementController {
       throw new HttpException(500, 'Internal Server Error - Data not complete');
     }
 
-    const url = `businessengagements/1.2/information/${engagement.organizationId}`;
+    const url = `businessengagements/2.0/${MUNICIPALITY_ID}/information/${engagement.organizationId}`;
     const params = {
       organizationName: engagement.organizationName,
       serviceName: 'Mina Sidor',

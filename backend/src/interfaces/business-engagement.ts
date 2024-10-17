@@ -15,7 +15,7 @@ export interface Address {
   city: string;
   street: string;
   postcode: string;
-  careOf: string;
+  careOf?: string;
 }
 
 interface ShareType {
@@ -56,7 +56,7 @@ export interface BusinessInformationResponse {
     cancelledLiquidation: LiquidationReason;
   };
   deregistrationDate: string;
-  companyLocation: Address;
+  companyLocation: { address: Address };
   businessSignatory: string;
   companyDescription: string;
   sharesInformation: {
@@ -72,5 +72,5 @@ export interface BusinessInformationResponse {
 }
 
 export interface BusinessInformation {
-  companyLocation?: Address;
+  companyLocation?: { address: Address };
 }

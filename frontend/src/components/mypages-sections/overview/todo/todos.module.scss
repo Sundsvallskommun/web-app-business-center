@@ -1,0 +1,54 @@
+.todos {
+  @apply mt-40 flex flex-col gap-md desktop:gap-0;
+}
+.todo {
+  @apply flex flex-wrap gap-x-12 border-1 border-divider rounded-cards p-20;
+
+  @screen desktop {
+    @apply items-center gap-x-16 border-0 flex-nowrap p-16;
+  }
+
+  &-type {
+    @apply w-36 h-36 p-8 bg-vattjom-surface-accent rounded-button;
+
+    &-icon {
+      @apply w-20 h-20;
+    }
+
+    @screen desktop {
+      @apply w-48 h-48 p-12;
+
+      &-icon {
+        @apply w-24 h-24;
+      }
+    }
+  }
+
+  &-content {
+    @apply flex flex-col gap-y-8 w-min mt-6;
+
+    @screen desktop {
+      @apply gap-y-4 grow w-full;
+    }
+
+    &-heading {
+      @apply text-h4-md;
+    }
+
+    &-text {
+      @apply m-0 text-secondary;
+    }
+  }
+
+  &-action {
+    @apply w-full mt-32;
+
+    @screen desktop {
+      @apply m-0 w-fit;
+    }
+
+    &-button {
+      @apply w-full;
+    }
+  }
+}

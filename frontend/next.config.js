@@ -1,6 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const envalid = require('envalid');
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const authDependent = envalid.makeValidator((x) => {
   const authEnabled = process.env.HEALTH_AUTH === 'true';
 
@@ -18,14 +22,15 @@ envalid.cleanEnv(process.env, {
   HEALTH_PASSWORD: authDependent(),
 });
 
-module.exports = {
+module.exports = withBundleAnalyzer({
   output: 'standalone',
   swcMinify: true,
   images: {
     //unoptimized: false,
     formats: ['image/avif', 'image/webp'],
   },
+  transpilePackages: ['lucide-react'],
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];
   },
-};
+});

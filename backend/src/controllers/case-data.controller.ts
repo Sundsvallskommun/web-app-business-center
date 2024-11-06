@@ -11,10 +11,13 @@ import { Body, Controller, Get, HttpCode, Param, Post, Put, Req, UploadedFiles, 
 import { OpenAPI } from 'routing-controllers-openapi';
 import { v4 as uuidv4 } from 'uuid';
 import { ApiResponse } from '../interfaces/service';
+import { getApiBase } from '@/config/api-config';
 
 @Controller()
 export class CaseDataController {
   private apiService = new ApiService();
+  private apiBase = getApiBase('case-data');
+
   @Get('/case-data/messages/:errandNumber')
   @OpenAPI({ summary: 'Return messages for a case' })
   @UseBefore(authMiddleware)
@@ -24,7 +27,7 @@ export class CaseDataController {
     }
 
     try {
-      const url = `case-data/8.0/${MUNICIPALITY_ID}/messages/${errandNumber}`;
+      const url = `${this.apiBase}${MUNICIPALITY_ID}/messages/${errandNumber}`;
       const res = await this.apiService.get<MessageResponse[]>({ url });
 
       if (!res.data) {
@@ -57,7 +60,7 @@ export class CaseDataController {
 
     const data: MessageRequest = {
       ...message,
-      messageID: uuidv4(),
+      messageId: uuidv4(),
       errandNumber: errandNumber,
       firstName: req.user.givenName,
       lastName: req.user.surname,
@@ -65,7 +68,7 @@ export class CaseDataController {
     };
     console.log('data', data);
     console.log('files', files);
-    const url = `case-data/8.0/${MUNICIPALITY_ID}/messages`;
+    const url = `${this.apiBase}${MUNICIPALITY_ID}/messages`;
     const res = await this.apiService.post({ url, data: data });
     return { data: res.data, message: 'success' };
   }
@@ -75,7 +78,7 @@ export class CaseDataController {
   @HttpCode(201)
   @UseBefore(authMiddleware)
   async setMessageViewed(@Param('messageId') messageId: string, @Param('isViewed') isViewed: boolean): Promise<ApiResponse<{}>> {
-    const url = `case-data/8.0/${MUNICIPALITY_ID}/messages/${messageId}/viewed/${isViewed}`;
+    const url = `${this.apiBase}${MUNICIPALITY_ID}/messages/${messageId}/viewed/${isViewed}`;
     const res = await this.apiService.put({ url });
     return { data: res.data, message: 'success' };
   }

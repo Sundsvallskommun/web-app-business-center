@@ -9,9 +9,11 @@ import { OpenAPI } from 'routing-controllers-openapi';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
+import { getApiBase } from '@/config/api-config';
 @Controller()
 export class CaseController {
   private apiService = new ApiService();
+  private apiBase = getApiBase('casestatus');
 
   @Get('/cases')
   @OpenAPI({ summary: 'Return a list of cases for current logged in user' })
@@ -25,7 +27,7 @@ export class CaseController {
       }
 
       try {
-        const url = `casestatus/3.0/${MUNICIPALITY_ID}/${formatOrgNr(representing.BUSINESS.organizationNumber)}/statuses`;
+        const url = `${this.apiBase}${MUNICIPALITY_ID}/${formatOrgNr(representing.BUSINESS.organizationNumber)}/statuses`;
         const res = await this.apiService.get<Case[]>({ url });
         if (Array.isArray(res.data) && res.data.length < 1) {
           return { data: [], message: 'success' };
@@ -53,7 +55,7 @@ export class CaseController {
     }
 
     try {
-      const url = `casestatus/3.0/${MUNICIPALITY_ID}/${externalCaseId}/status`;
+      const url = `${this.apiBase}${MUNICIPALITY_ID}/${externalCaseId}/status`;
       const res = await this.apiService.get<Case>({ url });
       if (!res.data) {
         return { data: null, message: 'error' };
@@ -73,7 +75,7 @@ export class CaseController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    const url = `casestatus/3.0/${MUNICIPALITY_ID}/${externalCaseId}/pdf`;
+    const url = `${this.apiBase}${MUNICIPALITY_ID}/${externalCaseId}/pdf`;
     const res = await this.apiService.get<CasePdf>({ url });
 
     return { data: res.data, message: 'success' };

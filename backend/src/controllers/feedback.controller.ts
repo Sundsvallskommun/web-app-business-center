@@ -6,6 +6,7 @@ import sanitizeHtml from 'sanitize-html';
 import { FEEDBACK_EMAIL, MUNICIPALITY_ID } from '@config';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
+import { getApiBase } from '@/config/api-config';
 
 const messageHTML = (body: string) => {
   const lines = sanitizeHtml(body, {
@@ -50,6 +51,7 @@ export class FeedbackDto {
 @Controller()
 export class FeedbackController {
   private apiService = new ApiService();
+  private apiBase = getApiBase('messaging');
 
   @Post('/feedback')
   @HttpCode(201)
@@ -69,7 +71,7 @@ export class FeedbackController {
         // FIXME: seems like html message gets wrong encoding? ÅÄÖ not working.
         htmlMessage: base64Encode(messageHTML(userData.body)),
       };
-      const url = `messaging/5.0/${MUNICIPALITY_ID}/email`;
+      const url = `${this.apiBase}${MUNICIPALITY_ID}/email`;
       await this.apiService.post({ url, data: sendFeedback });
     });
 

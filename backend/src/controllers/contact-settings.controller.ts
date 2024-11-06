@@ -1,22 +1,24 @@
+import { getApiBase } from '@/config/api-config';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import ApiService from '@/services/api.service';
 import authMiddleware from '@middlewares/auth.middleware';
-import { Body, Controller, Get, HttpCode, OnUndefined, Param, Patch, Post, QueryParam, Req, UseBefore } from 'routing-controllers';
+import _ from 'lodash';
+import { Body, Controller, Get, HttpCode, OnUndefined, Patch, Post, QueryParam, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { MUNICIPALITY_ID } from '../config';
+import { ContactSetting, ContactSettingChannel, NewContactSettings, UpdateContactSettings } from '../interfaces/contact-settings';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ResponseData } from '../interfaces/service';
 import { validationMiddleware } from '../middlewares/validation.middleware';
 import { ClientContactSetting } from '../responses/contactsettings.response';
 import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
 import { getBusinessAddress, getBusinessName, getEmailSettingsFromChannels, getPhoneSettingsFromChannels } from './contact-settings/utils';
-import _ from 'lodash';
-import { ContactSetting, ContactSettingChannel, NewContactSettings, UpdateContactSettings } from '../interfaces/contact-settings';
 
 @Controller()
 export class ContactSettingsController {
   private apiService = new ApiService();
+  private apiBase = getApiBase('contactsettings');
 
   getContactSettingChannels = (userData: ClientContactSetting) => {
     const emailSettings: ContactSettingChannel = {
@@ -52,7 +54,7 @@ export class ContactSettingsController {
 
     // FIXME: we probably want to go thru all pages?
     //        or do we want to have a load more button in UI?
-    const url = `contactsettings/2.0/${MUNICIPALITY_ID}/settings`;
+    const url = `${this.apiBase}${MUNICIPALITY_ID}/settings`;
     const params = {
       partyId: getRepresentingPartyId(representing),
       page: page ?? 1,
@@ -130,7 +132,7 @@ export class ContactSettingsController {
       createdById: req.user.partyId,
       contactChannels: this.getContactSettingChannels(userData),
     };
-    const url = `contactsettings/2.0/${MUNICIPALITY_ID}/settings`;
+    const url = `${this.apiBase}${MUNICIPALITY_ID}/settings`;
     const res = await this.apiService.post<any>({ url, data: newContactSettings });
 
     const data = _.merge(userData, {
@@ -149,7 +151,7 @@ export class ContactSettingsController {
       throw new HttpException(400, 'Bad Request');
     }
     const editedContactSettings: UpdateContactSettings = { alias: 'default', contactChannels: this.getContactSettingChannels(userData) };
-    const url = `contactsettings/2.0/${MUNICIPALITY_ID}/settings/${userData.id}`;
+    const url = `${this.apiBase}${MUNICIPALITY_ID}/settings/${userData.id}`;
     const res = await this.apiService.patch<any>({ url, data: editedContactSettings });
 
     const data = _.merge(userData, {

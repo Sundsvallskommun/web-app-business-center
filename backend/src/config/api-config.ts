@@ -6,7 +6,7 @@ export const APIS = [
   },
   {
     name: 'case-data',
-    version: '8.0',
+    version: '9.0',
   },
   {
     name: 'casestatus',
@@ -22,10 +22,15 @@ export const APIS = [
   },
   {
     name: 'messaging',
-    version: '5.0',
+    version: '5.1',
   },
   {
     name: 'invoices',
     version: '8.0',
   },
 ] as const;
+
+export const getApiBase = (name: string) => {
+  const api = APIS.find(api => api.name === name);
+  return `${api?.name}/${api?.version}/`;
+};

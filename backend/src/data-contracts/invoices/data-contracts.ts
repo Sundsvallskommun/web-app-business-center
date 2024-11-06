@@ -133,6 +133,23 @@ export interface InvoicesParameters {
   organizationGroup?: string;
 }
 
+export interface Problem {
+  /** @format uri */
+  instance?: string;
+  /** @format uri */
+  type?: string;
+  parameters?: Record<string, object>;
+  status?: StatusType;
+  title?: string;
+  detail?: string;
+}
+
+export interface StatusType {
+  /** @format int32 */
+  statusCode?: number;
+  reasonPhrase?: string;
+}
+
 /** Invoice-address */
 export interface Address {
   /**
@@ -310,23 +327,6 @@ export interface MetaData {
    * @example 23
    */
   totalPages?: number;
-}
-
-export interface Problem {
-  /** @format uri */
-  instance?: string;
-  /** @format uri */
-  type?: string;
-  parameters?: Record<string, object>;
-  status?: StatusType;
-  title?: string;
-  detail?: string;
-}
-
-export interface StatusType {
-  /** @format int32 */
-  statusCode?: number;
-  reasonPhrase?: string;
 }
 
 export interface ConstraintViolationProblem {

@@ -9,6 +9,16 @@
  * ---------------------------------------------------------------
  */
 
+export interface CaseStatusResponse {
+  id?: string;
+  externalCaseId?: string;
+  caseType?: string;
+  status?: string;
+  firstSubmitted?: string;
+  lastStatusChange?: string;
+  openEErrand?: boolean;
+}
+
 export interface Problem {
   /** @format uri */
   instance?: string;
@@ -24,16 +34,6 @@ export interface StatusType {
   /** @format int32 */
   statusCode?: number;
   reasonPhrase?: string;
-}
-
-export interface CaseStatusResponse {
-  id?: string;
-  externalCaseId?: string;
-  caseType?: string;
-  status?: string;
-  firstSubmitted?: string;
-  lastStatusChange?: string;
-  openEErrand?: boolean;
 }
 
 export interface CasePdfResponse {

@@ -10,6 +10,7 @@ import { OpenAPI } from 'routing-controllers-openapi';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
+import { getApiBase } from '@/config/api-config';
 @Controller()
 export class CaseController {
   private apiService = new ApiService();

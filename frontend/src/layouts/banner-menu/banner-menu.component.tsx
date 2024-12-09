@@ -40,7 +40,7 @@ export const BannerMenu: React.FC = () => {
                 <MenuBar.Item
                   key={`${index}`}
                   className="flex items-center justify-center grow"
-                  current={pathname.includes(item.props.href)}
+                  current={pathname?.includes(item.props.href)}
                 >
                   {item}
                 </MenuBar.Item>

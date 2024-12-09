@@ -19,15 +19,15 @@ function Login() {
   const { representingMode, setRepresentingMode, isRepresentingModeBusiness, isRepresentingModePrivate } =
     useAppContext();
 
-  const isLoggedOut = searchParams.get('loggedout') === '';
-  const failMessage = searchParams.get('failMessage');
+  const isLoggedOut = searchParams?.get('loggedout') === '';
+  const failMessage = searchParams?.get('failMessage');
 
   // Turn on/off automatic login
   const autoLogin = false;
 
   const onLogin = () => {
     // NOTE: send user to login with SSO
-    const path = searchParams.get('path') || '';
+    const path = searchParams?.get('path') || '';
     const myPagesAdjustedPathname =
       getAdjustedPathname(path, representingMode) || getRepresentingModeRoute(representingMode);
     router.push(
@@ -36,7 +36,7 @@ function Login() {
   };
 
   useEffect(() => {
-    const path = searchParams.get('path') || '';
+    const path = searchParams?.get('path') || '';
     const wantedRepresentingMode = getRepresentingMode(path);
     if (wantedRepresentingMode !== null) {
       setRepresentingMode(wantedRepresentingMode);

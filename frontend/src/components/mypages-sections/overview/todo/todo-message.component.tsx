@@ -1,11 +1,12 @@
-import { Button, LucideIcon } from '@sk-web-gui/react';
+import { Button, Icon } from '@sk-web-gui/react';
+import { Mail } from 'lucide-react';
 import styles from './todos.module.scss';
 
 export const TodoMessage = () => {
   return (
     <div className={styles['todo']}>
       <div className={styles['todo-type']}>
-        <LucideIcon className={styles['todo-type-icon']} name="mail" />
+        <Icon className={styles['todo-type-icon']} icon={<Mail />} />
       </div>
       <div className={styles['todo-content']}>
         <h2 className={styles['todo-content-heading']}>Nytt meddelande på ärende X</h2>

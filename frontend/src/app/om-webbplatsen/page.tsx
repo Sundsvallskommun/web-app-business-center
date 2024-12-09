@@ -1,6 +1,7 @@
 'use client';
 
-import { Card, LucideIcon } from '@sk-web-gui/react';
+import { Card, Icon } from '@sk-web-gui/react';
+import { ExternalLink } from 'lucide-react';
 import { PagesBreadcrumbsLayout } from '../../layouts/pages-breadcrumbs-layout.component';
 
 export default function OmWebbplatsen() {
@@ -47,7 +48,7 @@ export default function OmWebbplatsen() {
           <Card.Body>
             <Card.Header>
               <h2>
-                Personuppgifter <LucideIcon size={24} className="!pl-0" name="external-link" />
+                Personuppgifter <Icon size={24} className="!pl-0" icon={<ExternalLink />} />
               </h2>
             </Card.Header>
             <Card.Text>

@@ -1,6 +1,7 @@
 import { IInvoice } from '@interfaces/invoice';
 import { getInvoicePdf } from '@services/invoice-service';
-import { Button, LucideIcon, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
+import { Button, Icon, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
+import { ArrowDownToLine } from 'lucide-react';
 
 export const GetPdfButton: React.FC<{
   isLoading?: { [key: string]: boolean };
@@ -53,7 +54,7 @@ export const GetPdfButton: React.FC<{
       loading={isLoading?.[item.invoiceNumber]}
       loadingText="Hämtar"
       onClick={() => getPdf(item.invoiceNumber)}
-      rightIcon={<LucideIcon name="arrow-down-to-line" />}
+      rightIcon={<Icon icon={<ArrowDownToLine />} />}
     >
       Hämta faktura
     </Button>

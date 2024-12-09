@@ -1,5 +1,6 @@
-import { Button, LucideIcon } from '@sk-web-gui/react';
+import { Button, Icon } from '@sk-web-gui/react';
 import _ from 'lodash';
+import { Pen, X } from 'lucide-react';
 import { useState } from 'react';
 import { ClientContactSetting } from '../../../interfaces/contactsettings';
 import { useApi } from '../../../services/api-service';
@@ -35,7 +36,7 @@ export const ContactDetails = () => {
           size="md"
           variant="tertiary"
           showBackground={false}
-          leftIcon={<LucideIcon name={isEdit ? 'x' : 'pen'} />}
+          leftIcon={<Icon icon={isEdit ? <X /> : <Pen />} />}
           onClick={() => setIsEdit((isEdit) => !isEdit)}
         >
           {isEdit ? 'Avbryt' : 'Redigera'}

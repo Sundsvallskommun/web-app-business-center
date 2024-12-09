@@ -1,4 +1,4 @@
-import { Button, LucideIcon } from '@sk-web-gui/react';
+import { Button, Icon } from '@sk-web-gui/react';
 import _ from 'lodash';
 import { Pen, X } from 'lucide-react';
 import { useState } from 'react';

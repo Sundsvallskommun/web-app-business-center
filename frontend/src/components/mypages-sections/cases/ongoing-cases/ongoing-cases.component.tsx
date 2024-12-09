@@ -4,7 +4,7 @@ import { useAppContext } from '@contexts/app.context';
 import { CaseResponse, CasesData } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { casesHandler, emptyCaseList, getOngoing } from '@services/case-service';
-import { AutoTable, AutoTableHeader, Button, LucideIcon, Label, useThemeQueries } from '@sk-web-gui/react';
+import { AutoTable, AutoTableHeader, Button, Icon, Label, useThemeQueries } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { ArrowRight } from 'lucide-react';
 import NextLink from 'next/link';

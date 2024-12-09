@@ -29,11 +29,11 @@ export const LoginGuard: React.FC<{ tabKey?: string; children?: React.ReactNode 
 
   useInactivityAlert({
     logoutCallback: handleLogout,
-    inactivityCondition: !userIsFetching && !userError && !pathname.includes('login'),
+    inactivityCondition: !userIsFetching && !userError && !pathname?.includes('login'),
   });
 
   useEffect(() => {
-    if (!userIsFetching && userError && !pathname.includes('login')) {
+    if (!userIsFetching && userError && !pathname?.includes('login')) {
       const path = !window.location.pathname.includes('logout') ? window.location.pathname : '/';
       router.push(`/login?path=${path}`);
     }

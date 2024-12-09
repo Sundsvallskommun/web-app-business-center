@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Divider, Icon, MenuVertical, Modal, cx } from '@sk-web-gui/react';
+import { ArrowRight, LogOut, Menu } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAppContext } from '../../contexts/app.context';
@@ -31,7 +32,7 @@ export const MobileMenu = () => {
   return (
     <div>
       <Button iconButton variant="tertiary" showBackground={false} size="lg" onClick={openHandler}>
-        <Icon name="menu" />
+        <Icon icon={<Menu />} />
       </Button>
 
       <Modal
@@ -74,7 +75,7 @@ export const MobileMenu = () => {
             }}
             showBackground={false}
             variant="tertiary"
-            rightIcon={<Icon name="arrow-right" />}
+            rightIcon={<Icon icon={<ArrowRight />} />}
           >
             Till Mina sidor {representingMode === RepresentingMode.BUSINESS ? 'privat' : 'företag'}
           </Button>
@@ -86,7 +87,7 @@ export const MobileMenu = () => {
             onClick={() => router.push('/logout')}
             showBackground={false}
             variant="secondary"
-            leftIcon={<Icon name="log-out" />}
+            leftIcon={<Icon icon={<LogOut />} />}
           >
             Logga ut
           </Button>

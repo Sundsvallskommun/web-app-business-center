@@ -11,7 +11,8 @@ import { useRepresentingSwitch } from '@layouts/site-menu/site-menu-items';
 import { useApi } from '@services/api-service';
 import { BusinessEngagementData } from '@services/organisation-service';
 import { Button, Icon, Pagination, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
-import { getAdjustedPathname } from '@utils/representingModeRoute';
+import { getAdjustedPathname, getRepresentingModeRoute } from '@utils/representingModeRoute';
+import { ArrowRight } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -50,7 +51,7 @@ export default function ValjForetag() {
     if (!res.error) {
       const path = searchParams.get('path') || '';
       const myPagesAdjustedPathname = getAdjustedPathname(path, representingMode);
-      router.push(myPagesAdjustedPathname);
+      router.push(myPagesAdjustedPathname || getRepresentingModeRoute(RepresentingMode.BUSINESS));
     } else {
       setError('Misslyckades med att välja företag');
     }
@@ -182,7 +183,7 @@ export default function ValjForetag() {
                     color="vattjom"
                     disabled={!choosen}
                     onClick={() => onContinue()}
-                    rightIcon={<Icon name="arrow-right" />}
+                    rightIcon={<Icon icon={<ArrowRight />} />}
                   >
                     Fortsätt
                   </Button>

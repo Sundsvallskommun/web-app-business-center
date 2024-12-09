@@ -5,7 +5,6 @@ import FullscreenMainSpinner from '../../../components/spinner/fullscreen-main-s
 import { useAppContext } from '../../../contexts/app.context';
 import { RepresentingEntity, RepresentingMode } from '../../../interfaces/app';
 import { DefaultLayout } from '../../../layouts/default-layout.component';
-import { PagesLayout } from '../../../layouts/pages-layout.component';
 import { useApi } from '../../../services/api-service';
 
 export default function Layout({ children }) {
@@ -37,9 +36,5 @@ export default function Layout({ children }) {
     return <FullscreenMainSpinner />;
   }
 
-  return (
-    <DefaultLayout>
-      <PagesLayout>{children}</PagesLayout>
-    </DefaultLayout>
-  );
+  return <DefaultLayout>{children}</DefaultLayout>;
 }

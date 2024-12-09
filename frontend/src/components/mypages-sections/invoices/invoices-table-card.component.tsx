@@ -1,8 +1,9 @@
-import { Button, Card, Icon, Label } from '@sk-web-gui/react';
 import { IInvoice } from '@interfaces/invoice';
+import { Button, Card, Icon, Label } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
-import { GetPdfButton } from './get-pdf-button.component';
+import { CircleChevronDown, CircleChevronUp } from 'lucide-react';
 import { useState } from 'react';
+import { GetPdfButton } from './get-pdf-button.component';
 
 export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
   const [open, setOpen] = useState(false);
@@ -57,7 +58,7 @@ export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
               iconButton
               onClick={() => setOpen((open) => !open)}
             >
-              <Icon name={open ? 'chevron-up' : 'chevron-down'} />
+              <Icon icon={open ? <CircleChevronUp /> : <CircleChevronDown />} />
             </Button>
           </div>
         </div>

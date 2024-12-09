@@ -9,6 +9,7 @@ import { ApiResponse } from '../interfaces/service';
 import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
 import { mockedInvoices } from './tmp_mocks/invoices';
 import { MUNICIPALITY_ID } from '@/config';
+import { getApiBase } from '@/config/api-config';
 
 const tmpTestInvoices = {
   invoices: mockedInvoices,
@@ -28,6 +29,7 @@ const emptyInvoice = {
 @Controller()
 export class InvoicesController {
   private apiService = new ApiService();
+  private apiBase = getApiBase('invoices');
 
   @Get('/invoices')
   @OpenAPI({ summary: 'Return a list of invoices for current represented organization' })
@@ -51,7 +53,7 @@ export class InvoicesController {
     };
 
     try {
-      const url = `invoices/8.0/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION`;
+      const url = `${this.apiBase}${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION`;
       const res = await this.apiService.get<InvoicesResponse>({ url, params });
 
       if (res.data && Array.isArray(res.data?.invoices) && res.data.invoices.length < 1) {
@@ -78,7 +80,7 @@ export class InvoicesController {
     }
 
     // Issuer, municipality orgNr: 2120002411
-    const url = `invoices/8.0/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION/2120002411/${id}/pdf`;
+    const url = `${this.apiBase}${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION/2120002411/${id}/pdf`;
     const res = await this.apiService.get<InvoicePdf>({ url });
 
     return { data: res.data, message: 'success' };

@@ -1,5 +1,6 @@
 import { ICase } from '@interfaces/case';
-import { Button, LucideIcon } from '@sk-web-gui/react';
+import { Button, Icon } from '@sk-web-gui/react';
+import { FilePen } from 'lucide-react';
 import styles from './todos.module.scss';
 
 interface TodoCaseProps {
@@ -10,7 +11,7 @@ export const TodoCase = ({ data }: TodoCaseProps) => {
   return (
     <div className={styles['todo']}>
       <div className={styles['todo-type']}>
-        <LucideIcon className={styles['todo-type-icon']} name="file-pen" />
+        <Icon className={styles['todo-type-icon']} icon={<FilePen />} />
       </div>
       <div className={styles['todo-content']}>
         <h2 className={styles['todo-content-heading']}>{`Komplettering behövs på ärende #${data.caseId}`}</h2>

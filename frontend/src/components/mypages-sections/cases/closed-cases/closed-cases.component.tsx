@@ -4,8 +4,9 @@ import { useAppContext } from '@contexts/app.context';
 import { CaseResponse, CasesData } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { casesHandler, emptyCaseList, getClosed } from '@services/case-service';
-import { AutoTable, AutoTableHeader, Button, Label, LucideIcon, useThemeQueries } from '@sk-web-gui/react';
+import { AutoTable, AutoTableHeader, Button, Icon, Label, useThemeQueries } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
+import { ArrowRight } from 'lucide-react';
 import NextLink from 'next/link';
 import { Fragment, useRef } from 'react';
 import { CaseTableCard } from '../case-table-card.component';
@@ -78,7 +79,7 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
       renderColumn: (value) => (
         <div className="w-full text-right">
           <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${value}`}>
-            <Button size="sm" showBackground variant="tertiary" as="span" rightIcon={<LucideIcon name="arrow-right" />}>
+            <Button size="sm" showBackground variant="tertiary" as="span" rightIcon={<Icon icon={<ArrowRight />} />}>
               Visa
             </Button>
           </NextLink>

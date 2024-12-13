@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
-import { IsString, IsOptional, IsBoolean, IsNumber, IsArray, ValidateNested, IsEmail } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Address } from '../interfaces/business-engagement';
 import { User } from '../interfaces/users.interface';
 import { IsNullable } from '../utils/custom-validation-classes';
-import { Address } from '../interfaces/business-engagement';
 
 export class ClientContactSettingNotifications {
   @IsBoolean()
@@ -39,7 +39,7 @@ export class ClientContactSetting {
   @IsString()
   @IsOptional()
   @IsNullable()
-  email: User['email'] | null;
+  email: string | null;
   @IsString()
   @IsOptional()
   @IsNullable()

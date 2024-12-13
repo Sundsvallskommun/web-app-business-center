@@ -73,3 +73,7 @@ export const isValidUrl = (string: string) => {
   }
   return url.protocol === 'http:' || url.protocol === 'https:';
 };
+
+export const dataDir = (path: string): string => {
+  return __dirname + '/../../data/' + path;
+};

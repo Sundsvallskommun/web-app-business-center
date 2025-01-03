@@ -3,13 +3,12 @@
 import { CardElevated } from '@components/cards/card-elevated.component';
 import { NoRepresent } from '@components/no-represent/no-represent';
 import { useAppContext } from '@contexts/app.context';
+import { Engagement } from '@data-contracts/businessengagements/data-contracts';
 import { RepresentingMode } from '@interfaces/app';
-import { BusinessEngagement } from '@interfaces/organisation-info';
 import { EntryLayout } from '@layouts/entry-layout.component';
 import Main from '@layouts/main.component';
 import { useRepresentingSwitch } from '@layouts/site-menu/site-menu-items';
-import { useApi } from '@services/api-service';
-import { BusinessEngagementData } from '@services/organisation-service';
+import { useCombinedBusinessEngagements } from '@services/organisation-service';
 import { Button, Icon, Pagination, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
 import { getAdjustedPathname, getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { ArrowRight } from 'lucide-react';
@@ -23,15 +22,7 @@ export default function ValjForetag() {
   const { isMinDesktop, isMinSmallDevice } = useThemeQueries();
   const searchParams = useSearchParams();
 
-  const { data: businessEngagements, isLoading: businessEngagementsIsLoading } = useApi<
-    BusinessEngagementData,
-    Error,
-    BusinessEngagement[]
-  >({
-    url: '/businessengagements',
-    method: 'get',
-    dataHandler: (data?: BusinessEngagementData) => data?.engagements ?? [],
-  });
+  const { engagements, engagementsIsLoading } = useCombinedBusinessEngagements();
   const { setRepresenting } = useRepresentingSwitch();
 
   const [choosen, setChoosen] = useState('');
@@ -41,9 +32,9 @@ export default function ValjForetag() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pages, setPages] = useState<number>(1);
 
-  const onChoice = (engagement: BusinessEngagement) => {
+  const onChoice = (engagement: Engagement) => {
     setError('');
-    setChoosen(engagement.organizationNumber);
+    setChoosen(engagement.organizationNumber ?? '');
   };
 
   const onContinue = async () => {
@@ -58,13 +49,13 @@ export default function ValjForetag() {
   };
 
   useEffect(() => {
-    if (businessEngagements) {
-      setPages(Math.ceil(businessEngagements.length / pageSize));
+    if (engagements) {
+      setPages(Math.ceil(engagements.length / pageSize));
     }
-  }, [currentPage, businessEngagements, pageSize]);
+  }, [currentPage, engagements, pageSize]);
 
-  // Logged in user have no businessengagements
-  if (!businessEngagementsIsLoading && businessEngagements?.length == 0) {
+  // Logged in user have no engagements
+  if (!engagementsIsLoading && engagements?.length == 0) {
     return (
       <main>
         <NoRepresent />
@@ -73,7 +64,7 @@ export default function ValjForetag() {
   }
   return (
     <>
-      {businessEngagementsIsLoading ? (
+      {engagementsIsLoading ? (
         <main>
           <div className="w-screen h-screen flex place-items-center place-content-center">
             <Spinner aria-label="Hämtar företag" />
@@ -89,20 +80,16 @@ export default function ValjForetag() {
             <CardElevated className="py-24 lg:py-40 px-14 lg:px-80">
               <Main>
                 <div>
-                  <h1 className="text-h1-small lg:text-h2-lg">Vem vill du företräda?</h1>
-                  <p className="pb-12">
-                    Du kan företräda andra än dig själv på Mina sidor för företag. Välj det företag eller den person du
-                    vill företräda och klicka sedan på Fortsätt.
-                  </p>
+                  <h1 className="text-h1-small lg:text-h2-lg">Välj företaget du vill företräda</h1>
                 </div>
                 <div className="break-words lg:my-56">
-                  {businessEngagements?.length === 0 ? (
+                  {engagements?.length === 0 ? (
                     <div className="p-4 gap-2 grid grid-cols-2 bg-gray-lighter">
                       <div className="row-header-name">Inga företag hittades</div>
                     </div>
                   ) : (
                     <Table background className={cx('mt-40', !isMinDesktop && '[&_.sk-table-thead]:sr-only')}>
-                      <Table.Header className="bg-background-200">
+                      <Table.Header>
                         {isMinDesktop ? (
                           <>
                             <Table.HeaderColumn className="sr-only">Välj</Table.HeaderColumn>
@@ -114,7 +101,7 @@ export default function ValjForetag() {
                         )}
                       </Table.Header>
                       <Table.Body>
-                        {businessEngagements?.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((e) => (
+                        {engagements?.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((e) => (
                           <Table.Row
                             key={`org-${e.organizationNumber}-${e.organizationName}`}
                             className={cx('[&>td]:text-base [&>td]:cursor-default', !isMinDesktop && '[&>td]:h-full')}
@@ -130,7 +117,10 @@ export default function ValjForetag() {
                                     aria-label={`${e.organizationName}, välj organisation`}
                                   />
                                 </Table.Column>
-                                <Table.Column>{e.organizationName}</Table.Column>
+                                <Table.Column>
+                                  <span className="font-bold">{e.organizationName}</span>
+                                  {e.isRepresentative ? <span className="ml-[.5em]">(ombud)</span> : null}
+                                </Table.Column>
                                 <Table.Column>{e.organizationNumber}</Table.Column>
                               </>
                             ) : (
@@ -144,12 +134,13 @@ export default function ValjForetag() {
                                   />
                                   <div className="grow flex flex-col gap-8">
                                     <div className="flex flex-col gap-y-4">
-                                      <div>Namn</div>
-                                      <div className="font-bold">{e.organizationName}</div>
+                                      <div className="font-bold">
+                                        <span className="font-bold">{e.organizationName}</span>
+                                        {e.isRepresentative ? <span className="ml-[.5em]">(ombud)</span> : null}
+                                      </div>
                                     </div>
                                     <div className="flex flex-col gap-y-4">
-                                      <div>Organisationsnummer</div>
-                                      <div className="font-bold">{e.organizationNumber}</div>
+                                      <div>{`Org.nr. ${e.organizationNumber}`}</div>
                                     </div>
                                   </div>
                                 </div>
@@ -178,7 +169,7 @@ export default function ValjForetag() {
                 <div className="flex justify-end">
                   <Button
                     data-cy="representingEntityButton"
-                    loading={businessEngagementsIsLoading}
+                    loading={engagementsIsLoading}
                     loadingText={'Hämtar bolagsengagemang'}
                     color="vattjom"
                     disabled={!choosen}

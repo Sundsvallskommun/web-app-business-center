@@ -14,7 +14,7 @@ export interface ICase {
   validFrom: string;
   validTo: string;
   serviceDate: string;
-  status: { code: statusCodes; color: string; label: string };
+  status: { code: statusCodes; color: 'neutral' | 'info' | 'warning' | 'error'; label: string };
   lastStatusChange: string;
 }
 

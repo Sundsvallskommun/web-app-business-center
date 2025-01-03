@@ -12,7 +12,9 @@ export const PagesBreadcrumbsLayout = ({
   return (
     <>
       <BannerMenu />
-      {breadcrumbs && <div className="max-w-main-content w-full my-24 px-20 desktop:px-0">{breadcrumbs}</div>}
+      {breadcrumbs && (
+        <div className="max-w-main-content w-full mt-24 desktop:mb-24 px-20 desktop:px-0">{breadcrumbs}</div>
+      )}
       <MainLayout className={cx(breadcrumbs && 'mt-60')}>{children}</MainLayout>
     </>
   );

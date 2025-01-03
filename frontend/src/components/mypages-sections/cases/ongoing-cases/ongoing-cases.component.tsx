@@ -46,12 +46,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       screenReaderOnly: false,
       renderColumn: (value, item) => (
         <div className="text-left">
-          <Label
-            rounded
-            inverted={item.status?.color !== 'neutral'}
-            color={item.status?.color}
-            className={`whitespace-nowrap `}
-          >
+          <Label rounded inverted={item.status?.color !== 'neutral'} color={item.status?.color}>
             {value}
           </Label>
         </div>
@@ -104,6 +99,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
               <AutoTable
                 className="[&_table]:table-fixed [&_table>*>tr>*:nth-child(1)]:w-[40rem] [&_table>*>tr>*:nth-child(1)]:max-w-[40rem]"
                 wrappingBorder
+                tableSortable={false}
                 pageSize={9999}
                 footer={false}
                 background={false}

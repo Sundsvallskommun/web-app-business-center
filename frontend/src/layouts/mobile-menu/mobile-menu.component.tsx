@@ -31,7 +31,7 @@ export const MobileMenu = () => {
 
   return (
     <div>
-      <Button iconButton variant="tertiary" showBackground={false} size="lg" onClick={openHandler}>
+      <Button iconButton size="lg" onClick={openHandler}>
         <Icon icon={<Menu />} />
       </Button>
 
@@ -67,6 +67,9 @@ export const MobileMenu = () => {
             </MenuVertical.Nav>
           </MenuVertical.Provider>
           <Divider className="m-0 grow-0" />
+          {representingMode === RepresentingMode.BUSINESS ? (
+            <MyPagesBusinessSwitch submitCallback={() => setIsOpen(false)} />
+          ) : null}
           <Button
             className="w-full"
             onClick={() => {
@@ -79,7 +82,6 @@ export const MobileMenu = () => {
           >
             Till Mina sidor {representingMode === RepresentingMode.BUSINESS ? 'privat' : 'företag'}
           </Button>
-          <MyPagesBusinessSwitch submitCallback={() => setIsOpen(false)} />
         </Modal.Content>
         <Modal.Footer>
           <Button

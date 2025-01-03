@@ -15,7 +15,7 @@ export const APIS = [
   },
   {
     name: 'casestatus',
-    version: '3.0',
+    version: '3.1',
   },
   {
     name: 'contactsettings',

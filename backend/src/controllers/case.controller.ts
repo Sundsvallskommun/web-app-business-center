@@ -29,7 +29,7 @@ export class CaseController {
       }
 
       try {
-        const url = `${this.apiBase}${MUNICIPALITY_ID}/${formatOrgNr(representing.BUSINESS.organizationNumber)}/statuses`;
+        const url = `${this.apiBase}/${MUNICIPALITY_ID}/${formatOrgNr(representing.BUSINESS.organizationNumber)}/statuses`;
         const res = await this.apiService.get<CaseStatusResponse[]>({ url });
         if (Array.isArray(res.data) && res.data.length < 1) {
           return { data: [], message: 'success' };
@@ -44,7 +44,21 @@ export class CaseController {
         }
       }
     } else {
-      return { data: [], message: 'Not yet implemented' };
+      try {
+        const url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses`;
+        const res = await this.apiService.get<CaseStatusResponse[]>({ url });
+        if (Array.isArray(res.data) && res.data.length < 1) {
+          return { data: [], message: 'success' };
+        }
+
+        return { data: res.data, message: 'success' };
+      } catch (error) {
+        if (error.status === 404) {
+          return { data: [], message: '404 from api, Assumed empty array' };
+        } else {
+          return { data: [], message: 'error' };
+        }
+      }
     }
   }
 

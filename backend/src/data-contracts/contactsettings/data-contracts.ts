@@ -9,6 +9,109 @@
  * ---------------------------------------------------------------
  */
 
+export interface Problem {
+  /** @format uri */
+  instance?: string;
+  /** @format uri */
+  type?: string;
+  parameters?: Record<string, object>;
+  status?: StatusType;
+  detail?: string;
+  title?: string;
+}
+
+export interface StatusType {
+  /** @format int32 */
+  statusCode?: number;
+  reasonPhrase?: string;
+}
+
+export interface ConstraintViolationProblem {
+  cause?: ThrowableProblem;
+  stackTrace?: {
+    classLoaderName?: string;
+    moduleName?: string;
+    moduleVersion?: string;
+    methodName?: string;
+    fileName?: string;
+    /** @format int32 */
+    lineNumber?: number;
+    className?: string;
+    nativeMethod?: boolean;
+  }[];
+  /** @format uri */
+  type?: string;
+  status?: StatusType;
+  violations?: Violation[];
+  title?: string;
+  message?: string;
+  /** @format uri */
+  instance?: string;
+  parameters?: Record<string, object>;
+  detail?: string;
+  suppressed?: {
+    stackTrace?: {
+      classLoaderName?: string;
+      moduleName?: string;
+      moduleVersion?: string;
+      methodName?: string;
+      fileName?: string;
+      /** @format int32 */
+      lineNumber?: number;
+      className?: string;
+      nativeMethod?: boolean;
+    }[];
+    message?: string;
+    localizedMessage?: string;
+  }[];
+  localizedMessage?: string;
+}
+
+export interface ThrowableProblem {
+  cause?: ThrowableProblem;
+  stackTrace?: {
+    classLoaderName?: string;
+    moduleName?: string;
+    moduleVersion?: string;
+    methodName?: string;
+    fileName?: string;
+    /** @format int32 */
+    lineNumber?: number;
+    className?: string;
+    nativeMethod?: boolean;
+  }[];
+  message?: string;
+  /** @format uri */
+  instance?: string;
+  /** @format uri */
+  type?: string;
+  parameters?: Record<string, object>;
+  status?: StatusType;
+  detail?: string;
+  title?: string;
+  suppressed?: {
+    stackTrace?: {
+      classLoaderName?: string;
+      moduleName?: string;
+      moduleVersion?: string;
+      methodName?: string;
+      fileName?: string;
+      /** @format int32 */
+      lineNumber?: number;
+      className?: string;
+      nativeMethod?: boolean;
+    }[];
+    message?: string;
+    localizedMessage?: string;
+  }[];
+  localizedMessage?: string;
+}
+
+export interface Violation {
+  field?: string;
+  message?: string;
+}
+
 /** ContactChannel model */
 export interface ContactChannel {
   /** ContactMethod model */
@@ -43,12 +146,12 @@ export interface ContactSettingCreateRequest {
    * ID of the person or organization to whom the contact setting applies. Set to null when creating a 'virtual' contact setting.
    * @example "15aee472-46ab-4f03-9605-68bd64ebc73f"
    */
-  partyId: string;
+  partyId?: string;
   /**
    * ID of the contact setting that created this instance. Mandatory for virtual contact settings.
    * @example "9ca9425e-42cf-4145-a9e7-d77e1ea9e5b0"
    */
-  createdById: string;
+  createdById?: string;
   /**
    * Alias for this contact setting
    * @example "My contact-settings"
@@ -56,109 +159,6 @@ export interface ContactSettingCreateRequest {
   alias?: string;
   /** List of contact channels connected to this contact setting */
   contactChannels?: ContactChannel[];
-}
-
-export interface Problem {
-  title?: string;
-  detail?: string;
-  /** @format uri */
-  instance?: string;
-  /** @format uri */
-  type?: string;
-  parameters?: Record<string, object>;
-  status?: StatusType;
-}
-
-export interface StatusType {
-  /** @format int32 */
-  statusCode?: number;
-  reasonPhrase?: string;
-}
-
-export interface ConstraintViolationProblem {
-  cause?: ThrowableProblem;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
-  /** @format uri */
-  type?: string;
-  status?: StatusType;
-  violations?: Violation[];
-  title?: string;
-  message?: string;
-  detail?: string;
-  /** @format uri */
-  instance?: string;
-  parameters?: Record<string, object>;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
-}
-
-export interface ThrowableProblem {
-  cause?: ThrowableProblem;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
-  message?: string;
-  title?: string;
-  detail?: string;
-  /** @format uri */
-  instance?: string;
-  /** @format uri */
-  type?: string;
-  parameters?: Record<string, object>;
-  status?: StatusType;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
-}
-
-export interface Violation {
-  field?: string;
-  message?: string;
 }
 
 /** DelegateCreateRequest model */

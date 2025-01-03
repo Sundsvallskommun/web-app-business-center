@@ -19,10 +19,6 @@
     @apply max-w-content px-20 desktop:px-0 w-full;
   }
 
-  .text-content .ingress {
-    @apply text-xl leading-[1.5];
-  }
-
   .form-error-message {
     @apply mb-4;
   }
@@ -63,14 +59,26 @@ body {
 
 @layer components {
   .main-container {
-    @apply max-w-main-content grow w-full flex flex-col items-center my-80;
+    @apply max-w-main-content grow w-full flex flex-col items-center my-40 desktop:my-80;
   }
   .text-content {
     @apply flex flex-col max-w-[76.4rem];
 
+    h1 {
+      @apply mb-8;
+    }
+
+    h3 + p {
+      @apply mt-8;
+    }
+
     * + p,
     * + ul {
       @apply mt-16 mb-0;
+    }
+
+    .ingress {
+      @apply mt-0;
     }
 
     ul {
@@ -79,6 +87,12 @@ body {
       li + li {
         @apply mt-16;
       }
+    }
+  }
+
+  .sk {
+    &-label {
+      @apply h-auto max-h-max;
     }
   }
 }

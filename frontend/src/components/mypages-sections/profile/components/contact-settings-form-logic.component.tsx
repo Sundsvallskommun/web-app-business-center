@@ -1,7 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useSnackbar } from '@sk-web-gui/react';
 import _ from 'lodash';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { FormProvider, UseFormReturn, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { ClientContactSetting } from '../../../../interfaces/contactsettings';
@@ -71,6 +71,16 @@ const formSchema = yup
   })
   .required();
 
+const formConvertedData = (data: Partial<ClientContactSetting>) => {
+  const newDefaultValues = Object.assign(data, {
+    notifications: {
+      email_disabled: !data?.notifications?.email_disabled,
+      phone_disabled: !data?.notifications?.phone_disabled,
+    },
+  });
+  return newDefaultValues;
+};
+
 export default function ContactSettingsFormLogic({
   children,
   formData = defaultContactSettingsForm,
@@ -101,22 +111,12 @@ export default function ContactSettingsFormLogic({
 
   const { handleSubmit, reset } = context;
 
-  const prevObjectRef = useRef();
-
   useEffect(() => {
-    if (!_.isEqual(prevObjectRef.current, formData)) {
-      const newDefaultValues = _.merge(JSON.parse(JSON.stringify(formData)), {
-        notifications: {
-          email_disabled: !formData?.notifications?.email_disabled,
-          phone_disabled: !formData?.notifications?.phone_disabled,
-        },
-      });
-
-      reset(newDefaultValues);
-
-      /** @ts-expect-error undefined issue, is defined within useEffect */
-      prevObjectRef.current = formData;
+    const newFormData = { ...formData };
+    if (JSON.stringify(newFormData) !== JSON.stringify(context.formState.defaultValues)) {
+      reset(formConvertedData(newFormData));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData, reset]);
 
   const _onSubmit = async (values: Partial<ClientContactSetting>) => {
@@ -140,6 +140,7 @@ export default function ContactSettingsFormLogic({
       });
       const res = await apiCall(data);
       if (!res.error) {
+        reset(formConvertedData(res));
         queryClient.invalidateQueries({
           queryKey: ['/contactsettings'],
         });

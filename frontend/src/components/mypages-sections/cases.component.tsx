@@ -4,12 +4,12 @@ import { OngoingCases } from './cases/ongoing-cases/ongoing-cases.component';
 export default function Cases() {
   return (
     <div className="flex flex-col gap-40">
-      <div>
+      <div className="text-content">
         <h1>Ärenden</h1>
-        <span>
+        <p className="ingress">
           Qorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet
           odio mattis.
-        </span>
+        </p>
       </div>
       <div>
         <OngoingCases header={<h2 className="text-h3">Pågående</h2>} />

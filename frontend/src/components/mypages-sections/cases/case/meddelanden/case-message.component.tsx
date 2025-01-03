@@ -17,7 +17,7 @@ export default function CaseMessage() {
           <div className="text-large ellipsis">Handläggaren</div>
           <div className="text-small text-secondary">2024-09-06, 12:12</div>
           <div className="flex justify-end grow">
-            <Label color="vattjom" inverted>
+            <Label rounded color="vattjom" inverted>
               Nytt
             </Label>
           </div>

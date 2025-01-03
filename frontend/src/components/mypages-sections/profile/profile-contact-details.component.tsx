@@ -1,6 +1,6 @@
-import { Button, Icon } from '@sk-web-gui/react';
+import { Button, Icon, Link } from '@sk-web-gui/react';
 import _ from 'lodash';
-import { Pen, X } from 'lucide-react';
+import { Info, Pen, X } from 'lucide-react';
 import { useState } from 'react';
 import { ClientContactSetting } from '../../../interfaces/contactsettings';
 import { useApi } from '../../../services/api-service';
@@ -27,11 +27,11 @@ export const ContactDetails = () => {
   return (
     <ContentCard>
       <ContentCardHeader>
-        <h1 className="text-h4-lg mb-0">
+        <h2 className="text-h4-sm medium-device:text-h4-lg mb-0">
           <div className="flex items-center gap-md">
             <span>Kontaktuppgifter</span>
           </div>
-        </h1>
+        </h2>
         <Button
           size="md"
           variant="tertiary"
@@ -45,6 +45,17 @@ export const ContactDetails = () => {
 
       <ContentCardBody>
         <ContactSettingsFormLogic onSubmitSuccess={() => setIsEdit(false)} formData={contactsettings}>
+          {isEdit ? (
+            <div className="flex items-start max-w-fit mb-24 gap-12 px-14 py-12 bg-background-200 rounded-button">
+              <Icon icon={<Info />} className="shrink-0" />
+              <span>
+                Vi hämtar namn och adress från Skatteverket. Stämmer inte uppgifterna kan du ändra dem på{' '}
+                <Link href="https://www.skatteverket.se" external>
+                  Skatteverkets hemsida
+                </Link>
+              </span>
+            </div>
+          ) : null}
           <ContactDetailsGrid>
             <FormBox header="Namn">
               <div>{contactsettings?.name ?? EmptyField('Inget namn tillagt')}</div>{' '}
@@ -61,7 +72,7 @@ export const ContactDetails = () => {
           </ContactDetailsGrid>
 
           {isEdit && (
-            <div className="mt-56">
+            <div className="mt-40">
               <Button type="submit" color="vattjom">
                 Spara
               </Button>

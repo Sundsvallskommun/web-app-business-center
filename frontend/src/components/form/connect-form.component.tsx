@@ -29,11 +29,13 @@ export const ConnectFormInput: React.FC<ConnectFormInputProps> = ({ name, header
           <Input {...methods.register(name)} {...inputProps} />
         </>
       )}
-      <div className="my-sm">
-        <FormErrorMessage className="text-error">
-          {(methods.formState.errors?.[name]?.message as string) ?? ''}
-        </FormErrorMessage>
-      </div>
+      {methods.formState.errors?.[name]?.message ? (
+        <div className="my-sm">
+          <FormErrorMessage className="text-error">
+            {(methods.formState.errors?.[name]?.message as string) ?? ''}
+          </FormErrorMessage>
+        </div>
+      ) : null}
     </FormControl>
   );
 };

@@ -31,12 +31,7 @@ export const InvoicesTable: React.FC<{
       screenReaderOnly: false,
       renderColumn: (value, item) => (
         <div className="text-left">
-          <Label
-            rounded
-            inverted={item.invoiceStatus?.color !== 'neutral'}
-            color={item.invoiceStatus?.color}
-            className={`whitespace-nowrap `}
-          >
+          <Label rounded inverted={item.invoiceStatus?.color !== 'neutral'} color={item.invoiceStatus?.color}>
             {value}
           </Label>
         </div>
@@ -57,10 +52,10 @@ export const InvoicesTable: React.FC<{
       property: 'totalAmount',
       screenReaderOnly: false,
       isColumnSortable: true,
-      renderColumn: (value) => <div className="text-left">{value}</div>,
+      renderColumn: (value) => <div className="text-left">{`${value} kr`}</div>,
     },
     {
-      label: 'Fakturanummer/OCR',
+      label: 'OCR-nummer',
       sticky: false,
       property: 'ocrNumber',
       screenReaderOnly: false,
@@ -96,6 +91,7 @@ export const InvoicesTable: React.FC<{
             {isMinDesktop ? (
               <AutoTable
                 className="[&_table]:table-fixed"
+                tableSortable={false}
                 wrappingBorder
                 pageSize={9999}
                 footer={false}
@@ -104,7 +100,12 @@ export const InvoicesTable: React.FC<{
                 autoheaders={headers}
               />
             ) : (
-              <CardList data={props.data?.invoices} Card={InvoiceTableCard} />
+              <CardList
+                data={props.data?.invoices}
+                Card={InvoiceTableCard}
+                amountDisplayed={9999}
+                showAmountString={false}
+              />
             )}
           </div>
         )}

@@ -1,13 +1,14 @@
-import { BusinessInformation } from '@/interfaces/business-engagement';
+import { ClientBusinessInformation } from '@/interfaces/business-engagement';
 import { RepresentsDto } from '@dtos/represents.dto';
 import { HttpException } from '@exceptions/HttpException';
 import { RequestWithUser } from '@interfaces/auth.interface';
 import authMiddleware from '@middlewares/auth.middleware';
 import { validationMiddleware } from '@middlewares/validation.middleware';
-import { Body, Controller, Get, Param, Post, Req, UseBefore } from 'routing-controllers';
+import { Body, Controller, Get, Post, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { RepresentingEntity, RepresentingEntityClient, RepresentingMode } from '../interfaces/representing.interface';
 import { BusinessEngagementController } from './business-engagement.controller';
+import { Engagement } from '@/data-contracts/businessengagements/data-contracts';
 
 interface ResponseData {
   data: any;
@@ -21,17 +22,17 @@ export class RepresentingController {
   getBusinessInformation = async (req, selected) => {
     const businessController = new BusinessEngagementController();
     const businessInformationRes = await businessController.businessInformation(req, selected);
-    let businessInformation: BusinessInformation = {};
+    let businessInformation: ClientBusinessInformation = {};
     if (businessInformationRes.data?.information) {
       businessInformation = businessInformationRes.data.information;
     }
     return businessInformation;
   };
 
-  getSelected = <TSelected extends Record<keyof IntersectByProperties<TSelected, RepresentsDto>, unknown>>(
+  getSelected = <TSelected extends Record<string, any>, MatchKey extends keyof IntersectByProperties<TSelected, RepresentsDto>>(
     choices: TSelected[],
     selectedRepresenting: RepresentsDto,
-    matchKey: keyof IntersectByProperties<TSelected, RepresentsDto>,
+    matchKey: MatchKey,
   ): TSelected => {
     if (!choices) {
       throw new HttpException(400, 'Bad Request - No choices');
@@ -54,7 +55,7 @@ export class RepresentingController {
 
   getDefaultBUSINESS = async (req: RequestWithUser) => {
     const { representingBusinessChoices } = req?.session;
-    const selected = this.getSelected(representingBusinessChoices, req.body, 'organizationNumber');
+    const selected = this.getSelected<Engagement, 'organizationNumber'>(representingBusinessChoices, req.body, 'organizationNumber');
     const businessInformation = await this.getBusinessInformation(req, selected);
 
     return {

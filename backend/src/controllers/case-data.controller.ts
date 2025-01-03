@@ -27,7 +27,7 @@ export class CaseDataController {
     }
 
     try {
-      const url = `${this.apiBase}${MUNICIPALITY_ID}/messages/${errandNumber}`;
+      const url = `${this.apiBase}/${MUNICIPALITY_ID}/messages/${errandNumber}`;
       const res = await this.apiService.get<MessageResponse[]>({ url });
 
       if (!res.data) {
@@ -66,9 +66,8 @@ export class CaseDataController {
       lastName: req.user.surname,
       attachmentRequests: files.map(x => ({ content: x.buffer.toString('base64'), name: x.filename, contentType: x.mimetype })),
     };
-    console.log('data', data);
-    console.log('files', files);
-    const url = `${this.apiBase}${MUNICIPALITY_ID}/messages`;
+
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/messages`;
     const res = await this.apiService.post({ url, data: data });
     return { data: res.data, message: 'success' };
   }
@@ -78,7 +77,7 @@ export class CaseDataController {
   @HttpCode(201)
   @UseBefore(authMiddleware)
   async setMessageViewed(@Param('messageId') messageId: string, @Param('isViewed') isViewed: boolean): Promise<ApiResponse<{}>> {
-    const url = `${this.apiBase}${MUNICIPALITY_ID}/messages/${messageId}/viewed/${isViewed}`;
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/messages/${messageId}/viewed/${isViewed}`;
     const res = await this.apiService.put({ url });
     return { data: res.data, message: 'success' };
   }

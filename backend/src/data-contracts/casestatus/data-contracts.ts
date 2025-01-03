@@ -20,14 +20,14 @@ export interface CaseStatusResponse {
 }
 
 export interface Problem {
+  title?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  title?: string;
-  detail?: string;
 }
 
 export interface StatusType {
@@ -36,12 +36,151 @@ export interface StatusType {
   reasonPhrase?: string;
 }
 
-export interface CasePdfResponse {
+export interface ConstraintViolationProblem {
+  cause?: ThrowableProblem;
+  stackTrace?: {
+    classLoaderName?: string;
+    moduleName?: string;
+    moduleVersion?: string;
+    methodName?: string;
+    fileName?: string;
+    /** @format int32 */
+    lineNumber?: number;
+    className?: string;
+    nativeMethod?: boolean;
+  }[];
+  /** @format uri */
+  type?: string;
+  status?: StatusType;
+  violations?: Violation[];
+  title?: string;
+  message?: string;
+  detail?: string;
+  /** @format uri */
+  instance?: string;
+  parameters?: Record<string, object>;
+  suppressed?: {
+    stackTrace?: {
+      classLoaderName?: string;
+      moduleName?: string;
+      moduleVersion?: string;
+      methodName?: string;
+      fileName?: string;
+      /** @format int32 */
+      lineNumber?: number;
+      className?: string;
+      nativeMethod?: boolean;
+    }[];
+    message?: string;
+    localizedMessage?: string;
+  }[];
+  localizedMessage?: string;
+}
+
+export interface ThrowableProblem {
+  cause?: ThrowableProblem;
+  stackTrace?: {
+    classLoaderName?: string;
+    moduleName?: string;
+    moduleVersion?: string;
+    methodName?: string;
+    fileName?: string;
+    /** @format int32 */
+    lineNumber?: number;
+    className?: string;
+    nativeMethod?: boolean;
+  }[];
+  message?: string;
+  title?: string;
+  detail?: string;
+  /** @format uri */
+  instance?: string;
+  /** @format uri */
+  type?: string;
+  parameters?: Record<string, object>;
+  status?: StatusType;
+  suppressed?: {
+    stackTrace?: {
+      classLoaderName?: string;
+      moduleName?: string;
+      moduleVersion?: string;
+      methodName?: string;
+      fileName?: string;
+      /** @format int32 */
+      lineNumber?: number;
+      className?: string;
+      nativeMethod?: boolean;
+    }[];
+    message?: string;
+    localizedMessage?: string;
+  }[];
+  localizedMessage?: string;
+}
+
+export interface Violation {
+  field?: string;
+  message?: string;
+}
+
+/** Case status response */
+export interface CaseStatusResponse {
+  /**
+   * Case id
+   * @example "1234567890"
+   */
+  id?: string;
+  /**
+   * External case id
+   * @example "1234567890"
+   */
   externalCaseId?: string;
+  /**
+   * Case type
+   * @example "Building permit"
+   */
+  caseType?: string;
+  /**
+   * Status
+   * @example "In progress"
+   */
+  status?: string;
+  /**
+   * First submitted
+   * @example "2021-01-01"
+   */
+  firstSubmitted?: string;
+  /**
+   * Last status change
+   * @example "2021-01-01"
+   */
+  lastStatusChange?: string;
+  openEErrand?: boolean;
+}
+
+/** Case status response */
+export interface CasePdfResponse {
+  /**
+   * External case id
+   * @example "1234567890"
+   */
+  externalCaseId?: string;
+  /**
+   * Base64 encoded PDF
+   * @example "JVBERi0x"
+   */
   base64?: string;
 }
 
+/** Case status response */
 export interface OepStatusResponse {
+  /**
+   * Key
+   * @example "status"
+   */
   key?: string;
+  /**
+   * Value
+   * @example "In progress"
+   */
   value?: string;
 }

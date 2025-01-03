@@ -2,7 +2,9 @@ import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
-import { Case, CasePdf } from '@/interfaces/case.interface';
+// import { Case, CasePdf } from '@/interfaces/case.interface';
+import { getApiBase } from '@/config/api-config';
+import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import ApiService from '@/services/api.service';
 import authMiddleware from '@middlewares/auth.middleware';
 import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
@@ -10,7 +12,6 @@ import { OpenAPI } from 'routing-controllers-openapi';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
-import { getApiBase } from '@/config/api-config';
 @Controller()
 export class CaseController {
   private apiService = new ApiService();
@@ -19,7 +20,7 @@ export class CaseController {
   @Get('/cases')
   @OpenAPI({ summary: 'Return a list of cases for current logged in user' })
   @UseBefore(authMiddleware)
-  async getCases(@Req() req: RequestWithUser): Promise<ApiResponse<Case[]>> {
+  async getCases(@Req() req: RequestWithUser): Promise<ApiResponse<CaseStatusResponse[]>> {
     const { representing } = req?.session;
 
     if (representing?.mode === RepresentingMode.BUSINESS) {
@@ -29,7 +30,7 @@ export class CaseController {
 
       try {
         const url = `${this.apiBase}${MUNICIPALITY_ID}/${formatOrgNr(representing.BUSINESS.organizationNumber)}/statuses`;
-        const res = await this.apiService.get<Case[]>({ url });
+        const res = await this.apiService.get<CaseStatusResponse[]>({ url });
         if (Array.isArray(res.data) && res.data.length < 1) {
           return { data: [], message: 'success' };
         }
@@ -50,14 +51,14 @@ export class CaseController {
   @Get('/cases/:externalCaseId')
   @OpenAPI({ summary: 'Return a case' })
   @UseBefore(authMiddleware)
-  async getCase(@Param('externalCaseId') externalCaseId: number): Promise<ApiResponse<Case | null>> {
+  async getCase(@Param('externalCaseId') externalCaseId: number): Promise<ApiResponse<CaseStatusResponse | null>> {
     if (!externalCaseId) {
       throw new HttpException(400, 'Bad Request');
     }
 
     try {
       const url = `${this.apiBase}${MUNICIPALITY_ID}/${externalCaseId}/status`;
-      const res = await this.apiService.get<Case>({ url });
+      const res = await this.apiService.get<CaseStatusResponse>({ url });
       if (!res.data) {
         return { data: null, message: 'error' };
       }
@@ -71,13 +72,13 @@ export class CaseController {
   @Get('/casepdf/:externalCaseId')
   @OpenAPI({ summary: 'Return the base64 encoded pdf by case externalCaseId' })
   @UseBefore(authMiddleware)
-  async getCasePdf(@Req() req: RequestWithUser, @Param('externalCaseId') externalCaseId: string): Promise<ApiResponse<CasePdf>> {
+  async getCasePdf(@Req() req: RequestWithUser, @Param('externalCaseId') externalCaseId: string): Promise<ApiResponse<CasePdfResponse>> {
     if (!externalCaseId) {
       throw new HttpException(400, 'Bad Request');
     }
 
     const url = `${this.apiBase}${MUNICIPALITY_ID}/${externalCaseId}/pdf`;
-    const res = await this.apiService.get<CasePdf>({ url });
+    const res = await this.apiService.get<CasePdfResponse>({ url });
 
     return { data: res.data, message: 'success' };
   }

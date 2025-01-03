@@ -1,5 +1,5 @@
+import { Engagement } from '@/data-contracts/businessengagements/data-contracts';
 import { User } from '@/interfaces/users.interface';
-import { BusinessEngagement } from '../interfaces/business-engagement';
 import { RepresentingEntity } from '../interfaces/representing.interface';
 
 declare module 'express-session' {
@@ -8,7 +8,7 @@ declare module 'express-session' {
     user?: User;
     representing?: RepresentingEntity;
     passport?: any;
-    representingBusinessChoices?: BusinessEngagement[];
+    representingBusinessChoices?: Engagement[];
     messages: string[];
   }
 }

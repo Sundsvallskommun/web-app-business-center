@@ -14,7 +14,7 @@ const EmptyField = (text: string) => {
 
 const getAddress = (address) => {
   if (address) {
-    return `${_.capitalize(address.street)}, ${address.postcode} ${_.capitalize(address.city)}`;
+    return `${address.street ? `${_.capitalize(address.street)}, ` : ''}${address.postcode} ${_.capitalize(address.city)}`;
   } else {
     return null;
   }

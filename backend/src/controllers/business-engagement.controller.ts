@@ -92,7 +92,7 @@ export class BusinessEngagementController {
 
     const responseData: InformationResponse = {
       information: {
-        companyLocation: res.data.companyLocation,
+        companyLocation: (res.data.companyLocation as { address: BusinessInformation['companyLocation'] })?.address ?? null,
       },
     };
 

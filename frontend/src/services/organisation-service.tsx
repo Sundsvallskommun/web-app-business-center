@@ -38,7 +38,7 @@ export const useCombinedBusinessEngagements = () => {
     url: '/businessengagements',
     method: 'get',
   });
-  // MyRepresentatives api Currently not working as intended
+  // MyRepresentatives api currently disabled
   // const { data: businessRepresentatives, isLoading: businessRepresentativesIsLoading } = useApi<Engagement[]>({
   //   url: '/myrepresentatives',
   //   method: 'get',

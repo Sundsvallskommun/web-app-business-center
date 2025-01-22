@@ -1,4 +1,4 @@
-import { BusinessInformation } from './business-engagement';
+import { BusinessInformation } from '@/data-contracts/businessengagements/data-contracts';
 
 export enum RepresentingMode {
   PRIVATE,

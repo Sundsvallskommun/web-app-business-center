@@ -39,7 +39,7 @@ export interface WebMessageParty {
    * The message party id
    * @format uuid
    */
-  partyId: string;
+  partyId?: string;
   /** External references */
   externalReferences?: ExternalReference[];
 }
@@ -68,8 +68,8 @@ export interface Problem {
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  title?: string;
   detail?: string;
+  title?: string;
 }
 
 export interface StatusType {
@@ -667,8 +667,8 @@ export interface ThrowableProblem {
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  title?: string;
   detail?: string;
+  title?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -781,15 +781,20 @@ export interface UserMessage {
    * @format date-time
    */
   sent?: string;
+  /**
+   * The message subject
+   * @example "Important message"
+   */
+  subject?: string;
   recipients?: Recipient[];
   attachments?: MessageAttachment[];
 }
 
 /** User messages model */
 export interface UserMessages {
-  messages?: UserMessage[];
   /** PagingMetaData model */
   _meta?: PagingMetaData;
+  messages?: UserMessage[];
 }
 
 export interface LetterStatistics {

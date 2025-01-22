@@ -1,7 +1,7 @@
 import { IInvoice } from '@interfaces/invoice';
 import { Button, Card, Icon, Label } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
-import { CircleChevronDown, CircleChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { GetPdfButton } from './get-pdf-button.component';
 
@@ -19,7 +19,7 @@ export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
                   rounded
                   inverted={item.invoiceStatus?.color !== 'neutral'}
                   color={item.invoiceStatus?.color}
-                  className={`whitespace-nowrap my-12`}
+                  className={`my-12`}
                 >
                   {item?.invoiceStatus?.label}
                 </Label>
@@ -27,18 +27,18 @@ export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
             </div>
             <div>
               <div className="flex gap-x-8">
-                <strong>Förfallodatum</strong>
-                <span>{dayjs(item.dueDate).format('YYYY-MM-DD')}</span>
+                <strong>Belopp</strong>
+                <span>{`${item.totalAmount} kr`}</span>
               </div>
               <div className="flex gap-x-8">
-                <strong>Fakturabelopp</strong>
-                <span>{item.totalAmount}</span>
+                <strong>Förfallodatum</strong>
+                <span>{dayjs(item.dueDate).format('YYYY-MM-DD')}</span>
               </div>
 
               {open && (
                 <div>
                   <div className="flex gap-x-8">
-                    <strong>Fakturanummer/OCR-nummer</strong>
+                    <strong>OCR-nummer</strong>
                     <span>{item.ocrNumber}</span>
                   </div>
                   <div className="flex gap-x-8 mt-24">
@@ -58,7 +58,7 @@ export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
               iconButton
               onClick={() => setOpen((open) => !open)}
             >
-              <Icon icon={open ? <CircleChevronUp /> : <CircleChevronDown />} />
+              <Icon icon={open ? <ChevronUp /> : <ChevronDown />} />
             </Button>
           </div>
         </div>

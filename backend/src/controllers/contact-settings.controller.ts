@@ -54,7 +54,7 @@ export class ContactSettingsController {
 
     // FIXME: we probably want to go thru all pages?
     //        or do we want to have a load more button in UI?
-    const url = `${this.apiBase}${MUNICIPALITY_ID}/settings`;
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings`;
     const params = {
       partyId: getRepresentingPartyId(representing),
       page: page ?? 1,
@@ -132,7 +132,7 @@ export class ContactSettingsController {
       createdById: req.user.partyId,
       contactChannels: this.getContactSettingChannels(userData),
     };
-    const url = `${this.apiBase}${MUNICIPALITY_ID}/settings`;
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings`;
     const res = await this.apiService.post<any>({ url, data: newContactSettings });
 
     const data = _.merge(userData, {
@@ -151,7 +151,7 @@ export class ContactSettingsController {
       throw new HttpException(400, 'Bad Request');
     }
     const editedContactSettings: UpdateContactSettings = { alias: 'default', contactChannels: this.getContactSettingChannels(userData) };
-    const url = `${this.apiBase}${MUNICIPALITY_ID}/settings/${userData.id}`;
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings/${userData.id}`;
     const res = await this.apiService.patch<any>({ url, data: editedContactSettings });
 
     const data = _.merge(userData, {

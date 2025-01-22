@@ -23,7 +23,7 @@ export default function CaseLayout(props: { externalCaseId: number; children: Re
     url: `/case-data/messages/${caseData?.caseId}`,
     method: 'get',
   });
-  console.log('caseMessages', caseMessages);
+
   const { representingMode } = useAppContext();
   return (
     <PagesBreadcrumbsLayout

@@ -1,13 +1,12 @@
 'use client';
 
+import { useCombinedBusinessEngagements } from '@services/organisation-service';
 import { Button, Icon, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
 import { ArrowRight, ChevronDownCircle, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '../../contexts/app.context';
 import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../../interfaces/app';
-import { BusinessEngagement } from '../../interfaces/organisation-info';
 import { useApi, useApiService } from '../../services/api-service';
-import { BusinessEngagementData } from '../../services/organisation-service';
 import { getRepresentingModeRoute } from '../../utils/representingModeRoute';
 
 export const useRepresentingSwitch = () => {
@@ -63,11 +62,7 @@ export const MyPagesToggle = () => {
 
 export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = ({ submitCallback }) => {
   const { setRepresenting } = useRepresentingSwitch();
-  const { data: businessEngagements } = useApi<BusinessEngagementData, Error, BusinessEngagement[]>({
-    url: '/businessengagements',
-    method: 'get',
-    dataHandler: (data?: BusinessEngagementData) => data?.engagements ?? [],
-  });
+  const { engagements } = useCombinedBusinessEngagements();
   const { data: representingEntity } = useApi<RepresentingEntity>({
     url: '/representing',
     method: 'get',
@@ -96,13 +91,14 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
             </PopupMenu.Button>
             <PopupMenu.Panel className="z-50">
               <PopupMenu.Items>
-                {businessEngagements?.map((engagement, index) => (
+                {engagements?.map((engagement, index) => (
                   <PopupMenu.Item key={`${index}`}>
                     <Button
                       rightIcon={<Icon icon={<ArrowRight />} />}
                       onClick={() => setEngagement(engagement.organizationNumber)}
                     >
-                      {engagement.organizationName}
+                      <span className="font-bold">{engagement.organizationName}</span>
+                      {engagement.isRepresentative ? <span className="ml-[.5em]">(ombud)</span> : null}
                     </Button>
                   </PopupMenu.Item>
                 ))}
@@ -117,9 +113,10 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
               className="w-full"
               onSelectValue={(organizationNumber) => setEngagement(organizationNumber)}
             >
-              {businessEngagements?.map((engagement, index) => (
+              {engagements?.map((engagement, index) => (
                 <Select.Option key={`${index}`} value={engagement.organizationNumber}>
-                  {engagement.organizationName}
+                  <span className="font-bold">{engagement.organizationName}</span>
+                  {engagement.isRepresentative ? <span className="ml-[.5em]">(ombud)</span> : null}
                 </Select.Option>
               ))}
             </Select>

@@ -4,13 +4,18 @@ export const APIS = [
     name: 'businessengagements',
     version: '2.0',
   },
+  /** MyRepresentatives api Currently not working as intended */
+  // {
+  //   name: 'myrepresentatives',
+  //   version: '3.0',
+  // },
   {
     name: 'case-data',
     version: '9.0',
   },
   {
     name: 'casestatus',
-    version: '3.0',
+    version: '3.1',
   },
   {
     name: 'contactsettings',
@@ -32,5 +37,5 @@ export const APIS = [
 
 export const getApiBase = (name: string) => {
   const api = APIS.find(api => api.name === name);
-  return `${api?.name}/${api?.version}/`;
+  return `${api?.name}/${api?.version}`;
 };

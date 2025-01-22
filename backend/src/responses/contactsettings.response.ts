@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Address } from '../interfaces/business-engagement';
 import { User } from '../interfaces/users.interface';
 import { IsNullable } from '../utils/custom-validation-classes';
+import { Address } from '@/data-contracts/businessengagements/data-contracts';
 
 export class ClientContactSettingNotifications {
   @IsBoolean()
@@ -22,11 +22,14 @@ export class ClientContactSettingDecicionsAndDocuments {
 
 export class ClientContactSettingAddress implements Omit<Address, 'careOf'> {
   @IsString()
-  street: string;
+  @IsOptional()
+  street?: string;
   @IsString()
-  postcode: string;
+  @IsOptional()
+  postcode?: string;
   @IsString()
-  city: string;
+  @IsOptional()
+  city?: string;
 }
 
 export class ClientContactSetting {
@@ -48,7 +51,7 @@ export class ClientContactSetting {
   @Type(() => ClientContactSettingAddress)
   @IsOptional()
   @IsNullable()
-  address: ClientContactSettingAddress | null;
+  address?: ClientContactSettingAddress | null;
   @ValidateNested({ each: true })
   @Type(() => ClientContactSettingNotifications)
   @IsOptional()

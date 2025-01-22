@@ -65,11 +65,9 @@ export default function Invoices() {
     return (
       <div className="flex flex-col gap-[6.4rem]">
         <div>
-          <h1>Fakturor</h1>
-          <p>
-            Jorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet
-            odio mattis.
-          </p>
+          <div className="text-content">
+            <h1>Fakturor</h1>
+          </div>
           <div className="mt-32">
             <div className="flex flex-col gap-4">
               <span>Att betala</span>

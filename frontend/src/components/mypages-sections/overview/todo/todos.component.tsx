@@ -42,12 +42,12 @@ export const Todos = () => {
   return (
     <section>
       <h1>Att göra</h1>
-      <p className="text-lead">Här visas något som man kan skriva om här.</p>
+      <p className="text-lead">Här visas ärenden som du behöver ta hand om</p>
       <div className={styles['todos']}>
         {casesIsFetching ? (
-          <p className="text-secondary">Laddar att göra</p>
+          <p className="text-secondary">Laddar ärenden..</p>
         ) : todoCases.length < 1 ? (
-          <p className="text-secondary">Här finns inget att göra</p>
+          <p className="text-secondary">Du har inga ärenden att ta hand om</p>
         ) : (
           <>
             {isMinDesktop && <Divider />}

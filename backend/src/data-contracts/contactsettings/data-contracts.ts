@@ -9,55 +9,6 @@
  * ---------------------------------------------------------------
  */
 
-/** ContactChannel model */
-export interface ContactChannel {
-  /** ContactMethod model */
-  contactMethod: ContactMethod;
-  /**
-   * Alias for the destination
-   * @example "Private phone"
-   */
-  alias: string;
-  /**
-   * Point of destination
-   * @example "+46701234567"
-   */
-  destination: string;
-  /**
-   * Signal if channel should be used or not when sending message
-   * @default false
-   * @example true
-   */
-  disabled?: boolean;
-}
-
-/** ContactMethod model */
-export enum ContactMethod {
-  SMS = 'SMS',
-  EMAIL = 'EMAIL',
-}
-
-/** ContactSettingCreateRequest model */
-export interface ContactSettingCreateRequest {
-  /**
-   * ID of the person or organization to whom the contact setting applies. Set to null when creating a 'virtual' contact setting.
-   * @example "15aee472-46ab-4f03-9605-68bd64ebc73f"
-   */
-  partyId: string;
-  /**
-   * ID of the contact setting that created this instance. Mandatory for virtual contact settings.
-   * @example "9ca9425e-42cf-4145-a9e7-d77e1ea9e5b0"
-   */
-  createdById: string;
-  /**
-   * Alias for this contact setting
-   * @example "My contact-settings"
-   */
-  alias?: string;
-  /** List of contact channels connected to this contact setting */
-  contactChannels?: ContactChannel[];
-}
-
 export interface Problem {
   /** @format uri */
   instance?: string;
@@ -159,6 +110,55 @@ export interface ThrowableProblem {
 export interface Violation {
   field?: string;
   message?: string;
+}
+
+/** ContactChannel model */
+export interface ContactChannel {
+  /** ContactMethod model */
+  contactMethod: ContactMethod;
+  /**
+   * Alias for the destination
+   * @example "Private phone"
+   */
+  alias: string;
+  /**
+   * Point of destination
+   * @example "+46701234567"
+   */
+  destination: string;
+  /**
+   * Signal if channel should be used or not when sending message
+   * @default false
+   * @example true
+   */
+  disabled?: boolean;
+}
+
+/** ContactMethod model */
+export enum ContactMethod {
+  SMS = 'SMS',
+  EMAIL = 'EMAIL',
+}
+
+/** ContactSettingCreateRequest model */
+export interface ContactSettingCreateRequest {
+  /**
+   * ID of the person or organization to whom the contact setting applies. Set to null when creating a 'virtual' contact setting.
+   * @example "15aee472-46ab-4f03-9605-68bd64ebc73f"
+   */
+  partyId?: string;
+  /**
+   * ID of the contact setting that created this instance. Mandatory for virtual contact settings.
+   * @example "9ca9425e-42cf-4145-a9e7-d77e1ea9e5b0"
+   */
+  createdById?: string;
+  /**
+   * Alias for this contact setting
+   * @example "My contact-settings"
+   */
+  alias?: string;
+  /** List of contact channels connected to this contact setting */
+  contactChannels?: ContactChannel[];
 }
 
 /** DelegateCreateRequest model */

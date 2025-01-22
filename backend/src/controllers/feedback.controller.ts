@@ -71,7 +71,7 @@ export class FeedbackController {
         // FIXME: seems like html message gets wrong encoding? ÅÄÖ not working.
         htmlMessage: base64Encode(messageHTML(userData.body)),
       };
-      const url = `${this.apiBase}${MUNICIPALITY_ID}/email`;
+      const url = `${this.apiBase}/${MUNICIPALITY_ID}/email`;
       await this.apiService.post({ url, data: sendFeedback });
     });
 

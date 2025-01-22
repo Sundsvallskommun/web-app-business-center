@@ -9,7 +9,7 @@ export default function CaseInformation() {
       <h1>Uppgifter</h1>
       <div className="mt-24 border-1 border-divider rounded-cards p-20 desktop:p-32 flex flex-col gap-y-24 desktop:gap-y-40">
         <div className="flex flex-col gap-y-24 items-start">
-          <Label inverted color={caseData?.status.color}>
+          <Label rounded inverted color={caseData?.status.color}>
             {caseData?.status.label}
           </Label>
           <h2 className="text-h2-sm desktop:text-h2-lg">{caseData?.subject.caseType}</h2>

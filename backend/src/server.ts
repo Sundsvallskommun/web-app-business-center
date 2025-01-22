@@ -1,16 +1,16 @@
 import App from '@/app';
-import { IndexController } from '@controllers/index.controller';
-import { CaseController } from '@controllers/case.controller';
-import validateEnv from '@utils/validateEnv';
+import { CaseDataController } from '@/controllers/case-data.controller';
 import { BusinessEngagementController } from '@controllers/business-engagement.controller';
+import { CaseController } from '@controllers/case.controller';
+import { FeedbackController } from '@controllers/feedback.controller';
+import { IndexController } from '@controllers/index.controller';
+import { NotificationsController } from '@controllers/notifications.controller';
 import { RepresentingController } from '@controllers/representing.controller';
 import { UserController } from '@controllers/user.controller';
-import { NotificationsController } from '@controllers/notifications.controller';
-import { FeedbackController } from '@controllers/feedback.controller';
-import { InvoicesController } from './controllers/invoices.controller';
-import { HealthController } from './controllers/health.controller';
+import validateEnv from '@utils/validateEnv';
 import { ContactSettingsController } from './controllers/contact-settings.controller';
-import { CaseDataController } from '@/controllers/case-data.controller';
+import { HealthController } from './controllers/health.controller';
+import { InvoicesController } from './controllers/invoices.controller';
 
 validateEnv();
 

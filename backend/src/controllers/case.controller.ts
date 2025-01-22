@@ -1,7 +1,6 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
-// import { Case, CasePdf } from '@/interfaces/case.interface';
 import { getApiBase } from '@/config/api-config';
 import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import ApiService from '@/services/api.service';
@@ -78,6 +77,7 @@ export class CaseController {
 
       return { data: res.data, message: 'success' };
     } catch (error) {
+      console.error(error);
       return { data: null, message: 'error' };
     }
   }

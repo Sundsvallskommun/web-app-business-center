@@ -27,12 +27,12 @@ export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
             </div>
             <div>
               <div className="flex gap-x-8">
-                <strong>Förfallodatum</strong>
-                <span>{dayjs(item.dueDate).format('YYYY-MM-DD')}</span>
+                <strong>Belopp</strong>
+                <span>{`${item.totalAmount} kr`}</span>
               </div>
               <div className="flex gap-x-8">
-                <strong>Fakturabelopp</strong>
-                <span>{`${item.totalAmount} kr`}</span>
+                <strong>Förfallodatum</strong>
+                <span>{dayjs(item.dueDate).format('YYYY-MM-DD')}</span>
               </div>
 
               {open && (

@@ -49,6 +49,8 @@ export interface WebMessageRequest {
   party: WebMessageParty;
   /** Message */
   message: string;
+  /** Sender */
+  sender?: WebMessageSender;
   /**
    * Determines if the message should be added to the internal or external OeP instance
    * @example "internal"
@@ -61,6 +63,15 @@ export interface WebMessageRequest {
   attachments?: WebMessageAttachment[];
 }
 
+/** Sender */
+export interface WebMessageSender {
+  /**
+   * The user ID of the sender. I.e. employee ID
+   * @example "joe01doe"
+   */
+  userId?: string;
+}
+
 export interface Problem {
   /** @format uri */
   instance?: string;
@@ -68,8 +79,8 @@ export interface Problem {
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  detail?: string;
   title?: string;
+  detail?: string;
 }
 
 export interface StatusType {
@@ -281,25 +292,15 @@ export interface Address {
    */
   lastName?: string;
   /**
-   * The city
-   * @example "Main Street"
+   * The address
+   * @example "Main Street 1"
    */
-  city?: string;
+  address?: string;
   /**
    * The apartment number
    * @example "1101"
    */
   apartmentNumber?: string;
-  /**
-   * The organization number of the recipient
-   * @example "123456-7890"
-   */
-  organizationNumber?: string;
-  /**
-   * The address
-   * @example "Main Street 1"
-   */
-  address?: string;
   /**
    * The care of
    * @example "c/o John Doe"
@@ -310,6 +311,11 @@ export interface Address {
    * @example "12345"
    */
   zipCode?: string;
+  /**
+   * The city
+   * @example "Main Street"
+   */
+  city?: string;
   /**
    * The country
    * @example "Sweden"
@@ -334,8 +340,7 @@ export interface LetterAttachment {
 
 /** Party */
 export interface LetterParty {
-  /** @minItems 1 */
-  partyIds: string[];
+  partyIds?: string[];
   addresses?: Address[];
   /** External references */
   externalReferences?: ExternalReference[];
@@ -667,8 +672,8 @@ export interface ThrowableProblem {
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  detail?: string;
   title?: string;
+  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;

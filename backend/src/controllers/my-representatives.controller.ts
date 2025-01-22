@@ -11,7 +11,7 @@ import { OpenAPI } from 'routing-controllers-openapi';
 
 @Controller()
 export class MyRepresentativesController {
-  /** ! Currently not included in server.ts, MyRepresentatives api Currently not working as intended */
+  /** ! Currently not included in server.ts, MyRepresentatives api currently disabled */
   private apiService = new ApiService();
   private apiBase = getApiBase('myrepresentatives');
 

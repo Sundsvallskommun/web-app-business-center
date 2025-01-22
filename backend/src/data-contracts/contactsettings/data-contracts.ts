@@ -16,8 +16,8 @@ export interface Problem {
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  detail?: string;
   title?: string;
+  detail?: string;
 }
 
 export interface StatusType {
@@ -87,8 +87,8 @@ export interface ThrowableProblem {
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  detail?: string;
   title?: string;
+  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;

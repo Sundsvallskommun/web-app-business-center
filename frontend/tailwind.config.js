@@ -1,3 +1,5 @@
+import { preset } from '@sk-web-gui/core';
+
 module.exports = {
   content: [
     './src/app/**/*.{js,ts,jsx,tsx}',
@@ -11,7 +13,7 @@ module.exports = {
       pattern: /(bg|text|border)-(info|warning|error|neutral)/,
     },
   ],
-  darkMode: 'class', // or 'media' or 'class'
+  darkMode: 'selector', // or 'media' or 'class'
   theme: {
     extend: {
       maxWidth: {
@@ -23,6 +25,5 @@ module.exports = {
       },
     },
   },
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  presets: [require('@sk-web-gui/core').preset()],
+  presets: [preset()],
 };

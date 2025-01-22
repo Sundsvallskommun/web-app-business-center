@@ -1,10 +1,8 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
+import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
-// import { Case, CasePdf } from '@/interfaces/case.interface';
-import { getApiBase } from '@/config/api-config';
-import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import ApiService from '@/services/api.service';
 import authMiddleware from '@middlewares/auth.middleware';
 import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
@@ -78,7 +76,8 @@ export class CaseController {
       }
 
       return { data: res.data, message: 'success' };
-    } catch {
+    } catch (error) {
+      console.error(error);
       return { data: null, message: 'error' };
     }
   }

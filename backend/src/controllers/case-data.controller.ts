@@ -76,9 +76,9 @@ export class CaseDataController {
   @OpenAPI({ summary: 'Set message isViewed status' })
   @HttpCode(201)
   @UseBefore(authMiddleware)
-  async setMessageViewed(@Param('messageId') messageId: string, @Param('isViewed') isViewed: boolean): Promise<ApiResponse<{}>> {
+  async setMessageViewed(@Param('messageId') messageId: string, @Param('isViewed') isViewed: boolean): Promise<ApiResponse<201>> {
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/messages/${messageId}/viewed/${isViewed}`;
-    const res = await this.apiService.put({ url });
+    const res = await this.apiService.put<201>({ url });
     return { data: res.data, message: 'success' };
   }
 }

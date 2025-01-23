@@ -36,17 +36,18 @@ import hpp from 'hpp';
 import createMemoryStore from 'memorystore';
 import morgan from 'morgan';
 import passport from 'passport';
-import { Strategy, VerifiedCallback } from 'passport-saml';
+import { Strategy } from 'passport-saml';
 import { join } from 'path';
 import { getMetadataArgsStorage, useExpressServer } from 'routing-controllers';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
 import createFileStore from 'session-file-store';
 import swaggerUi from 'swagger-ui-express';
 import { HttpException } from './exceptions/HttpException';
-import { Profile } from './interfaces/profile.interface';
+import { Profile, ProfileCallback } from './interfaces/profile.interface';
+import { RepresentingMode } from './interfaces/representing.interface';
+import { User } from './interfaces/users.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
 import { isValidUrl } from './utils/util';
-import { RepresentingMode } from './interfaces/representing.interface';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -83,16 +84,16 @@ const samlStrategy = new Strategy(
     //logoutUrl: 'http://194.71.24.30/sso',
     logoutCallbackUrl: SAML_LOGOUT_CALLBACK_URL,
   },
-  async function (profile: Profile, done: VerifiedCallback) {
+  async function (profile: Profile, done: ProfileCallback) {
     if (!profile) {
       return done({
         name: 'SAML_MISSING_PROFILE',
         message: 'Missing SAML profile',
       });
     }
-    const { givenName, surname, citizenIdentifier } = profile;
+    const { givenName, surname, citizenIdentifier, username } = profile;
 
-    if (!givenName || !surname || !citizenIdentifier) {
+    if (!givenName || !surname || !citizenIdentifier || !username) {
       return done({
         name: 'SAML_MISSING_ATTRIBUTES',
         message: 'Missing profile attributes',
@@ -101,7 +102,7 @@ const samlStrategy = new Strategy(
 
     try {
       const personNumber = profile.citizenIdentifier;
-      const citizenResult = await apiService.get<any>({ url: `citizen/2.0/${personNumber}/guid` });
+      const citizenResult = await apiService.get<any>({ url: `citizen/2.0/${personNumber}/guid` }, { session: { user: { username } } });
       const { data: personId } = citizenResult;
 
       if (!personId) {
@@ -111,12 +112,13 @@ const samlStrategy = new Strategy(
         });
       }
 
-      const findUser = {
+      const findUser: User = {
         partyId: personId,
         personNumber: personNumber,
         name: `${givenName} ${surname}`,
         givenName: givenName,
         surname: surname,
+        username: username,
       };
 
       const userSettings = await prisma.userSettings.findFirst({ where: { userId: findUser.partyId } });

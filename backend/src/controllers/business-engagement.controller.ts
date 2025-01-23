@@ -42,7 +42,7 @@ export class BusinessEngagementController {
       serviceName: 'Mina Sidor',
     };
 
-    const res = await this.apiService.get<BusinessEngagementsResponse>({ url, params });
+    const res = await this.apiService.get<BusinessEngagementsResponse>({ url, params }, req);
 
     if (!res.data?.engagements) {
       throw new HttpException(404, 'Not Found');
@@ -84,7 +84,7 @@ export class BusinessEngagementController {
       serviceName: 'Mina Sidor',
     };
 
-    const res = await this.apiService.get<BusinessInformation>({ url, params });
+    const res = await this.apiService.get<BusinessInformation>({ url, params }, req);
 
     if (!res.data) {
       throw new HttpException(404, 'Not Found');

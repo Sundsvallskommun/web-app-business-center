@@ -19,10 +19,10 @@ export default function CaseLayout(props: { externalCaseId: number; children: Re
     method: 'get',
     dataHandler: handleCase,
   });
-  const { data: caseMessages } = useApi<MessageResponse[]>({
-    url: `/case-data/messages/${caseData?.caseId}`,
-    method: 'get',
-  });
+  // const { data: caseMessages } = useApi<MessageResponse[]>({
+  //   url: `/case-data/messages/${caseData?.caseId}`,
+  //   method: 'get',
+  // });
 
   const { representingMode } = useAppContext();
   return (
@@ -44,7 +44,7 @@ export default function CaseLayout(props: { externalCaseId: number; children: Re
       <CaseContext.Provider
         value={{
           caseData: caseData,
-          caseMessages: caseMessages,
+          caseMessages: [], // TODO: caseMessages,
         }}
       >
         {children}

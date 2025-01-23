@@ -1,22 +1,30 @@
 import { HttpException } from '@/exceptions/HttpException';
+import { RequestWithUser } from '@/interfaces/auth.interface';
+import { User } from '@/interfaces/users.interface';
+import { logger } from '@/utils/logger';
 import { apiURL } from '@/utils/util';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import { Request } from 'express';
 import ApiTokenService from './api-token.service';
-import { logger } from '@/utils/logger';
 
 class ApiResponse<T> {
   data: T;
   message: string;
 }
 
+interface ApiRequest extends Omit<Partial<RequestWithUser>, 'session'> {
+  session: Omit<Partial<Request['session']>, 'user'> & { user?: Pick<User, 'username'> };
+}
+
 class ApiService {
   private apiTokenService = new ApiTokenService();
-  private async request<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  private async request<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
     const token = await this.apiTokenService.getToken();
 
     const defaultHeaders = {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
+      'x-issuer': req.session?.user?.username,
     };
     const defaultParams = {};
 
@@ -56,24 +64,24 @@ class ApiService {
     }
   }
 
-  public async get<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'GET' });
+  public async get<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'GET' }, req);
   }
 
-  public async post<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'POST' });
+  public async post<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'POST' }, req);
   }
 
-  public async put<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'PUT' });
+  public async put<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'PUT' }, req);
   }
 
-  public async patch<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'PATCH' });
+  public async patch<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'PATCH' }, req);
   }
 
-  public async delete<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'DELETE' });
+  public async delete<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'DELETE' }, req);
   }
 }
 

@@ -31,7 +31,7 @@ export class MyRepresentativesController {
       'authorityAcquirer.partyId': partyId,
     };
 
-    const res = await this.apiService.get<any>({ url, params });
+    const res = await this.apiService.get<any>({ url, params }, req);
 
     if (Array.isArray(res.data.authorities) && res.data.authorities.length < 1) {
       throw new HttpException(404, 'Not Found');

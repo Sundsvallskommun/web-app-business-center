@@ -21,14 +21,14 @@ export class CaseDataController {
   @Get('/case-data/messages/:errandNumber')
   @OpenAPI({ summary: 'Return messages for a case' })
   @UseBefore(authMiddleware)
-  async getCaseMessages(@Param('errandNumber') errandNumber: string): Promise<ApiResponse<MessageResponse[] | null>> {
+  async getCaseMessages(@Req() req: RequestWithUser, @Param('errandNumber') errandNumber: string): Promise<ApiResponse<MessageResponse[] | null>> {
     if (!errandNumber) {
       throw new HttpException(400, 'Bad Request');
     }
 
     try {
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/messages/${errandNumber}`;
-      const res = await this.apiService.get<MessageResponse[]>({ url });
+      const res = await this.apiService.get<MessageResponse[]>({ url }, req);
 
       if (!res.data) {
         return { data: null, message: 'error' };
@@ -61,14 +61,14 @@ export class CaseDataController {
     const data: MessageRequest = {
       ...message,
       messageId: uuidv4(),
-      errandNumber: errandNumber,
+      externalCaseId: errandNumber,
       firstName: req.user.givenName,
       lastName: req.user.surname,
-      attachmentRequests: files.map(x => ({ content: x.buffer.toString('base64'), name: x.filename, contentType: x.mimetype })),
+      attachments: files.map(x => ({ content: x.buffer.toString('base64'), name: x.filename, contentType: x.mimetype })),
     };
 
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/messages`;
-    const res = await this.apiService.post({ url, data: data });
+    const res = await this.apiService.post({ url, data: data }, req);
     return { data: res.data, message: 'success' };
   }
 
@@ -76,9 +76,13 @@ export class CaseDataController {
   @OpenAPI({ summary: 'Set message isViewed status' })
   @HttpCode(201)
   @UseBefore(authMiddleware)
-  async setMessageViewed(@Param('messageId') messageId: string, @Param('isViewed') isViewed: boolean): Promise<ApiResponse<201>> {
+  async setMessageViewed(
+    @Req() req: RequestWithUser,
+    @Param('messageId') messageId: string,
+    @Param('isViewed') isViewed: boolean,
+  ): Promise<ApiResponse<201>> {
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/messages/${messageId}/viewed/${isViewed}`;
-    const res = await this.apiService.put<201>({ url });
+    const res = await this.apiService.put<201>({ url }, req);
     return { data: res.data, message: 'success' };
   }
 }

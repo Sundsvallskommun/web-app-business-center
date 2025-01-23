@@ -43,7 +43,7 @@ export class InvoicesController {
 
     try {
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION`;
-      const res = await this.apiService.get<InvoicesResponse>({ url, params });
+      const res = await this.apiService.get<InvoicesResponse>({ url, params }, req);
 
       if (res.data && Array.isArray(res.data?.invoices) && res.data.invoices.length < 1) {
         return { data: mockedInvoiceResponse, message: 'success' };
@@ -69,7 +69,7 @@ export class InvoicesController {
 
     // Issuer, municipality orgNr: 2120002411
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION/2120002411/${id}/pdf`;
-    const res = await this.apiService.get<PdfInvoice>({ url });
+    const res = await this.apiService.get<PdfInvoice>({ url }, req);
 
     return { data: res.data, message: 'success' };
   }

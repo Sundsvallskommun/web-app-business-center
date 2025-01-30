@@ -2,7 +2,8 @@ import CaseMessageFiles from '@components/mypages-sections/cases/case/meddelande
 import { Avatar, AvatarProps, Label } from '@sk-web-gui/react';
 
 export default function CaseMessage() {
-  const avatarSettings: { color: AvatarProps['color']; initials: string } = 'isManager'
+  const isManager = true;
+  const avatarSettings: { color: AvatarProps['color']; initials: string } = isManager
     ? {
         color: 'bjornstigen',
         initials: 'H',

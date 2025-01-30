@@ -69,7 +69,7 @@ export class CaseController {
     }
 
     try {
-      const url = `${this.apiBase}${MUNICIPALITY_ID}/${externalCaseId}/status`;
+      const url = `${this.apiBase}/${MUNICIPALITY_ID}/${externalCaseId}/status`;
       const res = await this.apiService.get<CaseStatusResponse>({ url }, req);
       if (!res.data) {
         return { data: null, message: 'error' };
@@ -90,7 +90,7 @@ export class CaseController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    const url = `${this.apiBase}${MUNICIPALITY_ID}/${externalCaseId}/pdf`;
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${externalCaseId}/pdf`;
     const res = await this.apiService.get<CasePdfResponse>({ url }, req);
 
     return { data: res.data, message: 'success' };

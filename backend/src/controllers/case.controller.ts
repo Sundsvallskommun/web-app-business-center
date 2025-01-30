@@ -28,7 +28,7 @@ export class CaseController {
 
       try {
         const url = `${this.apiBase}/${MUNICIPALITY_ID}/${formatOrgNr(representing.BUSINESS.organizationNumber)}/statuses`;
-        const res = await this.apiService.get<CaseStatusResponse[]>({ url });
+        const res = await this.apiService.get<CaseStatusResponse[]>({ url }, req);
         if (Array.isArray(res.data) && res.data.length < 1) {
           return { data: [], message: 'success' };
         }
@@ -44,7 +44,7 @@ export class CaseController {
     } else {
       try {
         const url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses`;
-        const res = await this.apiService.get<CaseStatusResponse[]>({ url });
+        const res = await this.apiService.get<CaseStatusResponse[]>({ url }, req);
         if (Array.isArray(res.data) && res.data.length < 1) {
           return { data: [], message: 'success' };
         }
@@ -63,14 +63,14 @@ export class CaseController {
   @Get('/cases/:externalCaseId')
   @OpenAPI({ summary: 'Return a case' })
   @UseBefore(authMiddleware)
-  async getCase(@Param('externalCaseId') externalCaseId: number): Promise<ApiResponse<CaseStatusResponse | null>> {
+  async getCase(@Req() req: RequestWithUser, @Param('externalCaseId') externalCaseId: number): Promise<ApiResponse<CaseStatusResponse | null>> {
     if (!externalCaseId) {
       throw new HttpException(400, 'Bad Request');
     }
 
     try {
-      const url = `${this.apiBase}${MUNICIPALITY_ID}/${externalCaseId}/status`;
-      const res = await this.apiService.get<CaseStatusResponse>({ url });
+      const url = `${this.apiBase}/${MUNICIPALITY_ID}/${externalCaseId}/status`;
+      const res = await this.apiService.get<CaseStatusResponse>({ url }, req);
       if (!res.data) {
         return { data: null, message: 'error' };
       }
@@ -90,8 +90,8 @@ export class CaseController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    const url = `${this.apiBase}${MUNICIPALITY_ID}/${externalCaseId}/pdf`;
-    const res = await this.apiService.get<CasePdfResponse>({ url });
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${externalCaseId}/pdf`;
+    const res = await this.apiService.get<CasePdfResponse>({ url }, req);
 
     return { data: res.data, message: 'success' };
   }

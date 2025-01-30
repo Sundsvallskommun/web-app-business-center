@@ -11,7 +11,7 @@ import { OpenAPI } from 'routing-controllers-openapi';
 
 @Controller()
 export class MyRepresentativesController {
-  /** ! Currently not included in server.ts, MyRepresentatives api Currently not working as intended */
+  /** ! Currently not included in server.ts, MyRepresentatives api currently disabled */
   private apiService = new ApiService();
   private apiBase = getApiBase('myrepresentatives');
 
@@ -31,7 +31,7 @@ export class MyRepresentativesController {
       'authorityAcquirer.partyId': partyId,
     };
 
-    const res = await this.apiService.get<any>({ url, params });
+    const res = await this.apiService.get<any>({ url, params }, req);
 
     if (Array.isArray(res.data.authorities) && res.data.authorities.length < 1) {
       throw new HttpException(404, 'Not Found');

@@ -63,7 +63,7 @@ export class ContactSettingsController {
 
     let res;
     try {
-      res = await this.apiService.get<Array<ContactSetting>>({ url, params });
+      res = await this.apiService.get<Array<ContactSetting>>({ url, params }, req);
     } catch (err) {
       // 404 for no data
       if (err.status !== 404) {
@@ -102,7 +102,7 @@ export class ContactSettingsController {
         const params = {
           ShowClassified: false,
         };
-        res = await this.apiService.get<Array<ContactSetting>>({ url: `citizen/2.0/${user.partyId}`, params });
+        res = await this.apiService.get<Array<ContactSetting>>({ url: `citizen/2.0/${user.partyId}`, params }, req);
         if (res.data) {
           const address = res.data.addresses?.[0];
           data.address = address?.city
@@ -133,7 +133,7 @@ export class ContactSettingsController {
       contactChannels: this.getContactSettingChannels(userData),
     };
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings`;
-    const res = await this.apiService.post<any>({ url, data: newContactSettings });
+    const res = await this.apiService.post<any>({ url, data: newContactSettings }, req);
 
     const data = _.merge(userData, {
       id: res.data?.id,
@@ -152,7 +152,7 @@ export class ContactSettingsController {
     }
     const editedContactSettings: UpdateContactSettings = { alias: 'default', contactChannels: this.getContactSettingChannels(userData) };
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings/${userData.id}`;
-    const res = await this.apiService.patch<any>({ url, data: editedContactSettings });
+    const res = await this.apiService.patch<any>({ url, data: editedContactSettings }, req);
 
     const data = _.merge(userData, {
       id: res.data?.id,

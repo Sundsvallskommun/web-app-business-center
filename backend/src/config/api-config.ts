@@ -2,9 +2,9 @@
 export const APIS = [
   {
     name: 'businessengagements',
-    version: '2.0',
+    version: '3.0',
   },
-  /** MyRepresentatives api Currently not working as intended */
+  /** MyRepresentatives api currently disabled */
   // {
   //   name: 'myrepresentatives',
   //   version: '3.0',
@@ -27,7 +27,7 @@ export const APIS = [
   },
   {
     name: 'messaging',
-    version: '5.1',
+    version: '6.1',
   },
   {
     name: 'invoices',

@@ -8,7 +8,7 @@ import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { ApiResponse } from '../interfaces/service';
 import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
-import { mockedInvoiceResponse } from '../../mocked-data/invoices';
+import { mockedInvoiceResponse } from '../tmp-mocked-data/invoices';
 import { InvoicesResponse, PdfInvoice } from '@/data-contracts/invoices/data-contracts';
 
 const emptyInvoice = {

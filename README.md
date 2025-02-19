@@ -6,20 +6,20 @@ Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumer
 
 | API                 | Version |
 | ------------------- | ------: |
-| Business Engagments |     1.2 |
-| CaseStatus          |     2.0 |
-| Notes               |     3.1 |
-| RemindAndInform     |     3.0 |
-| ContactSettings     |     1.0 |
-| Citizen             |     1.0 |
-| Messaging           |     3.0 |
-| Invoices            |     7.1 |
+| Business Engagments |     3.0 |
+| CaseData            |     9.0 |
+| CaseStatus          |     3.1 |
+| ContactSettings     |     2.0 |
+| Citizen             |     2.0 |
+| Messaging           |     6.1 |
+| Invoices            |     8.0 |
+| SimulatorServer     |     2.0 |
 
 ## Utveckling
 
 ### Krav
 
-- Node >= 16 LTS
+- Node >= 20 LTS
 - Yarn
 
 ### Steg för steg

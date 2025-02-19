@@ -1,182 +1,163 @@
-import { Body, Controller, Get, HttpCode, OnUndefined, Patch, Post, QueryParam, Req, UseBefore } from 'routing-controllers';
-import authMiddleware from '@middlewares/auth.middleware';
-import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
-import { RequestWithUser } from '@/interfaces/auth.interface';
-import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-import { validationMiddleware } from '@/middlewares/validation.middleware';
-import ApiService from '@/services/api.service';
+import { getApiBase } from '@/config/api-config';
 import { HttpException } from '@/exceptions/HttpException';
-
-export class ContactSettingChannel {
-  @IsString()
-  contactMethod: string;
-  @IsString()
-  destination: string;
-  @IsOptional()
-  @IsBoolean()
-  disabled?: boolean;
-  @IsOptional()
-  @IsBoolean()
-  sendFeedback?: boolean;
-  @IsString()
-  alias: string;
-}
-
-export class Meta {
-  @IsNumber()
-  page: number;
-  @IsNumber()
-  limit: number;
-  @IsNumber()
-  count: number;
-  @IsNumber()
-  totalRecords: number;
-  @IsNumber()
-  totalPages: number;
-}
-
-export class ContactSetting {
-  @IsString()
-  id: string;
-  @IsString()
-  partyId: string;
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ContactSettingChannel)
-  contactChannels: ContactSettingChannel[];
-  @IsString()
-  created: string;
-  @IsString()
-  modified: string;
-}
-
-export class ResponseData {
-  @IsString()
-  message: string;
-  @ValidateNested()
-  @Type(() => Array<ContactSetting>)
-  data: Array<ContactSetting>;
-}
-
-export class UpdateContactSettingsDto {
-  @IsString()
-  id: string;
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ContactSettingChannel)
-  contactChannels: ContactSettingChannel[];
-}
-
-export interface UpdateContactSettings {
-  alias: string;
-  contactChannels: ContactSettingChannel[];
-}
-
-export interface NewContactSettings extends UpdateContactSettings {
-  partyId: string;
-  createdById: string;
-}
+import { RequestWithUser } from '@/interfaces/auth.interface';
+import ApiService from '@/services/api.service';
+import authMiddleware from '@middlewares/auth.middleware';
+import _ from 'lodash';
+import { Body, Controller, Get, HttpCode, OnUndefined, Patch, Post, QueryParam, Req, UseBefore } from 'routing-controllers';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
+import { MUNICIPALITY_ID } from '../config';
+import { ContactSetting, ContactSettingChannel, NewContactSettings, UpdateContactSettings } from '../interfaces/contact-settings';
+import { RepresentingMode } from '../interfaces/representing.interface';
+import { ResponseData } from '../interfaces/service';
+import { validationMiddleware } from '../middlewares/validation.middleware';
+import { ClientContactSetting } from '../responses/contactsettings.response';
+import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
+import { getBusinessAddress, getBusinessName, getEmailSettingsFromChannels, getPhoneSettingsFromChannels } from './contact-settings/utils';
 
 @Controller()
 export class ContactSettingsController {
   private apiService = new ApiService();
+  private apiBase = getApiBase('contactsettings');
 
-  mapDisabledToSendFeedback(channels: ContactSettingChannel[]) {
-    return channels.map(c => ({
-      contactMethod: c.contactMethod,
-      alias: c.alias,
-      destination: c.destination,
-      sendFeedback: !c.disabled,
-    }));
-  }
-
-  mapSendFeedbackToDisabled(channels: ContactSettingChannel[]) {
-    return channels.map(c => ({
-      contactMethod: c.contactMethod,
-      alias: c.alias,
-      destination: c.destination,
-      disabled: !c.sendFeedback,
-    }));
-  }
+  getContactSettingChannels = (userData: ClientContactSetting) => {
+    const emailSettings: ContactSettingChannel = {
+      contactMethod: 'EMAIL',
+      destination: userData.email,
+      disabled: userData.notifications.email_disabled,
+      alias: 'default',
+    };
+    const phoneSettings: ContactSettingChannel = {
+      contactMethod: 'SMS',
+      destination: userData.phone,
+      disabled: userData.notifications.phone_disabled,
+      alias: 'default',
+    };
+    return [...(userData.email ? [emailSettings] : []), ...(userData.phone ? [phoneSettings] : [])];
+  };
 
   @Get('/contactsettings')
   @OpenAPI({ summary: 'Return a list of contact settings' })
-  @ResponseSchema(ResponseData)
+  @ResponseSchema(ClientContactSetting)
   @UseBefore(authMiddleware)
   async cases(
     @Req() req: RequestWithUser,
     @QueryParam('limit', { required: false }) limit?: number,
     @QueryParam('page', { required: false }) page?: number,
-  ): Promise<ResponseData> {
-    const { organizationId } = req?.session?.representing;
+  ): Promise<ResponseData<ClientContactSetting>> {
+    const { representing } = req?.session;
+    const { user } = req;
 
-    if (!organizationId) {
+    if (!getRepresentingPartyId(representing)) {
       throw new HttpException(403, 'Forbidden');
     }
 
     // FIXME: we probably want to go thru all pages?
     //        or do we want to have a load more button in UI?
-    const url = 'contactsettings/1.0/settings';
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings`;
     const params = {
-      partyId: organizationId,
+      partyId: getRepresentingPartyId(representing),
       page: page ?? 1,
       limit: limit ?? 100, // NOTE: 100 is max it seems
     };
-    const res = await this.apiService.get<Array<ContactSetting>>({ url, params });
 
-    if (!res.data.length) {
-      throw new HttpException(404, 'Not Found');
+    let res;
+    try {
+      res = await this.apiService.get<Array<ContactSetting>>({ url, params }, req);
+    } catch (err) {
+      // 404 for no data
+      if (err.status !== 404) {
+        throw err;
+      }
     }
 
-    // The field channel.disabled from the ContactSettings API is the boolean opposite of
-    // the field channel.sendFeedback from the FeedbackSettings API. This field is therefore
-    // remapped here in the controller, since the logic in the frontend is complicated and
-    // is built for the sendFeedback value.
-    //
-    // Negating all the booleans in the form logic is harder than expected and not worth
-    // the time.
-    res.data[0].contactChannels = this.mapDisabledToSendFeedback(res.data[0].contactChannels);
+    const apiData = res?.data?.[0];
 
-    return { data: res.data, message: 'success' };
+    const emailSettings = getEmailSettingsFromChannels(apiData.contactChannels);
+    const phoneSettings = getPhoneSettingsFromChannels(apiData.contactChannels);
+
+    const data: ClientContactSetting = {
+      id: apiData.id,
+      name: null,
+      address: null,
+      email: emailSettings.email,
+      phone: phoneSettings.phone,
+      notifications: {
+        email_disabled: emailSettings.email_disabled,
+        phone_disabled: phoneSettings.phone_disabled,
+      },
+      decicionsAndDocuments: {
+        digitalInbox: true,
+        myPages: true,
+        snailmail: false,
+      },
+    };
+    switch (representing.mode) {
+      case RepresentingMode.BUSINESS:
+        data.name = getBusinessName(representing);
+        data.address = getBusinessAddress(representing);
+        break;
+      case RepresentingMode.PRIVATE:
+        data.name = user.name;
+        const params = {
+          ShowClassified: false,
+        };
+        res = await this.apiService.get<Array<ContactSetting>>({ url: `citizen/2.0/${user.partyId}`, params }, req);
+        if (res.data) {
+          const address = res.data.addresses?.[0];
+          data.address = address?.city
+            ? {
+                city: address.city,
+                street: !address.addressArea || !address.addressNumber ? undefined : `${address.addressArea} ${address.addressNumber}`,
+                postcode: address.postalCode,
+              }
+            : null;
+        }
+        break;
+      default:
+      //
+    }
+    return { data: data, message: 'success' };
   }
 
   @Post('/contactsettings')
   @HttpCode(201)
   @OpenAPI({ summary: 'Create contact settings for current logged in user' })
-  @UseBefore(authMiddleware, validationMiddleware(UpdateContactSettingsDto, 'body'))
-  async newContactSettings(@Req() req: RequestWithUser, @Body() userData: UpdateContactSettingsDto): Promise<any> {
-    const { contactChannels } = userData;
-
-    // See comment in @Get() handler for why this is mapped
-    const mappedContactChannels = this.mapSendFeedbackToDisabled(contactChannels);
-
-    const { guid } = req.user;
-    const { organizationId } = req?.session?.representing;
+  @UseBefore(authMiddleware, validationMiddleware(ClientContactSetting, 'body'))
+  async newContactSettings(@Req() req: RequestWithUser, @Body() userData: ClientContactSetting): Promise<any> {
+    const { representing } = req?.session;
     const newContactSettings: NewContactSettings = {
-      alias: 'My contact settings',
-      partyId: organizationId,
-      createdById: guid,
-      contactChannels: mappedContactChannels,
+      alias: 'default',
+      partyId: getRepresentingPartyId(representing),
+      createdById: req.user.partyId,
+      contactChannels: this.getContactSettingChannels(userData),
     };
-    const url = `contactsettings/1.0/settings`;
-    const res = await this.apiService.post<any>({ url, data: newContactSettings });
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings`;
+    const res = await this.apiService.post<any>({ url, data: newContactSettings }, req);
 
-    return { data: res.data, message: 'created' };
+    const data = _.merge(userData, {
+      id: res.data?.id,
+    });
+
+    return { data: data, message: 'created' };
   }
 
   @Patch('/contactsettings')
   @OnUndefined(204)
   @OpenAPI({ summary: 'Update contact settings for current logged in user' })
-  @UseBefore(authMiddleware, validationMiddleware(UpdateContactSettingsDto, 'body'))
-  async editContactSettings(@Req() req: RequestWithUser, @Body() userData: UpdateContactSettingsDto): Promise<void> {
-    const { contactChannels, id } = userData;
+  @UseBefore(authMiddleware, validationMiddleware(ClientContactSetting, 'body'))
+  async editContactSettings(@Req() req: RequestWithUser, @Body() userData: ClientContactSetting): Promise<ResponseData<ClientContactSetting>> {
+    if (!userData.id) {
+      throw new HttpException(400, 'Bad Request');
+    }
+    const editedContactSettings: UpdateContactSettings = { alias: 'default', contactChannels: this.getContactSettingChannels(userData) };
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings/${userData.id}`;
+    const res = await this.apiService.patch<any>({ url, data: editedContactSettings }, req);
 
-    // See comment in @Get() handler for why this is mapped
-    const mappedContactChannels = this.mapSendFeedbackToDisabled(contactChannels);
+    const data = _.merge(userData, {
+      id: res.data?.id,
+    });
 
-    const editedContactSettings: UpdateContactSettings = { alias: 'My contact settings', contactChannels: mappedContactChannels };
-    const url = `contactsettings/1.0/settings/${id}`;
-    await this.apiService.patch<any>({ url, data: editedContactSettings });
+    return { data: data, message: 'updated' };
   }
 }

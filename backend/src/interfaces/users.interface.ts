@@ -1,7 +1,8 @@
-export interface User {
-  id: number;
+export interface User extends Record<string, unknown> {
+  partyId: string;
+  personNumber: string;
   name: string;
-  guid: string;
-  email: string;
-  password: string;
+  givenName: string;
+  surname: string;
+  username: string;
 }

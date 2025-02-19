@@ -21,8 +21,6 @@ const validateEnv = () => {
     PORT: port(),
     BASE_URL_PREFIX: str(),
     SAML_CALLBACK_URL: url(),
-    SAML_LOGOUT_CALLBACK_URL: url(),
-    SAML_SUCCESS_REDIRECT: url(),
     SAML_FAILURE_REDIRECT: url(),
     SAML_ENTRY_SSO: url(),
     SAML_ISSUER: str(),

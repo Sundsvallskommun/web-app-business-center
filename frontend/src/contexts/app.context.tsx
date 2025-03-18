@@ -1,10 +1,9 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { createContext, useContext, useState } from 'react';
-import { RepresentingEntity, RepresentingMode } from '../interfaces/app';
+import { usePathname, useRouter } from 'next/navigation';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { RepresentingMode } from '../interfaces/app';
 import { useRepresentingSwitch } from '../layouts/site-menu/site-menu-items';
-import { useApi } from '../services/api-service';
 import { appURL } from '../utils/app-url';
 import {
   getRepresentingMode,
@@ -39,33 +38,35 @@ export const defaults: AppContextStates = {
 
 export function AppWrapper({ children }) {
   const router = useRouter();
-
-  const [representingMode, setRepresentingMode] = useState<RepresentingMode>(defaults.representingMode);
+  const pathname = usePathname();
 
   const { setRepresenting } = useRepresentingSwitch();
-  const { data: representingEntity } = useApi<RepresentingEntity>({
-    url: '/representing',
-    method: 'get',
-  });
+
+  const [representingMode, setRepresentingMode] = useState<RepresentingMode>(
+    getRepresentingMode(pathname) ?? defaults.representingMode
+  );
 
   const switchRepresentingMode = async (newMode: RepresentingMode) => {
-    const routeRepresentingMode = getRepresentingMode();
+    setRepresenting({ mode: newMode });
+    setRepresentingMode(newMode);
+
+    const routeRepresentingMode = getRepresentingMode(pathname);
     if (routeRepresentingMode !== null && routeRepresentingMode !== newMode) {
       const pathname = newRepresentingModePathname(newMode);
       router.push(`${appURL()}${pathname}`);
-    } else {
-      if (newMode !== representingMode) {
-        setRepresentingMode(newMode);
-      }
-      if (representingEntity?.mode !== newMode) {
-        setRepresenting({ mode: newMode });
-      }
     }
   };
 
   const resetContextDefaults = () => {
     setRepresentingMode(defaults.representingMode);
   };
+
+  useEffect(() => {
+    const routeRepresentingMode = getRepresentingMode(pathname);
+    if (routeRepresentingMode) {
+      setRepresentingMode(routeRepresentingMode);
+    }
+  }, [pathname]);
 
   return (
     <AppContext.Provider

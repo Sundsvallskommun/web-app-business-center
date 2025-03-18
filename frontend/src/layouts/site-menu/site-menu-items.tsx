@@ -1,10 +1,10 @@
 'use client';
 
+import { useAppContext } from '@contexts/app.context';
 import { useCombinedBusinessEngagements } from '@services/organisation-service';
 import { Button, Icon, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
 import { ArrowRight, ChevronDownCircle, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useAppContext } from '../../contexts/app.context';
 import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../../interfaces/app';
 import { useApi, useApiService } from '../../services/api-service';
 import { getRepresentingModeRoute } from '../../utils/representingModeRoute';
@@ -33,13 +33,19 @@ export const useRepresentingSwitch = () => {
   };
 
   const setRepresenting = async (representingDto: RepresentingEntityDto) => {
-    const res = await representingMutation.mutateAsync(representingDto);
-    if (!res.error) {
-      invalidateQueries();
-    } else {
-      router.push(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/valj-foretag`);
+    queryClient.cancelQueries();
+    try {
+      const res = await representingMutation.mutateAsync(representingDto);
+      if (!res.error) {
+        invalidateQueries();
+      } else {
+        router.push(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/valj-foretag`);
+      }
+      return res;
+    } catch (err) {
+      console.error('Could not set representing mode in backend');
+      return { error: err };
     }
-    return res;
   };
 
   return { setRepresenting, invalidateQueries, representingMutation };
@@ -133,7 +139,6 @@ export const useSiteMenuItems = () => {
   return [
     <Button
       key={`site-menu-items-0`}
-      className="text-gray-900"
       onClick={() => router.push('/logout')}
       showBackground={false}
       variant="tertiary"

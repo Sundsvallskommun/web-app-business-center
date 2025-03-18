@@ -2,7 +2,7 @@
 
 import { Button, Divider, FormErrorMessage, MenuBar } from '@sk-web-gui/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { CardElevated } from '../../components/cards/card-elevated.component';
 import { useAppContext } from '../../contexts/app.context';
 import { RepresentingMode } from '../../interfaces/app';
@@ -25,7 +25,7 @@ function Login() {
   // Turn on/off automatic login
   const autoLogin = false;
 
-  const onLogin = () => {
+  const onLogin = useCallback(() => {
     // NOTE: send user to login with SSO
     const path = searchParams?.get('path') || '';
     const myPagesAdjustedPathname =
@@ -33,7 +33,8 @@ function Login() {
     router.push(
       `${process.env.NEXT_PUBLIC_API_URL}/saml/login?successRedirect=${`${appURL()}${myPagesAdjustedPathname}&representingMode=${representingMode}`}`
     );
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [representingMode, searchParams]);
 
   useEffect(() => {
     const path = searchParams?.get('path') || '';

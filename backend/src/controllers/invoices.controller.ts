@@ -1,5 +1,6 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
+import { InvoicesResponse, PdfInvoice } from '@/data-contracts/invoices/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import ApiService from '@/services/api.service';
@@ -8,8 +9,6 @@ import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { ApiResponse } from '../interfaces/service';
 import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
-import { mockedInvoiceResponse } from '../tmp-mocked-data/invoices';
-import { InvoicesResponse, PdfInvoice } from '@/data-contracts/invoices/data-contracts';
 
 const emptyInvoice = {
   invoices: [],
@@ -46,7 +45,7 @@ export class InvoicesController {
       const res = await this.apiService.get<InvoicesResponse>({ url, params }, req);
 
       if (res.data && Array.isArray(res.data?.invoices) && res.data.invoices.length < 1) {
-        return { data: mockedInvoiceResponse, message: 'success' };
+        return { data: emptyInvoice, message: 'success' };
       }
 
       return { data: res.data, message: 'success' };

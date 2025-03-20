@@ -33,4 +33,13 @@ module.exports = withBundleAnalyzer({
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = { fs: false, net: false, tls: false };
+    }
+    return config;
+  },
+  experimental: {
+    swcPlugins: [['swc-plugin-coverage-instrument', {}]],
+  },
 });

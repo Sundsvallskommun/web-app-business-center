@@ -27,7 +27,7 @@ export const ongoingCasesLabels = [
 ];
 
 // getCaseStatus i confluence
-const statusMap = {
+export const statusMapCases = {
   Inskickat: { code: statusCodes.Ongoing, color: 'info' },
   'Tilldelat för handläggning': { code: statusCodes.Ongoing, color: 'info' },
   'Under behandling': { code: statusCodes.Ongoing, color: 'info' },
@@ -50,8 +50,8 @@ const statusMap = {
 };
 
 export const mapStatus = (s: string) => {
-  return Object.keys(statusMap).includes(s)
-    ? { code: statusMap[s].code, color: statusMap[s].color, label: s }
+  return Object.keys(statusMapCases).includes(s)
+    ? { code: statusMapCases[s].code, color: statusMapCases[s].color, label: s }
     : { code: statusCodes.Ongoing, color: 'neutral', label: s };
 };
 
@@ -113,5 +113,5 @@ export const getCasePdf: (caseId: string) => Promise<CasePdfData> = (caseId) =>
     .get<ApiResponse<CasePdf>>(`casepdf/${caseId}`)
     .then((res) => ({ pdf: res.data.data }))
     .catch(
-      (e) => ({ pdf: { externalCaseId: '', base64: '' }, error: e.response?.status ?? 'UNKNOWN ERROR' }) as CasePdfData
+      (e) => ({ pdf: { externalCaseId: '', base64: '' }, error: e.response?.status ?? 'UNKNOWN ERROR' } as CasePdfData)
     );

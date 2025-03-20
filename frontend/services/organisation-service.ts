@@ -29,12 +29,10 @@ export const emptyOrganisationInfo: OrganisationInfo = {
   orgNumber: '',
   information: {
     companyLocation: {
-      address: {
-        city: '',
-        street: '',
-        postcode: '',
-        careOf: '',
-      },
+      city: '',
+      street: '',
+      postcode: '',
+      careOf: '',
     },
   },
 };

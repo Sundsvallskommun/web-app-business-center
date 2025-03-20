@@ -6,13 +6,13 @@ Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumer
 
 | API                 | Version |
 | ------------------- | ------: |
-| Business Engagments |     2.0 |
+| Business Engagments |     3.0 |
 | CaseStatus          |     3.0 |
 | Notes               |     4.0 |
 | RemindAndInform     |     4.0 |
 | ContactSettings     |     2.0 |
 | Citizen             |     2.0 |
-| Messaging           |     5.0 |
+| Messaging           |     6.1 |
 | Invoices            |     8.0 |
 
 ## Utveckling

@@ -88,12 +88,10 @@ describe('Organisations service', () => {
       orgNumber: '',
       information: {
         companyLocation: {
-          address: {
-            city: '',
-            street: '',
-            postcode: '',
-            careOf: '',
-          },
+          city: '',
+          street: '',
+          postcode: '',
+          careOf: '',
         },
       },
     });
@@ -115,12 +113,10 @@ describe('Organisations service', () => {
       orgNumber: '',
       information: {
         companyLocation: {
-          address: {
-            city: '',
-            street: '',
-            postcode: '',
-            careOf: '',
-          },
+          city: '',
+          street: '',
+          postcode: '',
+          careOf: '',
         },
       },
     });

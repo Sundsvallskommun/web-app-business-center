@@ -24,15 +24,15 @@ export const InformationSection: React.FC<{ orgInfo: OrganisationInfo; user: Use
           <strong>Organisationsnummer:</strong>
           <div>{orgInfo.orgNumber}</div>
         </div>
-        {orgInfo?.information?.companyLocation?.address?.street && (
+        {orgInfo?.information?.companyLocation?.street && (
           <div>
             <div>
               <strong>Besöksadress:</strong>
             </div>
-            <span>{orgInfo.information.companyLocation?.address?.street}</span>
+            <span>{orgInfo.information.companyLocation?.street}</span>
             {', '}
-            <span>{orgInfo.information.companyLocation?.address?.postcode}</span>{' '}
-            <span>{orgInfo.information.companyLocation?.address?.city}</span>
+            <span>{orgInfo.information.companyLocation?.postcode}</span>{' '}
+            <span>{orgInfo.information.companyLocation?.city}</span>
           </div>
         )}
       </div>

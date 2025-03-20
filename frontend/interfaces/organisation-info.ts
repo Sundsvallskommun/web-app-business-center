@@ -4,12 +4,10 @@ export interface BusinessEngagement {
 }
 export interface BusinessInformation {
   companyLocation: {
-    address: {
-      city: string;
-      street: string;
-      postcode: string;
-      careOf?: string;
-    };
+    city: string;
+    street: string;
+    postcode: string;
+    careOf?: string;
   };
 }
 

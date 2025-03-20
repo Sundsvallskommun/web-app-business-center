@@ -15,12 +15,10 @@ export const representingEntity = {
   orgNumber: 'orgNumber',
   information: {
     companyLocation: {
-      address: {
-        city: 'city',
-        street: 'street',
-        postcode: 'postcode',
-        careOf: 'careOf',
-      },
+      city: 'city',
+      street: 'street',
+      postcode: 'postcode',
+      careOf: 'careOf',
     },
   },
 };

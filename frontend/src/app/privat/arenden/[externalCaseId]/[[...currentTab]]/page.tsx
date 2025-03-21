@@ -1,7 +1,18 @@
-'use client';
+import CaseTabLayout from '@layouts/pages/mypages-sections/cases/case/case-tab-layout.component';
+import { appName } from '@utils/app-name';
 
-import CaseTabLayout from '@components/mypages-sections/cases/case/case-tab-layout.component';
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ externalCaseId: string; currentTab: string }>;
+}) {
+  const { externalCaseId, currentTab } = await params;
+  return {
+    title: `${currentTab} - ${externalCaseId} - Ärenden - Privat - ${appName()}`,
+  };
+}
 
-export default function CurrentTab({ params }) {
-  return <CaseTabLayout externalCaseId={params.externalCaseId} currentTab={params.currentTab} />;
+export default async function CurrentTab({ params }) {
+  const { externalCaseId, currentTab } = await params;
+  return <CaseTabLayout externalCaseId={externalCaseId} currentTab={currentTab} />;
 }

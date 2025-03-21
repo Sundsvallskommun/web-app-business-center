@@ -1,3 +1,5 @@
+'use client';
+
 import { BannerMenu } from './banner-menu/banner-menu.component';
 import MainLayout from './main-layout.component';
 

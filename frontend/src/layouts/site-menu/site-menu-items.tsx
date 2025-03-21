@@ -8,8 +8,11 @@ import { useAppContext } from '../../contexts/app.context';
 import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../../interfaces/app';
 import { useApi, useApiService } from '../../services/api-service';
 import { getRepresentingModeRoute } from '../../utils/representingModeRoute';
+import { CaseContext } from '@layouts/pages/mypages-sections/cases/case/case-layout.component';
+import { useContext } from 'react';
 
 export const useRepresentingSwitch = () => {
+  const caseContext = useContext(CaseContext) || null;
   const queryClient = useApiService((s) => s.queryClient);
   const representingMutation = useApi<RepresentingEntity>({
     url: '/representing',
@@ -21,6 +24,11 @@ export const useRepresentingSwitch = () => {
     queryClient.invalidateQueries({
       queryKey: ['/cases'],
     });
+    if (caseContext?.caseData) {
+      queryClient.invalidateQueries({
+        queryKey: [`/cases/${caseContext.caseData.externalCaseId}`],
+      });
+    }
     queryClient.invalidateQueries({
       queryKey: ['/invoices'],
     });

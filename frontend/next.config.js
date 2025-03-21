@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+/* eslint-disable @typescript-eslint/no-require-imports */
 const envalid = require('envalid');
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
@@ -24,22 +24,27 @@ envalid.cleanEnv(process.env, {
 
 module.exports = withBundleAnalyzer({
   output: 'standalone',
-  swcMinify: true,
   images: {
-    //unoptimized: false,
+    remotePatterns: [{ hostname: process.env.DOMAIN_NAME || 'localhost' }],
     formats: ['image/avif', 'image/webp'],
   },
+  basePath: process.env.BASE_PATH,
+  sassOptions: {
+    functions: {
+      'env($variable)': (variable) => {
+        const value = variable.getValue();
+        const envValue = process.env[value];
+        const sassValue = new nodeSass.SassString(envValue);
+        return sassValue;
+      },
+    },
+  },
   transpilePackages: ['lucide-react'],
+  experimental: {
+    swcPlugins: process.env.TEST === 'true' ? [['swc-plugin-coverage-instrument', {}]] : [],
+    optimizePackageImports: ['@sk-web-gui'],
+  },
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];
-  },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = { fs: false, net: false, tls: false };
-    }
-    return config;
-  },
-  experimental: {
-    swcPlugins: [['swc-plugin-coverage-instrument', {}]],
   },
 });

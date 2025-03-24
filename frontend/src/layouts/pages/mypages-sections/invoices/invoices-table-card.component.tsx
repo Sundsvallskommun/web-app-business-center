@@ -13,7 +13,7 @@ export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
         <div className="flex items-start">
           <div className="w-full">
             <div className="flex flex-col-reverse mb-24">
-              <div className="font-bold text-lead">{item.invoiceDescription}</div>
+              <h3 className="font-bold text-lead">{item.invoiceDescription}</h3>
               <div>
                 <Label
                   rounded

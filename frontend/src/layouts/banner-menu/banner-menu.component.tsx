@@ -6,11 +6,13 @@ import { SLogo } from '../../components/logos/s-logo.component';
 import { RepresentingEntity, RepresentingMode } from '../../interfaces/app';
 import { useApi } from '../../services/api-service';
 import { useBannerMenuItems } from './banner-menu-items';
+import { useAppContext } from '@contexts/app.context';
 
 export const BannerMenu: React.FC = () => {
   const pathname = usePathname();
   const bannerMenuItems = useBannerMenuItems();
   const { isMinDesktop } = useThemeQueries();
+  const { representingMode } = useAppContext();
 
   const { data: representingEntity } = useApi<RepresentingEntity>({
     url: '/representing',
@@ -25,9 +27,9 @@ export const BannerMenu: React.FC = () => {
         </div>
 
         <div className="max-w-main-content z-10 relative mx-auto pl-20 lg:pl-0 pt-[6rem] pl- flex flex-col items-start">
-          <span className="text-gray-700 text-h3 font-header">Mina sidor</span>
+          <span className="text-dark-secondary text-h3 font-header">Mina sidor</span>
           <span className={cx('text-display-3-sm lg:text-display-2-md text-vattjom-surface-primary xs:mb-32 lg:mb-48')}>
-            {representingEntity?.mode === RepresentingMode.BUSINESS
+            {representingMode === RepresentingMode.BUSINESS
               ? representingEntity?.BUSINESS?.organizationName
               : representingEntity?.PRIVATE?.name}
           </span>

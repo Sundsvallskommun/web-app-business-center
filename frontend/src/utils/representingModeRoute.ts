@@ -7,7 +7,9 @@ export const getAdjustedPathname = (path: string, representingMode: Representing
   return path.startsWith(getRepresentingModeRoute(RepresentingMode.BUSINESS)) ||
     path.startsWith(getRepresentingModeRoute(RepresentingMode.PRIVATE))
     ? newRepresentingModePathname(representingMode, path)
-    : path;
+    : path === '/'
+      ? getRepresentingModeRoute(representingMode)
+      : path;
 };
 
 export const getSwitchedRepresentingMode = (representingMode: RepresentingMode) =>

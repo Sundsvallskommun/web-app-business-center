@@ -21,6 +21,7 @@ export default function CaseLayout(props: { externalCaseId: number; children: Re
     method: 'get',
     dataHandler: handleCase,
   });
+  // waiting for api to implement
   // const { data: caseMessages } = useApi<MessageResponse[]>({
   //   url: `/case-data/messages/${caseData?.caseId}`,
   //   method: 'get',

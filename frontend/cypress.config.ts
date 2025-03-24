@@ -21,6 +21,7 @@ export default defineConfig({
     // authorized). The error occurs seldomly and several tests in a suite may
     // pass when suddenly the tenth, eleventh, or.. fails.
     chromeWebSecurity: false,
+    defaultCommandTimeout: 10000,
     setupNodeEvents(on, config) {
       codeCoverageTask(on, config);
       // include any other plugin code...

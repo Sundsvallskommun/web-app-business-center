@@ -88,8 +88,6 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
       <>
         {ongoing?.cases?.length === 0 && !isFetchingCases ? (
           <p>Det finns inga pågående ärenden</p>
-        ) : ongoing?.cases?.length > 0 ? (
-          <></>
         ) : (
           isFetchingCases && <p>Laddar pågående ärenden</p>
         )}

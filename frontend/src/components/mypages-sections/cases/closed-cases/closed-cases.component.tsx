@@ -88,8 +88,6 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
       <>
         {closed?.cases?.length === 0 && !isFetchingCases ? (
           <p>Det finns inga avslutade ärenden</p>
-        ) : closed?.cases?.length > 0 ? (
-          <></>
         ) : (
           isFetchingCases && <p>Laddar avslutade ärenden</p>
         )}

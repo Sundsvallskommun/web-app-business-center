@@ -17,8 +17,7 @@
     "jest:coverage": "jest --coverage",
     "test": "concurrently \"yarn jest\" \"yarn cypress\"",
     "coverage": "npx nyc report --reporter=text-summary",
-    "test:coverage": "yarn cypress:headless",
-    "prepare": "cd .. && husky install frontend/.husky"
+    "test:coverage": "yarn cypress:headless"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

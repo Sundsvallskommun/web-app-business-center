@@ -15,11 +15,10 @@ describe('Ändra representationsläge (privat/företag)', () => {
       '**/api/representing',
       getRepresentingEntity({ PRIVATE: representingPrivateDefault, mode: RepresentingMode.PRIVATE })
     ).as('postRepresenting');
+    setIntercepts(RepresentingMode.PRIVATE);
     cy.visit('/privat');
   });
   it('should render /privat/oversikt then /foretag/oversikt', () => {
-    setIntercepts(RepresentingMode.PRIVATE);
-
     cy.url().should('include', '/privat/oversikt');
     cy.wait(['@getCases', '@getRepresenting']).then(() => {
       setIntercepts(RepresentingMode.BUSINESS);
@@ -30,9 +29,7 @@ describe('Ändra representationsläge (privat/företag)', () => {
     });
   });
   it('should render /privat/arenden then /foretag/arenden', () => {
-    setIntercepts(RepresentingMode.PRIVATE);
     cy.contains('[role="menuitem"]', 'Ärenden').click();
-
     cy.url().should('include', '/privat/arenden');
     cy.wait(['@getCases', '@getRepresenting']).then(() => {
       testCases(RepresentingMode.PRIVATE);
@@ -49,7 +46,6 @@ describe('Ändra representationsläge (privat/företag)', () => {
     });
   });
   it('should render /privat/fakturor then /foretag/fakturor', () => {
-    setIntercepts(RepresentingMode.PRIVATE);
     cy.contains('[role="menuitem"]', 'Fakturor').click();
 
     cy.url().should('include', '/privat/fakturor');
@@ -68,7 +64,6 @@ describe('Ändra representationsläge (privat/företag)', () => {
     });
   });
   it('should render /privat/profil then /foretag/profil', () => {
-    setIntercepts(RepresentingMode.PRIVATE);
     cy.contains('[role="menuitem"]', 'Profil och inställningar').click();
 
     cy.url().should('include', '/privat/profil');

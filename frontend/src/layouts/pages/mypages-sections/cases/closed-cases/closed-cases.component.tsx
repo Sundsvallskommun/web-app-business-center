@@ -73,11 +73,11 @@ export const ClosedCases: React.FC<{ header?: React.ReactNode }> = ({ header }) 
       property: 'externalCaseId',
       screenReaderOnly: true,
       isColumnSortable: false,
-      renderColumn: (value) => (
+      renderColumn: (value, item) => (
         <div className="w-full text-right">
           <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${value}`}>
             <Button size="sm" showBackground variant="tertiary" as="span" rightIcon={<Icon icon={<ArrowRight />} />}>
-              Visa
+              Visa <span className="sr-only">{item.subject.caseType}</span>
             </Button>
           </NextLink>
         </div>

@@ -1,5 +1,5 @@
 import { Button } from '@sk-web-gui/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export const CardList: React.FC<{
   data: object[];
@@ -10,9 +10,11 @@ export const CardList: React.FC<{
   const [amountDisplayed, setAmountDisplayed] = useState(_amountDisplayed);
   const [dataShown, setDataShown] = useState(data.slice(0, amountDisplayed));
 
-  const showMore = () => {
-    setAmountDisplayed((amount) => (amount += amountDisplayed));
-  };
+  const showMore = useCallback(() => {
+    const _amountDisplayed = amountDisplayed + 12;
+    setAmountDisplayed(_amountDisplayed);
+    setDataShown(data.slice(0, _amountDisplayed));
+  }, [amountDisplayed, data]);
 
   useEffect(() => {
     setAmountDisplayed(_amountDisplayed);

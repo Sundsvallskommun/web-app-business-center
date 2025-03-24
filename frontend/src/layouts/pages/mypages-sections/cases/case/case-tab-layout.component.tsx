@@ -28,7 +28,7 @@ export default function CaseTabLayout({
 
   return (
     <div>
-      <MenuBar current={currentTab} showBackground>
+      <MenuBar current={currentTab} showBackground aria-label="Ärende-sidor">
         <MenuBar.Item tabIndex={CaseCurrentTab.UPPGIFTER}>
           <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${externalCaseId}/uppgifter`}>
             Uppgifter

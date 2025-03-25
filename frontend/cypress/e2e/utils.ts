@@ -53,7 +53,6 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
         .should('be.visible')
         .click();
     });
-  cy.wait('@getCase0');
   testCase(representingMode, 'externalCaseId-0');
   cy.go('back');
 
@@ -109,7 +108,6 @@ export const testClosedCases = (representingMode: RepresentingMode = representin
         .should('be.visible')
         .click();
     });
-  cy.wait('@getCase12');
   testCase(representingMode, 'externalCaseId-12');
   cy.go('back');
 

@@ -1,3 +1,5 @@
+'use client';
+
 import FullscreenMainSpinner from '@components/spinner/fullscreen-main-spinner.component';
 import { Suspense } from 'react';
 import { BannerMenu } from './banner-menu/banner-menu.component';

@@ -1,7 +1,6 @@
-'use client';
+import CaseLayout from '@layouts/pages/mypages-sections/cases/case/case-layout.component';
 
-import CaseLayout from '@components/mypages-sections/cases/case/case-layout.component';
-
-export default function layout({ params, children }) {
-  return <CaseLayout externalCaseId={params.externalCaseId}>{children}</CaseLayout>;
+export default async function layout({ params, children }) {
+  const { externalCaseId } = await params;
+  return <CaseLayout externalCaseId={externalCaseId}>{children}</CaseLayout>;
 }

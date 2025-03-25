@@ -23,7 +23,7 @@ export const invoicesLabels = [
   { label: 'Visa faktura', screenReaderOnly: true, sortable: false },
 ];
 
-const statusMap = {
+export const statusMapInvoices = {
   PAID: { label: 'Betald', color: 'info' },
   PAID_TOO_MUCH: { label: 'För mycket betalt', color: 'info' },
 
@@ -41,12 +41,12 @@ const statusMap = {
 };
 
 export const mapStatus = (s: InvoiceStatus) => {
-  return Object.keys(statusMap).includes(s as unknown as string)
-    ? { code: s, color: statusMap[s].color, label: statusMap[s].label }
+  return Object.keys(statusMapInvoices).includes(s as unknown as string)
+    ? { code: s, color: statusMapInvoices[s].color, label: statusMapInvoices[s].label }
     : {
         code: 'UNKNOWN' as InvoiceStatus,
-        color: statusMap['UNKNOWN'].color,
-        label: statusMap['UNKNOWN'].label,
+        color: statusMapInvoices['UNKNOWN'].color,
+        label: statusMapInvoices['UNKNOWN'].label,
       };
 };
 
@@ -72,26 +72,25 @@ export const invoicesHandler = (data: InvoicesResponse): InvoicesData => ({
   labels: invoicesLabels,
 });
 
+export const notPaidInvoices = ['UNPAID', 'SENT', 'PARTIALLY_PAID', 'REMINDER', 'DEBT_COLLECTION'];
 export const getNotPaidInvoices: (invoicesData: InvoicesData) => InvoicesData = (invoicesData) => ({
   ...invoicesData,
   labels: invoicesLabels,
-  invoices: invoicesData?.invoices.filter((x) =>
-    ['UNPAID', 'SENT', 'PARTIALLY_PAID', 'REMINDER', 'DEBT_COLLECTION'].includes(x.invoiceStatus.code)
-  ),
+  invoices: invoicesData?.invoices.filter((x) => notPaidInvoices.includes(x.invoiceStatus.code)),
 });
 
+export const paidInvoices = ['PAID', 'PAID_TOO_MUCH'];
 export const getPaidInvoices: (invoicesData: InvoicesData) => InvoicesData = (invoicesData) => ({
   ...invoicesData,
   labels: invoicesLabels,
-  invoices: invoicesData?.invoices.filter((x) => ['PAID', 'PAID_TOO_MUCH'].includes(x.invoiceStatus.code)),
+  invoices: invoicesData?.invoices.filter((x) => paidInvoices.includes(x.invoiceStatus.code)),
 });
 
+export const otherInvoices = ['CREDITED', 'WRITTEN_OFF', 'UNKNOWN', 'VOID'];
 export const getOtherInvoices: (invoicesData: InvoicesData) => InvoicesData = (invoicesData) => ({
   ...invoicesData,
   labels: invoicesLabels,
-  invoices: invoicesData?.invoices.filter((x) =>
-    ['CREDITED', 'WRITTEN_OFF', 'UNKNOWN', 'VOID'].includes(x.invoiceStatus.code)
-  ),
+  invoices: invoicesData?.invoices.filter((x) => otherInvoices.includes(x.invoiceStatus.code)),
 });
 
 export const getInvoicePdf: (invoiceNumber: string) => Promise<InvoicePdfData> = (invoiceNumber) =>

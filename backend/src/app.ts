@@ -19,6 +19,7 @@ import {
   SECRET_KEY,
   SESSION_MEMORY,
   SWAGGER_ENABLED,
+  MUNICIPALITY_ID,
 } from '@config';
 import errorMiddleware from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
@@ -48,6 +49,7 @@ import { RepresentingMode } from './interfaces/representing.interface';
 import { User } from './interfaces/users.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
 import { isValidUrl } from './utils/util';
+import { getApiBase } from './config/api-config';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -101,8 +103,10 @@ const samlStrategy = new Strategy(
     }
 
     try {
+      const apiBase = getApiBase('citizen');
       const personNumber = profile.citizenIdentifier;
-      const citizenResult = await apiService.get<any>({ url: `citizen/2.0/${personNumber}/guid` }, { session: { user: { username } } });
+      const url = `${apiBase}/${MUNICIPALITY_ID}/${personNumber}/guid`;
+      const citizenResult = await apiService.get<any>({ url }, { session: { user: { username } } });
       const { data: personId } = citizenResult;
 
       if (!personId) {

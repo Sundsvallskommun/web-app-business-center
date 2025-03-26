@@ -99,10 +99,12 @@ export class ContactSettingsController {
         break;
       case RepresentingMode.PRIVATE:
         data.name = user.name;
+        const apiBase = getApiBase('citizen');
+        const url = `${apiBase}/${MUNICIPALITY_ID}/${user.partyId}`;
         const params = {
           ShowClassified: false,
         };
-        res = await this.apiService.get<Array<ContactSetting>>({ url: `citizen/2.0/${user.partyId}`, params }, req);
+        res = await this.apiService.get<Array<ContactSetting>>({ url , params }, req);
         if (res.data) {
           const address = res.data.addresses?.[0];
           data.address = address?.city

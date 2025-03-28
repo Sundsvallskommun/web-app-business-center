@@ -1,4 +1,4 @@
-import { MUNICIPALITY_ID } from '@/config';
+import { MUNICIPALITY_ID, MUNICIPALITY_ORG_NR } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { InvoicesResponse, PdfInvoice } from '@/data-contracts/invoices/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
@@ -66,8 +66,7 @@ export class InvoicesController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    // Issuer, municipality orgNr: 2120002411
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION/2120002411/${id}/pdf`;
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION/${MUNICIPALITY_ORG_NR}/${id}/pdf`;
     const res = await this.apiService.get<PdfInvoice>({ url }, req);
 
     return { data: res.data, message: 'success' };

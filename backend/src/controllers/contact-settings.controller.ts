@@ -124,7 +124,7 @@ export class ContactSettingsController {
   @HttpCode(201)
   @OpenAPI({ summary: 'Create contact settings for current logged in user' })
   @UseBefore(authMiddleware, validationMiddleware(ClientContactSetting, 'body'))
-  async newContactSettings(@Req() req: RequestWithUser, @Body() userData: ClientContactSetting): Promise<any> {
+  async newContactSettings(@Req() req: RequestWithUser, @Body() userData: ClientContactSetting): Promise<ResponseData<ClientContactSetting>> {
     const { representing } = req?.session;
     const newContactSettings: NewContactSettings = {
       alias: 'default',
@@ -133,9 +133,9 @@ export class ContactSettingsController {
       contactChannels: this.getContactSettingChannels(userData),
     };
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings`;
-    const res = await this.apiService.post<any>({ url, data: newContactSettings }, req);
+    const res = await this.apiService.post<ClientContactSetting>({ url, data: newContactSettings }, req);
 
-    const data = _.merge(userData, {
+    const data: ClientContactSetting = _.merge(userData, {
       id: res.data?.id,
     });
 

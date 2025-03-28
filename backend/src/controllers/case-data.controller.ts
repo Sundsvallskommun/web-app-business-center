@@ -44,24 +44,24 @@ export class CaseDataController {
     }
   }
 
-  @Post('/case-data/messages/:errandNumber')
+  @Post('/case-data/messages/:externalCaseId')
   @HttpCode(201)
   @OpenAPI({ summary: 'Create case message' })
   @UseBefore(authMiddleware, validationMiddleware(MessageRequestDTO, 'body'))
   async newContactSettings(
     @Req() req: RequestWithUser,
-    @Param('errandNumber') errandNumber: string,
+    @Param('externalCaseId') externalCaseId: string,
     @UploadedFiles('files', { options: fileUploadOptions, required: false }) files: Express.Multer.File[],
     @Body() message: MessageRequestDTO,
   ): Promise<any> {
-    if (!errandNumber) {
+    if (!externalCaseId) {
       throw new HttpException(400, 'Bad Request');
     }
 
     const data: MessageRequest = {
       ...message,
       messageId: uuidv4(),
-      externalCaseId: errandNumber,
+      externalCaseId: externalCaseId,
       firstName: req.user.givenName,
       lastName: req.user.surname,
       attachments: files.map(x => ({ content: x.buffer.toString('base64'), name: x.filename, contentType: x.mimetype })),
@@ -72,7 +72,7 @@ export class CaseDataController {
     return { data: res.data, message: 'success' };
   }
 
-  @Put('/cases/:externalCaseId/messages/:messageId/viewed/:isViewed')
+  @Put('/cases/:caseId/messages/:messageId/viewed/:isViewed')
   @OpenAPI({ summary: 'Set message isViewed status' })
   @HttpCode(201)
   @UseBefore(authMiddleware)

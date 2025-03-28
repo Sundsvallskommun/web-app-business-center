@@ -104,7 +104,7 @@ export class ContactSettingsController {
         const params = {
           ShowClassified: false,
         };
-        res = await this.apiService.get<Array<ContactSetting>>({ url , params }, req);
+        res = await this.apiService.get<Array<ContactSetting>>({ url, params }, req);
         if (res.data) {
           const address = res.data.addresses?.[0];
           data.address = address?.city

@@ -888,6 +888,11 @@ export interface Notification {
    */
   type: string;
   /**
+   * Sub type of the notification
+   * @example "PHASE_CHANGE"
+   */
+  subType?: string;
+  /**
    * Description of the notification
    * @example "Some description of the notification"
    */
@@ -1311,21 +1316,21 @@ export interface PageErrand {
 }
 
 export interface PageableObject {
+  paged?: boolean;
   /** @format int64 */
   offset?: number;
   sort?: SortObject;
-  paged?: boolean;
-  unpaged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
+  unpaged?: boolean;
 }
 
 export interface SortObject {
+  unsorted?: boolean;
   empty?: boolean;
   sorted?: boolean;
-  unsorted?: boolean;
 }
 
 export interface CommitMetadata {

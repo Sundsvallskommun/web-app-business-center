@@ -3,7 +3,7 @@ import { ApiResponse } from '@services/api-service';
 
 export const getMe: ApiResponse<User> = {
   data: {
-    name: 'Mel Eli',
+    name: 'Förnamn Efternamn',
     userSettings: {
       feedbackLifespan: FeedbackLifespan.oneMonth,
       readNotificationsClearedDate: '2023-01-01',

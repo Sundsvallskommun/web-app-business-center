@@ -1,5 +1,6 @@
+import CountdownTimer from '@components/countdown/countdown-timer.component';
 import { useConfirm } from '@sk-web-gui/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 export const useInactivityTrigger = ({
   trigger,
@@ -40,52 +41,14 @@ export const useInactivityTrigger = ({
   return null;
 };
 
-interface CountdownTimerProps {
-  timeout: number; // timeout in milliseconds
-}
-
-export const CountdownTimer: React.FC<CountdownTimerProps> = ({ timeout }) => {
-  const [timeLeft, setTimeLeft] = useState<number>(timeout);
-  const timerIdRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    const tick = () => {
-      setTimeLeft((prevTime) => prevTime - 1000);
-    };
-
-    timerIdRef.current = setInterval(tick, 1000);
-
-    return () => {
-      if (timerIdRef.current) {
-        clearInterval(timerIdRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (timeLeft <= 0 && timerIdRef.current) {
-      clearInterval(timerIdRef.current);
-    }
-  }, [timeLeft]);
-
-  const formatTime = (milliseconds: number): string => {
-    const totalSeconds = Math.max(Math.floor(milliseconds / 1000), 0);
-    const minutes = Math.floor(totalSeconds / 60)
-      .toString()
-      .padStart(2, '0');
-    const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-    return `${minutes}:${seconds}`;
-  };
-
-  return <span>{formatTime(timeLeft)}</span>;
-};
-
-export default CountdownTimer;
-
 export const useInactivityAlert = ({
   logoutCallback,
-  warningTimeout = 10 * 60 * 1000,
-  countdownTimeout = 5 * 60 * 1000,
+  warningTimeout = process.env.NEXT_PUBLIC_INACTIVITY_WARNING_TIMEOUT
+    ? parseInt(process.env.NEXT_PUBLIC_INACTIVITY_WARNING_TIMEOUT, 10)
+    : 10 * 60 * 1000,
+  countdownTimeout = process.env.NEXT_PUBLIC_INACTIVITY_COUNTDOWN_TIMEOUT
+    ? parseInt(process.env.NEXT_PUBLIC_INACTIVITY_COUNTDOWN_TIMEOUT, 10)
+    : 5 * 60 * 1000,
   inactivityCondition = true,
 }: {
   logoutCallback: () => void;

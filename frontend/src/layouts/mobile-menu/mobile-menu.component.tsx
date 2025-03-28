@@ -31,7 +31,7 @@ export const MobileMenu = () => {
 
   return (
     <div>
-      <Button iconButton size="lg" onClick={openHandler}>
+      <Button aria-label="Meny" iconButton size="lg" onClick={openHandler}>
         <Icon icon={<Menu />} />
       </Button>
 
@@ -41,6 +41,7 @@ export const MobileMenu = () => {
         onClose={closeHandler}
         closeButtonProps={{ size: 'lg', className: cx('-mr-md') }}
         label={<h1 className="text-h4-md mb-0">Meny</h1>}
+        closeLabel="Stäng meny"
         contentTransitionProps={{
           enter: 'transform transition ease-out duration-200',
           enterFrom: 'translate-x-full',
@@ -52,8 +53,8 @@ export const MobileMenu = () => {
       >
         <Modal.Content className="grow overflow-y-scroll gap-24">
           <MenuVertical.Provider>
-            <MenuVertical.Nav>
-              <MenuVertical>
+            <MenuVertical.Nav aria-label="Undersidor">
+              <MenuVertical aria-label="Undersidor">
                 {bannerMenuItems.map((item, index) => (
                   <MenuVertical.Item
                     className="font-bold"

@@ -1,6 +1,6 @@
 import { RepresentingMode } from '@interfaces/app';
 import { testCases, testContactSettings, testInvoices } from 'cypress/e2e/utils';
-import { getRepresentingEntity, representingPrivateDefault } from 'cypress/fixtures/getRepresentingEntity';
+import { getPrivateRepresentFromGetMe, getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { setIntercepts } from 'cypress/support/e2e';
 
 describe('Ändra representationsläge (privat/företag)', () => {
@@ -8,15 +8,53 @@ describe('Ändra representationsläge (privat/företag)', () => {
     cy.intercept(
       'GET',
       '**/api/representing',
-      getRepresentingEntity({ PRIVATE: representingPrivateDefault, mode: RepresentingMode.PRIVATE })
+      getRepresentingEntity({ PRIVATE: getPrivateRepresentFromGetMe(), mode: RepresentingMode.PRIVATE })
     ).as('getRepresenting');
     cy.intercept(
       'POST',
       '**/api/representing',
-      getRepresentingEntity({ PRIVATE: representingPrivateDefault, mode: RepresentingMode.PRIVATE })
+      getRepresentingEntity({ PRIVATE: getPrivateRepresentFromGetMe(), mode: RepresentingMode.PRIVATE })
     ).as('postRepresenting');
     setIntercepts(RepresentingMode.PRIVATE);
     cy.visit('/privat');
+  });
+  it('should render /privat/oversikt then /foretag/valj-foretag then /foretag/oversikt with no chosen business', () => {
+    cy.url().should('include', '/privat/oversikt');
+    cy.wait(['@getCases', '@getRepresenting']).then(() => {
+      setIntercepts(RepresentingMode.BUSINESS);
+      cy.intercept('GET', '**/api/representing', { statusCode: 400 }).as('getRepresenting');
+
+      // RepresentingSwitchButton
+      cy.contains('[role="menuitem"]', 'Företag').click();
+      cy.url().should('include', '/foretag/valj-foretag');
+
+      cy.intercept('GET', '**/api/representing', getRepresentingEntity({ mode: RepresentingMode.BUSINESS })).as(
+        'getRepresenting'
+      );
+
+      // välj företag
+      cy.contains('Styrbjörns båtar').click();
+      cy.contains('button', 'Fortsätt').click();
+      cy.url().should('include', '/foretag/oversikt');
+      cy.contains('Styrbjörns båtar');
+    });
+  });
+  it('should render /privat/oversikt then /foretag/oversikt then /privat/oversikt', () => {
+    cy.url().should('include', '/privat/oversikt');
+    cy.wait(['@getCases', '@getRepresenting'])
+      .then(() => {
+        setIntercepts(RepresentingMode.BUSINESS);
+
+        // RepresentingSwitchButton
+        cy.contains('[role="menuitem"]', 'Företag').click();
+        cy.url().should('include', '/foretag/oversikt');
+        cy.contains('Styrbjörns båtar');
+      })
+      .then(() => {
+        setIntercepts(RepresentingMode.PRIVATE);
+        cy.contains('[role="menuitem"]', 'Privat').click();
+        cy.url().should('include', '/privat/oversikt');
+      });
   });
   it('should render /privat/oversikt then /foretag/oversikt', () => {
     cy.url().should('include', '/privat/oversikt');

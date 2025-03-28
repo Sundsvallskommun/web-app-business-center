@@ -1,3 +1,6 @@
+import { CookieConsentUtils } from '@sk-web-gui/react';
+import { DEFAULT_COOKIE_VALUE } from 'cypress/support/e2e';
+
 describe('Om webbplatsen', () => {
   it('should render om webbplatsen', () => {
     cy.visit('/om-webbplatsen');
@@ -12,6 +15,15 @@ describe('Om webbplatsen', () => {
     cy.visit('/om-webbplatsen/kakor');
     cy.get('#content').should('exist');
     cy.get('h1').should('exist').should('contain.text', 'Kakor');
+
+    cy.contains('button', 'Hantera kakor (cookies)').click();
+    cy.setCookie(CookieConsentUtils.defaultCookieConsentName, '');
+    cy.contains('Vi använder kakor, cookies').should('be.visible');
+    cy.contains('button', 'Godkänn alla').click();
+    cy.contains('Vi använder kakor, cookies').should('not.exist');
+    cy.getCookie(CookieConsentUtils.defaultCookieConsentName).should((cookie) => {
+      expect(cookie).to.have.property('value', DEFAULT_COOKIE_VALUE);
+    });
   });
 
   it('should render om webbplatsen -> Tillgänglighet', () => {

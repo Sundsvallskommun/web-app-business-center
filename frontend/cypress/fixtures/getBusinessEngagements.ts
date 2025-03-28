@@ -7,6 +7,10 @@ export const getBusinessEngagements: ApiResponse<Engagement[]> = {
       organizationName: 'Styrbjörns båtar',
       organizationNumber: '2021005448',
     },
+    {
+      organizationName: 'Styrbjörns cyklar',
+      organizationNumber: '2021005449',
+    },
   ],
   message: 'success',
 };

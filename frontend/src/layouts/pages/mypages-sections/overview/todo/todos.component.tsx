@@ -5,8 +5,8 @@ import { useApi } from '@services/api-service';
 import { casesHandler, getCasesInNeedOfData } from '@services/case-service';
 import { Divider, useThemeQueries } from '@sk-web-gui/react';
 import { Fragment } from 'react';
-import styles from './todos.module.scss';
 import { TodoCase } from './todo-case.component';
+import styles from './todos.module.scss';
 
 export enum TodoType {
   CONTRACT,

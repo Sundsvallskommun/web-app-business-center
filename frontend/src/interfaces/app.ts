@@ -11,8 +11,8 @@ export interface RepresentingEntityDto {
   mode?: RepresentingMode;
 }
 export interface RepresentingEntity {
-  PRIVATE?: RepresentingPrivateEntity;
-  BUSINESS?: RepresentingBusinessEntity;
+  PRIVATE?: RepresentingPrivateEntity | null;
+  BUSINESS?: RepresentingBusinessEntity | null;
   mode: RepresentingMode;
 }
 

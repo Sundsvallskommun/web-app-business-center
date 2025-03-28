@@ -1,21 +1,17 @@
 import '@cypress/code-coverage/support';
 
+import { RepresentingMode } from '@interfaces/app';
+import { CookieConsentUtils } from '@sk-web-gui/react';
 import { getBusinessEngagements } from 'cypress/fixtures/getBusinessEngagements';
 import { getCases } from 'cypress/fixtures/getCases';
 import { getContactSettings } from 'cypress/fixtures/getContactSettings';
 import { getInvoices } from 'cypress/fixtures/getInvoices';
 import { getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { getMe } from '../fixtures/getMe';
-import { RepresentingMode } from '@interfaces/app';
 
-const COOKIE_NAME = 'SKCookieConsent';
-const COOKIE_VALUE = 'necessary%2Cfunc%2Cstats';
+export const DEFAULT_COOKIE_VALUE = 'necessary%2Cstats';
 
 localStorage.clear();
-
-Cypress.on('window:before:load', (window) => {
-  window.document.cookie = `${COOKIE_NAME}=${COOKIE_VALUE}`;
-});
 
 export const representingModeDefault = RepresentingMode.PRIVATE;
 
@@ -34,6 +30,7 @@ export const setIntercepts = (representingMode: RepresentingMode = representingM
 };
 
 beforeEach(() => {
+  cy.setCookie(CookieConsentUtils.defaultCookieConsentName, DEFAULT_COOKIE_VALUE);
   cy.viewport('macbook-16');
   setIntercepts(representingModeDefault);
 });

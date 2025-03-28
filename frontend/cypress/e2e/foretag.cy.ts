@@ -1,5 +1,6 @@
 import { RepresentingMode } from '@interfaces/app';
 import { testCases, testContactSettings, testInvoices } from 'cypress/e2e/utils';
+import { getBusinessRepresentFromEngagements, getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { setIntercepts } from 'cypress/support/e2e';
 
 describe('Företag', () => {
@@ -37,5 +38,17 @@ describe('Företag', () => {
       cy.url().should('include', '/foretag/profil');
       testContactSettings(RepresentingMode.BUSINESS);
     });
+  });
+  it('should switch business', () => {
+    cy.contains('Styrbjörns båtar').should('be.visible');
+    cy.contains('button', 'Byt organisation').click();
+    cy.intercept(
+      'GET',
+      '**/api/representing',
+      getRepresentingEntity({ mode: RepresentingMode.BUSINESS, BUSINESS: getBusinessRepresentFromEngagements(1) })
+    ).as(`getRepresenting`);
+    cy.contains('button', 'Styrbjörns cyklar').click();
+    cy.wait('@getRepresenting');
+    cy.contains('[data-cy="representingLabel"]', 'Styrbjörns cyklar').should('be.visible');
   });
 });

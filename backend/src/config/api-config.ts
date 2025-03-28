@@ -11,7 +11,7 @@ export const APIS = [
   // },
   {
     name: 'case-data',
-    version: '10.0',
+    version: '11.0',
   },
   {
     name: 'casestatus',
@@ -23,7 +23,7 @@ export const APIS = [
   },
   {
     name: 'citizen',
-    version: '2.0',
+    version: '3.0',
   },
   {
     name: 'messaging',

@@ -29,7 +29,7 @@ export interface WebMessageAttachment {
   fileName?: string;
   /** Mime-type */
   mimeType?: string;
-  /** BASE64-encoded file, max size 10 MB */
+  /** BASE64-encoded file, max size 50 MB */
   base64Data?: string;
 }
 

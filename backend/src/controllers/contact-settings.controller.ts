@@ -102,7 +102,7 @@ export class ContactSettingsController {
         const params = {
           ShowClassified: false,
         };
-        res = await this.apiService.get<Array<ContactSetting>>({ url: `citizen/2.0/${user.partyId}`, params }, req);
+        res = await this.apiService.get<Array<ContactSetting>>({ url: `citizen/3.0/${MUNICIPALITY_ID}/${user.partyId}`, params }, req);
         if (res.data) {
           const address = res.data.addresses?.[0];
           data.address = address?.city

@@ -12,7 +12,7 @@ export default function CaseInformation() {
           <Label rounded inverted color={caseData?.status.color}>
             {caseData?.status.label}
           </Label>
-          <h2 className="text-h2-sm desktop:text-h2-lg">{caseData?.subject.caseType}</h2>
+          <h2 className="text-h2-sm desktop:text-h2-lg">{caseData?.caseType}</h2>
         </div>
         <Divider />
         <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
@@ -22,7 +22,7 @@ export default function CaseInformation() {
           </div>
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">Registrerat</div>
-            <div>{caseData?.serviceDate}</div>
+            <div>{caseData?.firstSubmitted}</div>
           </div>
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">Dokument</div>

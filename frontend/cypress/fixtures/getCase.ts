@@ -1,10 +1,13 @@
 import { RepresentingMode } from '@interfaces/app';
-import { CaseResponse } from '@interfaces/case';
 import { ApiResponse } from '@services/api-service';
 import { representingModeDefault } from 'cypress/support/e2e';
 import { getCases } from './getCases';
+import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
 
-export const getCase: (representingMode?: RepresentingMode, externalCaseId?: string) => ApiResponse<CaseResponse> = (
+export const getCase: (
+  representingMode?: RepresentingMode,
+  externalCaseId?: string
+) => ApiResponse<CaseStatusResponse> = (
   representingMode = representingModeDefault,
   externalCaseId = 'externalCaseId-0'
 ) => ({

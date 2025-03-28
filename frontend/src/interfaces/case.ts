@@ -1,25 +1,12 @@
+import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
 import { statusCodes } from './status-codes';
 
-export interface ICase {
-  externalCaseId: string;
-  caseId: string;
-  subject: {
-    caseType: string;
-    meta: {
-      created: string;
-      modified: string;
-    };
-  };
-  department: string;
-  validFrom: string;
-  validTo: string;
-  serviceDate: string;
+export interface ICaseStatusResponse extends Omit<CaseStatusResponse, 'status'> {
   status: { code: statusCodes; color: 'neutral' | 'info' | 'warning' | 'error'; label: string };
-  lastStatusChange: string;
 }
 
 export interface CasesData {
-  cases: ICase[];
+  cases: ICaseStatusResponse[];
   labels: { label: string; screenReaderOnly: boolean; sortable: boolean; shownForStatus: statusCodes }[];
 }
 
@@ -31,14 +18,4 @@ export interface CasePdf {
 export interface CasePdfData {
   pdf: CasePdf;
   error?: boolean;
-}
-
-export interface CaseResponse {
-  caseType: string;
-  externalCaseId: string;
-  id: string;
-  status: string;
-  lastStatusChange: string;
-  firstSubmitted: string;
-  isOpenEErrand: boolean;
 }

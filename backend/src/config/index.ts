@@ -30,4 +30,5 @@ export const {
   SAML_PUBLIC_KEY,
   FEEDBACK_EMAIL,
   MUNICIPALITY_ID,
+  MUNICIPALITY_ORG_NR,
 } = process.env;

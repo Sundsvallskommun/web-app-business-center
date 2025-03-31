@@ -9,7 +9,7 @@
 // https://on.cypress.io/plugins-guide
 // ***********************************************************
 import codeCoverageTask from '@cypress/code-coverage/task';
-// import injectNextDevServer from '@cypress/react/plugins/next'
+import injectNextDevServer from '@cypress/react/plugins/next';
 
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
@@ -20,10 +20,10 @@ import codeCoverageTask from '@cypress/code-coverage/task';
 const config = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
-  // if (config.testingType === 'component') {
-  //   injectNextDevServer(on, config);
-  // }
   on('task', codeCoverageTask);
+  if (config.testingType === 'component') {
+    injectNextDevServer(on, config);
+  }
   return config;
 };
 

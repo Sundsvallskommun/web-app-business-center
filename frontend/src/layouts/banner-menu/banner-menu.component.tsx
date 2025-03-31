@@ -19,6 +19,11 @@ export const BannerMenu: React.FC = () => {
     method: 'get',
   });
 
+  const representingLabel =
+    representingMode === RepresentingMode.BUSINESS
+      ? representingEntity?.BUSINESS?.organizationName
+      : representingEntity?.PRIVATE?.name;
+
   return (
     <div className="w-full bg-vattjom-background-200">
       <div className="max-w-content mx-auto relative overflow-hidden">
@@ -28,13 +33,14 @@ export const BannerMenu: React.FC = () => {
 
         <div className="max-w-main-content z-10 relative mx-auto pl-20 lg:pl-0 pt-[6rem] pl- flex flex-col items-start">
           <span className="text-dark-secondary text-h3 font-header">Mina sidor</span>
-          <span className={cx('text-display-3-sm lg:text-display-2-md text-vattjom-surface-primary xs:mb-32 lg:mb-48')}>
-            {representingMode === RepresentingMode.BUSINESS
-              ? representingEntity?.BUSINESS?.organizationName
-              : representingEntity?.PRIVATE?.name}
+          <span
+            data-cy="representingLabel"
+            className={cx('text-display-3-sm lg:text-display-2-md text-vattjom-surface-primary xs:mb-32 lg:mb-48')}
+          >
+            {representingLabel}
           </span>
           {isMinDesktop && (
-            <MenuBar className="self-stretch">
+            <MenuBar className="self-stretch" aria-label={`Undersidor ${representingLabel}`}>
               {bannerMenuItems.map((item, index) => (
                 <MenuBar.Item
                   key={`${index}`}

@@ -1,0 +1,13 @@
+{
+  "presets": [
+    "next/babel",
+    "@babel/preset-env",
+    [
+      "@babel/preset-react",
+      {
+        "runtime": "automatic"
+      }
+    ]
+  ],
+  "plugins": ["@babel/plugin-transform-class-properties", "istanbul"]
+}

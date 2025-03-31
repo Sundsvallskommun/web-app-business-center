@@ -96,7 +96,10 @@ function Login() {
             <CenterDiv className="pt-40 px-[6.65rem] pb-64">
               <div className="w-full max-w-[34.7rem]">
                 <Button size="lg" className="w-full" color="vattjom" onClick={() => onLogin()} data-cy="loginButton">
-                  Logga in
+                  Logga in{' '}
+                  <span className="sr-only">
+                    {representingMode === RepresentingMode.PRIVATE ? 'privat' : 'som företag'}
+                  </span>
                 </Button>
                 {errorMessage && <FormErrorMessage className="mt-lg">{errorMessage}</FormErrorMessage>}
               </div>

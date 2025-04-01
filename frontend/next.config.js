@@ -41,7 +41,7 @@ module.exports = withBundleAnalyzer({
   },
   transpilePackages: ['lucide-react'],
   experimental: {
-    forceSwcTransforms: true,
+    forceSwcTransforms: process.env.TEST !== 'true',
     swcPlugins: process.env.TEST === 'true' ? [['swc-plugin-coverage-instrument', {}]] : [],
     optimizePackageImports: ['@sk-web-gui'],
   },

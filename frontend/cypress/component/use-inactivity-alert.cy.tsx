@@ -1,5 +1,3 @@
-/// <reference path="../support/component.d.ts" />
-
 import CountdownTimer from '@components/countdown/countdown-timer.component';
 
 describe('Inactivity alert', () => {

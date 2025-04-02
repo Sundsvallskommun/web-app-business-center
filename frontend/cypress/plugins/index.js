@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /// <reference types="cypress" />
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
@@ -20,7 +21,6 @@ const config = (on, config) => {
   // `config` is the resolved Cypress config
 
   require('@cypress/code-coverage/task')(on, config);
-  on('file:preprocessor', require('@cypress/code-coverage/use-babelrc'));
   return config;
 };
 

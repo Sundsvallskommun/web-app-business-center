@@ -12,7 +12,7 @@
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build",
     "cypress": "cypress open",
-    "cypress:headless": "npx cypress run --component && npx cypress run --e2e",
+    "cypress:headless": "cross-env TEST=true npx cypress run --component && npx cypress run --e2e",
     "jest": "jest --watch",
     "jest:coverage": "jest --coverage",
     "test": "concurrently \"yarn jest\" \"yarn cypress\"",

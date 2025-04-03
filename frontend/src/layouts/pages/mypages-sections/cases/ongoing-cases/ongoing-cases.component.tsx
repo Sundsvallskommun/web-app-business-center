@@ -3,7 +3,8 @@
 import { CardList } from '@components/cards/cards.component';
 import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
 import { useAppContext } from '@contexts/app.context';
-import { CaseResponse, CasesData } from '@interfaces/case';
+import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { CasesData } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { casesHandler, emptyCaseList, getOngoing } from '@services/case-service';
 import { AutoTable, AutoTableHeader, Button, Icon, Label, useThemeQueries } from '@sk-web-gui/react';
@@ -14,7 +15,7 @@ import { Fragment, useRef } from 'react';
 import { CaseTableCard } from '../case-table-card.component';
 
 export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
-  const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseResponse, Error, CasesData>({
+  const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseStatusResponse, Error, CasesData>({
     url: '/cases',
     method: 'get',
     dataHandler: casesHandler,
@@ -28,7 +29,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
     {
       label: 'Namn',
       sticky: true,
-      property: 'subject.caseType',
+      property: 'caseType',
       screenReaderOnly: false,
       renderColumn: (value) => (
         <div className="text-left">
@@ -58,7 +59,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
     {
       label: 'Ärendenummer',
       sticky: false,
-      property: 'caseId',
+      property: 'errandNumber',
       screenReaderOnly: false,
       isColumnSortable: true,
       renderColumn: (value) => (
@@ -77,7 +78,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
         <div className="w-full text-right">
           <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${value}`}>
             <Button size="sm" showBackground variant="tertiary" as="span" rightIcon={<Icon icon={<ArrowRight />} />}>
-              Visa <span className="sr-only">{item.subject.caseType}</span>
+              Visa <span className="sr-only">{item.caseType}</span>
             </Button>
           </NextLink>
         </div>

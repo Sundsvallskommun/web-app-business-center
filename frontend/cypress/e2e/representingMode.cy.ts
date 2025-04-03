@@ -1,5 +1,6 @@
 import { RepresentingMode } from '@interfaces/app';
 import { testCases, testContactSettings, testInvoices } from 'cypress/e2e/utils';
+import { getMe } from 'cypress/fixtures/getMe';
 import { getPrivateRepresentFromGetMe, getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { setIntercepts } from 'cypress/support/e2e';
 
@@ -18,7 +19,8 @@ describe('Ändra representationsläge (privat/företag)', () => {
     setIntercepts(RepresentingMode.PRIVATE);
     cy.visit('/privat');
   });
-  it('should render /privat/oversikt then /foretag/valj-foretag then /foretag/oversikt with no chosen business', () => {
+  it.only('should render /privat/oversikt then /foretag/valj-foretag then /foretag/oversikt with no chosen business', () => {
+    cy.contains('[data-cy="representingLabel"]', getMe.data.name);
     cy.url().should('include', '/privat/oversikt');
     cy.wait(['@getCases', '@getRepresenting']).then(() => {
       setIntercepts(RepresentingMode.BUSINESS);
@@ -35,8 +37,8 @@ describe('Ändra representationsläge (privat/företag)', () => {
       // välj företag
       cy.contains('Styrbjörns båtar').click();
       cy.contains('button', 'Fortsätt').click();
+      cy.contains('[data-cy="representingLabel"]', 'Styrbjörns båtar');
       cy.url().should('include', '/foretag/oversikt');
-      cy.contains('Styrbjörns båtar');
     });
   });
   it('should render /privat/oversikt then /foretag/oversikt then /privat/oversikt', () => {

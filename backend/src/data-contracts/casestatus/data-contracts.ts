@@ -118,7 +118,7 @@ export interface CaseStatusResponse {
    * Case id
    * @example "1234567890"
    */
-  id?: string;
+  caseId?: string;
   /**
    * External case id
    * @example "1234567890"
@@ -144,7 +144,21 @@ export interface CaseStatusResponse {
    * @example "2021-01-01"
    */
   lastStatusChange?: string;
-  openEErrand?: boolean;
+  /**
+   * The system that the case is in
+   * @example "BYGGR"
+   */
+  system?: string;
+  /**
+   * The namespace of the case
+   * @example "Namespace"
+   */
+  namespace?: string;
+  /**
+   * Human readable identifier for the case
+   * @example "BYGGR-2024-123456"
+   */
+  errandNumber?: string;
 }
 
 /** Case status response */

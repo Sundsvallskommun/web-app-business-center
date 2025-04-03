@@ -1,6 +1,7 @@
 'use client';
 
-import { CaseResponse, CasesData, ICase } from '@interfaces/case';
+import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { CasesData, ICaseStatusResponse } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { casesHandler, getCasesInNeedOfData } from '@services/case-service';
 import { Divider, useThemeQueries } from '@sk-web-gui/react';
@@ -26,11 +27,11 @@ export function dataToTodo<TTodoType = TodoType>(
 
 export interface TodoItem<TTodoType = TodoType> {
   type: TTodoType;
-  data: TTodoType extends TodoType.CASE ? ICase : object;
+  data: TTodoType extends TodoType.CASE ? ICaseStatusResponse : object;
 }
 
 export const Todos = () => {
-  const { data: cases, isFetching: casesIsFetching } = useApi<CaseResponse, Error, CasesData>({
+  const { data: cases, isFetching: casesIsFetching } = useApi<CaseStatusResponse, Error, CasesData>({
     url: '/cases',
     method: 'get',
     dataHandler: casesHandler,

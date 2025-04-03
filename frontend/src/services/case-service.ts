@@ -1,16 +1,7 @@
-import { CasePdf, CasePdfData, CasesData, ICase } from '../interfaces/case';
+import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { CasePdf, CasePdfData, CasesData, ICaseStatusResponse } from '../interfaces/case';
 import { statusCodes } from '../interfaces/status-codes';
 import { apiService, ApiResponse } from './api-service';
-
-interface CaseResponse {
-  caseType: string;
-  externalCaseId: string;
-  id: string;
-  status: string;
-  lastStatusChange: string;
-  firstSubmitted: string;
-  isOpenEErrand: boolean;
-}
 
 export const emptyCaseList: CasesData = {
   cases: [],
@@ -55,25 +46,12 @@ export const mapStatus = (s: string) => {
     : { code: statusCodes.Ongoing, color: 'neutral', label: s };
 };
 
-export const handleCase = (n: CaseResponse) => ({
-  externalCaseId: n.externalCaseId,
-  caseId: n.id,
-  subject: {
-    caseType: n.caseType,
-    meta: {
-      created: n.firstSubmitted,
-      modified: n.lastStatusChange,
-    },
-  },
-  department: '--',
-  validFrom: '--',
-  validTo: '--',
-  serviceDate: '--',
-  status: mapStatus(n.status),
-  lastStatusChange: n.lastStatusChange,
+export const handleCase = (n: CaseStatusResponse): ICaseStatusResponse => ({
+  ...n,
+  status: mapStatus(n.status || ''),
 });
 
-export const handleCaseResponse: (data: CaseResponse[]) => ICase[] = (data) => data.map(handleCase);
+export const handleCaseResponse: (data: CaseStatusResponse[]) => ICaseStatusResponse[] = (data) => data.map(handleCase);
 
 export const casesHandler = (data) => ({
   cases: handleCaseResponse(data),
@@ -108,10 +86,10 @@ export const getCasesInNeedOfData: (cs: CasesData) => CasesData = (cs) => ({
   ),
 });
 
-export const getCasePdf: (caseId: string) => Promise<CasePdfData> = (caseId) =>
+export const getCasePdf: (externalCaseId: string) => Promise<CasePdfData> = (externalCaseId) =>
   apiService
-    .get<ApiResponse<CasePdf>>(`casepdf/${caseId}`)
+    .get<ApiResponse<CasePdf>>(`casepdf/${externalCaseId}`)
     .then((res) => ({ pdf: res.data.data }))
     .catch(
-      (e) => ({ pdf: { externalCaseId: '', base64: '' }, error: e.response?.status ?? 'UNKNOWN ERROR' } as CasePdfData)
+      (e) => ({ pdf: { externalCaseId: '', base64: '' }, error: e.response?.status ?? 'UNKNOWN ERROR' }) as CasePdfData
     );

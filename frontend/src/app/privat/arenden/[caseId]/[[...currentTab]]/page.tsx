@@ -1,10 +1,11 @@
 import CaseTabLayout from '@layouts/pages/mypages-sections/cases/case/case-tab-layout.component';
 import { appName } from '@utils/app-name';
+import { capitalize } from 'lodash';
 
 export async function generateMetadata({ params }: { params: Promise<{ caseId: string; currentTab: string }> }) {
-  const { caseId, currentTab } = await params;
+  const { currentTab } = await params;
   return {
-    title: `${currentTab} - ${caseId} - Ärenden - Privat - ${appName()}`,
+    title: `${capitalize(currentTab || 'uppgifter')} - Ärende - Privat - ${appName()}`,
   };
 }
 

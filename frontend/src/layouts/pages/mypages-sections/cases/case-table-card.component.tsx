@@ -9,7 +9,7 @@ export const CaseTableCard: React.FC<{ item: ICaseStatusResponse }> = ({ item })
   return (
     <Card
       className="[&_a.sk-link]:text-[inherit]"
-      href={`${getRepresentingModeRoute(representingMode)}/arenden/${item.externalCaseId}`}
+      href={`${getRepresentingModeRoute(representingMode)}/arenden/${item.caseId}`}
     >
       <Card.Body className="w-full p-20">
         <div className="flex flex-col-reverse">

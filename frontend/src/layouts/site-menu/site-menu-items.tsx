@@ -27,7 +27,7 @@ export const useRepresentingSwitch = () => {
     });
     if (caseContext?.caseData) {
       queryClient.invalidateQueries({
-        queryKey: [`/cases/${caseContext.caseData.externalCaseId}`],
+        queryKey: [`/cases/${caseContext.caseData.caseId}`],
       });
     }
     queryClient.invalidateQueries({

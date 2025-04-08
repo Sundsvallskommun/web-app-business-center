@@ -3,10 +3,7 @@
 import { CardList } from '@components/cards/cards.component';
 import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
 import { useAppContext } from '@contexts/app.context';
-import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
 import { CasesData } from '@interfaces/case';
-import { useApi } from '@services/api-service';
-import { casesHandler, emptyCaseList, getOngoing } from '@services/case-service';
 import { AutoTable, AutoTableHeader, Button, Icon, Label, useThemeQueries } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { ArrowRight } from 'lucide-react';
@@ -14,13 +11,11 @@ import NextLink from 'next/link';
 import { Fragment, useRef } from 'react';
 import { CaseTableCard } from '../case-table-card.component';
 
-export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header }) => {
-  const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseStatusResponse, Error, CasesData>({
-    url: '/cases',
-    method: 'get',
-    dataHandler: casesHandler,
-  });
-  const ongoing = getOngoing(cases);
+export const OngoingCases: React.FC<{ caseData: CasesData; isFetchingCases: boolean; header?: React.ReactNode }> = ({
+  caseData,
+  isFetchingCases,
+  header,
+}) => {
   const { isMinDesktop } = useThemeQueries();
   const { representingMode } = useAppContext();
   const ref = useRef<null | HTMLDivElement>(null);
@@ -71,7 +66,7 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
     {
       label: 'Visa ärende',
       sticky: false,
-      property: 'externalCaseId',
+      property: 'caseId',
       screenReaderOnly: true,
       isColumnSortable: false,
       renderColumn: (value, item) => (
@@ -89,12 +84,12 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
   const Table = () => {
     return (
       <>
-        {ongoing?.cases?.length === 0 && !isFetchingCases ? (
+        {caseData?.cases?.length === 0 && !isFetchingCases ? (
           <p>Det finns inga pågående ärenden</p>
         ) : (
           isFetchingCases && <p>Laddar pågående ärenden</p>
         )}
-        {!isFetchingCases && ongoing?.cases?.length > 0 && (
+        {!isFetchingCases && caseData?.cases?.length > 0 ? (
           <div>
             {isMinDesktop ? (
               <AutoTable
@@ -104,14 +99,14 @@ export const OngoingCases: React.FC<{ header?: React.ReactNode }> = ({ header })
                 pageSize={9999}
                 footer={false}
                 background={false}
-                autodata={ongoing?.cases}
+                autodata={caseData?.cases}
                 autoheaders={headers}
               />
             ) : (
-              <CardList data={ongoing?.cases} Card={CaseTableCard} />
+              <CardList data={caseData?.cases} Card={CaseTableCard} />
             )}
           </div>
-        )}
+        ) : null}
       </>
     );
   };

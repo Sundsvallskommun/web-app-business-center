@@ -15,16 +15,16 @@ import { createContext } from 'react';
 /** @ts-expect-error is set on mount */
 export const CaseContext = createContext<{ caseData?: ICaseStatusResponse; caseMessages?: MessageResponse[] }>(null);
 
-export default function CaseLayout(props: { externalCaseId: number; children: React.ReactNode }) {
-  const { externalCaseId, children } = props;
+export default function CaseLayout(props: { caseId: number; children: React.ReactNode }) {
+  const { caseId, children } = props;
   const { data: caseData } = useApi<CaseStatusResponse, Error, ICaseStatusResponse>({
-    url: `/cases/${externalCaseId}`,
+    url: `/cases/${caseId}`,
     method: 'get',
     dataHandler: handleCase,
   });
   // waiting for api to implement
   // const { data: caseMessages } = useApi<MessageResponse[]>({
-  //   url: `/case-data/messages/${caseData?.externalCaseId}`,
+  //   url: `/case-data/messages/${caseData?.caseId}`,
   //   method: 'get',
   // });
 

@@ -18,7 +18,7 @@ export default function CaseInformation() {
         <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">Ärendenummer</div>
-            <div>{caseData?.caseId}</div>
+            <div>{caseData?.errandNumber}</div>
           </div>
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">Registrerat</div>

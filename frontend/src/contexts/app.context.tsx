@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { RepresentingMode } from '../interfaces/app';
 import { useRepresentingSwitch } from '../layouts/site-menu/site-menu-items';
 import { appURL } from '../utils/app-url';
@@ -60,13 +60,6 @@ export function AppWrapper({ children }) {
   const resetContextDefaults = () => {
     setRepresentingMode(defaults.representingMode);
   };
-
-  useEffect(() => {
-    const routeRepresentingMode = getRepresentingMode(pathname);
-    if (routeRepresentingMode) {
-      setRepresentingMode(routeRepresentingMode);
-    }
-  }, [pathname]);
 
   return (
     <AppContext.Provider

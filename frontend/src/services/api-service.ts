@@ -168,7 +168,7 @@ export function useApi<
   TQueryFnData = unknown,
   TError = Error,
   TData = TQueryFnData,
-  TQueryKey extends QueryKey = [''],
+  TQueryKey extends QueryKey = string[],
   TContext = ContextDefault,
 >(
   props: UseApiQueryProps<TQueryFnData, TError, TData, TQueryKey, TContext>,
@@ -179,7 +179,7 @@ export function useApi<
   TQueryFnData = unknown,
   TError = Error,
   TData = TQueryFnData,
-  TQueryKey extends QueryKey = [''],
+  TQueryKey extends QueryKey = string[],
   TContext = ContextDefault,
 >(
   props: UseApiMutationProps<TQueryFnData, TError, TData, TQueryKey, TContext>,
@@ -190,7 +190,7 @@ export function useApi<
   TQueryFnData = unknown,
   TError = Error,
   TData = TQueryFnData,
-  TQueryKey extends QueryKey & string[] = [''],
+  TQueryKey extends QueryKey & string[] = string[],
   TMethod extends Method = 'get',
   TContext = ContextDefault,
 >(

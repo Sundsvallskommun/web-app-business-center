@@ -9,7 +9,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
   data: [
     {
       caseType: `caseType-Inskickat-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-0',
+      caseId: 'caseId-0',
       id: 'id-0',
       status: 'Inskickat',
       lastStatusChange: '2024-08-30T12:00:00Z',
@@ -18,7 +18,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Tilldelat för handläggning-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-1',
+      caseId: 'caseId-1',
       id: 'id-1',
       status: 'Tilldelat för handläggning',
       lastStatusChange: '2024-08-29T11:45:00Z',
@@ -27,7 +27,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-2',
+      caseId: 'caseId-2',
       id: 'id-2',
       status: 'Under behandling',
       lastStatusChange: '2024-08-28T09:20:00Z',
@@ -36,7 +36,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-3',
+      caseId: 'caseId-3',
       id: 'id-3',
       status: 'Under behandling',
       lastStatusChange: '2024-08-28T09:20:00Z',
@@ -45,7 +45,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-4',
+      caseId: 'caseId-4',
       id: 'id-4',
       status: 'Under behandling',
       lastStatusChange: '2024-08-28T09:20:00Z',
@@ -54,7 +54,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-4',
+      caseId: 'caseId-4',
       id: 'id-4',
       status: 'Under behandling',
       lastStatusChange: '2024-08-28T09:20:00Z',
@@ -63,7 +63,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-5',
+      caseId: 'caseId-5',
       id: 'id-5',
       status: 'Under behandling',
       lastStatusChange: '2024-08-28T09:20:00Z',
@@ -72,7 +72,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Komplettering behövs-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-6',
+      caseId: 'caseId-6',
       id: 'id-6',
       status: 'Komplettering behövs',
       lastStatusChange: '2024-08-27T14:15:00Z',
@@ -81,7 +81,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Påminnelse om komplettering-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-7',
+      caseId: 'caseId-7',
       id: 'id-7',
       status: 'Påminnelse om komplettering',
       lastStatusChange: '2024-08-26T16:10:00Z',
@@ -90,7 +90,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Komplettering inkommen, behandling fortsätter-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-8',
+      caseId: 'caseId-8',
       id: 'id-8',
       status: 'Komplettering inkommen, behandling fortsätter',
       lastStatusChange: '2024-08-25T10:30:00Z',
@@ -99,7 +99,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Beslut finns, se separat information-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-9',
+      caseId: 'caseId-9',
       id: 'id-9',
       status: 'Beslut finns, se separat information',
       lastStatusChange: '2024-08-24T12:00:00Z',
@@ -108,7 +108,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Väntar på komplettering-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-10',
+      caseId: 'caseId-10',
       id: 'id-10',
       status: 'Väntar på komplettering',
       lastStatusChange: '2024-08-23T09:45:00Z',
@@ -117,7 +117,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Kompletterad-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-11',
+      caseId: 'caseId-11',
       id: 'id-11',
       status: 'Kompletterad',
       lastStatusChange: '2024-08-22T13:00:00Z',
@@ -126,7 +126,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Klart-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-12',
+      caseId: 'caseId-12',
       id: 'id-12',
       status: 'Klart',
       lastStatusChange: '2024-08-21T15:30:00Z',
@@ -135,7 +135,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Avslutat-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-13',
+      caseId: 'caseId-13',
       id: 'id-13',
       status: 'Avslutat',
       lastStatusChange: '2024-08-20T14:45:00Z',
@@ -144,7 +144,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Ärendet arkiveras-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-14',
+      caseId: 'caseId-14',
       id: 'id-14',
       status: 'Ärendet arkiveras',
       lastStatusChange: '2024-08-19T11:15:00Z',
@@ -153,7 +153,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
     },
     {
       caseType: `caseType-Sparat ärende-${RepresentingMode[representingMode]}`,
-      externalCaseId: 'externalCaseId-15',
+      caseId: 'caseId-15',
       id: 'id-15',
       status: 'Sparat ärende',
       lastStatusChange: '2024-08-18T17:30:00Z',

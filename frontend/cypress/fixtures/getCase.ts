@@ -4,15 +4,10 @@ import { representingModeDefault } from 'cypress/support/e2e';
 import { getCases } from './getCases';
 import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
 
-export const getCase: (
-  representingMode?: RepresentingMode,
-  externalCaseId?: string
-) => ApiResponse<CaseStatusResponse> = (
+export const getCase: (representingMode?: RepresentingMode, caseId?: string) => ApiResponse<CaseStatusResponse> = (
   representingMode = representingModeDefault,
-  externalCaseId = 'externalCaseId-0'
+  caseId = 'caseId-0'
 ) => ({
-  data:
-    getCases(representingMode).data.find((x) => x.externalCaseId === externalCaseId) ||
-    getCases(representingMode).data[0],
+  data: getCases(representingMode).data.find((x) => x.caseId === caseId) || getCases(representingMode).data[0],
   message: 'success',
 });

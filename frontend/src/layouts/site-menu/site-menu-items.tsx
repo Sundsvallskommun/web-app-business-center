@@ -4,12 +4,13 @@ import { useAppContext } from '@contexts/app.context';
 import { useCombinedBusinessEngagements } from '@services/organisation-service';
 import { Button, Icon, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
 import { ArrowRight, ChevronDownCircle, LogOut } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../../interfaces/app';
 import { useApi, useApiService } from '../../services/api-service';
-import { getRepresentingModeRoute } from '../../utils/representingModeRoute';
+import { getRepresentingModeRoute, newRepresentingModePathname } from '../../utils/representingModeRoute';
 import { CaseContext } from '@layouts/pages/mypages-sections/cases/case/case-layout.component';
 import { useContext } from 'react';
+import NextLink from 'next/link';
 
 export const useRepresentingSwitch = () => {
   const caseContext = useContext(CaseContext) || null;
@@ -26,7 +27,7 @@ export const useRepresentingSwitch = () => {
     });
     if (caseContext?.caseData) {
       queryClient.invalidateQueries({
-        queryKey: [`/cases/${caseContext.caseData.externalCaseId}`],
+        queryKey: [`/cases/${caseContext.caseData.caseId}`],
       });
     }
     queryClient.invalidateQueries({
@@ -47,7 +48,9 @@ export const useRepresentingSwitch = () => {
       if (!res.error) {
         invalidateQueries();
       } else {
-        router.push(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/valj-foretag`);
+        if (representingDto.mode === RepresentingMode.BUSINESS) {
+          router.push(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/valj-foretag`);
+        }
       }
       return res;
     } catch (err) {
@@ -60,15 +63,16 @@ export const useRepresentingSwitch = () => {
 };
 
 export const MyPagesToggle = () => {
-  const { representingMode, setRepresentingMode } = useAppContext();
+  const { representingMode } = useAppContext();
+  const pathname = usePathname();
 
   return (
     <MenuBar showBackground current={representingMode}>
       <MenuBar.Item menuIndex={RepresentingMode.PRIVATE}>
-        <Button onClick={() => setRepresentingMode(RepresentingMode.PRIVATE)}>Privat</Button>
+        <NextLink href={`${newRepresentingModePathname(RepresentingMode.PRIVATE, pathname)}`}>Privat</NextLink>
       </MenuBar.Item>
       <MenuBar.Item menuIndex={RepresentingMode.BUSINESS}>
-        <Button onClick={() => setRepresentingMode(RepresentingMode.BUSINESS)}>Företag</Button>
+        <NextLink href={`${newRepresentingModePathname(RepresentingMode.BUSINESS, pathname)}`}>Företag</NextLink>
       </MenuBar.Item>
     </MenuBar>
   );

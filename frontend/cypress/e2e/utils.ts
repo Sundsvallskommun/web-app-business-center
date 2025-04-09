@@ -32,14 +32,8 @@ export const testContactSettings = (representingMode: RepresentingMode = represe
   cy.contains('h2', 'Kontaktvägar').next().contains('button', 'Redigera').should('be.visible');
 };
 
-export const testCase = (
-  representingMode: RepresentingMode = representingModeDefault,
-  externalCaseId: string = 'externalCaseId-0'
-) => {
-  cy.url().should(
-    'include',
-    `${getRepresentingModeName(representingMode, { urlFriendly: true })}/arenden/${externalCaseId}`
-  );
+export const testCase = (representingMode: RepresentingMode = representingModeDefault, caseId: string = 'caseId-0') => {
+  cy.url().should('include', `${getRepresentingModeName(representingMode, { urlFriendly: true })}/arenden/${caseId}`);
   cy.get('#content h1').should('have.text', 'Uppgifter');
   cy.contains('a', 'Meddelanden').should('be.visible').click();
   cy.url().should('include', '/meddelanden');
@@ -49,7 +43,7 @@ export const testCase = (
 };
 
 export const testOngoingCases = (representingMode: RepresentingMode = representingModeDefault) => {
-  cy.intercept('GET', '**/api/cases/externalCaseId-0', getCase(representingMode, 'externalCaseId-0')).as(`getCase0`);
+  cy.intercept('GET', '**/api/cases/caseId-0', getCase(representingMode, 'caseId-0')).as(`getCase0`);
   cy.contains('h1, h2', /pågående/i)
     .next('div')
     .contains('th', 'Status')
@@ -70,7 +64,7 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
         .should('be.visible')
         .click();
     });
-  testCase(representingMode, 'externalCaseId-0');
+  testCase(representingMode, 'caseId-0');
   cy.go('back');
 
   cy.viewport('iphone-5');
@@ -104,7 +98,7 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
 };
 
 export const testClosedCases = (representingMode: RepresentingMode = representingModeDefault) => {
-  cy.intercept('GET', '**/api/cases/externalCaseId-12', getCase(representingMode, 'externalCaseId-12')).as(`getCase12`);
+  cy.intercept('GET', '**/api/cases/caseId-12', getCase(representingMode, 'caseId-12')).as(`getCase12`);
   cy.contains('h1, h2', /avslutade/i)
     .next('div')
     .contains('th', 'Status')
@@ -125,7 +119,7 @@ export const testClosedCases = (representingMode: RepresentingMode = representin
         .should('be.visible')
         .click();
     });
-  testCase(representingMode, 'externalCaseId-12');
+  testCase(representingMode, 'caseId-12');
   cy.go('back');
 
   cy.viewport('iphone-5');

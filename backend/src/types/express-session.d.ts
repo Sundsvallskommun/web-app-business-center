@@ -1,6 +1,7 @@
 import { Engagement } from '@/data-contracts/businessengagements/data-contracts';
 import { User } from '@/interfaces/users.interface';
 import { RepresentingEntity } from '../interfaces/representing.interface';
+import { CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 
 declare module 'express-session' {
   interface Session {
@@ -10,5 +11,13 @@ declare module 'express-session' {
     passport?: any;
     representingBusinessChoices?: Engagement[];
     messages: string[];
+    cache?: {
+      cases?: {
+        PRIVATE?: CaseStatusResponse[];
+        BUSINESS?: {
+          [key: string]: CaseStatusResponse[];
+        };
+      };
+    };
   }
 }

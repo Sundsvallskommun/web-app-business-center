@@ -36,6 +36,9 @@ class ApiService {
     };
 
     try {
+      if (process.env.NODE_ENV === 'development') {
+        logger.info(`API request [${preparedConfig.method}]: ${preparedConfig.url}`);
+      }
       const res = await axios(preparedConfig);
       return { data: res.data, message: 'success' };
     } catch (error: unknown | AxiosError) {

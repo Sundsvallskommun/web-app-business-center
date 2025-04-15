@@ -20,11 +20,7 @@ function Page() {
     <Suspense fallback={<FullscreenMainSpinner />}>
       <div className="flex flex-col gap-40">
         <div className="text-content">
-          <h1>Ärenden</h1>
-          <p className="ingress">
-            Qorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet
-            odio mattis.
-          </p>
+          <h1>Dina ärenden</h1>
         </div>
         <div>
           <OngoingCases

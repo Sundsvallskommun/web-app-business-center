@@ -93,3 +93,8 @@ export const getCasePdf: (externalCaseId: string) => Promise<CasePdfData> = (ext
     .catch(
       (e) => ({ pdf: { externalCaseId: '', base64: '' }, error: e.response?.status ?? 'UNKNOWN ERROR' }) as CasePdfData
     );
+export const getCaseMessageAttachment: (url: string) => Promise<string> = (url) =>
+  apiService
+    .get<ApiResponse<string>>(url)
+    .then((res) => res.data.data)
+    .catch(() => '');

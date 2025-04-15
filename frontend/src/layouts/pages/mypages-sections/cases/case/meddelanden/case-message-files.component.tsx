@@ -1,18 +1,44 @@
+import { AttachmentResponse, MessageResponse } from '@data-contracts/case-data/data-contracts';
+import { getCaseMessageAttachment } from '@services/case-service';
 import { Button, Icon } from '@sk-web-gui/react';
-import { File } from 'lucide-react';
+import { File, Image } from 'lucide-react';
+import { useCallback, useContext } from 'react';
+import { CaseContext } from '../case-layout.component';
 
-export default function CaseMessageFiles() {
+export default function CaseMessageFiles(props: { message: MessageResponse }) {
+  const { message } = props;
+  const { caseData } = useContext(CaseContext);
+
+  const handleOpenFile = useCallback(
+    (file: NonNullable<AttachmentResponse>) => async () => {
+      const url = `/cases/${caseData?.caseId}/messages/${message.messageId}/attachments/${file.attachmentId}`;
+
+      const attachment = await getCaseMessageAttachment(url); // returns base64 string
+
+      const uri = `data:${file.contentType};base64, ${attachment}`;
+      const link = document.createElement('a');
+      link.href = uri;
+      link.download = file.name || 'download';
+      link.click();
+    },
+    [caseData?.caseId, message.messageId]
+  );
+
+  if (!message || message.attachments?.length === 0) return null;
+
   return (
-    <div className="flex gap-x-16">
-      {[...Array.from([1, 2, 3])].map((x, index) => {
-        const iconType = <File />; // || <Image />; // FIXME: implement filetype check
+    <div className="flex gap-16 flex-wrap">
+      {message.attachments?.map((file, index) => {
+        // eslint-disable-next-line jsx-a11y/alt-text
+        const iconType = file.contentType?.includes('image') ? <Image /> : <File />; // || <Image />; // FIXME: implement filetype check
         return (
           <Button
+            onClick={handleOpenFile(file)}
             leftIcon={<Icon icon={iconType} />}
             variant="tertiary"
-            size="sm"
+            size="md"
             key={`${index}`}
-          >{`fil-${x}.fil (789kB)`}</Button>
+          >{`${file.name}`}</Button>
         );
       })}
     </div>

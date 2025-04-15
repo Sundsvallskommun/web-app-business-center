@@ -1,48 +1,63 @@
 'use client';
 
 import { useAppContext } from '@contexts/app.context';
-import { MenuBar } from '@sk-web-gui/react';
+import { Callout, Label, Tabs } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
-import NextLink from 'next/link';
+import { useRouter } from 'next/navigation';
 import CaseInformation from './information/information.component';
 import CaseMeddelanden from './meddelanden/meddelanden.component';
+import { useContext } from 'react';
+import { CaseContext } from './case-layout.component';
+import { messageIsViewed } from './meddelanden/utils';
 
 export enum CaseCurrentTab {
-  UPPGIFTER,
-  MEDDELANDEN,
+  // order must correspond to the <Tabs/> component
+  UPPGIFTER = 'uppgifter',
+  MEDDELANDEN = 'meddelanden',
 }
 
 export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { caseId: string; currentTab: string }) {
+  const currentTabWithDefault = _currentTab ? _currentTab[0] : CaseCurrentTab.UPPGIFTER;
   const { representingMode } = useAppContext();
-  const currentTab = _currentTab
-    ? Object.keys(CaseCurrentTab)
-        .filter((key) => isNaN(Number(key)))
-        .indexOf(_currentTab[0].toUpperCase())
-    : CaseCurrentTab.UPPGIFTER; /** default tab */
+  const { caseData, caseMessages } = useContext(CaseContext);
+  const router = useRouter();
+  const currentTab = Object.keys(CaseCurrentTab).indexOf(currentTabWithDefault.toUpperCase());
+
+  const handleGotoTab = (tab: string) => {
+    router.push(`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/${tab}`);
+  };
 
   return (
     <div>
-      <MenuBar current={currentTab} showBackground aria-label="Ärende-sidor">
-        <MenuBar.Item tabIndex={CaseCurrentTab.UPPGIFTER}>
-          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/uppgifter`}>
-            Uppgifter
-          </NextLink>
-        </MenuBar.Item>
-        <MenuBar.Item tabIndex={CaseCurrentTab.MEDDELANDEN}>
-          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/meddelanden`}>
-            Meddelanden
-          </NextLink>
-        </MenuBar.Item>
-      </MenuBar>
-      <div className="mt-40">
-        {currentTab === CaseCurrentTab.UPPGIFTER ? (
-          <CaseInformation />
-        ) : currentTab === CaseCurrentTab.MEDDELANDEN ? (
-          <CaseMeddelanden />
-        ) : (
-          <></>
-        )}
+      <div>
+        <div className="flex flex-col-reverse desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mb-56">
+          <h1 className="text-h2-lg mb-0">{caseData?.caseType}</h1>
+          <span>
+            <Label rounded inverted color={caseData?.status.color}>
+              {caseData?.status.label}
+            </Label>
+          </span>
+        </div>
       </div>
+      <Tabs current={currentTab}>
+        <Tabs.Item>
+          <Tabs.Button onClick={() => handleGotoTab(CaseCurrentTab.UPPGIFTER)}>Ärendeuppgifter</Tabs.Button>
+          <Tabs.Content>
+            <CaseInformation />
+          </Tabs.Content>
+        </Tabs.Item>
+        <Tabs.Item>
+          <Tabs.Button onClick={() => handleGotoTab(CaseCurrentTab.MEDDELANDEN)}>
+            Meddelanden
+            {caseMessages?.filter((m) => m.direction === 'OUTBOUND' && !messageIsViewed(m))?.length ? (
+              <Callout className="-top-2" color="error" />
+            ) : null}
+          </Tabs.Button>
+          <Tabs.Content>
+            <CaseMeddelanden />
+          </Tabs.Content>
+        </Tabs.Item>
+      </Tabs>
     </div>
   );
 }

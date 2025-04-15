@@ -14,5 +14,6 @@ export default async function CurrentTab({ params }) {
   if (!caseId) {
     return null;
   }
+
   return <CaseTabLayout caseId={caseId} currentTab={currentTab ?? CaseCurrentTab.UPPGIFTER} />;
 }

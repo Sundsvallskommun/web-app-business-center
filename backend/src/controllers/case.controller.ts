@@ -141,6 +141,8 @@ export class CaseController {
         throw new HttpException(404, 'Case not found');
       }
 
+      const _case = res.data.find(c => c.caseId === caseId);
+
       return { data: _case, message: 'success' };
     } catch (error) {
       console.error(error);

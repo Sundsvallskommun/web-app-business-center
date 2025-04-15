@@ -38,6 +38,26 @@ export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { cas
             </Label>
           </span>
         </div>
+      <MenuBar current={currentTab} showBackground aria-label="Ärende-sidor">
+        <MenuBar.Item tabIndex={CaseCurrentTab.UPPGIFTER}>
+          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/uppgifter`}>
+            Uppgifter
+          </NextLink>
+        </MenuBar.Item>
+        <MenuBar.Item tabIndex={CaseCurrentTab.MEDDELANDEN}>
+          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/meddelanden`}>
+            Meddelanden
+          </NextLink>
+        </MenuBar.Item>
+      </MenuBar>
+      <div className="mt-40">
+        {currentTab === CaseCurrentTab.UPPGIFTER ? (
+          <CaseInformation />
+        ) : currentTab === CaseCurrentTab.MEDDELANDEN ? (
+          <CaseMeddelanden />
+        ) : (
+          <></>
+        )}
       </div>
       <Tabs current={currentTab}>
         <Tabs.Item>

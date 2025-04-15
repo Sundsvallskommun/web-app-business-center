@@ -24,6 +24,7 @@ export default function CaseLayout(props: { caseId: number; children: React.Reac
     method: 'get',
     dataHandler: handleCase,
   });
+
   const {
     data: caseMessages,
     refetch: refetchMessages,

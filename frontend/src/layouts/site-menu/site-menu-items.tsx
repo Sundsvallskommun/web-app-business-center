@@ -4,16 +4,13 @@ import { useAppContext } from '@contexts/app.context';
 import { useCombinedBusinessEngagements } from '@services/organisation-service';
 import { Button, Icon, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
 import { ArrowRight, ChevronDownCircle, LogOut } from 'lucide-react';
+import NextLink from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../../interfaces/app';
 import { useApi, useApiService } from '../../services/api-service';
 import { getRepresentingModeRoute, newRepresentingModePathname } from '../../utils/representingModeRoute';
-import { CaseContext } from '@layouts/pages/mypages-sections/cases/case/case-layout.component';
-import { useContext } from 'react';
-import NextLink from 'next/link';
 
 export const useRepresentingSwitch = () => {
-  const caseContext = useContext(CaseContext) || null;
   const queryClient = useApiService((s) => s.queryClient);
   const representingMutation = useApi<RepresentingEntity>({
     url: '/representing',
@@ -21,24 +18,8 @@ export const useRepresentingSwitch = () => {
   });
   const router = useRouter();
 
-  const invalidateQueries = () => {
-    queryClient.invalidateQueries({
-      queryKey: ['/cases'],
-    });
-    if (caseContext?.caseData) {
-      queryClient.invalidateQueries({
-        queryKey: [`/cases/${caseContext.caseData.caseId}`],
-      });
-    }
-    queryClient.invalidateQueries({
-      queryKey: ['/invoices'],
-    });
-    queryClient.invalidateQueries({
-      queryKey: ['/representing'],
-    });
-    queryClient.invalidateQueries({
-      queryKey: ['/contactsettings'],
-    });
+  const invalidateQueries = async () => {
+    queryClient.invalidateQueries();
   };
 
   const setRepresenting = async (representingDto: RepresentingEntityDto) => {
@@ -133,8 +114,8 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
             >
               {engagements?.map((engagement, index) => (
                 <Select.Option key={`${index}`} value={engagement.organizationNumber}>
-                  <span className="font-bold">{engagement.organizationName}</span>
-                  {engagement.isRepresentative ? <span className="ml-[.5em]">(ombud)</span> : null}
+                  {engagement.organizationName}
+                  {engagement.isRepresentative ? ` (ombud)` : null}
                 </Select.Option>
               ))}
             </Select>

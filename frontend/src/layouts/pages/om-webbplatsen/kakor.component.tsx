@@ -2,7 +2,7 @@
 
 import { Breadcrumb, Button, CookieConsentUtils } from '@sk-web-gui/react';
 import { PagesBreadcrumbsLayout } from '../../../layouts/pages-breadcrumbs-layout.component';
-
+import NextLink from 'next/link';
 const pageName = 'Kakor (cookies)';
 
 export default function Kakor() {
@@ -16,7 +16,11 @@ export default function Kakor() {
       breadcrumbs={
         <Breadcrumb className="">
           <Breadcrumb.Item>
-            <Breadcrumb.Link href="/om-webbplatsen">Om webbplatsen</Breadcrumb.Link>
+            <NextLink href="/om-webbplatsen">
+              <Breadcrumb.Link variant="body" as="span" href="/om-webbplatsen">
+                Om webbplatsen
+              </Breadcrumb.Link>
+            </NextLink>
           </Breadcrumb.Item>
 
           <Breadcrumb.Item currentPage>

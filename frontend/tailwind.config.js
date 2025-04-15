@@ -2,10 +2,10 @@ import { preset } from '@sk-web-gui/core';
 
 module.exports = {
   content: [
-    './src/app/**/*.{js,ts,jsx,tsx}',
-    './src/components/**/*.{js,ts,jsx,tsx}',
-    './src/layouts/**/*.{js,ts,jsx,tsx}',
-    './src/utils/**/*.{js,ts,jsx,tsx}',
+    './src/app/**/*.tsx',
+    './src/components/**/*.tsx',
+    './src/layouts/**/*.tsx',
+    './src/utils/**/*.tsx',
     './node_modules/@sk-web-gui/*/dist/**/*.js',
   ],
   safelist: [

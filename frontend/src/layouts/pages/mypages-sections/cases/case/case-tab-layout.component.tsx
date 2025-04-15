@@ -4,10 +4,10 @@ import { useAppContext } from '@contexts/app.context';
 import { Callout, Label, Tabs } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useRouter } from 'next/navigation';
-import CaseInformation from './information/information.component';
-import CaseMeddelanden from './meddelanden/meddelanden.component';
 import { useContext } from 'react';
 import { CaseContext } from './case-layout.component';
+import CaseInformation from './information/information.component';
+import CaseMeddelanden from './meddelanden/meddelanden.component';
 import { messageIsViewed } from './meddelanden/utils';
 
 export enum CaseCurrentTab {
@@ -29,35 +29,13 @@ export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { cas
 
   return (
     <div>
-      <div>
-        <div className="flex flex-col-reverse desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mb-56">
-          <h1 className="text-h2-lg mb-0">{caseData?.caseType}</h1>
-          <span>
-            <Label rounded inverted color={caseData?.status.color}>
-              {caseData?.status.label}
-            </Label>
-          </span>
-        </div>
-      <MenuBar current={currentTab} showBackground aria-label="Ärende-sidor">
-        <MenuBar.Item tabIndex={CaseCurrentTab.UPPGIFTER}>
-          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/uppgifter`}>
-            Uppgifter
-          </NextLink>
-        </MenuBar.Item>
-        <MenuBar.Item tabIndex={CaseCurrentTab.MEDDELANDEN}>
-          <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/meddelanden`}>
-            Meddelanden
-          </NextLink>
-        </MenuBar.Item>
-      </MenuBar>
-      <div className="mt-40">
-        {currentTab === CaseCurrentTab.UPPGIFTER ? (
-          <CaseInformation />
-        ) : currentTab === CaseCurrentTab.MEDDELANDEN ? (
-          <CaseMeddelanden />
-        ) : (
-          <></>
-        )}
+      <div className="flex flex-col-reverse desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mb-56">
+        <h1 className="text-h2-lg mb-0">{caseData?.caseType}</h1>
+        <span>
+          <Label rounded inverted color={caseData?.status.color}>
+            {caseData?.status.label}
+          </Label>
+        </span>
       </div>
       <Tabs current={currentTab}>
         <Tabs.Item>

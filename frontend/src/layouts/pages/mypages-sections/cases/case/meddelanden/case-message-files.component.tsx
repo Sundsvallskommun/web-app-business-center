@@ -1,10 +1,10 @@
 import { AttachmentResponse } from '@data-contracts/case-data/data-contracts';
-import { FrontendMessageResponse } from '@data-contracts/internal/case.interface';
 import { getCaseMessageAttachment } from '@services/case-service';
 import { Button, Icon } from '@sk-web-gui/react';
 import { File, Image } from 'lucide-react';
 import { useCallback, useContext } from 'react';
 import { CaseContext } from '../case-layout.component';
+import { FrontendMessageResponse } from '@interfaces/case';
 
 export default function CaseMessageFiles(props: { message: FrontendMessageResponse }) {
   const { message } = props;

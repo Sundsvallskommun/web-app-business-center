@@ -2,8 +2,7 @@
 
 import { useAppContext } from '@contexts/app.context';
 import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
-import { FrontendMessageResponse } from '@data-contracts/internal/case.interface';
-import { ICaseStatusResponse } from '@interfaces/case';
+import { FrontendMessageResponse, ICaseStatusResponse } from '@interfaces/case';
 import { PagesBreadcrumbsLayout } from '@layouts/pages-breadcrumbs-layout.component';
 import { useApi } from '@services/api-service';
 import { handleCase } from '@services/case-service';

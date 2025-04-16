@@ -1,5 +1,5 @@
 import { MessageResponseDirectionEnum } from '@data-contracts/case-data/data-contracts';
-import { FrontendMessageResponse } from '@data-contracts/internal/case.interface';
+import { FrontendMessageResponse } from '@interfaces/case';
 import { ApiResponse } from '@services/api-service';
 
 export const getCaseMessages: () => ApiResponse<FrontendMessageResponse[]> = () => ({

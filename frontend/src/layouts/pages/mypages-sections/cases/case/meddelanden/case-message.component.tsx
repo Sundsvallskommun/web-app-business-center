@@ -1,10 +1,10 @@
-import { FrontendMessageResponse } from '@data-contracts/internal/case.interface';
 import { User } from '@interfaces/user';
 import { useApi } from '@services/api-service';
 import sanitized from '@services/sanitizer-service';
 import { Avatar, AvatarProps } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import CaseMessageFiles from './case-message-files.component';
+import { FrontendMessageResponse } from '@interfaces/case';
 
 export default function CaseMessage(props: { message: FrontendMessageResponse }) {
   const { data: user } = useApi<User>({ url: '/me', method: 'get' });

@@ -30,6 +30,7 @@
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
     "dotenv": "^10.0.0",
     "envalid": "^7.3.1",
     "express": "^4.19.2",

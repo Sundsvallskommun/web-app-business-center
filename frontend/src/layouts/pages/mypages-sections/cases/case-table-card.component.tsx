@@ -1,7 +1,7 @@
-import { Button, Card, Icon, Label, Callout, CalloutProps } from '@sk-web-gui/react';
-import { ICaseStatusResponse } from '@interfaces/case';
-import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useAppContext } from '@contexts/app.context';
+import { ICaseStatusResponse } from '@interfaces/case';
+import { Button, Card, Icon, Label } from '@sk-web-gui/react';
+import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { ArrowRight } from 'lucide-react';
 
 export const CaseTableCard: React.FC<{ item: ICaseStatusResponse }> = ({ item }) => {
@@ -20,14 +20,15 @@ export const CaseTableCard: React.FC<{ item: ICaseStatusResponse }> = ({ item })
             </Label>
             <div className="flex gap-x-8 text-small">
               <label className="sr-only">Ärendenummer</label>
-              <span>{item.caseId}</span>
+              <span>{item.errandNumber}</span>
             </div>
           </div>
         </div>
-        <div className="flex gap-x-6 mt-16 items-center">
+        {/* TODO: Uncomment when the messages-status is available in the API
+         <div className="flex gap-x-6 mt-16 items-center">
           <Callout className="p-0" color={item.status?.color as CalloutProps['color']} />
           <strong>Nytt meddelande</strong>
-        </div>
+        </div> */}
         <div className="mt-16 text-right">
           <Button variant="tertiary" iconButton leftIcon={<Icon icon={<ArrowRight />} />} />
         </div>

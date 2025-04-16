@@ -4,6 +4,7 @@ import { statusMapCases } from '@services/case-service';
 import { notPaidInvoices, otherInvoices, paidInvoices, statusMapInvoices } from '@services/invoice-service';
 import { getRepresentingModeName } from '@utils/representingModeRoute';
 import { getCase } from 'cypress/fixtures/getCase';
+import { getCaseMessages } from 'cypress/fixtures/getCaseMessages';
 import { getContactSettings } from 'cypress/fixtures/getContactSettings';
 import { getPdf } from 'cypress/fixtures/getPdf';
 import { representingModeDefault } from 'cypress/support/e2e';
@@ -34,16 +35,18 @@ export const testContactSettings = (representingMode: RepresentingMode = represe
 
 export const testCase = (representingMode: RepresentingMode = representingModeDefault, caseId: string = 'caseId-0') => {
   cy.url().should('include', `${getRepresentingModeName(representingMode, { urlFriendly: true })}/arenden/${caseId}`);
-  cy.get('#content h1').should('have.text', 'Uppgifter');
-  cy.contains('a', 'Meddelanden').should('be.visible').click();
+  cy.contains('#content h1', getCase(representingMode, caseId).data.caseType as string).should('be.visible');
+  cy.contains('button', 'Meddelanden').should('be.visible').click();
   cy.url().should('include', '/meddelanden');
-  cy.contains('h1', 'Meddelanden').should('be.visible');
-
+  cy.contains('#content h1', getCase(representingMode, caseId).data.caseType as string).should('be.visible');
+  cy.contains('6 meddelanden').should('be.visible');
+  cy.get('ul[aria-label="Ärendemeddelanden"]').find('li').should('have.length', 6);
   cy.go('back');
 };
 
 export const testOngoingCases = (representingMode: RepresentingMode = representingModeDefault) => {
   cy.intercept('GET', '**/api/cases/caseId-0', getCase(representingMode, 'caseId-0')).as(`getCase0`);
+  cy.intercept('GET', '**/api/cases/*/messages', getCaseMessages()).as(`getCaseMessages`);
   cy.contains('h1, h2', /pågående/i)
     .next('div')
     .contains('th', 'Status')

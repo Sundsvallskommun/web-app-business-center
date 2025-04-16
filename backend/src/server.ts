@@ -1,5 +1,4 @@
 import App from '@/app';
-import { CaseDataController } from '@/controllers/case-data.controller';
 import { BusinessEngagementController } from '@controllers/business-engagement.controller';
 import { CaseController } from '@controllers/case.controller';
 import { FeedbackController } from '@controllers/feedback.controller';
@@ -17,7 +16,6 @@ validateEnv();
 const app = new App([
   IndexController,
   CaseController,
-  CaseDataController,
   BusinessEngagementController,
   RepresentingController,
   UserController,

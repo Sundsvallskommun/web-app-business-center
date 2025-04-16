@@ -1122,6 +1122,11 @@ export interface MessageRequest {
   attachments?: MessageAttachment[];
   /** List of email headers on the message */
   emailHeaders?: EmailHeader[];
+  /**
+   * Is message internal
+   * @example true
+   */
+  internal?: boolean;
 }
 
 export interface PatchNotification {
@@ -1184,9 +1189,9 @@ export interface PatchErrand {
   externalCaseId?: string;
   /**
    * The type of case
-   * @example "PARKING_PERMIT"
+   * @example "NYBYGGNAD_ANSOKAN_OM_BYGGLOV"
    */
-  caseType?: PatchErrandCaseTypeEnum;
+  caseType?: string;
   /**
    * The priority of the case
    * @example "MEDIUM"
@@ -1316,21 +1321,21 @@ export interface PageErrand {
 }
 
 export interface PageableObject {
-  paged?: boolean;
   /** @format int64 */
   offset?: number;
   sort?: SortObject;
+  unpaged?: boolean;
+  paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
-  unpaged?: boolean;
 }
 
 export interface SortObject {
-  unsorted?: boolean;
   empty?: boolean;
   sorted?: boolean;
+  unsorted?: boolean;
 }
 
 export interface CommitMetadata {
@@ -1504,6 +1509,11 @@ export interface MessageResponse {
   attachments?: AttachmentResponse[];
   /** List of email headers on the message */
   emailHeaders?: EmailHeader[];
+  /**
+   * Is message internal
+   * @example true
+   */
+  internal?: boolean;
 }
 
 /**
@@ -1586,50 +1596,6 @@ export enum ErrandPriorityEnum {
 export enum MessageRequestDirectionEnum {
   INBOUND = 'INBOUND',
   OUTBOUND = 'OUTBOUND',
-}
-
-/**
- * The type of case
- * @example "PARKING_PERMIT"
- */
-export enum PatchErrandCaseTypeEnum {
-  PARKING_PERMIT = 'PARKING_PERMIT',
-  PARKING_PERMIT_RENEWAL = 'PARKING_PERMIT_RENEWAL',
-  LOST_PARKING_PERMIT = 'LOST_PARKING_PERMIT',
-  MEX_LEASE_REQUEST = 'MEX_LEASE_REQUEST',
-  MEX_BUY_LAND_FROM_THE_MUNICIPALITY = 'MEX_BUY_LAND_FROM_THE_MUNICIPALITY',
-  MEX_SELL_LAND_TO_THE_MUNICIPALITY = 'MEX_SELL_LAND_TO_THE_MUNICIPALITY',
-  MEX_SQUARE_PLACE = 'MEX_SQUARE_PLACE',
-  MEX_BUY_SMALL_HOUSE_PLOT = 'MEX_BUY_SMALL_HOUSE_PLOT',
-  MEX_APPLICATION_FOR_ROAD_ALLOWANCE = 'MEX_APPLICATION_FOR_ROAD_ALLOWANCE',
-  MEX_UNAUTHORIZED_RESIDENCE = 'MEX_UNAUTHORIZED_RESIDENCE',
-  MEX_LAND_RIGHT = 'MEX_LAND_RIGHT',
-  MEX_EARLY_DIALOG_PLAN_NOTIFICATION = 'MEX_EARLY_DIALOG_PLAN_NOTIFICATION',
-  MEX_PROTECTIVE_HUNTING = 'MEX_PROTECTIVE_HUNTING',
-  MEX_LAND_INSTRUCTION = 'MEX_LAND_INSTRUCTION',
-  MEX_OTHER = 'MEX_OTHER',
-  MEX_LAND_SURVEYING_OFFICE = 'MEX_LAND_SURVEYING_OFFICE',
-  MEX_REFERRAL_BUILDING_PERMIT_EARLY_DIALOGUE_PLANNING_NOTICE = 'MEX_REFERRAL_BUILDING_PERMIT_EARLY_DIALOGUE_PLANNING_NOTICE',
-  MEX_INVOICE = 'MEX_INVOICE',
-  MEX_REQUEST_FOR_PUBLIC_DOCUMENT = 'MEX_REQUEST_FOR_PUBLIC_DOCUMENT',
-  MEX_TERMINATION_OF_LEASE = 'MEX_TERMINATION_OF_LEASE',
-  MEX_HUNTING_LEASE = 'MEX_HUNTING_LEASE',
-  MEX_FORWARDED_FROM_CONTACTSUNDSVALL = 'MEX_FORWARDED_FROM_CONTACTSUNDSVALL',
-  MEX_BUILDING_PERMIT = 'MEX_BUILDING_PERMIT',
-  MEX_STORMWATER = 'MEX_STORMWATER',
-  MEX_INVASIVE_SPECIES = 'MEX_INVASIVE_SPECIES',
-  MEX_LAND_USE_AGREEMENT_VALUATION_PROTOCOL = 'MEX_LAND_USE_AGREEMENT_VALUATION_PROTOCOL',
-  MEX_LITTERING = 'MEX_LITTERING',
-  MEX_REFERRAL_CONSULTATION = 'MEX_REFERRAL_CONSULTATION',
-  MEX_PUBLIC_SPACE_LEASE = 'MEX_PUBLIC_SPACE_LEASE',
-  MEX_EASEMENT = 'MEX_EASEMENT',
-  MEX_TREES_FORESTS = 'MEX_TREES_FORESTS',
-  MEX_ROAD_ASSOCIATION = 'MEX_ROAD_ASSOCIATION',
-  MEX_RETURNED_TO_CONTACT_SUNDSVALL = 'MEX_RETURNED_TO_CONTACT_SUNDSVALL',
-  MEX_SMALL_BOAT_HARBOR_DOCK_PORT = 'MEX_SMALL_BOAT_HARBOR_DOCK_PORT',
-  MEX_SELL_LAND_TO_THE_MUNICIPALITY_PRIVATE = 'MEX_SELL_LAND_TO_THE_MUNICIPALITY_PRIVATE',
-  MEX_SELL_LAND_TO_THE_MUNICIPALITY_BUSINESS = 'MEX_SELL_LAND_TO_THE_MUNICIPALITY_BUSINESS',
-  APPEAL = 'APPEAL',
 }
 
 /**

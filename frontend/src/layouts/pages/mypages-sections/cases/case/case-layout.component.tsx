@@ -9,33 +9,55 @@ import { useApi } from '@services/api-service';
 import { handleCase } from '@services/case-service';
 import { Breadcrumb } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
+import { AxiosError } from 'axios';
+import { redirect } from 'next/navigation';
 import NextLink from 'next/link';
-import { createContext } from 'react';
+import { createContext, useEffect } from 'react';
 
 /** @ts-expect-error is set on mount */
 export const CaseContext = createContext<{ caseData?: ICaseStatusResponse; caseMessages?: MessageResponse[] }>(null);
 
 export default function CaseLayout(props: { caseId: number; children: React.ReactNode }) {
   const { caseId, children } = props;
-  const { data: caseData } = useApi<CaseStatusResponse, Error, ICaseStatusResponse>({
+  const { data: caseData, error: caseError } = useApi<CaseStatusResponse, AxiosError, ICaseStatusResponse>({
     url: `/cases/${caseId}`,
     method: 'get',
     dataHandler: handleCase,
   });
-  // waiting for api to implement
-  // const { data: caseMessages } = useApi<MessageResponse[]>({
-  //   url: `/case-data/messages/${caseData?.caseId}`,
-  //   method: 'get',
-  // });
+
+  const {
+    data: caseMessages,
+    refetch: refetchMessages,
+    error: caseMessagesError,
+  } = useApi<MessageResponse[], AxiosError>({
+    url: `/cases/${caseData?.caseId}/messages`,
+    method: 'get',
+    queryOptions: {
+      enabled: caseData?.caseId ? true : false,
+    },
+  });
+
+  useEffect(() => {
+    if (caseData?.caseId) {
+      refetchMessages();
+    }
+  }, [caseData?.caseId, refetchMessages]);
 
   const { representingMode } = useAppContext();
+
+  if (caseError?.status === 404 || caseMessagesError?.status === 404) {
+    redirect(`${getRepresentingModeRoute(representingMode)}/arenden`);
+  }
+
   return (
     <PagesBreadcrumbsLayout
       breadcrumbs={
         <Breadcrumb>
           <Breadcrumb.Item>
             <NextLink href={`${getRepresentingModeRoute(representingMode)}/arenden`}>
-              <Breadcrumb.Link as="span">Ärenden</Breadcrumb.Link>
+              <Breadcrumb.Link variant="body" as="span">
+                Ärenden
+              </Breadcrumb.Link>
             </NextLink>
           </Breadcrumb.Item>
 
@@ -48,7 +70,7 @@ export default function CaseLayout(props: { caseId: number; children: React.Reac
       <CaseContext.Provider
         value={{
           caseData: caseData,
-          caseMessages: [], // TODO: caseMessages,
+          caseMessages: caseMessages,
         }}
       >
         {children}

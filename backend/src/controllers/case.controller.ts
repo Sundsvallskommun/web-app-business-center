@@ -256,18 +256,33 @@ export class CaseController {
     }
   }
 
-  @Get('/cases/:externalCaseId/casepdf')
-  @OpenAPI({ summary: 'Return the base64 encoded pdf by case externalCaseId' })
+  @Get('/cases/:caseId/pdf')
+  @OpenAPI({ summary: 'Return the base64 encoded pdf by case caseId' })
   @UseBefore(authMiddleware)
-  async getCasePdf(@Req() req: RequestWithUser, @Param('externalCaseId') externalCaseId: string): Promise<ApiResponse<CasePdfResponse>> {
-    if (!externalCaseId) {
+  async getCasePdf(@Req() req: RequestWithUser, @Param('caseId') caseId: string): Promise<ApiResponse<string>> {
+    if (!caseId) {
       throw new HttpException(400, 'Bad Request');
     }
 
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${externalCaseId}/pdf`;
+    const _case = (await this.getCase(req, caseId))?.data;
+
+    if (_case === undefined) {
+      throw new HttpException(400, 'Bad request');
+    }
+
+    // Only OpenE errands has pdf at the moment.
+    if (_case.system !== 'OPEN_E_PLATFORM') {
+      throw new HttpException(404, 'Not found');
+    }
+
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${_case.externalCaseId}/pdf`;
     const res = await this.apiService.get<CasePdfResponse>({ url }, req);
 
-    return { data: res.data, message: 'success' };
+    if (!res.data) {
+      return { data: null, message: 'error' };
+    }
+
+    return { data: res.data.base64, message: 'success' };
   }
 
   // Messages

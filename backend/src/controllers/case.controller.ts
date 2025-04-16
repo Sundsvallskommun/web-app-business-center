@@ -1,11 +1,17 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { Classification, MessageRequest, MessageRequestDirectionEnum, MessageResponse } from '@/data-contracts/case-data/data-contracts';
+import {
+  Classification,
+  MessageRequest,
+  MessageRequestDirectionEnum,
+  MessageResponse,
+  MessageResponseDirectionEnum,
+} from '@/data-contracts/case-data/data-contracts';
 import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import { CaseMessageDto } from '@/dtos/case-data.dto';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
-import { CaseMessage } from '@/interfaces/case.interface';
+import { CaseMessage, FrontendMessageResponse } from '@/interfaces/case.interface';
 import ApiService from '@/services/api.service';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
@@ -17,6 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
+import { Communication, WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
 @Controller()
 export class CaseController {
   private apiService = new ApiService();
@@ -52,6 +59,64 @@ export class CaseController {
     } else {
       this.setPrivateCasesCache(req, data);
     }
+  }
+
+  private normalizeCaseDataMessages(messages: MessageResponse[]): FrontendMessageResponse[] {
+    return messages
+      .filter(m => (m.internal === undefined ? true : m.internal === false))
+      .map(m => ({
+        messageId: m.messageId,
+        direction: m.direction,
+        message: m.message,
+        sent: m.sent,
+        sender: `${m.firstName} ${m.lastName}`,
+        attachments: m.attachments,
+      }));
+  }
+
+  private postMessageToCaseDataMessage(req: RequestWithUser, message: string, files: Express.Multer.File[]): MessageRequest {
+    return {
+      message: message,
+      direction: MessageRequestDirectionEnum.INBOUND,
+      internal: false,
+      messageId: uuidv4(), // ska tas bort, väntar på att api:t justeras
+      username: req.user.username,
+      firstName: req.user.givenName,
+      lastName: req.user.surname,
+      sent: dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss'), // ska tas bort, väntar på att api:t justeras
+      messageType: 'MYPAGES',
+
+      // subject: 'Meddelande från Mina sidor',
+      classification: Classification.OTHER,
+
+      attachments: files?.map(x => ({ content: x.buffer.toString('base64'), name: x.originalname, contentType: x.mimetype })),
+    };
+  }
+
+  private normalizeSupportManagementMessages(communications: Communication[]): FrontendMessageResponse[] {
+    return communications
+      .filter(m => (m.internal === undefined ? true : m.internal === false))
+      .map(communication => ({
+        messageId: communication.communicationID,
+        direction: communication.direction === 'OUTBOUND' ? MessageResponseDirectionEnum.OUTBOUND : MessageResponseDirectionEnum.INBOUND,
+        message: communication.messageBody,
+        sent: communication.sent,
+        sender: communication.sender,
+        attachments: communication.communicationAttachments.map(attachment => ({
+          attachmentId: attachment.id,
+          name: attachment.fileName,
+          contentType: attachment.mimeType,
+        })),
+      }));
+  }
+
+  private postMessageToSupportManagementMessage(message: string, files: Express.Multer.File[]): WebMessageRequest {
+    return {
+      message: message,
+      dispatch: false,
+      internal: false,
+      attachments: files?.map(x => ({ base64EncodedString: x.buffer.toString('base64'), fileName: x.originalname })),
+    };
   }
 
   @Get('/cases')
@@ -169,7 +234,7 @@ export class CaseController {
   @Get('/cases/:caseId/messages')
   @OpenAPI({ summary: 'Return messages for a case' })
   @UseBefore(authMiddleware)
-  async getCaseMessages(@Req() req: RequestWithUser, @Param('caseId') caseId: string): Promise<ApiResponse<MessageResponse[] | null>> {
+  async getCaseMessages(@Req() req: RequestWithUser, @Param('caseId') caseId: string): Promise<ApiResponse<FrontendMessageResponse[] | null>> {
     if (!caseId) {
       throw new HttpException(400, 'Bad Request');
     }
@@ -180,45 +245,46 @@ export class CaseController {
       throw new HttpException(400, 'Bad request');
     }
 
-    if (_case.system === 'CASE_DATA') {
-      try {
-        const url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages`;
-        const res = await this.apiService.get<MessageResponse[]>({ url }, req);
-
-        if (!res.data) {
+    try {
+      let url: string;
+      let data: FrontendMessageResponse[];
+      if (_case.system === 'CASE_DATA') {
+        url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages`;
+        const resCaseData = await this.apiService.get<MessageResponse[]>({ url }, req);
+        if (!resCaseData.data) {
           throw new HttpException(500, 'No data from API');
         }
-
-        const messages = res.data
-          .filter(m => (m.internal === undefined ? true : m.internal === false)) // filter out internal messages
-          .sort((a, b) => {
-            if (!a.sent && !b.sent) return 0;
-            if (!a.sent) return 1;
-            if (!b.sent) return -1;
-            return dayjs(b.sent).isBefore(dayjs(a.sent)) ? -1 : 1;
-          })
-          .map(m => {
-            if (m.direction === 'OUTBOUND') {
-              m.viewed = m.viewed ?? false;
-            } else {
-              // dont show if manager have viewed the message or not
-              delete m.viewed;
-            }
-            m.viewed = true; // how viewed should work is not yet clear, therefore setting all to viewed
-            delete m.internal; // remove internal property from response
-            return m;
-          });
-
-        return { data: messages, message: 'success' };
-      } catch (error) {
-        if (error.status === 404) {
-          // handle 404 as empty
-          return { data: [], message: 'success' };
+        data = this.normalizeCaseDataMessages(resCaseData.data);
+      } else if (_case.system === 'SUPPORT_MANAGEMENT') {
+        url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication`;
+        const resSupportManagement = await this.apiService.get<Communication[]>({ url }, req);
+        if (!resSupportManagement.data) {
+          throw new HttpException(500, 'No data from API');
         }
-        throw new HttpException(500, 'Something went wrong');
+        data = this.normalizeSupportManagementMessages(resSupportManagement.data);
+      } else {
+        throw new HttpException(400, 'Bad request');
       }
+
+      if (!data) {
+        throw new HttpException(500, 'No data from API');
+      }
+
+      const messages = data.sort((a, b) => {
+        if (!a.sent && !b.sent) return 0;
+        if (!a.sent) return 1;
+        if (!b.sent) return -1;
+        return dayjs(b.sent).isBefore(dayjs(a.sent)) ? -1 : 1;
+      });
+
+      return { data: messages, message: 'success' };
+    } catch (error) {
+      if (error.status === 404) {
+        // handle 404 as empty
+        return { data: [], message: 'success' };
+      }
+      throw new HttpException(error.status, error.message);
     }
-    return { data: [], message: 'success' };
   }
 
   @Put('/cases/:caseId/messages/:messageId/viewed/:isViewed')
@@ -232,7 +298,17 @@ export class CaseController {
   ): Promise<ApiResponse<boolean>> {
     try {
       const _case = (await this.getCase(req, caseId)).data;
-      const url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages/${messageId}/viewed/${isViewed}`;
+      let url: string;
+      if (_case.system === 'CASE_DATA') {
+        url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages/${messageId}/viewed/${isViewed}`;
+      } else if (_case.system === 'SUPPORT_MANAGEMENT') {
+        url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
+          _case.namespace
+        }/errands/${caseId}/communication/${messageId}/viewed/${isViewed}`;
+      } else {
+        throw new HttpException(400, 'Bad request');
+      }
+
       await this.apiService.put<204>({ url }, req);
       return { data: true, message: 'success' };
     } catch {
@@ -257,33 +333,33 @@ export class CaseController {
 
     const _case = (await this.getCase(req, caseId)).data;
 
+    let url: string;
+    let headers: Record<string, string> = {};
+    let data: MessageRequest | WebMessageRequest;
     if (_case.system === 'CASE_DATA') {
-      const data: MessageRequest = {
-        message: body.message,
-        direction: MessageRequestDirectionEnum.INBOUND,
-        internal: false,
-        messageId: uuidv4(), // ska tas bort, väntar på att api:t justeras
-        username: req.user.username,
-        firstName: req.user.givenName,
-        lastName: req.user.surname,
-        sent: dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss'), // ska tas bort, väntar på att api:t justeras
-        messageType: 'MYPAGES',
-
-        // subject: 'Meddelande från Mina sidor',
-        classification: Classification.OTHER,
-
-        attachments: files?.map(x => ({ content: x.buffer.toString('base64'), name: x.originalname, contentType: x.mimetype })),
+      url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages`;
+      data = this.postMessageToCaseDataMessage(req, body.message, files);
+    } else if (_case.system === 'SUPPORT_MANAGEMENT') {
+      url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/webmessage`;
+      data = this.postMessageToSupportManagementMessage(body.message, files);
+      headers = {
+        'X-Sent-By': `${req.user.partyId};type=partyId`,
       };
+    } else {
+      throw new HttpException(400, 'Bad request');
+    }
 
-      try {
-        const url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages`;
-        await this.apiService.post({ url, data: data }, req);
+    try {
+      await this.apiService.post({ url, data, headers }, req);
+    } catch {
+      throw new HttpException(500, 'Could not send message');
+    }
 
-        const messages = (await this.getCaseMessages(req, caseId)).data;
-        return { data: messages, message: 'success' };
-      } catch {
-        throw new HttpException(500, 'Could not fetch messages');
-      }
+    try {
+      const messages = (await this.getCaseMessages(req, caseId)).data;
+      return { data: messages, message: 'success' };
+    } catch {
+      throw new HttpException(500, 'Could not fetch messages');
     }
   }
 
@@ -303,28 +379,33 @@ export class CaseController {
 
     const _case = (await this.getCase(req, caseId)).data;
 
-    if (_case.system === 'CASE_DATA') {
-      try {
-        const url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${
+    try {
+      let url: string;
+      if (_case.system === 'CASE_DATA') {
+        url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages/${messageId}/attachments/${attachmentId}`;
+      } else if (_case.system === 'SUPPORT_MANAGEMENT') {
+        url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
           _case.namespace
-        }/errands/${caseId}/messages/${messageId}/attachments/${attachmentId}`;
+        }/errands/${caseId}/communication/${messageId}/attachments/${attachmentId}`;
+      } else {
+        throw new HttpException(400, 'Bad request');
+      }
 
-        const res = await this.apiService.get<string>({ url, responseType: 'arraybuffer', responseEncoding: 'base64' }, req);
+      const res = await this.apiService.get<string>({ url, responseType: 'arraybuffer', responseEncoding: 'base64' }, req);
 
-        if (!res.data) {
-          return { data: null, message: 'error' };
-        }
-
-        const base64 = Buffer.from(res.data).toString('base64');
-
-        return { data: base64, message: 'success' };
-      } catch (error) {
-        if (error.status === 404) {
-          // handle 404 as empty
-          return { data: null, message: 'success' };
-        }
+      if (!res.data) {
         return { data: null, message: 'error' };
       }
+
+      const base64 = Buffer.from(res.data).toString('base64');
+
+      return { data: base64, message: 'success' };
+    } catch (error) {
+      if (error.status === 404) {
+        // handle 404 as empty
+        return { data: null, message: 'success' };
+      }
+      return { data: null, message: 'error' };
     }
   }
 }

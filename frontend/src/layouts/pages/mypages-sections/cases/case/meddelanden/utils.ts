@@ -1,5 +1,6 @@
-import { MessageResponse } from '@data-contracts/case-data/data-contracts';
+// import { FrontendMessageResponse } from '@data-contracts/internal/case.interface';
 
-export const messageIsViewed = (message: MessageResponse) => {
-  return message.viewed !== undefined && message.viewed === true;
-};
+// TODO: Uncomment when the API supports it
+// export const messageIsViewed = (message: FrontendMessageResponse) => {
+//   return message.viewed !== undefined && message.viewed === true;
+// };

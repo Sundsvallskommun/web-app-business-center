@@ -96,6 +96,7 @@ export default function CaseNewMessage() {
                   {...context.register('message', { required: 'Skriv ett meddelande' })}
                   placeholder="Skriv ett meddelande"
                   className="w-full min-h-72"
+                  value={context.getValues().message}
                 />
                 {context.formState.errors.message && (
                   <FormErrorMessage className="text-small text-error" role="alert">

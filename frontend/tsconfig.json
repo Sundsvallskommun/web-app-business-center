@@ -19,6 +19,7 @@
       "@layouts/*": ["src/layouts/*"],
       "@components/*": ["src/components/*"],
       "@data-contracts/*": ["../backend/src/data-contracts/*"],
+      "@data-contracts/internal/*": ["../backend/src/interfaces/*"],
       "@interfaces/*": ["src/interfaces/*"],
       "@utils/*": ["src/utils/*"],
       "@pages/*": ["src/pages/*"],

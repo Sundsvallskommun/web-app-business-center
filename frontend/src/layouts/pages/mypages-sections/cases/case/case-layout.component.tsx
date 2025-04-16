@@ -1,8 +1,8 @@
 'use client';
 
 import { useAppContext } from '@contexts/app.context';
-import { MessageResponse } from '@data-contracts/case-data/data-contracts';
 import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { FrontendMessageResponse } from '@data-contracts/internal/case.interface';
 import { ICaseStatusResponse } from '@interfaces/case';
 import { PagesBreadcrumbsLayout } from '@layouts/pages-breadcrumbs-layout.component';
 import { useApi } from '@services/api-service';
@@ -10,12 +10,14 @@ import { handleCase } from '@services/case-service';
 import { Breadcrumb } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { AxiosError } from 'axios';
-import { redirect } from 'next/navigation';
 import NextLink from 'next/link';
+import { redirect } from 'next/navigation';
 import { createContext, useEffect } from 'react';
 
-/** @ts-expect-error is set on mount */
-export const CaseContext = createContext<{ caseData?: ICaseStatusResponse; caseMessages?: MessageResponse[] }>(null);
+export const CaseContext = createContext<{ caseData?: ICaseStatusResponse; caseMessages?: FrontendMessageResponse[] }>(
+  /** @ts-expect-error is set on mount */
+  null
+);
 
 export default function CaseLayout(props: { caseId: number; children: React.ReactNode }) {
   const { caseId, children } = props;
@@ -29,7 +31,7 @@ export default function CaseLayout(props: { caseId: number; children: React.Reac
     data: caseMessages,
     refetch: refetchMessages,
     error: caseMessagesError,
-  } = useApi<MessageResponse[], AxiosError>({
+  } = useApi<FrontendMessageResponse[], AxiosError>({
     url: `/cases/${caseData?.caseId}/messages`,
     method: 'get',
     queryOptions: {

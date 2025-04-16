@@ -18,6 +18,10 @@ export const APIS = [
     version: '10.1',
   },
   {
+    name: 'webmessagecollector',
+    version: '5.0',
+  },
+  {
     name: 'casestatus',
     version: '4.0',
   },

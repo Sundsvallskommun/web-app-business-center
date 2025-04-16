@@ -18,13 +18,13 @@ interface ApiRequest extends Omit<Partial<RequestWithUser>, 'session'> {
 
 class ApiService {
   private apiTokenService = new ApiTokenService();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async request<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
     const token = await this.apiTokenService.getToken();
 
     const defaultHeaders = {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
-      'x-issuer': req.session?.passport?.user?.username,
     };
     const defaultParams = {};
 

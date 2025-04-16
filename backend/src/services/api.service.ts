@@ -24,7 +24,7 @@ class ApiService {
     const defaultHeaders = {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
-      'x-issuer': req.session?.user?.username,
+      'x-issuer': req.session?.passport?.user?.username,
     };
     const defaultParams = {};
 

@@ -5,6 +5,7 @@ import {
   BASE_URL_PREFIX,
   CREDENTIALS,
   LOG_FORMAT,
+  MUNICIPALITY_ID,
   NODE_ENV,
   ORIGIN,
   PORT,
@@ -19,9 +20,9 @@ import {
   SECRET_KEY,
   SESSION_MEMORY,
   SWAGGER_ENABLED,
-  MUNICIPALITY_ID,
 } from '@config';
 import errorMiddleware from '@middlewares/error.middleware';
+import { Strategy, VerifiedCallback } from '@node-saml/passport-saml';
 import { logger, stream } from '@utils/logger';
 import prisma from '@utils/prisma';
 import bodyParser from 'body-parser';
@@ -37,19 +38,18 @@ import hpp from 'hpp';
 import createMemoryStore from 'memorystore';
 import morgan from 'morgan';
 import passport from 'passport';
-import { Strategy } from 'passport-saml';
 import { join } from 'path';
 import { getMetadataArgsStorage, useExpressServer } from 'routing-controllers';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
 import createFileStore from 'session-file-store';
 import swaggerUi from 'swagger-ui-express';
+import { getApiBase } from './config/api-config';
 import { HttpException } from './exceptions/HttpException';
-import { Profile, ProfileCallback } from './interfaces/profile.interface';
+import { Profile } from './interfaces/profile.interface';
 import { RepresentingMode } from './interfaces/representing.interface';
 import { User } from './interfaces/users.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
 import { isValidUrl } from './utils/util';
-import { getApiBase } from './config/api-config';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -67,26 +67,18 @@ passport.deserializeUser(function (user, done) {
 const samlStrategy = new Strategy(
   {
     disableRequestedAuthnContext: true,
-    //attributeConsumingServiceIndex: '2',
-    //xmlSignatureTransforms: ['test'],
-    //authnContext: ['urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified'],
     identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
     callbackUrl: SAML_CALLBACK_URL,
     entryPoint: SAML_ENTRY_SSO,
-    //decryptionPvk: SAML_PRIVATE_KEY,
     privateKey: SAML_PRIVATE_KEY,
-    // Identity Provider's public key
-    cert: SAML_IDP_PUBLIC_CERT,
+    idpCert: SAML_IDP_PUBLIC_CERT,
     issuer: SAML_ISSUER,
     wantAssertionsSigned: false,
-    // signatureAlgorithm: 'sha256',
-    // digestAlgorithm: 'sha256',
-    // maxAssertionAgeMs: 2592000000,
-    // authnRequestBinding: 'HTTP-POST',
-    //logoutUrl: 'http://194.71.24.30/sso',
+    wantAuthnResponseSigned: false,
+    audience: false,
     logoutCallbackUrl: SAML_LOGOUT_CALLBACK_URL,
   },
-  async function (profile: Profile, done: ProfileCallback) {
+  async function (profile: Profile, done: VerifiedCallback) {
     if (!profile) {
       return done({
         name: 'SAML_MISSING_PROFILE',
@@ -143,6 +135,9 @@ const samlStrategy = new Strategy(
       }
       done(err);
     }
+  },
+  async function (profile: Profile, done: VerifiedCallback) {
+    return done(null, {});
   },
 );
 

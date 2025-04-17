@@ -1,4 +1,4 @@
-import { Profile as SamlProfile } from 'passport-saml';
+import { Profile as SamlProfile } from '@node-saml/passport-saml';
 import { User } from './users.interface';
 
 export interface Profile extends SamlProfile {

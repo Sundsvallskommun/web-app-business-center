@@ -14,6 +14,10 @@ export const APIS = [
     version: '11.1',
   },
   {
+    name: 'supportmanagement',
+    version: '10.1',
+  },
+  {
     name: 'casestatus',
     version: '4.0',
   },

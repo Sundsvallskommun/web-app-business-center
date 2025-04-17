@@ -1,14 +1,13 @@
 'use client';
 
 import { useAppContext } from '@contexts/app.context';
-import { Callout, Label, Tabs } from '@sk-web-gui/react';
+import { Label, Tabs } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useRouter } from 'next/navigation';
 import { useContext } from 'react';
 import { CaseContext } from './case-layout.component';
 import CaseInformation from './information/information.component';
 import CaseMeddelanden from './meddelanden/meddelanden.component';
-import { messageIsViewed } from './meddelanden/utils';
 
 export enum CaseCurrentTab {
   // order must correspond to the <Tabs/> component
@@ -19,7 +18,7 @@ export enum CaseCurrentTab {
 export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { caseId: string; currentTab: string }) {
   const currentTabWithDefault = _currentTab ? _currentTab[0] : CaseCurrentTab.UPPGIFTER;
   const { representingMode } = useAppContext();
-  const { caseData, caseMessages } = useContext(CaseContext);
+  const { caseData } = useContext(CaseContext);
   const router = useRouter();
   const currentTab = Object.keys(CaseCurrentTab).indexOf(currentTabWithDefault.toUpperCase());
 
@@ -47,9 +46,10 @@ export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { cas
         <Tabs.Item>
           <Tabs.Button onClick={() => handleGotoTab(CaseCurrentTab.MEDDELANDEN)}>
             Meddelanden
+            {/* TODO: Uncomment when the API supports it
             {caseMessages?.filter((m) => m.direction === 'OUTBOUND' && !messageIsViewed(m))?.length ? (
               <Callout className="-top-2" color="error" />
-            ) : null}
+            ) : null} */}
           </Tabs.Button>
           <Tabs.Content>
             <CaseMeddelanden />

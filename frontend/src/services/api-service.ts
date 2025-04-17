@@ -103,7 +103,7 @@ interface UseApiQueryProps<
   dataHandler?: (data: TQueryFnData) => TData;
   body?: Record<string, unknown>;
   queryKey?: TQueryKey;
-  queryOptions?: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>;
+  queryOptions?: Omit<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, 'queryKey'>;
   mutationOptions?: UseMutationOptions<TData, TError, unknown, TContext>;
 }
 
@@ -120,7 +120,7 @@ interface UseApiMutationProps<
   dataHandler?: (data: TQueryFnData) => TData;
   body?: Record<string, unknown>;
   queryKey?: TQueryKey;
-  queryOptions?: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>;
+  queryOptions?: Omit<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, 'queryKey'>;
   mutationOptions?: UseMutationOptions<TData, TError, unknown, TContext>;
 }
 

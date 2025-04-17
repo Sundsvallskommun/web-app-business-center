@@ -54,7 +54,7 @@ body {
 }
 
 .root-container {
-  @apply flex flex-col items-center;
+  @apply flex flex-col items-center bg-background-100;
 }
 
 @layer components {
@@ -93,6 +93,13 @@ body {
   .sk {
     &-label {
       @apply h-auto max-h-max;
+    }
+
+    &-breadcrumb {
+      &-item,
+      &-item > * {
+        @apply max-w-full whitespace-break-spaces hyphens-auto break-words;
+      }
     }
   }
 }

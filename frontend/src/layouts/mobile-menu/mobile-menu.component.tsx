@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAppContext } from '../../contexts/app.context';
 import { RepresentingMode } from '../../interfaces/app';
-import { getSwitchedRepresentingMode } from '../../utils/representingModeRoute';
+import { getSwitchedRepresentingMode, newRepresentingModePathname } from '../../utils/representingModeRoute';
 import { useBannerMenuItems } from '../banner-menu/banner-menu-items';
 import { MyPagesBusinessSwitch } from '../site-menu/site-menu-items';
 
@@ -15,7 +15,7 @@ export const MobileMenu = () => {
   const bannerMenuItems = useBannerMenuItems();
   const pathname = usePathname();
   const router = useRouter();
-  const { representingMode, setRepresentingMode } = useAppContext();
+  const { representingMode } = useAppContext();
 
   const openHandler = () => {
     setIsOpen(true);
@@ -74,7 +74,7 @@ export const MobileMenu = () => {
           <Button
             className="w-full"
             onClick={() => {
-              setRepresentingMode(getSwitchedRepresentingMode(representingMode));
+              router.push(newRepresentingModePathname(getSwitchedRepresentingMode(representingMode), pathname));
               setIsOpen(false);
             }}
             showBackground={false}

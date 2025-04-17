@@ -19,7 +19,7 @@ export const APIS = [
   },
   {
     name: 'webmessagecollector',
-    version: '5.0',
+    version: '5.1',
   },
   {
     name: 'casestatus',

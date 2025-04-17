@@ -24,8 +24,8 @@ import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
 import { Communication, WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
-import { MessageDTO } from '@/interfaces/tmp';
 import { WebMessageRequest as MessagingWebMessageRequest } from '@/data-contracts/messaging/data-contracts';
+import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
 
 @Controller()
 export class CaseController {
@@ -303,7 +303,7 @@ export class CaseController {
         }
         data = this.normalizeSupportManagementMessages(resSupportManagement.data);
       } else if (_case.system === 'OPEN_E_PLATFORM') {
-        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/${caseId}`;
+        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/flow-instances/${caseId}`;
         const resWebMessageCollector = await this.apiService.get<MessageDTO[]>({ url }, req);
         if (!resWebMessageCollector.data) {
           throw new HttpException(500, 'No data from API');
@@ -447,7 +447,7 @@ export class CaseController {
           _case.namespace
         }/errands/${caseId}/communication/${messageId}/attachments/${attachmentId}`;
       } else if (_case.system === 'OPEN_E_PLATFORM') {
-        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/${caseId}/attachments/${attachmentId}`;
+        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
       } else {
         throw new HttpException(400, 'Bad request');
       }

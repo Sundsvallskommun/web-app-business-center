@@ -602,6 +602,11 @@ export interface Notification {
    */
   type: string;
   /**
+   * Subtype of the notification
+   * @example "ATTACHMENT"
+   */
+  subtype?: string;
+  /**
    * Description of the notification
    * @example "Some description of the notification"
    */
@@ -1015,34 +1020,34 @@ export interface MetadataResponse {
 }
 
 export interface PageErrand {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
-  pageable?: PageableObject;
+  /** @format int64 */
+  totalElements?: number;
+  first?: boolean;
+  last?: boolean;
   /** @format int32 */
   size?: number;
   content?: Errand[];
   /** @format int32 */
   number?: number;
   sort?: SortObject;
-  first?: boolean;
-  last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
 export interface PageableObject {
-  paged?: boolean;
+  /** @format int64 */
+  offset?: number;
+  sort?: SortObject;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
-  /** @format int64 */
-  offset?: number;
-  sort?: SortObject;
   unpaged?: boolean;
+  paged?: boolean;
 }
 
 export interface SortObject {
@@ -1244,21 +1249,21 @@ export enum EventType {
 }
 
 export interface PageEvent {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
-  pageable?: PageableObject;
+  /** @format int64 */
+  totalElements?: number;
+  first?: boolean;
+  last?: boolean;
   /** @format int32 */
   size?: number;
   content?: Event[];
   /** @format int32 */
   number?: number;
   sort?: SortObject;
-  first?: boolean;
-  last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
@@ -1360,6 +1365,12 @@ export interface ErrandAttachment {
   fileName: string;
   /** Mime type of the file */
   mimeType?: string;
+  /**
+   * The attachment created date
+   * @format date-time
+   * @example "2023-01-01T00:00:00Z"
+   */
+  created?: string;
 }
 
 /**

@@ -10,12 +10,14 @@ import validateEnv from '@utils/validateEnv';
 import { ContactSettingsController } from './controllers/contact-settings.controller';
 import { HealthController } from './controllers/health.controller';
 import { InvoicesController } from './controllers/invoices.controller';
+import { AssetsController } from './controllers/assets.controller';
 
 validateEnv();
 
 const app = new App([
   IndexController,
   CaseController,
+  AssetsController,
   BusinessEngagementController,
   RepresentingController,
   UserController,

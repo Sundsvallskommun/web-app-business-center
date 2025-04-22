@@ -399,7 +399,7 @@ export class CaseController {
         'X-Sent-By': `${req.user.partyId};type=partyId`,
       };
     } else if (_case.system === 'OPEN_E_PLATFORM') {
-      url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/messages/webmessage`;
+      url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
       data = this.postMessageToMessagingMessage(req, caseId, body.message, files);
       headers = {
         'x-origin': 'MYPAGES',

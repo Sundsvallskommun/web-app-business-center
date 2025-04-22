@@ -24,12 +24,14 @@ export const Assets = () => {
             <NextLink href={`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument/${asset.id}`}>
               <div className={`list-item-card`}>
                 <div className="list-item-card-content">
-                  <div className="list-item-card-content-icon">
-                    <Icon icon={<FileCheck2 />} />
-                  </div>
-                  <div>
-                    <div className="list-item-card-content-title">{asset.description}</div>
-                    <div className="list-item-card-content-subtitle">{dayjs(asset.issued).format('D MMM YYYY')}</div>
+                  <div className="flex items-center gap-16">
+                    <div className="list-item-card-content-icon">
+                      <Icon icon={<FileCheck2 />} />
+                    </div>
+                    <div>
+                      <div className="list-item-card-content-title">{asset.description}</div>
+                      <div className="list-item-card-content-subtitle">{dayjs(asset.issued).format('D MMM YYYY')}</div>
+                    </div>
                   </div>
                 </div>
                 <div className="list-item-card-button">

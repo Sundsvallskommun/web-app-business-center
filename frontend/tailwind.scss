@@ -96,7 +96,11 @@ body {
         @apply bg-background-content flex rounded-16 py-16 pl-20 pr-16 items-center gap-16 shadow-md;
 
         &-content {
-          @apply grow flex items-center gap-16;
+          @apply grow flex items-center gap-16 flex-wrap;
+
+          > * {
+            @apply w-full max-w-full;
+          }
 
           &-icon {
             @apply flex justify-center shrink-0 p-10 rounded-button bg-background-color-mixin-2;

@@ -42,7 +42,7 @@ module.exports = withBundleAnalyzer({
   transpilePackages: ['lucide-react'],
   experimental: {
     swcPlugins: process.env.TEST === 'true' ? [['swc-plugin-coverage-instrument', {}]] : [],
-    optimizePackageImports: ['@sk-web-gui'],
+    optimizePackageImports: ['@sk-web-gui/react'],
   },
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];

@@ -144,9 +144,9 @@ export class CaseController {
     files: Express.Multer.File[],
   ): MessagingWebMessageRequest {
     return {
-      //sendAsOwner: true, // TODO: utkommentera när api-stöd släppts ska vara true för att skicka partyId som avsändare
+      sendAsOwner: true,
       party: {
-        partyId: req.user.partyId, // ska tydligen inte användas?
+        partyId: req.user.partyId,
         externalReferences: [
           {
             key: 'flowInstanceId',

@@ -1026,6 +1026,7 @@ export interface PageErrand {
   totalElements?: number;
   first?: boolean;
   last?: boolean;
+  pageable?: PageableObject;
   /** @format int32 */
   size?: number;
   content?: Errand[];
@@ -1034,26 +1035,25 @@ export interface PageErrand {
   sort?: SortObject;
   /** @format int32 */
   numberOfElements?: number;
-  pageable?: PageableObject;
   empty?: boolean;
 }
 
 export interface PageableObject {
-  /** @format int64 */
-  offset?: number;
-  sort?: SortObject;
+  paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
   unpaged?: boolean;
-  paged?: boolean;
+  /** @format int64 */
+  offset?: number;
+  sort?: SortObject;
 }
 
 export interface SortObject {
+  unsorted?: boolean;
   empty?: boolean;
   sorted?: boolean;
-  unsorted?: boolean;
 }
 
 /** Revision model */
@@ -1255,6 +1255,7 @@ export interface PageEvent {
   totalElements?: number;
   first?: boolean;
   last?: boolean;
+  pageable?: PageableObject;
   /** @format int32 */
   size?: number;
   content?: Event[];
@@ -1263,7 +1264,6 @@ export interface PageEvent {
   sort?: SortObject;
   /** @format int32 */
   numberOfElements?: number;
-  pageable?: PageableObject;
   empty?: boolean;
 }
 

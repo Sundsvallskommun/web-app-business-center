@@ -52,6 +52,11 @@ export interface WebMessageRequest {
   /** Sender */
   sender?: WebMessageSender;
   /**
+   * Send as owner
+   * @default false
+   */
+  sendAsOwner?: boolean;
+  /**
    * Determines if the message should be added to the internal or external OeP instance
    * @example "internal"
    */
@@ -73,20 +78,20 @@ export interface WebMessageSender {
 }
 
 export interface Problem {
-  title?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
+  title?: string;
+  detail?: string;
 }
 
 export interface StatusType {
-  reasonPhrase?: string;
   /** @format int32 */
   statusCode?: number;
+  reasonPhrase?: string;
 }
 
 /** Delivery result */
@@ -630,10 +635,10 @@ export interface ConstraintViolationProblem {
   violations?: Violation[];
   title?: string;
   message?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   parameters?: Record<string, object>;
+  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -666,14 +671,14 @@ export interface ThrowableProblem {
     nativeMethod?: boolean;
   }[];
   message?: string;
-  title?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
+  title?: string;
+  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;

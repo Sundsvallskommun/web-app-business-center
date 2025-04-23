@@ -1321,15 +1321,15 @@ export interface PageErrand {
 }
 
 export interface PageableObject {
+  paged?: boolean;
   /** @format int64 */
   offset?: number;
   sort?: SortObject;
-  unpaged?: boolean;
-  paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
+  unpaged?: boolean;
 }
 
 export interface SortObject {

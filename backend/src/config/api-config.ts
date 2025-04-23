@@ -35,7 +35,7 @@ export const APIS = [
   },
   {
     name: 'messaging',
-    version: '6.1',
+    version: '7.0',
   },
   {
     name: 'invoices',

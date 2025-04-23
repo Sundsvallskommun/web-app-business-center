@@ -13,7 +13,7 @@ Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumer
 | CaseStatus          |     4.0 |
 | ContactSettings     |     2.0 |
 | Citizen             |     3.0 |
-| Messaging           |     6.1 |
+| Messaging           |     7.0 |
 | Invoices            |     8.0 |
 | SimulatorServer     |     2.0 |
 

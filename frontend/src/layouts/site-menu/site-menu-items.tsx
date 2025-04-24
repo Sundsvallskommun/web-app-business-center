@@ -3,7 +3,7 @@
 import { useAppContext } from '@contexts/app.context';
 import { useCombinedBusinessEngagements } from '@services/organisation-service';
 import { Button, Icon, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
-import { ArrowRight, ChevronDownCircle, LogOut } from 'lucide-react';
+import { ArrowRight, ChevronDown, LogOut } from 'lucide-react';
 import NextLink from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { RepresentingEntity, RepresentingEntityDto, RepresentingMode } from '../../interfaces/app';
@@ -84,7 +84,7 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
               variant="secondary"
               className="bg-transparent"
               aria-label={`Byt organisation, nuvarande: ${representingEntity?.BUSINESS?.organizationName}`}
-              rightIcon={<Icon icon={<ChevronDownCircle />} />}
+              rightIcon={<Icon icon={<ChevronDown />} />}
             >
               Byt organisation
             </PopupMenu.Button>

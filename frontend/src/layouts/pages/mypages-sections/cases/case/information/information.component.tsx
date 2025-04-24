@@ -3,6 +3,8 @@ import { Button, Icon } from '@sk-web-gui/react';
 import { File } from 'lucide-react';
 import { useCallback, useContext, useState } from 'react';
 import { CaseContext } from '../case-layout.component';
+import { Card } from '@components/cards/card.component';
+import dayjs from 'dayjs';
 
 export default function CaseInformation() {
   const { caseData } = useContext(CaseContext);
@@ -23,7 +25,7 @@ export default function CaseInformation() {
 
   return (
     <div>
-      <div className="mt-24 border-1 border-divider rounded-cards p-20 desktop:p-32 flex flex-col gap-y-24 desktop:gap-y-40">
+      <Card>
         <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">Ärendenummer</div>
@@ -31,7 +33,7 @@ export default function CaseInformation() {
           </div>
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">Registrerat</div>
-            <div>{caseData?.firstSubmitted}</div>
+            <div>{dayjs(caseData?.firstSubmitted).format('YYYY-MM-DD')}</div>
           </div>
           {caseData?.system === 'OPEN_E_PLATFORM' ? (
             <div className="flex flex-col items-start gap-4">
@@ -50,7 +52,7 @@ export default function CaseInformation() {
             </div>
           ) : null}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

@@ -32,7 +32,7 @@ interface ContactSettingsFormLogicProps {
   formData?: Partial<ClientContactSetting>;
   onSubmit?: (
     values: Partial<ClientContactSetting>,
-    context: UseFormReturn<Partial<ClientContactSetting>, unknown, undefined>
+    context: UseFormReturn<Partial<ClientContactSetting>, unknown, unknown>
   ) => void;
   onSubmitSuccess?: () => void;
   onSubmitFailed?: () => void;

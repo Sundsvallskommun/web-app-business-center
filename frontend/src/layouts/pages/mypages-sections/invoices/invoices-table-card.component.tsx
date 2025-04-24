@@ -9,7 +9,7 @@ export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
   const [open, setOpen] = useState(false);
   return (
     <Card>
-      <Card.Body className="w-full py-12 pl-24 pr-12">
+      <Card.Body className="w-full p-16">
         <div className="flex items-start">
           <div className="w-full flex flex-col gap-y-16">
             <div className="flex flex-col-reverse">
@@ -24,7 +24,7 @@ export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
                   rounded
                   inverted={item.invoiceStatus?.color !== 'neutral'}
                   color={item.invoiceStatus?.color}
-                  className={`my-12`}
+                  className={`mb-16`}
                 >
                   {item?.invoiceStatus?.label}
                 </Label>

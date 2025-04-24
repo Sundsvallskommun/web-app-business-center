@@ -24,8 +24,8 @@ import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
 import { Communication, WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
-import { MessageDTO } from '@/interfaces/tmp';
 import { WebMessageRequest as MessagingWebMessageRequest } from '@/data-contracts/messaging/data-contracts';
+import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
 
 @Controller()
 export class CaseController {
@@ -144,9 +144,9 @@ export class CaseController {
     files: Express.Multer.File[],
   ): MessagingWebMessageRequest {
     return {
-      //sendAsOwner: true, // TODO: utkommentera när api-stöd släppts ska vara true för att skicka partyId som avsändare
+      sendAsOwner: true,
       party: {
-        partyId: req.user.partyId, // ska tydligen inte användas?
+        partyId: req.user.partyId,
         externalReferences: [
           {
             key: 'flowInstanceId',
@@ -414,7 +414,7 @@ export class CaseController {
         'X-Sent-By': `${req.user.partyId};type=partyId`,
       };
     } else if (_case.system === 'OPEN_E_PLATFORM') {
-      url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/messages/webmessage`;
+      url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
       data = this.postMessageToMessagingMessage(req, caseId, body.message, files);
       headers = {
         'x-origin': 'MYPAGES',

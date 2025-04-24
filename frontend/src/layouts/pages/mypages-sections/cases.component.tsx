@@ -23,18 +23,10 @@ function Page() {
           <h1>Dina ärenden</h1>
         </div>
         <div>
-          <OngoingCases
-            caseData={getOngoing(cases)}
-            isFetchingCases={isFetchingCases}
-            header={<h2 className="text-h3">Pågående</h2>}
-          />
+          <OngoingCases caseData={getOngoing(cases)} isFetchingCases={isFetchingCases} />
         </div>
         <div>
-          <ClosedCases
-            caseData={getClosed(cases)}
-            isFetchingCases={isFetchingCases}
-            header={<h2 className="text-h3">Avslutade</h2>}
-          />
+          <ClosedCases caseData={getClosed(cases)} isFetchingCases={isFetchingCases} />
         </div>
       </div>
     </Suspense>

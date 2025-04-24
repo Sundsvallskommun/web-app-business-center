@@ -34,10 +34,10 @@ export const statusMapCases = {
   },
   'Väntar på komplettering': { code: statusCodes.Ongoing, color: 'warning' },
   Kompletterad: { code: statusCodes.Ongoing, color: 'info' },
-  Klart: { code: statusCodes.Approved, color: 'neutral' },
-  Avslutat: { code: statusCodes.Approved, color: 'neutral' },
-  'Ärendet arkiveras': { code: statusCodes.Rejected, color: 'neutral' },
-  'Sparat ärende': { code: statusCodes.Rejected, color: 'neutral' },
+  Klart: { code: statusCodes.Approved, color: 'success' },
+  Avslutat: { code: statusCodes.Approved, color: 'success' },
+  'Ärendet arkiveras': { code: statusCodes.Rejected, color: 'success' },
+  'Sparat ärende': { code: statusCodes.Rejected, color: 'success' },
 };
 
 export const mapStatus = (s: string) => {

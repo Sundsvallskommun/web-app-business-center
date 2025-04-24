@@ -19,3 +19,12 @@ export interface FrontendMessageResponse {
   sender: string;
   attachments: AttachmentResponse[];
 }
+
+export interface FrontendMessageResponse {
+  messageId: string;
+  direction: MessageResponseDirectionEnum;
+  message: string;
+  sent: string;
+  sender: string;
+  attachments: AttachmentResponse[];
+}

@@ -1,11 +1,11 @@
 import { CardList } from '@components/cards/cards.component';
 import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
-import { IInvoice, InvoicesData } from '@interfaces/invoice';
-import { AutoTableHeader, Label, useThemeQueries, Table, SortMode, Pagination } from '@sk-web-gui/react';
+import { InvoicesData } from '@interfaces/invoice';
+import { sortInvoices } from '@services/invoice-service';
+import { Label, Table, useThemeQueries } from '@sk-web-gui/react';
 import { useRef, useState } from 'react';
 import { GetPdfButton } from './get-pdf-button.component';
 import { InvoiceTableCard } from './invoices-table-card.component';
-import { sortInvoices } from '@services/invoice-service';
 
 export const InvoicesTable: React.FC<{
   data?: InvoicesData;

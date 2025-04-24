@@ -48,7 +48,7 @@ export const MyPagesToggle = () => {
   const pathname = usePathname();
 
   return (
-    <MenuBar showBackground current={representingMode}>
+    <MenuBar showBackground current={representingMode} size="md">
       <MenuBar.Item menuIndex={RepresentingMode.PRIVATE}>
         <NextLink href={`${newRepresentingModePathname(RepresentingMode.PRIVATE, pathname)}`}>Privat</NextLink>
       </MenuBar.Item>

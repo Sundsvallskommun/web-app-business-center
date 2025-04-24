@@ -602,6 +602,11 @@ export interface Notification {
    */
   type: string;
   /**
+   * Subtype of the notification
+   * @example "ATTACHMENT"
+   */
+  subtype?: string;
+  /**
    * Description of the notification
    * @example "Some description of the notification"
    */
@@ -1015,10 +1020,12 @@ export interface MetadataResponse {
 }
 
 export interface PageErrand {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
+  first?: boolean;
+  last?: boolean;
   pageable?: PageableObject;
   /** @format int32 */
   size?: number;
@@ -1026,8 +1033,6 @@ export interface PageErrand {
   /** @format int32 */
   number?: number;
   sort?: SortObject;
-  first?: boolean;
-  last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   empty?: boolean;
@@ -1039,16 +1044,16 @@ export interface PageableObject {
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
+  unpaged?: boolean;
   /** @format int64 */
   offset?: number;
   sort?: SortObject;
-  unpaged?: boolean;
 }
 
 export interface SortObject {
+  unsorted?: boolean;
   empty?: boolean;
   sorted?: boolean;
-  unsorted?: boolean;
 }
 
 /** Revision model */
@@ -1244,10 +1249,12 @@ export enum EventType {
 }
 
 export interface PageEvent {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
+  first?: boolean;
+  last?: boolean;
   pageable?: PageableObject;
   /** @format int32 */
   size?: number;
@@ -1255,8 +1262,6 @@ export interface PageEvent {
   /** @format int32 */
   number?: number;
   sort?: SortObject;
-  first?: boolean;
-  last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   empty?: boolean;
@@ -1360,6 +1365,12 @@ export interface ErrandAttachment {
   fileName: string;
   /** Mime type of the file */
   mimeType?: string;
+  /**
+   * The attachment created date
+   * @format date-time
+   * @example "2023-01-01T00:00:00Z"
+   */
+  created?: string;
 }
 
 /**

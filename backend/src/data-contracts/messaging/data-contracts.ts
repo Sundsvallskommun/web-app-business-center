@@ -52,6 +52,11 @@ export interface WebMessageRequest {
   /** Sender */
   sender?: WebMessageSender;
   /**
+   * Send as owner
+   * @default false
+   */
+  sendAsOwner?: boolean;
+  /**
    * Determines if the message should be added to the internal or external OeP instance
    * @example "internal"
    */

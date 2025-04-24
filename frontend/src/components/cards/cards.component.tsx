@@ -1,12 +1,23 @@
 import { Button } from '@sk-web-gui/react';
 import { useCallback, useEffect, useState } from 'react';
 
-export const CardList: React.FC<{
-  data: object[];
-  Card: React.FC<{ item: object }>;
-  amountDisplayed?: number;
-  showAmountString?: boolean;
-}> = ({ data, Card, amountDisplayed: _amountDisplayed = 12, showAmountString = true }) => {
+export const CardList: React.FC<
+  {
+    data: object[];
+    Card: React.FC<{ item: object }>;
+    amountDisplayed?: number;
+    showAmountString?: boolean;
+    showMoreText?: string;
+  } & React.ComponentPropsWithRef<'ul'>
+> = (props) => {
+  const {
+    data,
+    Card,
+    amountDisplayed: _amountDisplayed = 12,
+    showAmountString = true,
+    showMoreText = 'Visa fler',
+    ...rest
+  } = props;
   const [amountDisplayed, setAmountDisplayed] = useState(_amountDisplayed);
   const [dataShown, setDataShown] = useState(data.slice(0, amountDisplayed));
 
@@ -23,25 +34,25 @@ export const CardList: React.FC<{
   }, [data, _amountDisplayed]);
 
   return (
-    <section className="flex flex-col justify-center gap-y-[1.6rem]">
+    <ul className="flex flex-col justify-center gap-y-[1.6rem]" {...rest}>
       {dataShown.map((item, index) => (
-        <article key={`${index}`}>
+        <li key={`${index}`}>
           <Card item={item} />
-        </article>
+        </li>
       ))}
       {showAmountString ? (
-        <div className="w-full flex justify-center">
+        <div className="w-full flex justify-center mt-8">
           <div className="text-center">{`Visar ${dataShown.length} av ${data.length}`}</div>
         </div>
       ) : null}
 
       {amountDisplayed < data.length && (
         <div className="w-full flex justify-center">
-          <Button size="lg" color="vattjom" onClick={showMore}>
-            Visa fler
+          <Button variant="secondary" size="lg" color="vattjom" onClick={showMore}>
+            {showMoreText}
           </Button>
         </div>
       )}
-    </section>
+    </ul>
   );
 };

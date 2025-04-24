@@ -107,11 +107,11 @@ body {
           }
 
           &-title {
-            @apply text-large text-dark-primary mb-4;
+            @apply text-large text-dark-primary mb-4 break-all;
           }
 
           &-subtitle {
-            @apply text-small text-dark-secondary;
+            @apply text-small text-dark-secondary break-all;
           }
         }
       }

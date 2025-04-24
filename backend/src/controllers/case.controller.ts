@@ -89,7 +89,7 @@ export class CaseController {
       sent: dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss'), // ska tas bort, väntar på att api:t justeras
       messageType: 'MYPAGES',
 
-      // subject: 'Meddelande från Mina sidor',
+      subject: 'Meddelande från Mina sidor',
       classification: Classification.OTHER,
 
       attachments: files?.map(x => ({ content: x.buffer.toString('base64'), name: x.originalname, contentType: x.mimetype })),

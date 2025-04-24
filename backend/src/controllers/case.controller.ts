@@ -318,7 +318,7 @@ export class CaseController {
         }
         data = this.normalizeSupportManagementMessages(resSupportManagement.data);
       } else if (_case.system === 'OPEN_E_PLATFORM') {
-        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/${caseId}`;
+        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/flow-instances/${caseId}`;
         const resWebMessageCollector = await this.apiService.get<MessageDTO[]>({ url }, req);
         if (!resWebMessageCollector.data) {
           throw new HttpException(500, 'No data from API');
@@ -462,7 +462,7 @@ export class CaseController {
           _case.namespace
         }/errands/${caseId}/communication/${messageId}/attachments/${attachmentId}`;
       } else if (_case.system === 'OPEN_E_PLATFORM') {
-        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/${caseId}/attachments/${attachmentId}`;
+        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
       } else {
         throw new HttpException(400, 'Bad request');
       }

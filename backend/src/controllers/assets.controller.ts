@@ -1,6 +1,5 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { mockAssets } from '@/controller-mocks/assets.mock';
 import { Asset } from '@/data-contracts/partyassets/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
@@ -40,7 +39,7 @@ export class AssetsController {
         throw new HttpException(500, 'No data from API');
       }
 
-      return { data: mockAssets, message: 'success' };
+      return { data: res.data, message: 'success' };
     } catch (error) {
       if (error.status === 404) {
         return { data: [], message: '404 from api, Assumed empty array' };
@@ -79,7 +78,7 @@ export class AssetsController {
         throw new HttpException(500, 'No data from API');
       }
 
-      return { data: mockAssets[0], message: 'success' };
+      return { data: res.data, message: 'success' };
     } catch (error) {
       console.error(error);
       if (error.status === 404) {

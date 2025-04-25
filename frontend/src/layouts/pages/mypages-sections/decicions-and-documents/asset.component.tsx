@@ -36,30 +36,38 @@ export default function Asset() {
   return (
     <Card>
       <div className="flex flex-col-reverse desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
-        <div className="list-item-card-content-icon">
-          <Icon icon={<FileCheck2 />} />
+        <div className="flex gap-x-24">
+          <div className="list-item-card-content-icon">
+            <Icon icon={<FileCheck2 />} />
+          </div>
+          <h1 className="text-h2-lg mb-0 break-all">{assetData?.description}</h1>
         </div>
-        <h1 className="text-h2-lg mb-0">{assetData?.description}</h1>
         <span>
           <Label rounded inverted color={getAssetProps(assetData?.status).color}>
             {getAssetProps(assetData?.status).name}
           </Label>
         </span>
       </div>
-      <Divider className="my-40" />
+      <Divider className="my-0" />
       <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
-        <div className="flex flex-col items-start gap-4">
-          <div className="font-bold">Ärendenummer</div>
-          <div>?</div>
-        </div>
-        <div className="flex flex-col items-start gap-4">
-          <div className="font-bold">Kortnummer</div>
-          <div>?</div>
-        </div>
-        <div className="flex flex-col items-start gap-4">
-          <div className="font-bold">Beslutad</div>
-          <div>{dayjs(assetData?.issued).format('D MMM YYYY')}</div>
-        </div>
+        {assetData?.caseReferenceIds?.length ? (
+          <div className="flex flex-col items-start gap-4">
+            <div className="font-bold">Ärendenummer</div>
+            <div>{assetData?.caseReferenceIds?.map((id, i) => <div key={id}>{id}</div>)}</div>
+          </div>
+        ) : null}
+        {assetData?.assetId ? (
+          <div className="flex flex-col items-start gap-4">
+            <div className="font-bold">Kortnummer</div>
+            <div>{assetData?.assetId}</div>
+          </div>
+        ) : null}
+        {assetData?.issued ? (
+          <div className="flex flex-col items-start gap-4">
+            <div className="font-bold">Beslutad</div>
+            <div>{dayjs(assetData?.issued).format('D MMM YYYY')}</div>
+          </div>
+        ) : null}
         {assetData?.issued && assetData?.validTo ? (
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">Giltighetstid</div>

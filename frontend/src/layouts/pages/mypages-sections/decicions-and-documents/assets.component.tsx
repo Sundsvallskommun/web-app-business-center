@@ -21,7 +21,7 @@ export const Assets = () => {
       <ul aria-label="Beslut" className="mt-24 flex flex-col gap-y-16">
         {assetsData?.map((asset, i) => (
           <li key={i}>
-            <NextLink href={`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument/${asset.id}`}>
+            <NextLink href={`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument/${asset.assetId}`}>
               <div className={`list-item-card`}>
                 <div className="list-item-card-content">
                   <div className="flex items-center gap-16">

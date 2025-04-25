@@ -18,17 +18,17 @@ export const AssetsContext = createContext<{
   null
 );
 
-export default function AssetLayout(props: { id: string; children: React.ReactNode }) {
-  const { id, children } = props;
+export default function AssetLayout(props: { assetId: string; children: React.ReactNode }) {
+  const { assetId, children } = props;
   const { data: assetData, error: assetError } = useApi<Asset, AxiosError>({
-    url: `/assets/${id}`,
+    url: `/assets/${assetId}`,
     method: 'get',
   });
 
   const { representingMode } = useAppContext();
 
   if (assetError?.status === 404) {
-    redirect(`${getRepresentingModeRoute(representingMode)}/arenden`);
+    redirect(`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument`);
   }
 
   return (

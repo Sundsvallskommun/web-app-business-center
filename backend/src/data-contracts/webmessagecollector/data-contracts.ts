@@ -113,79 +113,114 @@ export interface Violation {
   message?: string;
 }
 
-/** Case status response */
-export interface CaseStatusResponse {
+/**
+ * List of attachments for the message
+ * @example "attachment1, attachment2"
+ */
+export interface MessageAttachment {
   /**
-   * Case id
-   * @example "1234567890"
+   * The Id for the attachment
+   * @format int32
+   * @example 1
    */
-  caseId?: string;
+  attachmentId?: number;
   /**
-   * External case id
-   * @example "1234567890"
+   * The name of the file
+   * @example "file.txt"
+   */
+  name?: string;
+  /**
+   * The extension of the file
+   * @example "txt"
+   */
+  extension?: string;
+  /**
+   * The mime type of the file
+   * @example "text/plain"
+   */
+  mimeType?: string;
+}
+
+export interface MessageDTO {
+  /**
+   * The webMessageCollector Id for the message
+   * @format int32
+   * @example 1
+   */
+  id?: number;
+  /**
+   * If the message is inbound or outbound from the perspective of case-data/e-service.
+   * @example "INBOUND"
+   */
+  direction?: MessageDtoDirectionEnum;
+  /**
+   * The municipality id
+   * @example "2281"
+   */
+  municipalityId?: string;
+  /**
+   * What E-service the message was found in
+   * @example "501"
+   */
+  familyId?: string;
+  /**
+   * The external caseID
+   * @example "caa230c6-abb4-4592-ad9a-34e263c2787b"
    */
   externalCaseId?: string;
   /**
-   * Case type
-   * @example "Building permit"
+   * The message
+   * @example "Hello World"
    */
-  caseType?: string;
+  message?: string;
   /**
-   * Status
-   * @example "In progress"
+   * The unique messageId from openE for the message
+   * @example "12"
    */
-  status?: string;
+  messageId?: string;
   /**
-   * First submitted
-   * @example "2021-01-01"
+   * Time and date the message was sent
+   * @example "2023-02-23 17:26:23"
    */
-  firstSubmitted?: string;
+  sent?: string;
   /**
-   * Last status change
-   * @example "2021-01-01"
+   * Username for the poster
+   * @example "te01st"
    */
-  lastStatusChange?: string;
+  username?: string;
   /**
-   * The system that the case is in
-   * @example "BYGGR"
+   * Firstname of the poster
+   * @example "Test"
    */
-  system?: string;
+  firstName?: string;
   /**
-   * The namespace of the case
-   * @example "Namespace"
+   * Lastname of the poster
+   * @example "Testsson"
    */
-  namespace?: string;
+  lastName?: string;
   /**
-   * Human readable identifier for the case
-   * @example "BYGGR-2024-123456"
+   * Email for the poster
+   * @example "test@sundsvall.se"
    */
-  errandNumber?: string;
+  email?: string;
+  /**
+   * The userId for the poster
+   * @example "123"
+   */
+  userId?: string;
+  attachments?: MessageAttachment[];
+  /**
+   * The instance of the message
+   * @example "external"
+   */
+  instance?: string;
 }
 
-/** Case status response */
-export interface CasePdfResponse {
-  /**
-   * External case id
-   * @example "1234567890"
-   */
-  externalCaseId?: string;
-  /**
-   * Base64 encoded PDF
-   * @example "JVBERi0x"
-   */
-  base64?: string;
-}
-
-/** Case status response */
-export interface OepStatusResponse {
-  /**
-   * Key
-   * @example "status"
-   */
-  key?: string;
-  /**
-   * Value
-   * @example "In progress"
-   */
-  value?: string;
+/**
+ * If the message is inbound or outbound from the perspective of case-data/e-service.
+ * @example "INBOUND"
+ */
+export enum MessageDtoDirectionEnum {
+  INBOUND = "INBOUND",
+  OUTBOUND = "OUTBOUND",
 }

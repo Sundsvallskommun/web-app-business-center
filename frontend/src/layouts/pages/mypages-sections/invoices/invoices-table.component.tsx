@@ -1,7 +1,8 @@
 import { CardList } from '@components/cards/cards.component';
 import { TableWrapper } from '@components/table-wrapper/table-wrapper.component';
-import { IInvoice, InvoicesData } from '@interfaces/invoice';
-import { AutoTable, AutoTableHeader, Label, useThemeQueries } from '@sk-web-gui/react';
+import { InvoicesData } from '@interfaces/invoice';
+import { sortInvoices } from '@services/invoice-service';
+import { Label, Table, useThemeQueries } from '@sk-web-gui/react';
 import { useRef, useState } from 'react';
 import { GetPdfButton } from './get-pdf-button.component';
 import { InvoiceTableCard } from './invoices-table-card.component';
@@ -15,68 +16,38 @@ export const InvoicesTable: React.FC<{
   const ref = useRef<null | HTMLDivElement>(null);
   const { isMinDesktop } = useThemeQueries();
 
-  const headers: Array<AutoTableHeader | string> = [
-    {
-      label: 'Namn',
-      sticky: true,
-      property: 'invoiceDescription',
-      screenReaderOnly: false,
-      isColumnSortable: true,
-      renderColumn: (value) => <div className="text-left text-small font-bold">{value}</div>,
-    },
-    {
-      label: 'Status',
-      sticky: false,
-      property: 'invoiceStatus.label',
-      screenReaderOnly: false,
-      renderColumn: (value, item) => (
-        <div className="text-left">
-          <Label rounded inverted={item.invoiceStatus?.color !== 'neutral'} color={item.invoiceStatus?.color}>
-            {value}
-          </Label>
-        </div>
-      ),
-      isColumnSortable: true,
-    },
-    {
-      label: 'Förfallodatum',
-      sticky: false,
-      property: 'dueDate',
-      screenReaderOnly: false,
-      isColumnSortable: true,
-      renderColumn: (value) => <div className="text-left">{value}</div>,
-    },
-    {
-      label: 'Belopp',
-      sticky: false,
-      property: 'totalAmount',
-      screenReaderOnly: false,
-      isColumnSortable: true,
-      renderColumn: (value) => <div className="text-left">{`${value} kr`}</div>,
-    },
-    {
-      label: 'OCR-nummer',
-      sticky: false,
-      property: 'ocrNumber',
-      screenReaderOnly: false,
-      isColumnSortable: true,
-      renderColumn: (value) => <div className="text-left">{value}</div>,
-    },
-    {
-      label: 'Hämta faktura',
-      sticky: false,
-      property: 'dueDate',
-      screenReaderOnly: true,
-      renderColumn: (value, item: IInvoice) => (
-        <div className="text-left">
-          <GetPdfButton isLoading={isLoading} setIsLoading={setIsLoading} item={item} />
-        </div>
-      ),
-      isColumnSortable: false,
-    },
-  ];
+  const datarows = props.data?.invoices.sort(sortInvoices).map((item, idx: number) => {
+    return (
+      <Table.Row key={`row-${idx}`}>
+        <Table.Column>
+          <div className="text-left text-small font-bold">{item.invoiceDescription}</div>
+        </Table.Column>
+        <Table.Column>
+          <div className="text-left">
+            <Label rounded inverted={item.invoiceStatus?.color !== 'neutral'} color={item.invoiceStatus?.color}>
+              {item.invoiceStatus.label}
+            </Label>
+          </div>
+        </Table.Column>
+        <Table.Column>
+          <div className="text-left">{item.dueDate}</div>
+        </Table.Column>
+        <Table.Column>
+          <div className="text-left">{`${item.totalAmount} kr`}</div>
+        </Table.Column>
+        <Table.Column>
+          <div className="text-left">{item.ocrNumber}</div>
+        </Table.Column>
+        <Table.Column>
+          <div className="text-left">
+            <GetPdfButton isLoading={isLoading} setIsLoading={setIsLoading} item={item} />
+          </div>
+        </Table.Column>
+      </Table.Row>
+    );
+  });
 
-  const Table = () => {
+  const TableComponent = () => {
     return (
       <>
         {props.data && props.data?.invoices?.length === 0 && !props.isFetchingData ? (
@@ -89,16 +60,17 @@ export const InvoicesTable: React.FC<{
         {props.data && props.data?.invoices?.length > 0 && (
           <div>
             {isMinDesktop ? (
-              <AutoTable
-                className="[&_table]:table-fixed"
-                tableSortable={false}
-                wrappingBorder
-                pageSize={9999}
-                footer={false}
-                background={false}
-                autodata={props.data?.invoices}
-                autoheaders={headers}
-              />
+              <Table background>
+                <Table.Header className="bg-background-content border-b-1 border-secondary-outline-hover">
+                  <Table.HeaderColumn>Namn</Table.HeaderColumn>
+                  <Table.HeaderColumn>Status</Table.HeaderColumn>
+                  <Table.HeaderColumn>Förfallodatum</Table.HeaderColumn>
+                  <Table.HeaderColumn>Belopp</Table.HeaderColumn>
+                  <Table.HeaderColumn>Referensnummer/OCR</Table.HeaderColumn>
+                  <Table.HeaderColumn className="sr-only">Hämta faktura</Table.HeaderColumn>
+                </Table.Header>
+                <Table.Body>{datarows}</Table.Body>
+              </Table>
             ) : (
               <CardList
                 data={props.data?.invoices}
@@ -116,7 +88,7 @@ export const InvoicesTable: React.FC<{
   return (
     <div ref={ref}>
       <TableWrapper header={props.heading}>
-        <Table />
+        <TableComponent />
       </TableWrapper>
     </div>
   );

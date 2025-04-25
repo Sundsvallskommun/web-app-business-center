@@ -24,6 +24,9 @@ import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
 import { Communication, WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
+import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
+import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
+
 @Controller()
 export class CaseController {
   private apiService = new ApiService();
@@ -55,7 +58,7 @@ export class CaseController {
 
   private setCasesCache(req: RequestWithUser, data: CaseStatusResponse[] | null) {
     if (req.session.representing.mode === RepresentingMode.BUSINESS) {
-      this.setBusinesCasesCache(req, req.session.representing.BUSINESS.organizationNumber, data);
+      this.setBusinesCasesCache(req, formatOrgNr(req.session.representing.BUSINESS.organizationNumber), data);
     } else {
       this.setPrivateCasesCache(req, data);
     }
@@ -63,14 +66,14 @@ export class CaseController {
 
   private normalizeCaseDataMessages(messages: MessageResponse[]): FrontendMessageResponse[] {
     return messages
-      .filter(m => (m.internal === undefined ? true : m.internal === false))
-      .map(m => ({
-        messageId: m.messageId,
-        direction: m.direction,
-        message: m.message,
-        sent: m.sent,
-        sender: `${m.firstName} ${m.lastName}`,
-        attachments: m.attachments,
+      .filter(message => (message.internal === undefined ? true : message.internal === false))
+      .map(message => ({
+        messageId: message.messageId,
+        direction: message.direction,
+        message: message.message,
+        sent: message.sent,
+        sender: `${message.firstName} ${message.lastName}`,
+        attachments: message.attachments,
       }));
   }
 
@@ -86,7 +89,7 @@ export class CaseController {
       sent: dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss'), // ska tas bort, väntar på att api:t justeras
       messageType: 'MYPAGES',
 
-      // subject: 'Meddelande från Mina sidor',
+      subject: 'Meddelande från Mina sidor',
       classification: Classification.OTHER,
 
       attachments: files?.map(x => ({ content: x.buffer.toString('base64'), name: x.originalname, contentType: x.mimetype })),
@@ -119,6 +122,44 @@ export class CaseController {
     };
   }
 
+  private normalizeWebMessageCollectorMessages(messages: MessageDTO[]): FrontendMessageResponse[] {
+    return messages.map(message => ({
+      messageId: message.messageId,
+      direction: message.direction === 'OUTBOUND' ? MessageResponseDirectionEnum.OUTBOUND : MessageResponseDirectionEnum.INBOUND,
+      message: message.message,
+      sent: message.sent,
+      sender: `${message.firstName} ${message.lastName}`,
+      attachments: message.attachments.map(attachment => ({
+        attachmentId: `${attachment.attachmentId}`,
+        name: attachment.name,
+        contentType: attachment.mimeType,
+      })),
+    }));
+  }
+
+  private postMessageToMessagingMessage(
+    req: RequestWithUser,
+    caseId: string,
+    message: string,
+    files: Express.Multer.File[],
+  ): MessagingWebMessageRequest {
+    return {
+      sendAsOwner: true,
+      party: {
+        partyId: req.user.partyId,
+        externalReferences: [
+          {
+            key: 'flowInstanceId',
+            value: caseId,
+          },
+        ],
+      },
+      oepInstance: WebMessageRequestOepInstanceEnum.EXTERNAL,
+      message: message,
+      attachments: files?.map(x => ({ base64Data: x.buffer.toString('base64'), fileName: x.originalname, mimeType: x.mimetype })),
+    };
+  }
+
   @Get('/cases')
   @OpenAPI({ summary: 'Return a list of cases for current logged in user' })
   @UseBefore(authMiddleware)
@@ -147,12 +188,12 @@ export class CaseController {
         const url = `${this.apiBase}/${MUNICIPALITY_ID}/${orgNumber}/statuses`;
         const res = await this.apiService.get<CaseStatusResponse[]>({ url, signal }, req);
 
-        this.setBusinesCasesCache(req, orgNumber, res.data);
+        this.setCasesCache(req, res.data);
 
         return { data: res.data, message: 'success' };
       } catch (error) {
         if (error.status === 404) {
-          this.setBusinesCasesCache(req, orgNumber, []);
+          this.setCasesCache(req, []);
           return { data: [], message: '404 from api, Assumed empty array' };
         } else {
           return { data: [], message: 'error' };
@@ -171,12 +212,12 @@ export class CaseController {
           throw new HttpException(500, 'No data from API');
         }
 
-        this.setPrivateCasesCache(req, res.data);
+        this.setCasesCache(req, res.data);
 
         return { data: res.data, message: 'success' };
       } catch (error) {
         if (error.status === 404) {
-          this.setPrivateCasesCache(req, []);
+          this.setCasesCache(req, []);
           return { data: [], message: '404 from api, Assumed empty array' };
         } else {
           throw new HttpException(500, 'Something went wrong');
@@ -216,18 +257,33 @@ export class CaseController {
     }
   }
 
-  @Get('/cases/:externalCaseId/casepdf')
-  @OpenAPI({ summary: 'Return the base64 encoded pdf by case externalCaseId' })
+  @Get('/cases/:caseId/pdf')
+  @OpenAPI({ summary: 'Return the base64 encoded pdf by case caseId' })
   @UseBefore(authMiddleware)
-  async getCasePdf(@Req() req: RequestWithUser, @Param('externalCaseId') externalCaseId: string): Promise<ApiResponse<CasePdfResponse>> {
-    if (!externalCaseId) {
+  async getCasePdf(@Req() req: RequestWithUser, @Param('caseId') caseId: string): Promise<ApiResponse<string>> {
+    if (!caseId) {
       throw new HttpException(400, 'Bad Request');
     }
 
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${externalCaseId}/pdf`;
+    const _case = (await this.getCase(req, caseId))?.data;
+
+    if (_case === undefined) {
+      throw new HttpException(400, 'Bad request');
+    }
+
+    // Only OpenE errands has pdf at the moment.
+    if (_case.system !== 'OPEN_E_PLATFORM') {
+      throw new HttpException(404, 'Not found');
+    }
+
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${_case.externalCaseId}/pdf`;
     const res = await this.apiService.get<CasePdfResponse>({ url }, req);
 
-    return { data: res.data, message: 'success' };
+    if (!res.data) {
+      return { data: null, message: 'error' };
+    }
+
+    return { data: res.data.base64, message: 'success' };
   }
 
   // Messages
@@ -262,6 +318,13 @@ export class CaseController {
           throw new HttpException(500, 'No data from API');
         }
         data = this.normalizeSupportManagementMessages(resSupportManagement.data);
+      } else if (_case.system === 'OPEN_E_PLATFORM') {
+        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/flow-instances/${caseId}`;
+        const resWebMessageCollector = await this.apiService.get<MessageDTO[]>({ url }, req);
+        if (!resWebMessageCollector.data) {
+          throw new HttpException(500, 'No data from API');
+        }
+        data = this.normalizeWebMessageCollectorMessages(resWebMessageCollector.data);
       } else {
         throw new HttpException(400, 'Bad request');
       }
@@ -287,6 +350,9 @@ export class CaseController {
     }
   }
 
+  // TODO: När api:erna får officiellt stöd för att visa och stämpla viewed så kan denna säkerställas
+  // endast preliminär-riggad nu
+  // snurran finns implementerad i frontend men utkommenterad
   @Put('/cases/:caseId/messages/:messageId/viewed/:isViewed')
   @OpenAPI({ summary: 'Set message isViewed status' })
   @UseBefore(authMiddleware)
@@ -305,6 +371,9 @@ export class CaseController {
         url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
           _case.namespace
         }/errands/${caseId}/communication/${messageId}/viewed/${isViewed}`;
+      } else if (_case.system === 'OPEN_E_PLATFORM') {
+        // doesnt exist yet
+        throw new HttpException(400, 'Not yet implemented');
       } else {
         throw new HttpException(400, 'Bad request');
       }
@@ -335,7 +404,7 @@ export class CaseController {
 
     let url: string;
     let headers: Record<string, string> = {};
-    let data: MessageRequest | WebMessageRequest;
+    let data: MessageRequest | WebMessageRequest | MessagingWebMessageRequest;
     if (_case.system === 'CASE_DATA') {
       url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages`;
       data = this.postMessageToCaseDataMessage(req, body.message, files);
@@ -344,6 +413,12 @@ export class CaseController {
       data = this.postMessageToSupportManagementMessage(body.message, files);
       headers = {
         'X-Sent-By': `${req.user.partyId};type=partyId`,
+      };
+    } else if (_case.system === 'OPEN_E_PLATFORM') {
+      url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
+      data = this.postMessageToMessagingMessage(req, caseId, body.message, files);
+      headers = {
+        'x-origin': 'MYPAGES',
       };
     } else {
       throw new HttpException(400, 'Bad request');
@@ -387,6 +462,8 @@ export class CaseController {
         url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
           _case.namespace
         }/errands/${caseId}/communication/${messageId}/attachments/${attachmentId}`;
+      } else if (_case.system === 'OPEN_E_PLATFORM') {
+        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
       } else {
         throw new HttpException(400, 'Bad request');
       }

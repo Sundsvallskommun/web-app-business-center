@@ -11,14 +11,13 @@ export interface CasesData {
   labels: { label: string; screenReaderOnly: boolean; sortable: boolean; shownForStatus: statusCodes }[];
 }
 
-export interface CasePdf {
-  externalCaseId: string;
-  base64: string;
-}
-
-export interface CasePdfData {
-  pdf: CasePdf;
-  error?: boolean;
+export interface FrontendMessageResponse {
+  messageId: string;
+  direction: MessageResponseDirectionEnum;
+  message: string;
+  sent: string;
+  sender: string;
+  attachments: AttachmentResponse[];
 }
 
 export interface FrontendMessageResponse {

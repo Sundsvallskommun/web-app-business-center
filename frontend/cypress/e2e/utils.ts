@@ -1,7 +1,7 @@
 import { RepresentingMode } from '@interfaces/app';
 import { statusCodes } from '@interfaces/status-codes';
 import { statusMapCases } from '@services/case-service';
-import { notPaidInvoices, otherInvoices, paidInvoices, statusMapInvoices } from '@services/invoice-service';
+import { handledInvoices, notHandledInvoices, statusMapInvoices } from '@services/invoice-service';
 import { getRepresentingModeName } from '@utils/representingModeRoute';
 import { getCase } from 'cypress/fixtures/getCase';
 import { getCaseMessages } from 'cypress/fixtures/getCaseMessages';
@@ -34,7 +34,9 @@ export const testContactSettings = (representingMode: RepresentingMode = represe
 };
 
 export const testCase = (representingMode: RepresentingMode = representingModeDefault, caseId: string = 'caseId-0') => {
-  cy.url().should('include', `${getRepresentingModeName(representingMode, { urlFriendly: true })}/arenden/${caseId}`);
+  cy.url().should('include', `${getRepresentingModeName(representingMode, { urlFriendly: true })}/arenden/${caseId}`, {
+    timeout: 10000,
+  });
   cy.contains('#content h1', getCase(representingMode, caseId).data.caseType as string).should('be.visible');
   cy.contains('button', 'Meddelanden').should('be.visible').click();
   cy.url().should('include', '/meddelanden');
@@ -47,34 +49,11 @@ export const testCase = (representingMode: RepresentingMode = representingModeDe
 export const testOngoingCases = (representingMode: RepresentingMode = representingModeDefault) => {
   cy.intercept('GET', '**/api/cases/caseId-0', getCase(representingMode, 'caseId-0')).as(`getCase0`);
   cy.intercept('GET', '**/api/cases/*/messages', getCaseMessages()).as(`getCaseMessages`);
-  cy.contains('h1, h2', /pågående/i)
-    .next('div')
-    .contains('th', 'Status')
-    .parents('table')
-    .find('tbody')
-    .within(($elem) => {
-      Object.entries(statusMapCases).map(([key, value]) => {
-        if (value.code === statusCodes.Ongoing) {
-          cy.contains(key).should('exist');
-          cy.contains(RepresentingMode[representingMode]).should('exist');
-        }
-      });
 
-      // Ärende
-      cy.wait(300); // let render happen for table sorting to take place
-      cy.wrap($elem)
-        .contains('a', `Visa caseType-Inskickat-${RepresentingMode[representingMode]}`, { timeout: 10000 })
-        .should('be.visible')
-        .click();
-    });
-  testCase(representingMode, 'caseId-0');
-  cy.go('back');
-
-  cy.viewport('iphone-5');
-
+  // correct length
   cy.contains('h1, h2', /pågående/i)
     .next()
-    .find('article h3')
+    .find('ul li')
     .should('have.length', 12);
 
   cy.contains('h1, h2', /pågående/i)
@@ -89,7 +68,7 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
 
   cy.contains('h1, h2', /pågående/i)
     .next()
-    .find('article h3')
+    .find('ul li')
     .should('have.length', 13);
 
   cy.contains('h1, h2', /pågående/i)
@@ -97,16 +76,45 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
     .contains('*', 'Visar 12 av 13')
     .should('not.exist');
 
-  cy.viewport('macbook-16');
+  cy.contains('h1, h2', /pågående/i)
+    .next('div')
+    .find('ul')
+    .within(($elem) => {
+      Object.entries(statusMapCases).map(([key, value]) => {
+        if (value.code === statusCodes.Ongoing) {
+          cy.contains(key).should('exist');
+          cy.contains(RepresentingMode[representingMode]).should('exist');
+        }
+      });
+
+      // Ärende
+      cy.wait(300); // let render happen for table sorting to take place
+      cy.wrap($elem)
+        .find(`a[aria-label="Visa caseType-Inskickat-${RepresentingMode[representingMode]}"]`, { timeout: 10000 })
+        .should('be.visible')
+        .click();
+    });
+  testCase(representingMode, 'caseId-0');
+  cy.go('back');
 };
 
 export const testClosedCases = (representingMode: RepresentingMode = representingModeDefault) => {
   cy.intercept('GET', '**/api/cases/caseId-12', getCase(representingMode, 'caseId-12')).as(`getCase12`);
+
+  // correct length
+  cy.contains('h1, h2', /avslutade/i)
+    .next()
+    .find('ul li')
+    .should('have.length', 4);
+
+  cy.contains('h1, h2', /avslutade/i)
+    .next()
+    .contains('*', /Visar 4 av 4/)
+    .should('be.visible');
+
   cy.contains('h1, h2', /avslutade/i)
     .next('div')
-    .contains('th', 'Status')
-    .parents('table')
-    .find('tbody')
+    .find('ul')
     .within(($elem) => {
       Object.entries(statusMapCases).map(([key, value]) => {
         if ([statusCodes.Rejected, statusCodes.Approved].includes(value.code)) {
@@ -118,26 +126,12 @@ export const testClosedCases = (representingMode: RepresentingMode = representin
       // Ärende
       cy.wait(300); // let render happen for table sorting to take place
       cy.wrap($elem)
-        .contains('a', `Visa caseType-Klart-${RepresentingMode[representingMode]}`, { timeout: 10000 })
+        .find(`a[aria-label="Visa caseType-Klart-${RepresentingMode[representingMode]}"]`, { timeout: 10000 })
         .should('be.visible')
         .click();
     });
   testCase(representingMode, 'caseId-12');
   cy.go('back');
-
-  cy.viewport('iphone-5');
-
-  cy.contains('h1, h2', /avslutade/i)
-    .next()
-    .find('article h3')
-    .should('have.length', 4);
-
-  cy.contains('h1, h2', /avslutade/i)
-    .next()
-    .contains('*', /Visar 4 av 4/)
-    .should('be.visible');
-
-  cy.viewport('macbook-16');
 };
 
 export const testCases = (representingMode: RepresentingMode = representingModeDefault) => {
@@ -145,77 +139,63 @@ export const testCases = (representingMode: RepresentingMode = representingModeD
   testClosedCases(representingMode);
 };
 
-export const testPaidInvoices = (representingMode: RepresentingMode = representingModeDefault) => {
-  cy.contains('h1, h2', /^betalda/i)
+export const testHandledInvoices = (representingMode: RepresentingMode = representingModeDefault) => {
+  cy.contains('h1, h2', /^hanterade/i)
     .next('div')
     .contains('th', 'Status')
     .parents('table')
     .find('tbody')
     .within(() => {
-      paidInvoices.map((key) => {
+      handledInvoices.map((key) => {
         cy.contains(statusMapInvoices[key].label).should('exist');
         cy.contains(RepresentingMode[representingMode]).should('exist');
       });
     });
 };
 
-export const testNotPaidInvoices = (representingMode: RepresentingMode = representingModeDefault) => {
-  cy.contains('h1, h2', /obetalda/i)
+export const testNotHandledInvoices = (representingMode: RepresentingMode = representingModeDefault) => {
+  cy.contains('h1, h2', /^ohanterade/i)
     .next('div')
     .contains('th', 'Status')
     .parents('table')
     .find('tbody')
     .within(() => {
-      notPaidInvoices.map((key) => {
+      notHandledInvoices.map((key) => {
         cy.contains(statusMapInvoices[key].label).should('exist');
         cy.contains(RepresentingMode[representingMode]).should('exist');
       });
     });
 };
 
-export const testOtherInvoices = (representingMode: RepresentingMode = representingModeDefault) => {
-  cy.contains('h1, h2', /övriga/i)
-    .next('div')
-    .contains('th', 'Status')
-    .parents('table')
-    .find('tbody')
-    .within(() => {
-      otherInvoices.map((key) => {
-        cy.contains(statusMapInvoices[key].label).should('exist');
-        cy.contains(RepresentingMode[representingMode]).should('exist');
-      });
-    });
-};
-
-export const testPaidInvoicesMobile = () => {
+export const testHandledInvoicesMobile = () => {
   cy.viewport('iphone-5');
 
-  cy.contains('h1, h2', /^betalda/i)
+  cy.contains('h1, h2', /^hanterade/i)
     .next()
     .contains('*', /Visar \d+ av \d+/)
     .should('not.exist');
 
-  cy.contains('h1, h2', /^betalda/i)
+  cy.contains('h1, h2', /^hanterade/i)
     .next()
     .contains('h3', /PAID/)
     .should('be.visible')
-    .parentsUntil('article')
+    .parentsUntil('li')
     .find('button')
     .click();
 
-  cy.contains('h1, h2', /^betalda/i)
+  cy.contains('h1, h2', /^hanterade/i)
     .next()
     .contains('h3', /PAID/)
     .should('be.visible')
-    .parentsUntil('article')
-    .contains('strong', 'OCR-nummer');
+    .parentsUntil('li')
+    .contains('Referensnummer/OCR');
 
   cy.viewport('macbook-16');
 };
 
 export const testPaidInvoicesPdf = () => {
   cy.intercept('GET', '**/api/invoicepdf/999', getPdf).as('getPdf');
-  cy.contains('h1, h2', /^betalda/i)
+  cy.contains('h1, h2', /^hanterade/i)
     .next('div')
     .contains('th', 'Status')
     .parents('table')
@@ -229,9 +209,8 @@ export const testPaidInvoicesPdf = () => {
 };
 
 export const testInvoices = (representingMode: RepresentingMode = representingModeDefault) => {
-  testPaidInvoices(representingMode);
-  // testNotPaidInvoices(representingMode);
-  // testOtherInvoices(representingMode);
-  // testPaidInvoicesMobile();
+  testHandledInvoices(representingMode);
+  testNotHandledInvoices(representingMode);
+  testHandledInvoicesMobile();
   testPaidInvoicesPdf();
 };

@@ -93,7 +93,7 @@ body {
   .list {
     &-item {
       &-card {
-        @apply bg-background-content flex rounded-16 py-16 pl-20 pr-16 items-center gap-16 shadow-md;
+        @apply bg-background-content flex rounded-16 py-16 pl-20 pr-16 items-center gap-16 shadow-50;
 
         &-content {
           @apply grow flex items-center gap-16 flex-wrap;
@@ -107,11 +107,11 @@ body {
           }
 
           &-title {
-            @apply text-large text-dark-primary mb-4;
+            @apply text-large text-dark-primary mb-4 break-all;
           }
 
           &-subtitle {
-            @apply text-small text-dark-secondary;
+            @apply text-small text-dark-secondary break-all;
           }
         }
       }

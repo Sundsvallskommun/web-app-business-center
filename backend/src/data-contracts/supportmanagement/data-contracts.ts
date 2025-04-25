@@ -1,5 +1,6 @@
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -8,6 +9,21 @@
  * ## SOURCE: https://github.com/acacode/swagger-typescript-api ##
  * ---------------------------------------------------------------
  */
+
+/** Type of event */
+export enum EventType {
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+  UNKNOWN = 'UNKNOWN',
+}
+
+/** Priority model */
+export enum Priority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+}
 
 export interface Problem {
   /** @format uri */
@@ -656,13 +672,6 @@ export interface Parameter {
   values?: string[];
 }
 
-/** Priority model */
-export enum Priority {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-}
-
 /** Stakeholder model */
 export interface Stakeholder {
   /**
@@ -1026,6 +1035,7 @@ export interface PageErrand {
   totalElements?: number;
   first?: boolean;
   last?: boolean;
+  pageable?: PageableObject;
   /** @format int32 */
   size?: number;
   content?: Errand[];
@@ -1047,13 +1057,15 @@ export interface PageableObject {
   /** @format int32 */
   pageSize?: number;
   unpaged?: boolean;
-  paged?: boolean;
+  /** @format int64 */
+  offset?: number;
+  sort?: SortObject;
 }
 
 export interface SortObject {
+  unsorted?: boolean;
   empty?: boolean;
   sorted?: boolean;
-  unsorted?: boolean;
 }
 
 /** Revision model */
@@ -1240,14 +1252,6 @@ export interface EventMetaData {
   value?: string;
 }
 
-/** Type of event */
-export enum EventType {
-  CREATE = 'CREATE',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
-  UNKNOWN = 'UNKNOWN',
-}
-
 export interface PageEvent {
   /** @format int32 */
   totalPages?: number;
@@ -1255,6 +1259,7 @@ export interface PageEvent {
   totalElements?: number;
   first?: boolean;
   last?: boolean;
+  pageable?: PageableObject;
   /** @format int32 */
   size?: number;
   content?: Event[];

@@ -29,7 +29,7 @@ export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { cas
   return (
     <div>
       <div className="flex flex-col-reverse desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mb-56">
-        <h1 className="text-h2-lg mb-0">{caseData?.caseType}</h1>
+        <h1 className="text-h2-lg mb-0 break-all">{caseData?.caseType}</h1>
         <span>
           <Label rounded inverted color={caseData?.status.color}>
             {caseData?.status.label}

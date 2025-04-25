@@ -1,38 +1,45 @@
 import { useAppContext } from '@contexts/app.context';
 import { ICaseStatusResponse } from '@interfaces/case';
-import { Button, Card, Icon, Label } from '@sk-web-gui/react';
+import { Button, Icon, Label } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
-import { ArrowRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
+import NextLink from 'next/link';
 
 export const CaseTableCard: React.FC<{ item: ICaseStatusResponse }> = ({ item }) => {
   const { representingMode } = useAppContext();
+
   return (
-    <Card
-      className="[&_a.sk-link]:text-[inherit]"
+    <NextLink
       href={`${getRepresentingModeRoute(representingMode)}/arenden/${item.caseId}`}
+      aria-label={`Visa ${item.caseType}`}
     >
-      <Card.Body className="w-full p-20">
-        <div className="flex flex-col-reverse">
-          <h3 className="font-bold text-large">{item.caseType}</h3>
-          <div className="flex justify-between flex-wrap mb-12 gap-y-12">
+      <div className={`list-item-card`}>
+        <div className="list-item-card-content desktop:grid desktop:grid-cols-[48.6rem_1fr_1fr]">
+          <div className="max-w-[40rem] grow">
+            <div className="list-item-card-content-title">{item.caseType}</div>
+            {item.errandNumber ? (
+              <div className="list-item-card-content-subtitle">{`Ärendenummer ${item.errandNumber}`}</div>
+            ) : null}
+          </div>
+          <div>
+            {/* TODO: Uncomment when the messages-status is available in the API */}
+            {/* <div className="flex gap-x-6 items-center">
+              <Callout className="p-0" color="vattjom" />
+              <span>Nytt meddelande</span>
+            </div> */}
+          </div>
+          <div>
             <Label rounded inverted={item.status?.color !== 'neutral'} color={item.status?.color}>
               {item?.status?.label}
             </Label>
-            <div className="flex gap-x-8 text-small">
-              <label className="sr-only">Ärendenummer</label>
-              <span>{item.errandNumber}</span>
-            </div>
           </div>
         </div>
-        {/* TODO: Uncomment when the messages-status is available in the API
-         <div className="flex gap-x-6 mt-16 items-center">
-          <Callout className="p-0" color={item.status?.color as CalloutProps['color']} />
-          <strong>Nytt meddelande</strong>
-        </div> */}
-        <div className="mt-16 text-right">
-          <Button variant="tertiary" iconButton leftIcon={<Icon icon={<ArrowRight />} />} />
+        <div className="list-item-card-button">
+          <Button as="span" size="lg" variant="tertiary" showBackground={false} iconButton aria-label="Gå till beslut">
+            <Icon icon={<ChevronRight />} />
+          </Button>
         </div>
-      </Card.Body>
-    </Card>
+      </div>
+    </NextLink>
   );
 };

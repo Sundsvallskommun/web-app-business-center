@@ -1,5 +1,6 @@
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -10,12 +11,21 @@
  */
 
 /**
- * Invoice origin (invoices originates from either commercial or public activities)
- * @example "COMMERCIAL"
+ * Type of invoice
+ * @example "INVOICE"
  */
-export enum InvoiceOrigin {
-  COMMERCIAL = 'COMMERCIAL',
-  PUBLIC_ADMINISTRATION = 'PUBLIC_ADMINISTRATION',
+export enum InvoiceType {
+  INVOICE = "INVOICE",
+  CREDIT_INVOICE = "CREDIT_INVOICE",
+  START_INVOICE = "START_INVOICE",
+  FINAL_INVOICE = "FINAL_INVOICE",
+  DIRECT_DEBIT = "DIRECT_DEBIT",
+  SELF_INVOICE = "SELF_INVOICE",
+  REMINDER = "REMINDER",
+  CONSOLIDATED_INVOICE = "CONSOLIDATED_INVOICE",
+  INTERNAL_INVOICE = "INTERNAL_INVOICE",
+  OFFSET_INVOICE = "OFFSET_INVOICE",
+  UNKNOWN = "UNKNOWN",
 }
 
 /**
@@ -23,34 +33,25 @@ export enum InvoiceOrigin {
  * @example "PAID"
  */
 export enum InvoiceStatus {
-  PAID = 'PAID',
-  SENT = 'SENT',
-  PARTIALLY_PAID = 'PARTIALLY_PAID',
-  DEBT_COLLECTION = 'DEBT_COLLECTION',
-  PAID_TOO_MUCH = 'PAID_TOO_MUCH',
-  REMINDER = 'REMINDER',
-  VOID = 'VOID',
-  CREDITED = 'CREDITED',
-  WRITTEN_OFF = 'WRITTEN_OFF',
-  UNKNOWN = 'UNKNOWN',
+  PAID = "PAID",
+  SENT = "SENT",
+  PARTIALLY_PAID = "PARTIALLY_PAID",
+  DEBT_COLLECTION = "DEBT_COLLECTION",
+  PAID_TOO_MUCH = "PAID_TOO_MUCH",
+  REMINDER = "REMINDER",
+  VOID = "VOID",
+  CREDITED = "CREDITED",
+  WRITTEN_OFF = "WRITTEN_OFF",
+  UNKNOWN = "UNKNOWN",
 }
 
 /**
- * Type of invoice
- * @example "INVOICE"
+ * Invoice origin (invoices originates from either commercial or public activities)
+ * @example "COMMERCIAL"
  */
-export enum InvoiceType {
-  INVOICE = 'INVOICE',
-  CREDIT_INVOICE = 'CREDIT_INVOICE',
-  START_INVOICE = 'START_INVOICE',
-  FINAL_INVOICE = 'FINAL_INVOICE',
-  DIRECT_DEBIT = 'DIRECT_DEBIT',
-  SELF_INVOICE = 'SELF_INVOICE',
-  REMINDER = 'REMINDER',
-  CONSOLIDATED_INVOICE = 'CONSOLIDATED_INVOICE',
-  INTERNAL_INVOICE = 'INTERNAL_INVOICE',
-  OFFSET_INVOICE = 'OFFSET_INVOICE',
-  UNKNOWN = 'UNKNOWN',
+export enum InvoiceOrigin {
+  COMMERCIAL = "COMMERCIAL",
+  PUBLIC_ADMINISTRATION = "PUBLIC_ADMINISTRATION",
 }
 
 /** Invoice request parameters model */

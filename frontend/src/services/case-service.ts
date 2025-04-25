@@ -1,7 +1,7 @@
 import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
-import { CasePdf, CasePdfData, CasesData, ICaseStatusResponse } from '../interfaces/case';
+import { CasesData, ICaseStatusResponse } from '../interfaces/case';
 import { statusCodes } from '../interfaces/status-codes';
-import { apiService, ApiResponse } from './api-service';
+import { ApiResponse, apiService } from './api-service';
 
 export const emptyCaseList: CasesData = {
   cases: [],
@@ -34,10 +34,10 @@ export const statusMapCases = {
   },
   'Väntar på komplettering': { code: statusCodes.Ongoing, color: 'warning' },
   Kompletterad: { code: statusCodes.Ongoing, color: 'info' },
-  Klart: { code: statusCodes.Approved, color: 'neutral' },
-  Avslutat: { code: statusCodes.Approved, color: 'neutral' },
-  'Ärendet arkiveras': { code: statusCodes.Rejected, color: 'neutral' },
-  'Sparat ärende': { code: statusCodes.Rejected, color: 'neutral' },
+  Klart: { code: statusCodes.Approved, color: 'success' },
+  Avslutat: { code: statusCodes.Approved, color: 'success' },
+  'Ärendet arkiveras': { code: statusCodes.Rejected, color: 'success' },
+  'Sparat ärende': { code: statusCodes.Rejected, color: 'success' },
 };
 
 export const mapStatus = (s: string) => {
@@ -86,13 +86,12 @@ export const getCasesInNeedOfData: (cs: CasesData) => CasesData = (cs) => ({
   ),
 });
 
-export const getCasePdf: (externalCaseId: string) => Promise<CasePdfData> = (externalCaseId) =>
+export const getCasePdf: (caseId: string) => Promise<string> = (caseId) =>
   apiService
-    .get<ApiResponse<CasePdf>>(`casepdf/${externalCaseId}`)
-    .then((res) => ({ pdf: res.data.data }))
-    .catch(
-      (e) => ({ pdf: { externalCaseId: '', base64: '' }, error: e.response?.status ?? 'UNKNOWN ERROR' }) as CasePdfData
-    );
+    .get<ApiResponse<string>>(`cases/${caseId}/pdf`)
+    .then((res) => res.data.data)
+    .catch(() => '');
+
 export const getCaseMessageAttachment: (url: string) => Promise<string> = (url) =>
   apiService
     .get<ApiResponse<string>>(url)

@@ -13,7 +13,7 @@ export const DefaultLayout = ({ children }) => {
   return (
     <Layout title={`${appName()}`}>
       <Header
-        wrapperClasses="py-16 [&_.sk-header-mobilemenu]:md:block [&_.sk-header-mobilemenu]:desktop:hidden"
+        wrapperClasses="py-16 [&_.sk-header-mobilemenu]:md:block [&_.sk-header-mobilemenu]:desktop:hidden z-[30] shadow-100"
         title={appName()}
         subtitle="Sundsvalls Kommun"
         LogoLinkWrapperComponent={<NextLink href={'/'} legacyBehavior passHref />}

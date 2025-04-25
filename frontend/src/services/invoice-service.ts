@@ -7,7 +7,7 @@ import {
   InvoicesResponse,
   InvoicesResponseData,
 } from '@interfaces/invoice';
-import { apiService, ApiResponse } from './api-service';
+import { ApiResponse, apiService } from './api-service';
 
 export const emptyInvoicesList: InvoicesData = {
   invoices: [],
@@ -24,16 +24,16 @@ export const invoicesLabels = [
 ];
 
 export const statusMapInvoices = {
-  PAID: { label: 'Betald', color: 'info' },
-  PAID_TOO_MUCH: { label: 'För mycket betalt', color: 'info' },
+  PAID: { label: 'Betald', color: 'success' },
+  PAID_TOO_MUCH: { label: 'För mycket betalt', color: 'success' },
 
   CREDITED: { label: 'Krediterad', color: 'neutral' },
   WRITTEN_OFF: { label: 'Avskriven', color: 'neutral' },
   UNKNOWN: { label: 'Okänd', color: 'neutral' },
   VOID: { label: 'Makulerad', color: 'neutral' },
 
-  UNPAID: { label: 'Ej betald', color: 'warning' },
-  SENT: { label: 'Ej betald', color: 'warning' },
+  UNPAID: { label: 'Obetald', color: 'warning' },
+  SENT: { label: 'Obetald', color: 'warning' },
   PARTIALLY_PAID: { label: 'Delvis betald', color: 'warning' },
 
   REMINDER: { label: 'Påminnelse', color: 'error' },
@@ -61,36 +61,37 @@ export const handleInvoiceResponse: (data: InvoicesResponse) => IInvoice[] = (da
     ocrNumber: n.ocrNumber,
   }));
 
-// export const getInvoices: () => Promise<InvoicesData> = () =>
-//   apiService
-//     .get<ApiResponse<InvoicesResponse>>('invoices')
-//     .then((res) => ({ invoices: handleInvoiceResponse(res.data), labels: invoicesLabels } as InvoicesData))
-//     .catch((e) => ({ ...emptyInvoicesList, error: e.response?.status ?? 'UNKNOWN ERROR' } as InvoicesData));
-
 export const invoicesHandler = (data: InvoicesResponse): InvoicesData => ({
   invoices: handleInvoiceResponse(data),
   labels: invoicesLabels,
 });
 
-export const notPaidInvoices = ['UNPAID', 'SENT', 'PARTIALLY_PAID', 'REMINDER', 'DEBT_COLLECTION'];
-export const getNotPaidInvoices: (invoicesData: InvoicesData) => InvoicesData = (invoicesData) => ({
+export const sortInvoices = (a, b, order: number = -1) => {
+  // if invoiceStatus color is same sort by dueDate
+  if (a.invoiceStatus.color === b.invoiceStatus.color) {
+    return order === -1
+      ? new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
+      : new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+  }
+  // sort by invoiceStatus color
+  const colorOrder = ['success', 'neutral', 'warning', 'error'];
+  return order === -1
+    ? colorOrder.indexOf(b.invoiceStatus.color) - colorOrder.indexOf(a.invoiceStatus.color)
+    : colorOrder.indexOf(a.invoiceStatus.color) - colorOrder.indexOf(b.invoiceStatus.color);
+};
+
+export const handledInvoices = ['CREDITED', 'WRITTEN_OFF', 'UNKNOWN', 'VOID', 'PAID', 'PAID_TOO_MUCH'];
+export const getHandledInvoices: (invoicesData: InvoicesData) => InvoicesData = (invoicesData) => ({
   ...invoicesData,
   labels: invoicesLabels,
-  invoices: invoicesData?.invoices.filter((x) => notPaidInvoices.includes(x.invoiceStatus.code)),
+  invoices: invoicesData?.invoices.filter((x) => handledInvoices.includes(x.invoiceStatus.code)).sort(sortInvoices),
 });
 
-export const paidInvoices = ['PAID', 'PAID_TOO_MUCH'];
-export const getPaidInvoices: (invoicesData: InvoicesData) => InvoicesData = (invoicesData) => ({
+export const notHandledInvoices = ['UNPAID', 'SENT', 'PARTIALLY_PAID', 'REMINDER', 'DEBT_COLLECTION'];
+export const getNotHandledInvoices: (invoicesData: InvoicesData) => InvoicesData = (invoicesData) => ({
   ...invoicesData,
   labels: invoicesLabels,
-  invoices: invoicesData?.invoices.filter((x) => paidInvoices.includes(x.invoiceStatus.code)),
-});
-
-export const otherInvoices = ['CREDITED', 'WRITTEN_OFF', 'UNKNOWN', 'VOID'];
-export const getOtherInvoices: (invoicesData: InvoicesData) => InvoicesData = (invoicesData) => ({
-  ...invoicesData,
-  labels: invoicesLabels,
-  invoices: invoicesData?.invoices.filter((x) => otherInvoices.includes(x.invoiceStatus.code)),
+  invoices: invoicesData?.invoices.filter((x) => notHandledInvoices.includes(x.invoiceStatus.code)).sort(sortInvoices),
 });
 
 export const getInvoicePdf: (invoiceNumber: string) => Promise<InvoicePdfData> = (invoiceNumber) =>

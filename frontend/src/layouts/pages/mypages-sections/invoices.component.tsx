@@ -1,18 +1,15 @@
 'use client';
 
-import { InvoicesTable } from './invoices/invoices-table.component';
 import { InvoicesData, InvoicesResponse } from '@interfaces/invoice';
+import { useApi } from '@services/api-service';
 import {
   emptyInvoicesList,
-  getNotPaidInvoices,
-  getOtherInvoices,
-  getPaidInvoices,
+  getHandledInvoices,
+  getNotHandledInvoices,
   invoicesHandler,
 } from '@services/invoice-service';
 import { useEffect, useMemo, useState } from 'react';
-import { Divider } from '@sk-web-gui/react';
-import dayjs from 'dayjs';
-import { useApi } from '@services/api-service';
+import { InvoicesTable } from './invoices/invoices-table.component';
 
 export default function Invoices() {
   const {
@@ -25,41 +22,22 @@ export default function Invoices() {
     dataHandler: invoicesHandler,
   });
 
-  const [amountToPay, setAmountToPay] = useState(0);
-  const [amountOverdue, setAmountOverdue] = useState(0);
-
-  const [paidInvoices, setPaidInvoices] = useState<InvoicesData>();
-  const [notPaidInvoices, setNotPaidInvoices] = useState<InvoicesData>();
-  const [otherInvoices, setOtherInvoices] = useState<InvoicesData>();
+  const [notHandledInvoices, setNotHandledInvoices] = useState<InvoicesData>();
+  const [handledInvoices, setHandledInvoices] = useState<InvoicesData>();
 
   const invoiceMemo = useMemo(() => invoices, [invoices]);
 
   useEffect(() => {
     if (invoiceMemo) {
-      const notPaidInvoices = getNotPaidInvoices(invoiceMemo);
-      const { amountToPay, amountOverdue } = notPaidInvoices.invoices.reduce(
-        (amount, invoice) => {
-          amount.amountToPay += invoice.totalAmount;
-          if (dayjs(invoice.dueDate).isAfter(dayjs())) {
-            amount.amountOverdue = +invoice.totalAmount;
-          }
-          return amount;
-        },
-        { amountToPay: 0, amountOverdue: 0 }
-      );
-      setNotPaidInvoices(notPaidInvoices);
-      setAmountToPay(amountToPay);
-      setAmountOverdue(amountOverdue);
-
-      setPaidInvoices(getPaidInvoices(invoiceMemo));
-      setOtherInvoices(getOtherInvoices(invoiceMemo));
+      setNotHandledInvoices(getNotHandledInvoices(invoiceMemo));
+      setHandledInvoices(getHandledInvoices(invoiceMemo));
     }
   }, [invoiceMemo]);
 
   if (!invoicesIsLoading && invoices.invoices.length < 1) {
     return (
       <div>
-        <h1>Fakturor</h1>
+        <h1>Dina Fakturor</h1>
         <p>Du har inga fakturor än, men så fort det finns något att betala kan du se det här.</p>
       </div>
     );
@@ -68,33 +46,17 @@ export default function Invoices() {
       <div className="flex flex-col gap-[6.4rem]">
         <div>
           <div className="text-content">
-            <h1>Fakturor</h1>
-          </div>
-          <div className="mt-32">
-            <div className="flex flex-col gap-4">
-              <span>Att betala</span>
-              <strong className="text-lead">{`${amountToPay} kr`}</strong>
-            </div>
-            <Divider className="my-md" />
-            <div className="flex flex-col gap-4">
-              <span>Varav förfallet belopp</span>
-              <strong className="text-lead">{`${amountOverdue} kr`}</strong>
-            </div>
+            <h1>Dina fakturor</h1>
           </div>
         </div>
         <InvoicesTable
-          data={notPaidInvoices}
-          heading={<h2 className="text-h3">Obetalda</h2>}
+          data={notHandledInvoices}
+          heading={<h2 className="text-h3-sm desktop:text-h3-lg">Ohanterade</h2>}
           isFetchingData={invoicesIsFetching}
         />
         <InvoicesTable
-          data={paidInvoices}
-          heading={<h2 className="text-h3">Betalda</h2>}
-          isFetchingData={invoicesIsFetching}
-        />
-        <InvoicesTable
-          data={otherInvoices}
-          heading={<h2 className="text-h3">Övriga</h2>}
+          data={handledInvoices}
+          heading={<h2 className="text-h3-sm desktop:text-h3-lg">Hanterade</h2>}
           isFetchingData={invoicesIsFetching}
         />
       </div>

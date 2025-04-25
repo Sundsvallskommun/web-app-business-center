@@ -23,6 +23,7 @@
     "@types/express-serve-static-core": "^5.0.6"
   },
   "dependencies": {
+    "@node-saml/passport-saml": "^5.0.1",
     "@prisma/client": "^4.2.0",
     "@types/uuid": "^10.0.0",
     "axios": "^1.6.8",
@@ -45,7 +46,6 @@
     "memorystore": "^1.6.7",
     "morgan": "^1.10.0",
     "passport": "^0.6.0",
-    "@node-saml/passport-saml": "^5.0.1",
     "qs": "^6.11.1",
     "reflect-metadata": "^0.1.13",
     "routing-controllers": "^0.10.4",
@@ -93,7 +93,7 @@
     "nodemon": "^2.0.22",
     "prettier": "^2.8.8",
     "prisma": "^4.14.0",
-    "swagger-typescript-api": "^13.0.22",
+    "swagger-typescript-api": "^13.1.1",
     "ts-jest": "^27.0.7",
     "ts-node": "^10.9.1",
     "tsc-alias": "^1.8.6",

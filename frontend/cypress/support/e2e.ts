@@ -8,6 +8,7 @@ import { getContactSettings } from 'cypress/fixtures/getContactSettings';
 import { getInvoices } from 'cypress/fixtures/getInvoices';
 import { getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { getMe } from '../fixtures/getMe';
+import { getAssets } from 'cypress/fixtures/getAssets';
 
 export const DEFAULT_COOKIE_VALUE = 'necessary%2Cstats';
 
@@ -27,6 +28,10 @@ export const setIntercepts = (representingMode: RepresentingMode = representingM
   cy.intercept('GET', '**/api/cases', getCases(representingMode)).as(`getCases`);
   cy.intercept('GET', '**/api/invoices', getInvoices(representingMode)).as('getInvoices');
   cy.intercept('GET', '**/api/contactsettings', getContactSettings(representingMode)).as('getContactSettings');
+  cy.intercept('GET', /(.*)api\/assets$/, getAssets(representingMode)).as('getAssets');
+  cy.intercept('GET', '**/api/assets/*', { data: getAssets(representingMode).data[0], message: 'success' }).as(
+    'getAsset'
+  );
 };
 
 beforeEach(() => {

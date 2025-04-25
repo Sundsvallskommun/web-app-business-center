@@ -53,7 +53,7 @@ export default function Asset() {
         {assetData?.caseReferenceIds?.length ? (
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">Ärendenummer</div>
-            <div>{assetData?.caseReferenceIds?.map((id, i) => <div key={id}>{id}</div>)}</div>
+            <div>{assetData?.caseReferenceIds?.map((id) => <div key={id}>{id}</div>)}</div>
           </div>
         ) : null}
         {assetData?.assetId ? (

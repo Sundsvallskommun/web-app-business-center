@@ -1,5 +1,5 @@
 import { RepresentingMode } from '@interfaces/app';
-import { testCases, testContactSettings, testInvoices } from 'cypress/e2e/utils';
+import { testAssets, testCases, testContactSettings, testInvoices } from 'cypress/e2e/utils';
 import { getBusinessRepresentFromEngagements, getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { setIntercepts } from 'cypress/support/e2e';
 
@@ -53,5 +53,12 @@ describe('Företag', () => {
         cy.wait('@getRepresenting');
         cy.contains('[data-cy="representingLabel"]', 'Styrbjörns cyklar').should('be.visible');
       });
+  });
+  it('should render assets list /foretag', () => {
+    cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
+    cy.wait('@getAssets').then(() => {
+      cy.url().should('include', '/foretag/beslut-och-dokument');
+      testAssets(RepresentingMode.BUSINESS);
+    });
   });
 });

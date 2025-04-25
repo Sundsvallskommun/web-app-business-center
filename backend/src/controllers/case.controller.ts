@@ -24,7 +24,7 @@ import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
 import { Communication, WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
-import { WebMessageRequest as MessagingWebMessageRequest } from '@/data-contracts/messaging/data-contracts';
+import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
 
 @Controller()
@@ -154,6 +154,7 @@ export class CaseController {
           },
         ],
       },
+      oepInstance: WebMessageRequestOepInstanceEnum.EXTERNAL,
       message: message,
       attachments: files?.map(x => ({ base64Data: x.buffer.toString('base64'), fileName: x.originalname, mimeType: x.mimetype })),
     };

@@ -12,7 +12,7 @@ import { useCombinedBusinessEngagements } from '@services/organisation-service';
 import { Button, Icon, Pagination, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
 import { getAdjustedPathname, getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { ArrowRight } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function ValjForetag() {
@@ -21,6 +21,7 @@ export default function ValjForetag() {
   const [error, setError] = useState('');
   const { isMinDesktop, isMinSmallDevice } = useThemeQueries();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const { engagements, engagementsIsLoading } = useCombinedBusinessEngagements();
   const { setRepresenting } = useRepresentingSwitch();
@@ -42,7 +43,11 @@ export default function ValjForetag() {
     if (!res.error) {
       const path = searchParams?.get('path') || '';
       const myPagesAdjustedPathname = getAdjustedPathname(path, representingMode);
-      router.push(myPagesAdjustedPathname || getRepresentingModeRoute(RepresentingMode.BUSINESS));
+      router.push(
+        pathname !== path && myPagesAdjustedPathname
+          ? myPagesAdjustedPathname
+          : getRepresentingModeRoute(RepresentingMode.BUSINESS)
+      );
     } else {
       setError('Misslyckades med att välja företag');
     }

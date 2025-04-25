@@ -1,23 +1,21 @@
 'use client';
 
-import { Button, Divider, FormErrorMessage, MenuBar } from '@sk-web-gui/react';
+import { Button, FormErrorMessage, Icon } from '@sk-web-gui/react';
+import { ArrowRight } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { CardElevated } from '../../components/cards/card-elevated.component';
-import { useAppContext } from '../../contexts/app.context';
 import { RepresentingMode } from '../../interfaces/app';
 import { CenterDiv } from '../../layouts/center-div.component';
 import { EntryLayout } from '../../layouts/entry-layout.component';
 import Main from '../../layouts/main.component';
 import { appURL } from '../../utils/app-url';
-import { getAdjustedPathname, getRepresentingMode, getRepresentingModeRoute } from '../../utils/representingModeRoute';
+import { getAdjustedPathname, getRepresentingModeRoute } from '../../utils/representingModeRoute';
 
 function Login() {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState('');
   const searchParams = useSearchParams();
-  const { representingMode, setRepresentingMode, isRepresentingModeBusiness, isRepresentingModePrivate } =
-    useAppContext();
 
   const isLoggedOut = searchParams?.get('loggedout') === '';
   const failMessage = searchParams?.get('failMessage');
@@ -25,25 +23,19 @@ function Login() {
   // Turn on/off automatic login
   const autoLogin = false;
 
-  const onLogin = useCallback(() => {
-    // NOTE: send user to login with SSO
-    const path = searchParams?.get('path') || '';
-    const myPagesAdjustedPathname =
-      getAdjustedPathname(path, representingMode) || getRepresentingModeRoute(representingMode);
-    router.push(
-      `${process.env.NEXT_PUBLIC_API_URL}/saml/login?successRedirect=${`${appURL()}${myPagesAdjustedPathname}&representingMode=${representingMode}`}`
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [representingMode, searchParams]);
-
-  useEffect(() => {
-    const path = searchParams?.get('path') || '';
-    const wantedRepresentingMode = getRepresentingMode(path);
-    if (wantedRepresentingMode !== null) {
-      setRepresentingMode(wantedRepresentingMode);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  const onLogin = useCallback(
+    (representingMode: RepresentingMode) => {
+      // NOTE: send user to login with SSO
+      const path = searchParams?.get('path') || '';
+      const myPagesAdjustedPathname =
+        getAdjustedPathname(path, representingMode) || getRepresentingModeRoute(representingMode);
+      router.push(
+        `${process.env.NEXT_PUBLIC_API_URL}/saml/login?successRedirect=${`${appURL()}${myPagesAdjustedPathname}&representingMode=${representingMode}`}`
+      );
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [searchParams]
+  );
 
   useEffect(() => {
     if (isLoggedOut) {
@@ -51,7 +43,7 @@ function Login() {
     } else {
       if (!failMessage && autoLogin) {
         // autologin
-        onLogin();
+        onLogin(RepresentingMode.PRIVATE);
       } else if (failMessage) {
         switch (failMessage) {
           case 'SAML_MISSING_GROUP':
@@ -73,33 +65,24 @@ function Login() {
       <div className="w-full max-w-[64rem]">
         <CardElevated>
           <Main>
-            <CenterDiv className="pt-24 px-8 pb-8">
-              <div className="max-w-[34.7rem]">
-                <h1 className="text-center text-h2-sm lg:text-h2-lg">Välj hur du vill logga in</h1>
-                <MenuBar className="mt-24 self-stretch">
-                  <MenuBar.Item current={isRepresentingModePrivate} className="flex items-center justify-center grow">
-                    <Button className="w-full" onClick={() => setRepresentingMode(RepresentingMode.PRIVATE)}>
-                      Privat
-                    </Button>
-                  </MenuBar.Item>
-                  <MenuBar.Item current={isRepresentingModeBusiness} className="flex items-center justify-center grow">
-                    <Button className="w-full" onClick={() => setRepresentingMode(RepresentingMode.BUSINESS)}>
-                      Företag
-                    </Button>
-                  </MenuBar.Item>
-                </MenuBar>
-              </div>
-            </CenterDiv>
-
-            <Divider />
-
-            <CenterDiv className="pt-40 px-[6.65rem] pb-64">
-              <div className="w-full max-w-[34.7rem]">
-                <Button size="lg" className="w-full" color="vattjom" onClick={() => onLogin()} data-cy="loginButton">
-                  Logga in{' '}
-                  <span className="sr-only">
-                    {representingMode === RepresentingMode.PRIVATE ? 'privat' : 'som företag'}
-                  </span>
+            <CenterDiv className="px-8 py-24 gap-y-40">
+              <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">Logga in som</h1>
+              <div className="flex gap-x-24">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  rightIcon={<Icon icon={<ArrowRight />} />}
+                  onClick={() => onLogin(RepresentingMode.PRIVATE)}
+                >
+                  Privatperson
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  rightIcon={<Icon icon={<ArrowRight />} />}
+                  onClick={() => onLogin(RepresentingMode.BUSINESS)}
+                >
+                  Organisation
                 </Button>
                 {errorMessage && <FormErrorMessage className="mt-lg">{errorMessage}</FormErrorMessage>}
               </div>

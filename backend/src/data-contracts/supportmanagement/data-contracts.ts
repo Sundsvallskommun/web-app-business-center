@@ -1,5 +1,6 @@
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -8,6 +9,21 @@
  * ## SOURCE: https://github.com/acacode/swagger-typescript-api ##
  * ---------------------------------------------------------------
  */
+
+/** Type of event */
+export enum EventType {
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+  UNKNOWN = "UNKNOWN",
+}
+
+/** Priority model */
+export enum Priority {
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+}
 
 export interface Problem {
   /** @format uri */
@@ -656,13 +672,6 @@ export interface Parameter {
   values?: string[];
 }
 
-/** Priority model */
-export enum Priority {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-}
-
 /** Stakeholder model */
 export interface Stakeholder {
   /**
@@ -1240,14 +1249,6 @@ export interface EventMetaData {
   value?: string;
 }
 
-/** Type of event */
-export enum EventType {
-  CREATE = 'CREATE',
-  UPDATE = 'UPDATE',
-  DELETE = 'DELETE',
-  UNKNOWN = 'UNKNOWN',
-}
-
 export interface PageEvent {
   /** @format int32 */
   totalPages?: number;
@@ -1378,8 +1379,8 @@ export interface ErrandAttachment {
  * @example "INBOUND"
  */
 export enum CommunicationDirectionEnum {
-  INBOUND = 'INBOUND',
-  OUTBOUND = 'OUTBOUND',
+  INBOUND = "INBOUND",
+  OUTBOUND = "OUTBOUND",
 }
 
 /**
@@ -1387,7 +1388,7 @@ export enum CommunicationDirectionEnum {
  * @example "EMAIL"
  */
 export enum CommunicationCommunicationTypeEnum {
-  SMS = 'SMS',
-  EMAIL = 'EMAIL',
-  WEB_MESSAGE = 'WEB_MESSAGE',
+  SMS = "SMS",
+  EMAIL = "EMAIL",
+  WEB_MESSAGE = "WEB_MESSAGE",
 }

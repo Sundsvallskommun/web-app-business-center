@@ -1,5 +1,6 @@
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -8,6 +9,30 @@
  * ## SOURCE: https://github.com/acacode/swagger-typescript-api ##
  * ---------------------------------------------------------------
  */
+
+/** Message type */
+export enum MessageType {
+  MESSAGE = "MESSAGE",
+  EMAIL = "EMAIL",
+  SMS = "SMS",
+  WEB_MESSAGE = "WEB_MESSAGE",
+  DIGITAL_MAIL = "DIGITAL_MAIL",
+  DIGITAL_INVOICE = "DIGITAL_INVOICE",
+  SNAIL_MAIL = "SNAIL_MAIL",
+  LETTER = "LETTER",
+  SLACK = "SLACK",
+}
+
+/** Status */
+export enum MessageStatus {
+  PENDING = "PENDING",
+  AWAITING_FEEDBACK = "AWAITING_FEEDBACK",
+  SENT = "SENT",
+  NOT_SENT = "NOT_SENT",
+  FAILED = "FAILED",
+  NO_CONTACT_SETTINGS_FOUND = "NO_CONTACT_SETTINGS_FOUND",
+  NO_CONTACT_WANTED = "NO_CONTACT_WANTED",
+}
 
 /** External references */
 export interface ExternalReference {
@@ -58,7 +83,7 @@ export interface WebMessageRequest {
   sendAsOwner?: boolean;
   /**
    * Determines if the message should be added to the internal or external OeP instance
-   * @example "internal"
+   * @example "INTERNAL"
    */
   oepInstance?: WebMessageRequestOepInstanceEnum;
   /**
@@ -78,20 +103,20 @@ export interface WebMessageSender {
 }
 
 export interface Problem {
-  title?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
+  title?: string;
+  detail?: string;
 }
 
 export interface StatusType {
-  reasonPhrase?: string;
   /** @format int32 */
   statusCode?: number;
+  reasonPhrase?: string;
 }
 
 /** Delivery result */
@@ -116,30 +141,6 @@ export interface MessageResult {
   messageId?: string;
   /** The message deliveries */
   deliveries?: DeliveryResult[];
-}
-
-/** Status */
-export enum MessageStatus {
-  PENDING = 'PENDING',
-  AWAITING_FEEDBACK = 'AWAITING_FEEDBACK',
-  SENT = 'SENT',
-  NOT_SENT = 'NOT_SENT',
-  FAILED = 'FAILED',
-  NO_CONTACT_SETTINGS_FOUND = 'NO_CONTACT_SETTINGS_FOUND',
-  NO_CONTACT_WANTED = 'NO_CONTACT_WANTED',
-}
-
-/** Message type */
-export enum MessageType {
-  MESSAGE = 'MESSAGE',
-  EMAIL = 'EMAIL',
-  SMS = 'SMS',
-  WEB_MESSAGE = 'WEB_MESSAGE',
-  DIGITAL_MAIL = 'DIGITAL_MAIL',
-  DIGITAL_INVOICE = 'DIGITAL_INVOICE',
-  SNAIL_MAIL = 'SNAIL_MAIL',
-  LETTER = 'LETTER',
-  SLACK = 'SLACK',
 }
 
 export interface SmsRequest {
@@ -635,10 +636,10 @@ export interface ConstraintViolationProblem {
   violations?: Violation[];
   title?: string;
   message?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   parameters?: Record<string, object>;
+  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -671,14 +672,14 @@ export interface ThrowableProblem {
     nativeMethod?: boolean;
   }[];
   message?: string;
-  title?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
+  title?: string;
+  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -857,23 +858,23 @@ export interface HistoryResponse {
 
 /**
  * Determines if the message should be added to the internal or external OeP instance
- * @example "internal"
+ * @example "INTERNAL"
  */
 export enum WebMessageRequestOepInstanceEnum {
-  Internal = 'internal',
-  External = 'external',
+  INTERNAL = "INTERNAL",
+  EXTERNAL = "EXTERNAL",
 }
 
 /** Priority (optional, will be defaulted to NORMAL if not present) */
 export enum SmsRequestPriorityEnum {
-  HIGH = 'HIGH',
-  NORMAL = 'NORMAL',
+  HIGH = "HIGH",
+  NORMAL = "NORMAL",
 }
 
 /** Priority (optional, will be defaulted to NORMAL if not present) */
 export enum SmsBatchRequestPriorityEnum {
-  HIGH = 'HIGH',
-  NORMAL = 'NORMAL',
+  HIGH = "HIGH",
+  NORMAL = "NORMAL",
 }
 
 /**
@@ -881,85 +882,85 @@ export enum SmsBatchRequestPriorityEnum {
  * digital mail, snail-mail or any of them
  */
 export enum LetterAttachmentDeliveryModeEnum {
-  ANY = 'ANY',
-  DIGITAL_MAIL = 'DIGITAL_MAIL',
-  SNAIL_MAIL = 'SNAIL_MAIL',
+  ANY = "ANY",
+  DIGITAL_MAIL = "DIGITAL_MAIL",
+  SNAIL_MAIL = "SNAIL_MAIL",
 }
 
 /** Content type */
 export enum LetterAttachmentContentTypeEnum {
-  ApplicationPdf = 'application/pdf',
+  ApplicationPdf = "application/pdf",
 }
 
 /** Content type */
 export enum LetterRequestContentTypeEnum {
-  TextPlain = 'text/plain',
-  TextHtml = 'text/html',
+  TextPlain = "text/plain",
+  TextHtml = "text/html",
 }
 
 /** Content type */
 export enum DigitalMailAttachmentContentTypeEnum {
-  ApplicationPdf = 'application/pdf',
+  ApplicationPdf = "application/pdf",
 }
 
 /** Content type */
 export enum DigitalMailRequestContentTypeEnum {
-  TextPlain = 'text/plain',
-  TextHtml = 'text/html',
+  TextPlain = "text/plain",
+  TextHtml = "text/html",
 }
 
 export enum DetailsPaymentReferenceTypeEnum {
-  SE_OCR = 'SE_OCR',
-  TENANT_REF = 'TENANT_REF',
+  SE_OCR = "SE_OCR",
+  TENANT_REF = "TENANT_REF",
 }
 
 export enum DetailsAccountTypeEnum {
-  BANKGIRO = 'BANKGIRO',
-  PLUSGIRO = 'PLUSGIRO',
+  BANKGIRO = "BANKGIRO",
+  PLUSGIRO = "PLUSGIRO",
 }
 
 /** Content type */
 export enum DigitalInvoiceFileContentTypeEnum {
-  ApplicationPdf = 'application/pdf',
+  ApplicationPdf = "application/pdf",
 }
 
 /** Invoice type */
 export enum DigitalInvoiceRequestTypeEnum {
-  INVOICE = 'INVOICE',
-  REMINDER = 'REMINDER',
+  INVOICE = "INVOICE",
+  REMINDER = "REMINDER",
 }
 
 export enum HistoryResponseMessageTypeEnum {
-  MESSAGE = 'MESSAGE',
-  EMAIL = 'EMAIL',
-  SMS = 'SMS',
-  WEB_MESSAGE = 'WEB_MESSAGE',
-  DIGITAL_MAIL = 'DIGITAL_MAIL',
-  DIGITAL_INVOICE = 'DIGITAL_INVOICE',
-  SNAIL_MAIL = 'SNAIL_MAIL',
-  LETTER = 'LETTER',
-  SLACK = 'SLACK',
+  MESSAGE = "MESSAGE",
+  EMAIL = "EMAIL",
+  SMS = "SMS",
+  WEB_MESSAGE = "WEB_MESSAGE",
+  DIGITAL_MAIL = "DIGITAL_MAIL",
+  DIGITAL_INVOICE = "DIGITAL_INVOICE",
+  SNAIL_MAIL = "SNAIL_MAIL",
+  LETTER = "LETTER",
+  SLACK = "SLACK",
 }
 
 export enum HistoryResponseStatusEnum {
-  PENDING = 'PENDING',
-  AWAITING_FEEDBACK = 'AWAITING_FEEDBACK',
-  SENT = 'SENT',
-  NOT_SENT = 'NOT_SENT',
-  FAILED = 'FAILED',
-  NO_CONTACT_SETTINGS_FOUND = 'NO_CONTACT_SETTINGS_FOUND',
-  NO_CONTACT_WANTED = 'NO_CONTACT_WANTED',
+  PENDING = "PENDING",
+  AWAITING_FEEDBACK = "AWAITING_FEEDBACK",
+  SENT = "SENT",
+  NOT_SENT = "NOT_SENT",
+  FAILED = "FAILED",
+  NO_CONTACT_SETTINGS_FOUND = "NO_CONTACT_SETTINGS_FOUND",
+  NO_CONTACT_WANTED = "NO_CONTACT_WANTED",
 }
 
 /** Message type */
 export enum GetStatisticsParamsMessageTypeEnum {
-  MESSAGE = 'MESSAGE',
-  EMAIL = 'EMAIL',
-  SMS = 'SMS',
-  WEB_MESSAGE = 'WEB_MESSAGE',
-  DIGITAL_MAIL = 'DIGITAL_MAIL',
-  DIGITAL_INVOICE = 'DIGITAL_INVOICE',
-  SNAIL_MAIL = 'SNAIL_MAIL',
-  LETTER = 'LETTER',
-  SLACK = 'SLACK',
+  MESSAGE = "MESSAGE",
+  EMAIL = "EMAIL",
+  SMS = "SMS",
+  WEB_MESSAGE = "WEB_MESSAGE",
+  DIGITAL_MAIL = "DIGITAL_MAIL",
+  DIGITAL_INVOICE = "DIGITAL_INVOICE",
+  SNAIL_MAIL = "SNAIL_MAIL",
+  LETTER = "LETTER",
+  SLACK = "SLACK",
 }

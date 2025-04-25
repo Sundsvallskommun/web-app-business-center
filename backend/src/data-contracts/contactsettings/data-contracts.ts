@@ -1,5 +1,6 @@
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -8,6 +9,21 @@
  * ## SOURCE: https://github.com/acacode/swagger-typescript-api ##
  * ---------------------------------------------------------------
  */
+
+/**
+ * Operator model
+ * @example "EQUALS"
+ */
+export enum Operator {
+  EQUALS = "EQUALS",
+  NOT_EQUALS = "NOT_EQUALS",
+}
+
+/** ContactMethod model */
+export enum ContactMethod {
+  SMS = "SMS",
+  EMAIL = "EMAIL",
+}
 
 export interface Problem {
   /** @format uri */
@@ -134,12 +150,6 @@ export interface ContactChannel {
   disabled?: boolean;
 }
 
-/** ContactMethod model */
-export enum ContactMethod {
-  SMS = 'SMS',
-  EMAIL = 'EMAIL',
-}
-
 /** ContactSettingCreateRequest model */
 export interface ContactSettingCreateRequest {
   /**
@@ -212,15 +222,6 @@ export interface Filter {
    * I.e. all rules must evaluate to true in order to pass the filter.
    */
   rules: Rule[];
-}
-
-/**
- * Operator model
- * @example "EQUALS"
- */
-export enum Operator {
-  EQUALS = 'EQUALS',
-  NOT_EQUALS = 'NOT_EQUALS',
 }
 
 /**

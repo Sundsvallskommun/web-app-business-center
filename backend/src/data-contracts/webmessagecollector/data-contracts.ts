@@ -1,5 +1,6 @@
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -220,6 +221,6 @@ export interface MessageDTO {
  * @example "INBOUND"
  */
 export enum MessageDtoDirectionEnum {
-  INBOUND = 'INBOUND',
-  OUTBOUND = 'OUTBOUND',
+  INBOUND = "INBOUND",
+  OUTBOUND = "OUTBOUND",
 }

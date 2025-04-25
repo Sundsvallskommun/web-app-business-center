@@ -1,5 +1,6 @@
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -405,6 +406,6 @@ export interface Engagement {
  * @example "OK"
  */
 export enum BusinessEngagementsResponseStatusEnum {
-  OK = 'OK',
-  NOK = 'NOK',
+  OK = "OK",
+  NOK = "NOK",
 }

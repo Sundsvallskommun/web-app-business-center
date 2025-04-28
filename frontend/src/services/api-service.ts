@@ -22,7 +22,8 @@ export interface ApiResponse<T> {
 
 export const handleError = (error) => {
   if (error?.response?.status === 401 && !window?.location.pathname.includes('login')) {
-    window.location.href = `/login?path=${window.location.pathname}&failMessage=${error.response.data.message}`;
+    const path = window.location.pathname.includes('/valj-foretag') ? '/' : window.location.pathname;
+    window.location.href = `/login?path=${path}&failMessage=${error.response.data.message}`;
   }
 };
 

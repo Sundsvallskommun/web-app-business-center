@@ -65,9 +65,9 @@ function Login() {
       <div className="w-full max-w-[64rem]">
         <CardElevated>
           <Main>
-            <CenterDiv className="px-8 py-24 gap-y-40">
+            <CenterDiv className="py-24 gap-y-40">
               <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">Logga in som</h1>
-              <div className="flex gap-x-24">
+              <div className="flex flex-col desktop:flex-row gap-24 w-full desktop:w-fit">
                 <Button
                   variant="secondary"
                   size="lg"

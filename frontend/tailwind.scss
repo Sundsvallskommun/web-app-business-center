@@ -103,7 +103,12 @@ body {
           }
 
           &-icon {
-            @apply flex justify-center shrink-0 p-10 rounded-button bg-background-color-mixin-2 w-fit h-fit;
+            @apply flex justify-center shrink-0 p-6 desktop:p-10 rounded-button bg-background-color-mixin-2 w-fit h-fit;
+
+            .sk-icon {
+              @apply w-20 h-20;
+              @apply desktop:w-24 desktop:h-24;
+            }
           }
 
           &-title {

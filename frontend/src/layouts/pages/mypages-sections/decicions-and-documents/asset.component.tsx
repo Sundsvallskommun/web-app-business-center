@@ -36,11 +36,11 @@ export default function Asset() {
   return (
     <Card>
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
-        <div className="flex gap-x-24">
+        <div className="flex gap-x-8 desktop:gap-x-24">
           <div className="list-item-card-content-icon">
             <Icon icon={<FileCheck2 />} />
           </div>
-          <h1 className="text-h2-lg mb-0 break-all">{assetData?.description}</h1>
+          <h1 className="text-h2-sm desktop:text-h2-lg mb-0 break-word hyphens-auto">{assetData?.description}</h1>
         </div>
         <span>
           <Label rounded inverted color={getAssetProps(assetData?.status).color}>

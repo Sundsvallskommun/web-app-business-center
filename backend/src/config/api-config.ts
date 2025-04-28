@@ -15,7 +15,7 @@ export const APIS = [
   },
   {
     name: 'supportmanagement',
-    version: '10.1',
+    version: '10.2',
   },
   {
     name: 'webmessagecollector',

@@ -24,35 +24,28 @@ export default function CaseInformation() {
   }, [caseData?.caseId]);
 
   return (
-    <div>
-      <Card>
-        <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
-          <div className="flex flex-col items-start gap-4">
-            <div className="font-bold">Ärendenummer</div>
-            <div>{caseData?.errandNumber || caseData?.caseId}</div>
-          </div>
-          <div className="flex flex-col items-start gap-4">
-            <div className="font-bold">Registrerat</div>
-            <div>{dayjs(caseData?.firstSubmitted).format('YYYY-MM-DD')}</div>
-          </div>
-          {caseData?.system === 'OPEN_E_PLATFORM' ? (
-            <div className="flex flex-col items-start gap-4">
-              <div className="font-bold">Dokument</div>
-              <div>
-                <Button
-                  loading={pdfIsLoading}
-                  className="flex gap-4 items-center"
-                  variant="link"
-                  onClick={handleGetPdf}
-                >
-                  <Icon size="1.8rem" icon={<File />} />
-                  <span>Ladda ner ärendet (pdf)</span>
-                </Button>
-              </div>
-            </div>
-          ) : null}
+    <Card>
+      <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
+        <div className="flex flex-col items-start gap-4">
+          <div className="font-bold">Ärendenummer</div>
+          <div>{caseData?.errandNumber || caseData?.caseId}</div>
         </div>
-      </Card>
-    </div>
+        <div className="flex flex-col items-start gap-4">
+          <div className="font-bold">Registrerat</div>
+          <div>{dayjs(caseData?.firstSubmitted).format('YYYY-MM-DD')}</div>
+        </div>
+        {caseData?.system === 'OPEN_E_PLATFORM' ? (
+          <div className="flex flex-col items-start gap-4">
+            <div className="font-bold">Dokument</div>
+            <div>
+              <Button loading={pdfIsLoading} className="flex gap-4 items-center" variant="link" onClick={handleGetPdf}>
+                <Icon size="1.8rem" icon={<File />} />
+                <span>Ladda ner ärendet (pdf)</span>
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </Card>
   );
 }

@@ -1,5 +1,5 @@
 import { RepresentingMode } from '@interfaces/app';
-import { testCases, testContactSettings, testInvoices } from 'cypress/e2e/utils';
+import { testAssets, testCases, testContactSettings, testInvoices } from 'cypress/e2e/utils';
 import { setIntercepts } from 'cypress/support/e2e';
 
 describe('Privat', () => {
@@ -35,6 +35,13 @@ describe('Privat', () => {
     cy.wait('@getContactSettings').then(() => {
       cy.url().should('include', '/privat/profil');
       testContactSettings(RepresentingMode.PRIVATE);
+    });
+  });
+  it('should render assets list /privat', () => {
+    cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
+    cy.wait('@getAssets').then(() => {
+      cy.url().should('include', '/privat/beslut-och-dokument');
+      testAssets(RepresentingMode.PRIVATE);
     });
   });
 });

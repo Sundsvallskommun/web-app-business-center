@@ -1,3 +1,4 @@
+import { cx } from '@sk-web-gui/react';
 import { ReactNode } from 'react';
 
 interface CardProps {
@@ -8,7 +9,10 @@ interface CardProps {
 export const Card = ({ children, className }: CardProps) => {
   return (
     <div
-      className={`shadow-50 rounded-cards p-30 desktop:p-32 flex flex-col desktop:gap-y-40 bg-background-content ${className}`}
+      className={cx(
+        `shadow-50 rounded-cards p-30 desktop:p-32 flex flex-col gap-y-40 bg-background-content`,
+        className
+      )}
     >
       {children}
     </div>

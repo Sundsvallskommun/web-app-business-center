@@ -12,17 +12,17 @@
 
 /** Type of event */
 export enum EventType {
-  CREATE = "CREATE",
-  UPDATE = "UPDATE",
-  DELETE = "DELETE",
-  UNKNOWN = "UNKNOWN",
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+  UNKNOWN = 'UNKNOWN',
 }
 
 /** Priority model */
 export enum Priority {
-  LOW = "LOW",
-  MEDIUM = "MEDIUM",
-  HIGH = "HIGH",
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
 }
 
 export interface Problem {
@@ -1044,11 +1044,14 @@ export interface PageErrand {
   sort?: SortObject;
   /** @format int32 */
   numberOfElements?: number;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
 export interface PageableObject {
-  paged?: boolean;
+  /** @format int64 */
+  offset?: number;
+  sort?: SortObject;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
@@ -1265,6 +1268,7 @@ export interface PageEvent {
   sort?: SortObject;
   /** @format int32 */
   numberOfElements?: number;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
@@ -1379,8 +1383,8 @@ export interface ErrandAttachment {
  * @example "INBOUND"
  */
 export enum CommunicationDirectionEnum {
-  INBOUND = "INBOUND",
-  OUTBOUND = "OUTBOUND",
+  INBOUND = 'INBOUND',
+  OUTBOUND = 'OUTBOUND',
 }
 
 /**
@@ -1388,7 +1392,7 @@ export enum CommunicationDirectionEnum {
  * @example "EMAIL"
  */
 export enum CommunicationCommunicationTypeEnum {
-  SMS = "SMS",
-  EMAIL = "EMAIL",
-  WEB_MESSAGE = "WEB_MESSAGE",
+  SMS = 'SMS',
+  EMAIL = 'EMAIL',
+  WEB_MESSAGE = 'WEB_MESSAGE',
 }

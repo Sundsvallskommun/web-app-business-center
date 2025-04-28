@@ -35,7 +35,7 @@ export default function Asset() {
   const { assetData } = useContext(AssetsContext);
   return (
     <Card>
-      <div className="flex flex-col-reverse desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
+      <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
         <div className="flex gap-x-24">
           <div className="list-item-card-content-icon">
             <Icon icon={<FileCheck2 />} />

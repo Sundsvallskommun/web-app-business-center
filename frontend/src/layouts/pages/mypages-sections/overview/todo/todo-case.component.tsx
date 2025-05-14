@@ -14,7 +14,7 @@ export const TodoCase = ({ data }: TodoCaseProps) => {
         <Icon className={styles['todo-type-icon']} icon={<FilePen />} />
       </div>
       <div className={styles['todo-content']}>
-        <h2 className={styles['todo-content-heading']}>{`Komplettering behövs på ärende #${data.caseId}`}</h2>
+        <h2 className={styles['todo-content-heading']}>{`Komplettering behövs på ärende #${data.errandNumber}`}</h2>
         <p
           className={styles['todo-content-text']}
         >{`Handläggaren har begärt kompletterade uppgifter på ditt ärende ${data.caseType}`}</p>

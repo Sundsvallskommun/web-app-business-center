@@ -17,7 +17,7 @@ export const TodoCase = ({ data }: TodoCaseProps) => {
         <h2 className={styles['todo-content-heading']}>{`Komplettering behövs på ärende #${data.caseId}`}</h2>
         <p
           className={styles['todo-content-text']}
-        >{`Handläggaren har begärt kompletterade uppgifter på ditt ärende ${data.caseType}`}</p>
+        >Du behöver skicka in fler uppgifter. Klicka på &quot;Till ärendet&quot; och skicka uppgifterna som ett meddelande till oss.</p>
       </div>
       <div className={styles['todo-action']}>
         <Button className={styles['todo-action-button']} color="vattjom" aria-label={`${data.caseType}, till ärendet`}>

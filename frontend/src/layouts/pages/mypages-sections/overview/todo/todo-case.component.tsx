@@ -1,6 +1,7 @@
 import { ICaseStatusResponse } from '@interfaces/case';
 import { Button, Icon } from '@sk-web-gui/react';
 import { FilePen } from 'lucide-react';
+import NextLink from 'next/link';
 import styles from './todos.module.scss';
 
 interface TodoCaseProps {
@@ -20,9 +21,11 @@ export const TodoCase = ({ data }: TodoCaseProps) => {
         >Du behöver skicka in fler uppgifter. Klicka på &quot;Till ärendet&quot; och skicka uppgifterna som ett meddelande till oss.</p>
       </div>
       <div className={styles['todo-action']}>
-        <Button className={styles['todo-action-button']} color="vattjom" aria-label={`${data.caseType}, till ärendet`}>
-          Till ärendet
-        </Button>
+        <NextLink href={`arenden/${data.caseId}`}>
+          <Button className={styles['todo-action-button']} color="vattjom" aria-label={`${data.caseType}, till ärendet`}>
+            Till ärendet
+          </Button>
+        </NextLink>
       </div>
     </div>
   );

@@ -11,6 +11,15 @@
  */
 
 /**
+ * ConversationType model
+ * @example "INTERNAL"
+ */
+export enum ConversationType {
+  INTERNAL = "INTERNAL",
+  EXTERNAL = "EXTERNAL",
+}
+
+/**
  * An email header
  * @example "MESSAGE_ID"
  */
@@ -482,7 +491,7 @@ export interface Attachment {
    * Name of the attachment
    * @example "Test Document"
    */
-  name?: string;
+  fileName?: string;
   /**
    * Note about the attachment
    * @example "This is a test document."
@@ -775,7 +784,10 @@ export interface Errand {
 
 /** Extra parameters for the errand */
 export interface ExtraParameter {
-  /** Parameter key */
+  /**
+   * Parameter key
+   * @minLength 1
+   */
   key: string;
   /** Parameter display name */
   displayName?: string;
@@ -889,6 +901,7 @@ export interface Notification {
   ownerFullName?: string;
   /**
    * Owner id of the notification
+   * @minLength 1
    * @example "AD01"
    */
   ownerId: string;
@@ -904,6 +917,7 @@ export interface Notification {
   createdByFullName?: string;
   /**
    * Type of the notification
+   * @minLength 1
    * @example "CREATE"
    */
   type: string;
@@ -914,6 +928,7 @@ export interface Notification {
   subType?: string;
   /**
    * Description of the notification
+   * @minLength 1
    * @example "Some description of the notification"
    */
   description: string;
@@ -1026,11 +1041,13 @@ export interface EmailHeader {
 export interface MessageAttachment {
   /**
    * The attachment (file) content as a BASE64-encoded string
+   * @minLength 1
    * @example "aGVsbG8gd29ybGQK"
    */
   content: string;
   /**
    * The attachment filename
+   * @minLength 1
    * @example "test.txt"
    */
   name: string;
@@ -1128,6 +1145,93 @@ export interface MessageRequest {
    * @example true
    */
   internal?: boolean;
+}
+
+/** Conversation model */
+export interface Conversation {
+  /**
+   * Conversation ID
+   * @example "1aefbbb8-de82-414b-b5d7-ba7c5bbe4506"
+   */
+  id?: string;
+  /**
+   * The message-exchange topic
+   * @minLength 1
+   * @example "The conversation topic"
+   */
+  topic: string;
+  /** ConversationType model */
+  type: ConversationType;
+  relationIds?: string[];
+  participants?: Identifier[];
+  metadata?: KeyValues[];
+}
+
+/** Identifier model */
+export interface Identifier {
+  /**
+   * The conversation identifier type
+   * @pattern ^(adAccount|partyId)$
+   * @example "adAccount"
+   */
+  type?: string;
+  /**
+   * The conversation identifier value
+   * @minLength 1
+   * @example "joe01doe"
+   */
+  value: string;
+}
+
+/** KeyValues model */
+export interface KeyValues {
+  /**
+   * The key
+   * @example "key1"
+   */
+  key?: string;
+  values?: string[];
+}
+
+/** Message model */
+export interface Message {
+  /**
+   * Message ID
+   * @example "1aefbbb8-de82-414b-b5d7-ba7c5bbe4506"
+   */
+  id?: string;
+  /**
+   * The ID of the replied message
+   * @example "1aefbbb8-de82-414b-b5d7-ba7c5bbe4506"
+   */
+  inReplyToMessageId?: string;
+  /**
+   * The timestamp when the message was created.
+   * @format date-time
+   */
+  created?: string;
+  /** Identifier model */
+  createdBy?: Identifier;
+  /**
+   * The content of the message.
+   * @minLength 1
+   * @example "Hello, how can I help you?"
+   */
+  content: string;
+  readBy?: ReadBy[];
+  attachments?: Attachment[];
+}
+
+/** Readby model */
+export interface ReadBy {
+  /** Identifier model */
+  identifier?: Identifier;
+  /**
+   * The timestamp when the message was read.
+   * @format date-time
+   * @example "2023-01-01T12:00:00+01:00"
+   */
+  readAt?: string;
 }
 
 export interface PatchNotification {
@@ -1322,15 +1426,15 @@ export interface PageErrand {
 }
 
 export interface PageableObject {
-  /** @format int64 */
-  offset?: number;
-  sort?: SortObject;
   paged?: boolean;
-  unpaged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
+  /** @format int64 */
+  offset?: number;
+  sort?: SortObject;
+  unpaged?: boolean;
 }
 
 export interface SortObject {
@@ -1517,6 +1621,25 @@ export interface MessageResponse {
   internal?: boolean;
 }
 
+export interface PageMessage {
+  /** @format int32 */
+  totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
+  pageable?: PageableObject;
+  /** @format int32 */
+  size?: number;
+  content?: Message[];
+  /** @format int32 */
+  number?: number;
+  sort?: SortObject;
+  first?: boolean;
+  last?: boolean;
+  /** @format int32 */
+  numberOfElements?: number;
+  empty?: boolean;
+}
+
 /**
  * Category of the address
  * @example "RESIDENTIAL"
@@ -1573,6 +1696,7 @@ export enum DecisionDecisionOutcomeEnum {
  */
 export enum ErrandChannelEnum {
   ESERVICE = "ESERVICE",
+  ESERVICE_KATLA = "ESERVICE_KATLA",
   EMAIL = "EMAIL",
   WEB_UI = "WEB_UI",
   MOBILE = "MOBILE",

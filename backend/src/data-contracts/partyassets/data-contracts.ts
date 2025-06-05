@@ -10,14 +10,12 @@
  * ---------------------------------------------------------------
  */
 
-/**
- * Status model
- * @example "ACTIVE"
- */
+/** Status model */
 export enum Status {
   ACTIVE = "ACTIVE",
   EXPIRED = "EXPIRED",
   BLOCKED = "BLOCKED",
+  TEMPORARY = "TEMPORARY",
 }
 
 export interface Problem {
@@ -26,41 +24,15 @@ export interface Problem {
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
-  status?: StatusType;
   title?: string;
   detail?: string;
+  status?: StatusType;
 }
 
 export interface StatusType {
   /** @format int32 */
   statusCode?: number;
   reasonPhrase?: string;
-}
-
-export interface AssetUpdateRequest {
-  /**
-   * Case reference ids
-   * @example ["123e4567-e89b-12d3-a456-426614174000"]
-   */
-  caseReferenceIds?: string[];
-  /**
-   * Valid to date
-   * @format date
-   * @example "2021-12-31"
-   */
-  validTo?: string;
-  /** Status model */
-  status?: Status;
-  /**
-   * Status reason
-   * @example "Status reason"
-   */
-  statusReason?: string;
-  /**
-   * Additional parameters
-   * @example {"foo":"bar"}
-   */
-  additionalParameters?: Record<string, string>;
 }
 
 export interface ConstraintViolationProblem {
@@ -123,9 +95,9 @@ export interface ThrowableProblem {
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
-  status?: StatusType;
   title?: string;
   detail?: string;
+  status?: StatusType;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -152,6 +124,7 @@ export interface Violation {
 export interface AssetCreateRequest {
   /**
    * Asset id
+   * @minLength 1
    * @example "PRH-123456789"
    */
   assetId: string;
@@ -172,6 +145,7 @@ export interface AssetCreateRequest {
   caseReferenceIds?: string[];
   /**
    * Asset type
+   * @minLength 1
    * @example "PERMIT"
    */
   type: string;
@@ -199,6 +173,32 @@ export interface AssetCreateRequest {
    * @example "Asset description"
    */
   description?: string;
+  /**
+   * Additional parameters
+   * @example {"foo":"bar"}
+   */
+  additionalParameters?: Record<string, string>;
+}
+
+export interface AssetUpdateRequest {
+  /**
+   * Case reference ids
+   * @example ["123e4567-e89b-12d3-a456-426614174000"]
+   */
+  caseReferenceIds?: string[];
+  /**
+   * Valid to date
+   * @format date
+   * @example "2021-12-31"
+   */
+  validTo?: string;
+  /** Status model */
+  status?: Status;
+  /**
+   * Status reason
+   * @example "Status reason"
+   */
+  statusReason?: string;
   /**
    * Additional parameters
    * @example {"foo":"bar"}

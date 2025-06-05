@@ -26,14 +26,14 @@ export enum ContactMethod {
 }
 
 export interface Problem {
+  title?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  title?: string;
-  detail?: string;
 }
 
 export interface StatusType {
@@ -61,10 +61,10 @@ export interface ConstraintViolationProblem {
   violations?: Violation[];
   title?: string;
   message?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   parameters?: Record<string, object>;
-  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -97,14 +97,14 @@ export interface ThrowableProblem {
     nativeMethod?: boolean;
   }[];
   message?: string;
+  title?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  title?: string;
-  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -134,11 +134,13 @@ export interface ContactChannel {
   contactMethod: ContactMethod;
   /**
    * Alias for the destination
+   * @minLength 1
    * @example "Private phone"
    */
   alias: string;
   /**
    * Point of destination
+   * @minLength 1
    * @example "+46701234567"
    */
   destination: string;
@@ -183,7 +185,10 @@ export interface DelegateCreateRequest {
    * @example "4a758ca4-6df5-43f4-a7ce-612f51f9da09"
    */
   agentId: string;
-  /** Filters used by this delegate */
+  /**
+   * Filters used by this delegate
+   * @minItems 1
+   */
   filters: Filter[];
 }
 
@@ -220,6 +225,7 @@ export interface Filter {
    * The filter rules.
    * If more than one rule exists, there will be an implicit AND-condition between the rules.
    * I.e. all rules must evaluate to true in order to pass the filter.
+   * @minItems 1
    */
   rules: Rule[];
 }
@@ -253,6 +259,7 @@ export interface Filter {
 export interface Rule {
   /**
    * The attribute name to apply the filter rule on
+   * @minLength 1
    * @example "facilityId"
    */
   attributeName: string;
@@ -260,6 +267,7 @@ export interface Rule {
   operator: Operator;
   /**
    * The attribute value to apply the filter rule on
+   * @minLength 1
    * @example "12345678"
    */
   attributeValue: string;

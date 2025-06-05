@@ -8,6 +8,7 @@ import {
   MessageResponseDirectionEnum,
 } from '@/data-contracts/case-data/data-contracts';
 import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
+import { Conversation, Message, PageMessage } from '@/data-contracts/case-data/data-contracts';
 import { CaseMessageDto } from '@/dtos/case-data.dto';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
@@ -17,7 +18,7 @@ import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
 import authMiddleware from '@middlewares/auth.middleware';
 import dayjs from 'dayjs';
-import { Body, Controller, Get, Param, Post, Put, Req, UploadedFiles, UseBefore } from 'routing-controllers';
+import { Body, Controller, Get, Param, Post, Put, QueryParam, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { v4 as uuidv4 } from 'uuid';
 import { RepresentingMode } from '../interfaces/representing.interface';
@@ -26,6 +27,7 @@ import { formatOrgNr } from '../utils/util';
 import { Communication, WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
 import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
+import { User } from '@interfaces/users.interface';
 
 @Controller()
 export class CaseController {
@@ -62,6 +64,35 @@ export class CaseController {
     } else {
       this.setPrivateCasesCache(req, data);
     }
+  }
+
+  private conversationInit(user: User) {
+    return {
+      topic: 'init',
+      type: 'EXTERNAL',
+      participants: [
+        {
+          type: 'partyId',
+          value: user.partyId,
+        },
+      ],
+    };
+  }
+
+  private normalizeConversationMessages(messages: Message[], user: User): FrontendMessageResponse[] {
+    return messages.map((msg: Message) => ({
+      messageId: msg.id,
+      message: msg.content,
+      sent: msg.created,
+      // FIXME: messages createdBy only contains partyId and needs to be looked up to get first and lastname?
+      sender: msg?.createdBy?.value && msg?.createdBy?.value === user.partyId ? `${user.name}` : 'Okänd',
+      direction: msg?.createdBy?.value ? (msg?.createdBy?.value === user.partyId ? 'INBOUND' : 'OUTBOUND') : '',
+      attachments: msg.attachments?.map(attachment => ({
+        attachmentId: attachment.id.toString(),
+        name: attachment.fileName,
+        contentType: attachment.mimeType,
+      })),
+    })) as FrontendMessageResponse[];
   }
 
   private normalizeCaseDataMessages(messages: MessageResponse[]): FrontendMessageResponse[] {
@@ -156,7 +187,9 @@ export class CaseController {
       },
       oepInstance: WebMessageRequestOepInstanceEnum.EXTERNAL,
       message: message,
-      attachments: files?.map(x => ({ base64Data: x.buffer.toString('base64'), fileName: x.originalname, mimeType: x.mimetype })),
+      attachments: files.length
+        ? files?.map(x => ({ base64Data: x.buffer.toString('base64'), fileName: x.originalname, mimeType: x.mimetype }))
+        : undefined,
     };
   }
 
@@ -305,21 +338,49 @@ export class CaseController {
       let url: string;
       let data: FrontendMessageResponse[];
       if (_case.system === 'CASE_DATA') {
-        url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages`;
-        const resCaseData = await this.apiService.get<MessageResponse[]>({ url }, req);
-        if (!resCaseData.data) {
-          throw new HttpException(500, 'No data from API');
+        const conversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
+        const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+        const messages: Message[] = [];
+
+        for (const conversation of resConversation.data) {
+          const messagesUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
+            conversation.id
+          }/messages?page=0&size=9000`;
+          const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req);
+          if (resMessages.data) {
+            messages.push(...resMessages?.data?.content);
+          }
         }
-        data = this.normalizeCaseDataMessages(resCaseData.data);
+
+        data = this.normalizeConversationMessages(messages, req.user);
       } else if (_case.system === 'SUPPORT_MANAGEMENT') {
-        url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication`;
-        const resSupportManagement = await this.apiService.get<Communication[]>({ url }, req);
-        if (!resSupportManagement.data) {
-          throw new HttpException(500, 'No data from API');
+        const conversationUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
+          _case.namespace
+        }/errands/${caseId}/communication/conversations`;
+        const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+        const messages: Message[] = [];
+
+        for (const conversation of resConversation.data) {
+          const messagesUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
+            _case.namespace
+          }/errands/${caseId}/communication/conversations/${conversation.id}/messages?page=0&size=9000`;
+          const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req);
+          if (resMessages.data) {
+            messages.push(...resMessages?.data?.content);
+          }
         }
-        data = this.normalizeSupportManagementMessages(resSupportManagement.data);
+
+        data = this.normalizeConversationMessages(messages, req.user);
       } else if (_case.system === 'OPEN_E_PLATFORM') {
         url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/flow-instances/${caseId}`;
+        const resWebMessageCollector = await this.apiService.get<MessageDTO[]>({ url }, req);
+        if (!resWebMessageCollector.data) {
+          throw new HttpException(500, 'No data from API');
+        }
+        data = this.normalizeWebMessageCollectorMessages(resWebMessageCollector.data);
+      } else if (_case.system === 'BYGGR' || _case.system === 'ECOS') {
+        // NOTE: BYGGR and ECOS are using externalCaseId
+        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/flow-instances/${_case.externalCaseId}`;
         const resWebMessageCollector = await this.apiService.get<MessageDTO[]>({ url }, req);
         if (!resWebMessageCollector.data) {
           throw new HttpException(500, 'No data from API');
@@ -404,28 +465,113 @@ export class CaseController {
 
     let url: string;
     let headers: Record<string, string> = {};
-    let data: MessageRequest | WebMessageRequest | MessagingWebMessageRequest;
+    let data: MessageRequest | WebMessageRequest | MessagingWebMessageRequest | FormData;
     if (_case.system === 'CASE_DATA') {
-      url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages`;
-      data = this.postMessageToCaseDataMessage(req, body.message, files);
-    } else if (_case.system === 'SUPPORT_MANAGEMENT') {
-      url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/webmessage`;
-      data = this.postMessageToSupportManagementMessage(body.message, files);
+      const conversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
+      const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+      let conversation: Conversation;
+
+      if (!resConversation.data || resConversation.data.length === 0) {
+        const createConversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
+        const createConversationdata = this.conversationInit(req.user);
+        const resCreateConversation = await this.apiService.post({ data: createConversationdata, url: createConversationUrl }, req);
+
+        if (resCreateConversation.message === 'success') {
+          const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+          conversation = resConversation.data[0];
+        }
+      } else {
+        conversation = resConversation.data[0];
+      }
+      url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
+        conversation.id
+      }/messages`;
+
       headers = {
-        'X-Sent-By': `${req.user.partyId};type=partyId`,
+        'Content-Type': 'multipart/form-data',
       };
+
+      const messageData = {
+        content: body.message,
+      };
+
+      const formData = new FormData();
+      formData.append('message', JSON.stringify(messageData));
+      if (files && files.length > 0) {
+        files.forEach(file => {
+          formData.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
+        });
+      }
+      data = formData;
+    } else if (_case.system === 'SUPPORT_MANAGEMENT') {
+      const conversationUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
+        _case.namespace
+      }/errands/${caseId}/communication/conversations`;
+      const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+      let conversation: Conversation;
+
+      if (!resConversation.data || resConversation.data.length === 0) {
+        const createConversationUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
+          _case.namespace
+        }/errands/${caseId}/communication/conversations`;
+        const createConversationdata = this.conversationInit(req.user);
+        const resCreateConversation = await this.apiService.post({ data: createConversationdata, url: createConversationUrl }, req);
+
+        if (resCreateConversation.message === 'success') {
+          const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+          conversation = resConversation.data[0];
+        }
+      } else {
+        conversation = resConversation.data[0];
+      }
+      url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
+        conversation.id
+      }/messages`;
+
+      headers = {
+        'Content-Type': 'multipart/form-data',
+      };
+
+      const messageData = {
+        content: body.message,
+      };
+
+      const formData = new FormData();
+      formData.append('message', JSON.stringify(messageData));
+      if (files && files.length > 0) {
+        files.forEach(file => {
+          formData.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
+        });
+      }
+      data = formData;
     } else if (_case.system === 'OPEN_E_PLATFORM') {
       url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
       data = this.postMessageToMessagingMessage(req, caseId, body.message, files);
-      headers = {
-        'x-origin': 'MYPAGES',
-      };
+    } else if (_case.system === 'BYGGR' || _case.system === 'ECOS') {
+      // NOTE: BYGGR and ECOS are using externalCaseId
+      url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
+      data = this.postMessageToMessagingMessage(req, _case.externalCaseId, body.message, files);
     } else {
       throw new HttpException(400, 'Bad request');
     }
 
     try {
-      await this.apiService.post({ url, data, headers }, req);
+      const defaultHeaders = {
+        'x-origin': 'MYPAGES',
+        'X-Sent-By': `${req.user.partyId};type=partyId`,
+      };
+
+      await this.apiService.post(
+        {
+          url,
+          data,
+          headers: {
+            ...headers,
+            ...defaultHeaders,
+          },
+        },
+        req,
+      );
     } catch {
       throw new HttpException(500, 'Could not send message');
     }
@@ -457,12 +603,14 @@ export class CaseController {
     try {
       let url: string;
       if (_case.system === 'CASE_DATA') {
-        url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages/${messageId}/attachments/${attachmentId}`;
+        // FIXME: Implement conversation attachment
+        // url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages/${messageId}/attachments/${attachmentId}`;
       } else if (_case.system === 'SUPPORT_MANAGEMENT') {
-        url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
-          _case.namespace
-        }/errands/${caseId}/communication/${messageId}/attachments/${attachmentId}`;
-      } else if (_case.system === 'OPEN_E_PLATFORM') {
+        // FIXME: Implement conversation attachment
+        // url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
+        //   _case.namespace
+        // }/errands/${caseId}/communication/conversations/${conversationId}/messages/${messageId}/attachments/${attachmentId}`;
+      } else if (_case.system === 'OPEN_E_PLATFORM' || _case.system === 'BYGGR' || _case.system === 'ECOS') {
         url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
       } else {
         throw new HttpException(400, 'Bad request');
@@ -479,7 +627,7 @@ export class CaseController {
       return { data: base64, message: 'success' };
     } catch (error) {
       if (error.status === 404) {
-        // handle 404 as empty
+        // handle 404 as empty´
         return { data: null, message: 'success' };
       }
       return { data: null, message: 'error' };

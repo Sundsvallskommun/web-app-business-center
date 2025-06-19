@@ -73,7 +73,7 @@ export class FeedbackController {
       };
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/email`;
       const headers = {
-        'x-issuer': req.user.username, // INFO: Should username be used, or partyId?
+        'X-Sent-By': `${req.user.partyId};type=partyId`,
       };
       await this.apiService.post({ url, data: sendFeedback, headers }, req);
     });

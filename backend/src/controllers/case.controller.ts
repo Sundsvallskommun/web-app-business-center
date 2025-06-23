@@ -1,8 +1,7 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { MessageRequest, MessageResponseDirectionEnum } from '@/data-contracts/case-data/data-contracts';
 import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
-import { Conversation, Message, PageMessage } from '@/data-contracts/case-data/data-contracts';
+import { MessageRequest, MessageResponseDirectionEnum, Conversation, Message, PageMessage } from '@/data-contracts/case-data/data-contracts';
 import { CaseMessageDto } from '@/dtos/case-data.dto';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';

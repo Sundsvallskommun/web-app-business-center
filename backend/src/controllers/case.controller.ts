@@ -545,7 +545,9 @@ export class CaseController {
     try {
       let url: string;
       if (_case.system === 'CASE_DATA') {
-        url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages/${messageId}/attachments/${attachmentId}`;
+        url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${
+          _case.namespace
+        }/errands/${caseId}/communication/conversations/${conversationId}/messages/${messageId}/attachments/${attachmentId}`;
       } else if (_case.system === 'SUPPORT_MANAGEMENT') {
         url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
           _case.namespace

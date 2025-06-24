@@ -12,7 +12,7 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
 
   const handleOpenFile = useCallback(
     (file: NonNullable<AttachmentResponse>) => async () => {
-      const url = `/cases/${caseData?.caseId}/messages/${message.messageId}/attachments/${file.attachmentId}`;
+      const url = `/cases/${caseData?.caseId}/conversations/${message.conversationId}/messages/${message.messageId}/attachments/${file.attachmentId}`;
 
       const attachment = await getCaseMessageAttachment(url); // returns base64 string
 
@@ -22,7 +22,7 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
       link.download = file.name || 'download';
       link.click();
     },
-    [caseData?.caseId, message.messageId]
+    [caseData?.caseId, message.conversationId, message.messageId]
   );
 
   if (!message || message.attachments?.length === 0) return null;

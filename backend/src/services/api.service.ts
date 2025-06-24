@@ -6,6 +6,7 @@ import { apiURL } from '@/utils/util';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { Request } from 'express';
 import ApiTokenService from './api-token.service';
+import { v4 as uuidv4 } from 'uuid';
 
 class ApiResponse<T> {
   data: T;
@@ -25,6 +26,7 @@ class ApiService {
     const defaultHeaders = {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
+      'X-Request-Id': uuidv4(),
     };
     const defaultParams = {};
 
@@ -38,26 +40,26 @@ class ApiService {
     try {
       if (process.env.NODE_ENV === 'development') {
         logger.info(`API request [${preparedConfig.method}]: ${preparedConfig.url}`);
+        logger.info(`x-request-id: ${defaultHeaders['X-Request-Id']}`);
       }
       const res = await axios(preparedConfig);
       return { data: res.data, message: 'success' };
     } catch (error: unknown | AxiosError) {
       if (axios.isAxiosError(error) && (error as AxiosError).response?.status === 404) {
-        console.error(`API request 404:ed for url: ${error.response.config.url}`);
+        logger.error(`ERROR: API request failed with status: ${error.response?.status}`);
+        logger.error(`Error details: ${JSON.stringify(error.response.data)}`);
+        logger.error(`Error url: ${error.response.config.baseURL || ''}/${error.response.config.url}`);
+        logger.error(`Error data: ${error.response.config.data?.slice(0, 1500)}`);
+        logger.error(`Error method: ${error.response.config.method}`);
+        logger.error(`Error headers: ${error.response.config.headers}`);
         throw new HttpException(404, 'Not found');
       } else if (axios.isAxiosError(error) && (error as AxiosError).response?.data) {
-        console.error(`ERROR: API request failed with status: ${error.response?.status}`);
-        console.error('Error details:', error.response.data);
-        console.error('Error url:', error.response.config.url);
-        console.error('Error data:', error.response.config.data);
-        console.error('Error method:', error.response.config.method);
-        console.error('Error headers:', error.response.config.headers);
         logger.error(`ERROR: API request failed with status: ${error.response?.status}`);
-        logger.error('Error details:', error.response.data);
-        logger.error('Error url:', error.response.config.url);
-        logger.error('Error data:', error.response.config.data);
-        logger.error('Error method:', error.response.config.method);
-        logger.error('Error headers:', error.response.config.headers);
+        logger.error(`Error details: ${JSON.stringify(error.response.data)}`);
+        logger.error(`Error url: ${error.response.config.baseURL || ''}/${error.response.config.url}`);
+        logger.error(`Error data: ${error.response.config.data?.slice(0, 1500)}`);
+        logger.error(`Error method: ${error.response.config.method}`);
+        logger.error(`Error headers: ${error.response.config.headers}`);
       } else {
         console.error('Unknown error:', error);
         logger.error('Unknown error:', error);

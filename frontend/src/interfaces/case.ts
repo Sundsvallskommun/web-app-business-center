@@ -10,17 +10,8 @@ export interface CasesData {
   cases: ICaseStatusResponse[];
   labels: { label: string; screenReaderOnly: boolean; sortable: boolean; shownForStatus: statusCodes }[];
 }
-
 export interface FrontendMessageResponse {
-  messageId: string;
-  direction: MessageResponseDirectionEnum;
-  message: string;
-  sent: string;
-  sender: string;
-  attachments: AttachmentResponse[];
-}
-
-export interface FrontendMessageResponse {
+  conversationId: string;
   messageId: string;
   direction: MessageResponseDirectionEnum;
   message: string;

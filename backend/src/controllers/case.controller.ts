@@ -1,30 +1,22 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import {
-  Classification,
-  MessageRequest,
-  MessageRequestDirectionEnum,
-  MessageResponse,
-  MessageResponseDirectionEnum,
-} from '@/data-contracts/case-data/data-contracts';
 import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
-import { Conversation, Message, PageMessage } from '@/data-contracts/case-data/data-contracts';
+import { MessageRequest, MessageResponseDirectionEnum, Conversation, Message, PageMessage } from '@/data-contracts/case-data/data-contracts';
 import { CaseMessageDto } from '@/dtos/case-data.dto';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
-import { CaseMessage, FrontendMessageResponse } from '@/interfaces/case.interface';
+import { CaseMessage, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import ApiService from '@/services/api.service';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
 import authMiddleware from '@middlewares/auth.middleware';
 import dayjs from 'dayjs';
-import { Body, Controller, Get, Param, Post, Put, QueryParam, Req, UploadedFiles, UseBefore } from 'routing-controllers';
+import { Body, Controller, Get, Param, Post, Put, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
-import { v4 as uuidv4 } from 'uuid';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
-import { Communication, WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
+import { WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
 import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
 import { User } from '@interfaces/users.interface';
@@ -79,8 +71,9 @@ export class CaseController {
     };
   }
 
-  private normalizeConversationMessages(messages: Message[], user: User): FrontendMessageResponse[] {
-    return messages.map((msg: Message) => ({
+  private normalizeConversationMessages(messages: MessageWithConversationId<Message>[], user: User): FrontendMessageResponse[] {
+    return messages.map((msg: Message & { conversationId: string }) => ({
+      conversationId: msg.conversationId,
       messageId: msg.id,
       message: msg.content,
       sent: msg.created,
@@ -95,66 +88,10 @@ export class CaseController {
     })) as FrontendMessageResponse[];
   }
 
-  private normalizeCaseDataMessages(messages: MessageResponse[]): FrontendMessageResponse[] {
-    return messages
-      .filter(message => (message.internal === undefined ? true : message.internal === false))
-      .map(message => ({
-        messageId: message.messageId,
-        direction: message.direction,
-        message: message.message,
-        sent: message.sent,
-        sender: `${message.firstName} ${message.lastName}`,
-        attachments: message.attachments,
-      }));
-  }
-
-  private postMessageToCaseDataMessage(req: RequestWithUser, message: string, files: Express.Multer.File[]): MessageRequest {
-    return {
-      message: message,
-      direction: MessageRequestDirectionEnum.INBOUND,
-      internal: false,
-      messageId: uuidv4(), // ska tas bort, väntar på att api:t justeras
-      username: req.user.username,
-      firstName: req.user.givenName,
-      lastName: req.user.surname,
-      sent: dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss'), // ska tas bort, väntar på att api:t justeras
-      messageType: 'MYPAGES',
-
-      subject: 'Meddelande från Mina sidor',
-      classification: Classification.OTHER,
-
-      attachments: files?.map(x => ({ content: x.buffer.toString('base64'), name: x.originalname, contentType: x.mimetype })),
-    };
-  }
-
-  private normalizeSupportManagementMessages(communications: Communication[]): FrontendMessageResponse[] {
-    return communications
-      .filter(m => (m.internal === undefined ? true : m.internal === false))
-      .map(communication => ({
-        messageId: communication.communicationID,
-        direction: communication.direction === 'OUTBOUND' ? MessageResponseDirectionEnum.OUTBOUND : MessageResponseDirectionEnum.INBOUND,
-        message: communication.messageBody,
-        sent: communication.sent,
-        sender: communication.sender,
-        attachments: communication.communicationAttachments.map(attachment => ({
-          attachmentId: attachment.id,
-          name: attachment.fileName,
-          contentType: attachment.mimeType,
-        })),
-      }));
-  }
-
-  private postMessageToSupportManagementMessage(message: string, files: Express.Multer.File[]): WebMessageRequest {
-    return {
-      message: message,
-      dispatch: false,
-      internal: false,
-      attachments: files?.map(x => ({ base64EncodedString: x.buffer.toString('base64'), fileName: x.originalname })),
-    };
-  }
-
   private normalizeWebMessageCollectorMessages(messages: MessageDTO[]): FrontendMessageResponse[] {
     return messages.map(message => ({
+      // FIXME: Finns conversationId i webmessagecollector?
+      conversationId: '',
       messageId: message.messageId,
       direction: message.direction === 'OUTBOUND' ? MessageResponseDirectionEnum.OUTBOUND : MessageResponseDirectionEnum.INBOUND,
       message: message.message,
@@ -340,7 +277,7 @@ export class CaseController {
       if (_case.system === 'CASE_DATA') {
         const conversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
         const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
-        const messages: Message[] = [];
+        const messages: MessageWithConversationId<Message>[] = [];
 
         for (const conversation of resConversation.data) {
           const messagesUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
@@ -348,7 +285,8 @@ export class CaseController {
           }/messages?page=0&size=9000`;
           const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req);
           if (resMessages.data) {
-            messages.push(...resMessages?.data?.content);
+            const messagesWithConversationId = resMessages.data.content.map(msg => ({ ...msg, conversationId: conversation.id }));
+            messages.push(...messagesWithConversationId);
           }
         }
 
@@ -358,7 +296,7 @@ export class CaseController {
           _case.namespace
         }/errands/${caseId}/communication/conversations`;
         const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
-        const messages: Message[] = [];
+        const messages: MessageWithConversationId<Message>[] = [];
 
         for (const conversation of resConversation.data) {
           const messagesUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
@@ -366,7 +304,8 @@ export class CaseController {
           }/errands/${caseId}/communication/conversations/${conversation.id}/messages?page=0&size=9000`;
           const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req);
           if (resMessages.data) {
-            messages.push(...resMessages?.data?.content);
+            const messagesWithConversationId = resMessages.data.content.map(msg => ({ ...msg, conversationId: conversation.id }));
+            messages.push(...messagesWithConversationId);
           }
         }
 
@@ -472,7 +411,9 @@ export class CaseController {
       let conversation: Conversation;
 
       if (!resConversation.data || resConversation.data.length === 0) {
-        const createConversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
+        const createConversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${
+          _case.namespace
+        }/errands/${caseId}/communication/conversations`;
         const createConversationdata = this.conversationInit(req.user);
         const resCreateConversation = await this.apiService.post({ data: createConversationdata, url: createConversationUrl }, req);
 
@@ -585,12 +526,13 @@ export class CaseController {
   }
 
   // attachments
-  @Get('/cases/:caseId/messages/:messageId/attachments/:attachmentId')
+  @Get('/cases/:caseId/conversations/:conversationId/messages/:messageId/attachments/:attachmentId')
   @OpenAPI({ summary: 'Return message attachment' })
   @UseBefore(authMiddleware)
   async getCaseMessageAttachment(
     @Req() req: RequestWithUser,
     @Param('caseId') caseId: string,
+    @Param('conversationId') conversationId: string,
     @Param('messageId') messageId: string,
     @Param('attachmentId') attachmentId: string,
   ): Promise<ApiResponse<string | null>> {
@@ -603,13 +545,13 @@ export class CaseController {
     try {
       let url: string;
       if (_case.system === 'CASE_DATA') {
-        // FIXME: Implement conversation attachment
-        // url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages/${messageId}/attachments/${attachmentId}`;
+        url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${
+          _case.namespace
+        }/errands/${caseId}/communication/conversations/${conversationId}/messages/${messageId}/attachments/${attachmentId}`;
       } else if (_case.system === 'SUPPORT_MANAGEMENT') {
-        // FIXME: Implement conversation attachment
-        // url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
-        //   _case.namespace
-        // }/errands/${caseId}/communication/conversations/${conversationId}/messages/${messageId}/attachments/${attachmentId}`;
+        url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
+          _case.namespace
+        }/errands/${caseId}/communication/conversations/${conversationId}/messages/${messageId}/attachments/${attachmentId}`;
       } else if (_case.system === 'OPEN_E_PLATFORM' || _case.system === 'BYGGR' || _case.system === 'ECOS') {
         url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
       } else {

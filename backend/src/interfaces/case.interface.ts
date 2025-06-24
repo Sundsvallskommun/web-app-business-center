@@ -5,7 +5,10 @@ export interface CaseMessage {
   files?: File[];
 }
 
+export type MessageWithConversationId<T> = T & { conversationId: string };
+
 export interface FrontendMessageResponse {
+  conversationId: string;
   messageId: string;
   direction: MessageResponseDirectionEnum;
   message: string;

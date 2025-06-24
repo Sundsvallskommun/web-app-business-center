@@ -5,6 +5,7 @@ import { ApiResponse } from '@services/api-service';
 export const getCaseMessages: () => ApiResponse<FrontendMessageResponse[]> = () => ({
   data: [
     {
+      conversationId: '12345678-1234-1234-1234-123456789012',
       messageId: '11111111-1111-1111-1111-111111111111',
       direction: MessageResponseDirectionEnum.INBOUND,
       message: 'This is a short test message.',
@@ -13,6 +14,7 @@ export const getCaseMessages: () => ApiResponse<FrontendMessageResponse[]> = () 
       attachments: [],
     },
     {
+      conversationId: '12345678-1234-1234-1234-123456789012',
       messageId: '22222222-2222-2222-2222-222222222222',
       direction: MessageResponseDirectionEnum.OUTBOUND,
       message: 'This is a longer test message to simulate a different scenario.',
@@ -23,6 +25,7 @@ export const getCaseMessages: () => ApiResponse<FrontendMessageResponse[]> = () 
       ],
     },
     {
+      conversationId: '12345678-1234-1234-1234-123456789012',
       messageId: '33333333-3333-3333-3333-333333333333',
       direction: MessageResponseDirectionEnum.INBOUND,
       message: 'Another test message with multiple attachments.',
@@ -34,6 +37,7 @@ export const getCaseMessages: () => ApiResponse<FrontendMessageResponse[]> = () 
       ],
     },
     {
+      conversationId: '12345678-1234-1234-1234-123456789012',
       messageId: '44444444-4444-4444-4444-444444444444',
       direction: MessageResponseDirectionEnum.OUTBOUND,
       message: 'Short message with no attachments.',
@@ -42,6 +46,7 @@ export const getCaseMessages: () => ApiResponse<FrontendMessageResponse[]> = () 
       attachments: [],
     },
     {
+      conversationId: '12345678-1234-1234-1234-123456789012',
       messageId: '55555555-5555-5555-5555-555555555555',
       direction: MessageResponseDirectionEnum.INBOUND,
       message: 'Test message with a very long content to simulate edge cases in message length. '.repeat(10),
@@ -56,6 +61,7 @@ export const getCaseMessages: () => ApiResponse<FrontendMessageResponse[]> = () 
       ],
     },
     {
+      conversationId: '12345678-1234-1234-1234-123456789012',
       messageId: '66666666-6666-6666-6666-666666666666',
       direction: MessageResponseDirectionEnum.OUTBOUND,
       message: 'Test message with no recipients and no attachments.',

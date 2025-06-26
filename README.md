@@ -9,7 +9,7 @@ Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumer
 | BusinessEngagements |     3.0 |
 | CaseData            |    11.5 |
 | SupportManagement   |    10.5 |
-| PartyAssets         |     2.0 |
+| PartyAssets         |     3.0 |
 | WebMessageCollector |     5.1 |
 | CaseStatus          |     4.1 |
 | ContactSettings     |     2.0 |

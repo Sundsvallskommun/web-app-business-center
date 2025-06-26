@@ -73,8 +73,8 @@ export class ContactSettingsController {
 
     const apiData = res?.data?.[0];
 
-    const emailSettings = getEmailSettingsFromChannels(apiData.contactChannels);
-    const phoneSettings = getPhoneSettingsFromChannels(apiData.contactChannels);
+    const emailSettings = getEmailSettingsFromChannels(apiData?.contactChannels);
+    const phoneSettings = getPhoneSettingsFromChannels(apiData?.contactChannels);
 
     const data: ClientContactSetting = {
       id: apiData.id,

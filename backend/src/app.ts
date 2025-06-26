@@ -114,6 +114,7 @@ const samlStrategy = new Strategy(
         name: `${givenName} ${surname}`,
         givenName,
         surname,
+        username: 'unknown', // Username is not provided in the SAML profile, set a default value
       };
 
       const userSettings = await prisma.userSettings.findFirst({ where: { userId: findUser.partyId } });

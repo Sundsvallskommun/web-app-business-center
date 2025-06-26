@@ -4,5 +4,4 @@ export interface User extends Record<string, unknown> {
   name: string;
   givenName: string;
   surname: string;
-  username: string;
 }

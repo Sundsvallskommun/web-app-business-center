@@ -296,6 +296,19 @@ export class CaseController {
       throw new HttpException(400, 'Bad request');
     }
 
+    const onlyNewIds = (seenMessages: Message[]) => (message: Message) => {
+      const mIds = seenMessages.map(m => m.id) || [];
+      return !mIds.includes(message.id);
+    };
+
+    const handleMessageResponse = (
+      seenMessages: MessageWithConversationId<Message>[],
+      responseMessages: Message[],
+      conversationId: string,
+    ): MessageWithConversationId<Message>[] => {
+      return responseMessages.filter(onlyNewIds(seenMessages)).map(msg => ({ ...msg, conversationId: conversationId }));
+    };
+
     try {
       let url: string;
       let data: FrontendMessageResponse[];
@@ -309,11 +322,8 @@ export class CaseController {
             conversation.id
           }/messages?page=0&size=9000`;
           const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req);
-          const mIds = messages.map(m => m.id) || [];
           if (resMessages.data) {
-            const messagesWithConversationId = resMessages.data.content
-              .filter(m => !mIds.includes(m.id)) // filter out messages already found in another conversation
-              .map(msg => ({ ...msg, conversationId: conversation.id }));
+            const messagesWithConversationId = handleMessageResponse(messages, resMessages.data.content, conversation.id);
             messages.push(...messagesWithConversationId);
           }
         }
@@ -331,11 +341,8 @@ export class CaseController {
             _case.namespace
           }/errands/${caseId}/communication/conversations/${conversation.id}/messages?page=0&size=9000`;
           const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req);
-          const mIds = messages.map(m => m.id) || [];
           if (resMessages.data) {
-            const messagesWithConversationId = resMessages.data.content
-              .filter(m => !mIds.includes(m.id)) // filter out messages already found in another conversation
-              .map(msg => ({ ...msg, conversationId: conversation.id }));
+            const messagesWithConversationId = handleMessageResponse(messages, resMessages.data.content, conversation.id);
             messages.push(...messagesWithConversationId);
           }
         }

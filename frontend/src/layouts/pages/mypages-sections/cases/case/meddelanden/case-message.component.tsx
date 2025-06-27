@@ -65,7 +65,7 @@ export default function CaseMessage(props: { message: FrontendMessageResponse })
         <div className="flex items-center grow gap-16">
           <div className="flex flex-col desktop:flex-row desktop:items-center grow desktop:gap-16">
             <div className="text-large ellipsis">
-              {isManager ? 'Handläggaren' : user?.name === message.sender ? 'Jag' : message.sender}
+              {isManager ? `${message.sender} (Handläggare)` : user?.name === message.sender ? 'Jag' : message.sender}
             </div>
             {message.sent ? (
               <div className="text-small text-secondary">

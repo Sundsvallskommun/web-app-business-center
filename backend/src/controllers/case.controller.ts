@@ -98,7 +98,7 @@ export class CaseController {
           message: msg.content,
           sent: msg.created,
           sender:
-            msg?.createdBy?.value && msg?.createdBy?.value === user.partyId ? `${user.name}` : nameMap[msg.createdBy?.value] || 'Okänd avsändare',
+            msg?.createdBy?.value && msg?.createdBy?.value === user.partyId ? `${user.name}` : nameMap[msg.createdBy?.value] ?? 'Okänd avsändare',
           direction: msg?.createdBy?.value ? (msg?.createdBy?.value === user.partyId ? 'INBOUND' : 'OUTBOUND') : '',
           attachments: msg.attachments?.map(attachment => ({
             attachmentId: attachment.id.toString(),

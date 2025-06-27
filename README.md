@@ -14,13 +14,14 @@ Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumer
 | CaseStatus          |     4.1 |
 | ContactSettings     |     2.0 |
 | Citizen             |     3.0 |
+| Employee            |     2.0 |
 | Messaging           |     7.0 |
 | Invoices            |     8.0 |
 | SimulatorServer     |     2.0 |
 
 ## Utveckling
 
-### Krav
+### Kravcn
 
 - Node >= 20 LTS
 - Yarn

@@ -32,7 +32,11 @@ export default function CaseInformation() {
         </div>
         <div className="flex flex-col items-start gap-4">
           <div className="font-bold">Registrerat</div>
-          <div>{dayjs(caseData?.firstSubmitted).format('YYYY-MM-DD')}</div>
+          <div>
+            {dayjs(caseData?.firstSubmitted).isValid()
+              ? dayjs(caseData?.firstSubmitted).format('YYYY-MM-DD')
+              : caseData?.firstSubmitted}
+          </div>
         </div>
         {caseData?.system === 'OPEN_E_PLATFORM' ? (
           <div className="flex flex-col items-start gap-4">

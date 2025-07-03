@@ -20,6 +20,7 @@ import { WebMessageRequest } from '@/data-contracts/supportmanagement/data-contr
 import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
 import { User } from '@interfaces/users.interface';
+import { getUserData } from '@/services/user.service';
 
 @Controller()
 export class CaseController {
@@ -71,21 +72,45 @@ export class CaseController {
     };
   }
 
-  private normalizeConversationMessages(messages: MessageWithConversationId<Message>[], user: User): FrontendMessageResponse[] {
-    return messages.map((msg: Message & { conversationId: string }) => ({
-      conversationId: msg.conversationId,
-      messageId: msg.id,
-      message: msg.content,
-      sent: msg.created,
-      // FIXME: messages createdBy only contains partyId and needs to be looked up to get first and lastname?
-      sender: msg?.createdBy?.value && msg?.createdBy?.value === user.partyId ? `${user.name}` : 'Okänd',
-      direction: msg?.createdBy?.value ? (msg?.createdBy?.value === user.partyId ? 'INBOUND' : 'OUTBOUND') : '',
-      attachments: msg.attachments?.map(attachment => ({
-        attachmentId: attachment.id.toString(),
-        name: attachment.fileName,
-        contentType: attachment.mimeType,
-      })),
-    })) as FrontendMessageResponse[];
+  private async normalizeConversationMessages(messages: MessageWithConversationId<Message>[], user: User): Promise<FrontendMessageResponse[]> {
+    const senderUsernames = Array.from(new Set(messages.filter(msg => msg.createdBy?.type === 'AD_ACCOUNT').map(msg => msg.createdBy.value)));
+
+    const namePromises = senderUsernames.map(async username => {
+      const userData = await getUserData(username, { user });
+      return {
+        username,
+        name: `${userData.givenname} ${userData.lastname}`,
+      };
+    });
+
+    return Promise.allSettled(namePromises).then(results => {
+      const nameMap = results.reduce((acc, result) => {
+        if (result.status === 'fulfilled') {
+          acc[result.value.username] = result.value.name;
+        }
+        return acc;
+      }, {});
+
+      return messages.map((msg: Message & { conversationId: string }) => {
+        return {
+          conversationId: msg.conversationId,
+          messageId: msg.id,
+          message: msg.content,
+          sent: msg.created,
+          sender:
+            msg?.createdBy?.value && msg?.createdBy?.value === user.partyId ? `${user.name}` : nameMap[msg.createdBy?.value] ?? 'Okänd avsändare',
+          direction: msg?.createdBy?.value ? (msg?.createdBy?.value === user.partyId ? 'INBOUND' : 'OUTBOUND') : '',
+          attachments: msg.attachments?.map(attachment => ({
+            attachmentId: attachment.id.toString(),
+            // FIXME: attachment.fileName is the correct field but the generated types are incorrect.
+            // When the API is fixed, the type conversions to any should be removed.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            name: (attachment as any).fileName,
+            contentType: attachment.mimeType,
+          })),
+        };
+      }) as FrontendMessageResponse[];
+    });
   }
 
   private normalizeWebMessageCollectorMessages(messages: MessageDTO[]): FrontendMessageResponse[] {
@@ -271,6 +296,19 @@ export class CaseController {
       throw new HttpException(400, 'Bad request');
     }
 
+    const onlyNewIds = (seenMessages: Message[]) => (message: Message) => {
+      const mIds = seenMessages.map(m => m.id) || [];
+      return !mIds.includes(message.id);
+    };
+
+    const handleMessageResponse = (
+      seenMessages: MessageWithConversationId<Message>[],
+      responseMessages: Message[],
+      conversationId: string,
+    ): MessageWithConversationId<Message>[] => {
+      return responseMessages.filter(onlyNewIds(seenMessages)).map(msg => ({ ...msg, conversationId: conversationId }));
+    };
+
     try {
       let url: string;
       let data: FrontendMessageResponse[];
@@ -285,12 +323,12 @@ export class CaseController {
           }/messages?page=0&size=9000`;
           const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req);
           if (resMessages.data) {
-            const messagesWithConversationId = resMessages.data.content.map(msg => ({ ...msg, conversationId: conversation.id }));
+            const messagesWithConversationId = handleMessageResponse(messages, resMessages.data.content, conversation.id);
             messages.push(...messagesWithConversationId);
           }
         }
 
-        data = this.normalizeConversationMessages(messages, req.user);
+        data = await this.normalizeConversationMessages(messages, req.user);
       } else if (_case.system === 'SUPPORT_MANAGEMENT') {
         const conversationUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
           _case.namespace
@@ -304,12 +342,12 @@ export class CaseController {
           }/errands/${caseId}/communication/conversations/${conversation.id}/messages?page=0&size=9000`;
           const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req);
           if (resMessages.data) {
-            const messagesWithConversationId = resMessages.data.content.map(msg => ({ ...msg, conversationId: conversation.id }));
+            const messagesWithConversationId = handleMessageResponse(messages, resMessages.data.content, conversation.id);
             messages.push(...messagesWithConversationId);
           }
         }
 
-        data = this.normalizeConversationMessages(messages, req.user);
+        data = await this.normalizeConversationMessages(messages, req.user);
       } else if (_case.system === 'OPEN_E_PLATFORM') {
         url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/flow-instances/${caseId}`;
         const resWebMessageCollector = await this.apiService.get<MessageDTO[]>({ url }, req);

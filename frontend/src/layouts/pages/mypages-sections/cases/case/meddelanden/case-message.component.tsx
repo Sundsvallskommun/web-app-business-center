@@ -9,13 +9,20 @@ import { FrontendMessageResponse } from '@interfaces/case';
 export default function CaseMessage(props: { message: FrontendMessageResponse }) {
   const { data: user } = useApi<User>({ url: '/me', method: 'get' });
   const { message } = props;
-  const isManager = message.direction === 'OUTBOUND';
-  const avatarSettings: { color: AvatarProps['color']; initials: string } = isManager
-    ? {
-        color: 'bjornstigen',
-        initials: 'H',
-      }
-    : { color: 'gronsta', initials: 'J' };
+  const sender =
+    message.direction === 'OUTBOUND'
+      ? `${message.sender} (Handläggare)`
+      : user?.name === message.sender
+        ? 'Jag'
+        : message.sender;
+
+  const avatarSettings: { color: AvatarProps['color']; initials: string } =
+    message.direction === 'OUTBOUND'
+      ? {
+          color: 'bjornstigen',
+          initials: 'H',
+        }
+      : { color: 'gronsta', initials: 'J' };
 
   // TODO: Uncomment when the API supports it
   // const { caseData } = useContext(CaseContext);
@@ -64,9 +71,7 @@ export default function CaseMessage(props: { message: FrontendMessageResponse })
         <Avatar color={avatarSettings.color} initials={avatarSettings.initials} accent size="sm" />
         <div className="flex items-center grow gap-16">
           <div className="flex flex-col desktop:flex-row desktop:items-center grow desktop:gap-16">
-            <div className="text-large ellipsis">
-              {isManager ? 'Handläggaren' : user?.name === message.sender ? 'Jag' : message.sender}
-            </div>
+            <div className="text-large ellipsis">{sender}</div>
             {message.sent ? (
               <div className="text-small text-secondary">
                 <span className="sr-only">Skickat </span>

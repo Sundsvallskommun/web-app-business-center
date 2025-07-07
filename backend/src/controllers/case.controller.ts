@@ -61,7 +61,7 @@ export class CaseController {
 
   private conversationInit(user: User) {
     return {
-      topic: 'init',
+      topic: 'Meddelande från Mina sidor',
       type: 'EXTERNAL',
       participants: [
         {

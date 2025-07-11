@@ -53,7 +53,7 @@ function Login() {
           case 'MISSING_PERMISSIONS':
             setErrorMessage('Användaren saknar rättigheter');
           default:
-          //
+            setErrorMessage('Det gick inte att logga in, försök igen senare.');
         }
       }
     }
@@ -84,8 +84,8 @@ function Login() {
                 >
                   Organisation
                 </Button>
-                {errorMessage && <FormErrorMessage className="mt-lg">{errorMessage}</FormErrorMessage>}
               </div>
+              {errorMessage && <FormErrorMessage className="text-error mt-lg">{errorMessage}</FormErrorMessage>}
             </CenterDiv>
           </Main>
         </CardElevated>

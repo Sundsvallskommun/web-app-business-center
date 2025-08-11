@@ -12,6 +12,7 @@ import {
   SAML_CALLBACK_URL,
   SAML_ENTRY_SSO,
   SAML_FAILURE_REDIRECT,
+  SAML_SUCCESS_REDIRECT,
   SAML_IDP_PUBLIC_CERT,
   SAML_ISSUER,
   SAML_LOGOUT_CALLBACK_URL,
@@ -50,6 +51,7 @@ import { RepresentingMode } from './interfaces/representing.interface';
 import { User } from './interfaces/users.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
 import { isValidUrl } from './utils/util';
+import { isValidOrigin } from './utils/isValidOrigin';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -240,7 +242,10 @@ class App {
         next();
       },
       (req, res, next) => {
-        const successRedirect = req.query.successRedirect;
+        let successRedirect = SAML_SUCCESS_REDIRECT;
+        if (typeof req.query.successRedirect === 'string' && isValidUrl(req.query.successRedirect) && isValidOrigin(req.query.successRedirect)) {
+          successRedirect = req.query.successRedirect;
+        }
         samlStrategy.logout(req as any, () => {
           req.logout(err => {
             if (err) {
@@ -259,8 +264,10 @@ class App {
         }
 
         let successRedirect, failureRedirect;
-        if (isValidUrl(req.body.RelayState)) {
+        if (isValidUrl(req.body.RelayState) && isValidOrigin(req.body.RelayState)) {
           successRedirect = req.body.RelayState;
+        } else {
+          successRedirect = SAML_SUCCESS_REDIRECT;
         }
 
         if (req.session.messages?.length > 0) {
@@ -278,8 +285,10 @@ class App {
 
     this.app.post(`${BASE_URL_PREFIX}/saml/login/callback`, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
       let successRedirect, failureRedirect;
-      if (isValidUrl(req.body.RelayState)) {
+      if (isValidUrl(req.body.RelayState) && isValidOrigin(req.body.RelayState)) {
         successRedirect = req.body.RelayState;
+      } else {
+        successRedirect = SAML_SUCCESS_REDIRECT;
       }
 
       if (req.session.messages?.length > 0) {

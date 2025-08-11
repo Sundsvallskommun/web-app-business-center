@@ -319,6 +319,8 @@ export class CaseController {
         const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
         const messages: MessageWithConversationId<Message>[] = [];
 
+        console.log('Conversations for case:', resConversation.data);
+
         for (const conversation of resConversation.data) {
           const messagesUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
             conversation.id

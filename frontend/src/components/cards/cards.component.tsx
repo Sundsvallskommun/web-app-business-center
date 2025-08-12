@@ -1,6 +1,8 @@
 import { Button } from '@sk-web-gui/react';
 import { useCallback, useEffect, useState } from 'react';
 
+const PAGESIZE = 24;
+
 export const CardList: React.FC<
   {
     data: object[];
@@ -13,7 +15,7 @@ export const CardList: React.FC<
   const {
     data,
     Card,
-    amountDisplayed: _amountDisplayed = 12,
+    amountDisplayed: _amountDisplayed = PAGESIZE,
     showAmountString = true,
     showMoreText = 'Visa fler',
     ...rest
@@ -22,7 +24,7 @@ export const CardList: React.FC<
   const [dataShown, setDataShown] = useState(data.slice(0, amountDisplayed));
 
   const showMore = useCallback(() => {
-    const _amountDisplayed = amountDisplayed + 12;
+    const _amountDisplayed = amountDisplayed + PAGESIZE;
     setAmountDisplayed(_amountDisplayed);
     setDataShown(data.slice(0, _amountDisplayed));
   }, [amountDisplayed, data]);

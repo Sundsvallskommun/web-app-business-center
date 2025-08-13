@@ -3,10 +3,12 @@ import { useContext, useState } from 'react';
 import { CaseContext } from '../case-layout.component';
 import CaseMessage from './case-message.component';
 
+const PAGESIZE = 24;
+
 export default function CaseMessages() {
   const { caseMessages } = useContext(CaseContext);
-  const [visibleMessages, setVisibleMessages] = useState(14);
-  const showMoreMessages = () => setVisibleMessages((prev) => prev + 14);
+  const [visibleMessages, setVisibleMessages] = useState(PAGESIZE);
+  const showMoreMessages = () => setVisibleMessages((prev) => prev + PAGESIZE);
 
   return (
     <div className="flex flex-col gap-y-16 items-start self-stretch mx-20 desktop:mx-32">

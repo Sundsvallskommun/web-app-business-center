@@ -6,7 +6,7 @@ export const TableWrapper: React.FC<{
 }> = ({ header = '', children }) => {
   return (
     <div className="table-wrapper">
-      {header && header}
+      {header || ''}
       <div className={cx(header && 'mt-md')}>{children}</div>
     </div>
   );

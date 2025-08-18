@@ -48,14 +48,18 @@ function Login() {
         switch (failMessage) {
           case 'SAML_MISSING_GROUP':
             setErrorMessage('Användaren saknar rätt grupper');
+            break;
           case 'NOT_AUTHORIZED':
             break;
           case 'SAML_MISSING_ATTRIBUTES':
             setErrorMessage('Användaren saknar rätt attribut');
+            break;
           case 'MISSING_PERMISSIONS':
             setErrorMessage('Användaren saknar rättigheter');
+            break;
           default:
             setErrorMessage('Det gick inte att logga in, försök igen senare.');
+            break;
         }
       }
     }

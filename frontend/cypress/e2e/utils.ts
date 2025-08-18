@@ -80,7 +80,7 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
     .next('div')
     .find('ul')
     .within(($elem) => {
-      Object.entries(statusMapCases).map(([key, value]) => {
+      Object.entries(statusMapCases).forEach(([key, value]) => {
         if (value.code === statusCodes.Ongoing) {
           cy.contains(key).should('exist');
           cy.contains(RepresentingMode[representingMode]).should('exist');
@@ -116,7 +116,7 @@ export const testClosedCases = (representingMode: RepresentingMode = representin
     .next('div')
     .find('ul')
     .within(($elem) => {
-      Object.entries(statusMapCases).map(([key, value]) => {
+      Object.entries(statusMapCases).forEach(([key, value]) => {
         if ([statusCodes.Rejected, statusCodes.Approved].includes(value.code)) {
           cy.contains(key).should('exist');
           cy.contains(RepresentingMode[representingMode]).should('exist');
@@ -146,7 +146,7 @@ export const testHandledInvoices = (representingMode: RepresentingMode = represe
     .parents('table')
     .find('tbody')
     .within(() => {
-      handledInvoices.map((key) => {
+      handledInvoices.forEach((key) => {
         cy.contains(statusMapInvoices[key].label).should('exist');
         cy.contains(RepresentingMode[representingMode]).should('exist');
       });
@@ -160,7 +160,7 @@ export const testNotHandledInvoices = (representingMode: RepresentingMode = repr
     .parents('table')
     .find('tbody')
     .within(() => {
-      notHandledInvoices.map((key) => {
+      notHandledInvoices.forEach((key) => {
         cy.contains(statusMapInvoices[key].label).should('exist');
         cy.contains(RepresentingMode[representingMode]).should('exist');
       });

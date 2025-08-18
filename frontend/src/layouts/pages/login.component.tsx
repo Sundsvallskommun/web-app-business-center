@@ -49,6 +49,8 @@ function Login() {
           case 'SAML_MISSING_GROUP':
             setErrorMessage('Användaren saknar rätt grupper');
             break;
+          case 'NOT_AUTHORIZED':
+            break;
           case 'SAML_MISSING_ATTRIBUTES':
             setErrorMessage('Användaren saknar rätt attribut');
             break;

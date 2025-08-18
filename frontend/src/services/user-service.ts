@@ -13,5 +13,7 @@ export const getMe: () => Promise<User> = () => {
   return apiService
     .get<ApiResponse<User>>('me')
     .then((res) => handleSetUserResponse(res.data))
-    .catch(() => Promise.reject('No user found'));
+    .catch((err) => {
+      return Promise.reject(err.response?.data?.message);
+    });
 };

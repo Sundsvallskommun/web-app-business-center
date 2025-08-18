@@ -317,9 +317,10 @@ export class CaseController {
       if (_case.system === 'CASE_DATA') {
         const conversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
         const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+        const externalConversations = resConversation.data.filter(conversation => conversation.type === 'EXTERNAL');
         const messages: MessageWithConversationId<Message>[] = [];
 
-        for (const conversation of resConversation.data) {
+        for (const conversation of externalConversations) {
           const messagesUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
             conversation.id
           }/messages?page=0&size=9000`;
@@ -336,9 +337,10 @@ export class CaseController {
           _case.namespace
         }/errands/${caseId}/communication/conversations`;
         const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+        const externalConversations = resConversation.data.filter(conversation => conversation.type === 'EXTERNAL');
         const messages: MessageWithConversationId<Message>[] = [];
 
-        for (const conversation of resConversation.data) {
+        for (const conversation of externalConversations) {
           const messagesUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
             _case.namespace
           }/errands/${caseId}/communication/conversations/${conversation.id}/messages?page=0&size=9000`;

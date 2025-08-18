@@ -22,6 +22,8 @@ import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts'
 import { User } from '@interfaces/users.interface';
 import { getUserData } from '@/services/user.service';
 
+const USE_CASES_CACHE = false;
+
 @Controller()
 export class CaseController {
   private apiService = new ApiService();
@@ -175,7 +177,7 @@ export class CaseController {
 
       const orgNumber = formatOrgNr(representing.BUSINESS.organizationNumber);
 
-      if (req.session.cache?.cases?.BUSINESS?.[orgNumber]) {
+      if (USE_CASES_CACHE && req.session.cache?.cases?.BUSINESS?.[orgNumber]) {
         return { data: req.session.cache.cases.BUSINESS[orgNumber], message: 'success' };
       }
 
@@ -195,7 +197,7 @@ export class CaseController {
         }
       }
     } else {
-      if (req.session.cache?.cases?.PRIVATE) {
+      if (USE_CASES_CACHE && req.session.cache?.cases?.PRIVATE) {
         return { data: req.session.cache.cases.PRIVATE, message: 'success' };
       }
 

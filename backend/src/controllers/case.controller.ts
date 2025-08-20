@@ -61,6 +61,16 @@ export class CaseController {
     }
   }
 
+  private getCaseFromCache(req: RequestWithUser, caseId: string): CaseStatusResponse | null {
+    let cases: CaseStatusResponse[] | null;
+    if (req.session.representing.mode === RepresentingMode.BUSINESS) {
+      cases = req.session.cache?.cases?.BUSINESS?.[formatOrgNr(req.session.representing.BUSINESS.organizationNumber)] ?? null;
+    } else {
+      cases = req.session.cache?.cases?.PRIVATE ?? null;
+    }
+    return cases.find(c => c.caseId === caseId) ?? null;
+  }
+
   private conversationInit(user: User) {
     return {
       topic: 'Meddelande från Mina sidor',
@@ -232,6 +242,12 @@ export class CaseController {
     }
 
     try {
+      // First check cache for specific case
+      const cachedCase = this.getCaseFromCache(req, caseId);
+      if (cachedCase) {
+        return { data: cachedCase, message: 'success' };
+      }
+      // If not found in cache, fetch from API
       const res = await this.getCases(req);
 
       if (!res.data) {
@@ -462,6 +478,8 @@ export class CaseController {
         if (resCreateConversation.message === 'success') {
           const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
           conversation = resConversation.data[0];
+        } else {
+          throw new HttpException(500, 'Could not create conversation');
         }
       } else {
         conversation = resConversation.data[0];

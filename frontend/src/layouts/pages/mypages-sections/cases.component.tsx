@@ -14,6 +14,7 @@ function Page() {
     url: '/cases',
     method: 'get',
     dataHandler: casesHandler,
+    queryKey: ['cases'],
   });
 
   return (

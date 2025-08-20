@@ -35,6 +35,7 @@ export const Todos = () => {
     url: '/cases',
     method: 'get',
     dataHandler: casesHandler,
+    queryKey: ['cases'],
   });
   const todoCases: TodoItem<TodoType.CASE>[] = cases
     ? getCasesInNeedOfData(cases)?.cases.map((data) => dataToTodo<TodoType.CASE>(data, TodoType.CASE))

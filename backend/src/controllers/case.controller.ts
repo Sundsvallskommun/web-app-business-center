@@ -68,7 +68,7 @@ export class CaseController {
     } else {
       cases = req.session.cache?.cases?.PRIVATE ?? null;
     }
-    return cases.find(c => c.caseId === caseId) ?? null;
+    return cases?.find(c => c.caseId === caseId) ?? null;
   }
 
   private conversationInit(user: User) {

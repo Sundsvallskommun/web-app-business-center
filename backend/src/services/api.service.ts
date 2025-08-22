@@ -30,9 +30,11 @@ class ApiService {
     };
     const defaultParams = {};
 
+    const sentBy = req?.user?.partyId ? { 'X-Sent-By': `${req?.user?.partyId};type=partyId` } : {};
+
     const preparedConfig: AxiosRequestConfig = {
       ...config,
-      headers: { ...defaultHeaders, ...config.headers },
+      headers: { ...defaultHeaders, ...config.headers, ...sentBy },
       params: { ...defaultParams, ...config.params },
       url: apiURL(config.url),
     };
@@ -61,8 +63,8 @@ class ApiService {
         logger.error(`Error method: ${error.response.config.method}`);
         logger.error(`Error headers: ${error.response.config.headers}`);
       } else {
-        console.error('Unknown error:', error);
-        logger.error('Unknown error:', error);
+        console.error(`Unknown error: ${JSON.stringify(error).slice(0, 150)}`);
+        logger.error(`Unknown error: ${JSON.stringify(error).slice(0, 150)}`);
       }
       // NOTE: did you subscribe to the API called?
       throw new HttpException(500, 'Internal server error from gateway');

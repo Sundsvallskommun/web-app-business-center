@@ -97,6 +97,7 @@ export default function CaseNewMessage() {
                   placeholder="Skriv ett meddelande"
                   className="w-full min-h-72"
                   value={context.getValues().message}
+                  readOnly={postMessageMutation.isPending}
                 />
                 {context.formState.errors.message && (
                   <FormErrorMessage className="text-small text-error" role="alert">
@@ -122,7 +123,7 @@ export default function CaseNewMessage() {
             ) : null}
           </div>
           <div className="flex desktop:justify-end">
-            <Button className="w-full desktop:w-fit" size={isMinDesktop ? 'md' : 'lg'} type="submit" color="vattjom">
+            <Button className="w-full desktop:w-fit" size={isMinDesktop ? 'md' : 'lg'} type="submit" color="vattjom" loading={postMessageMutation.isPending}>
               Skicka
             </Button>
           </div>

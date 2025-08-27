@@ -277,6 +277,35 @@ export interface EmailIntegration {
   modified?: string;
 }
 
+/** Message-Exchange sync configuration */
+export interface MessageExchangeSync {
+  /**
+   * Unique id
+   * @format int64
+   * @example 1
+   */
+  id?: number;
+  /**
+   * Message exchange namespace to search in. Does not map to supporManagement namespace.
+   * @example "support"
+   */
+  namespace?: string;
+  /**
+   * Latest synced sequence number
+   * @format int64
+   * @example 333
+   */
+  latestSyncedSequenceNumber?: number;
+  /**
+   * Timestamp when the configuration was last modified
+   * @format date-time
+   * @example "2024-12-24T01:30:00+02:00"
+   */
+  modified?: string;
+  /** If set to true conversations will be synced */
+  active: boolean;
+}
+
 /** Status model */
 export interface Status {
   /**
@@ -1139,40 +1168,40 @@ export interface MetadataResponse {
 }
 
 export interface PageErrand {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
+  first?: boolean;
+  last?: boolean;
+  pageable?: PageableObject;
   /** @format int32 */
   size?: number;
   content?: Errand[];
   /** @format int32 */
   number?: number;
   sort?: SortObject;
-  first?: boolean;
-  last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
-  pageable?: PageableObject;
   empty?: boolean;
 }
 
 export interface PageableObject {
-  /** @format int64 */
-  offset?: number;
-  sort?: SortObject;
-  unpaged?: boolean;
+  paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
-  paged?: boolean;
+  /** @format int64 */
+  offset?: number;
+  sort?: SortObject;
+  unpaged?: boolean;
 }
 
 export interface SortObject {
+  sorted?: boolean;
   empty?: boolean;
   unsorted?: boolean;
-  sorted?: boolean;
 }
 
 /** Revision model */
@@ -1360,21 +1389,21 @@ export interface EventMetaData {
 }
 
 export interface PageEvent {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
+  first?: boolean;
+  last?: boolean;
+  pageable?: PageableObject;
   /** @format int32 */
   size?: number;
   content?: Event[];
   /** @format int32 */
   number?: number;
   sort?: SortObject;
-  first?: boolean;
-  last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
-  pageable?: PageableObject;
   empty?: boolean;
 }
 
@@ -1516,24 +1545,29 @@ export interface Message {
   content?: string;
   readBy?: ReadBy[];
   attachments?: Attachment[];
+  /**
+   * Type of message (user or system created)
+   * @example "USER_CREATED"
+   */
+  type?: MessageTypeEnum;
 }
 
 export interface PageMessage {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
+  first?: boolean;
+  last?: boolean;
+  pageable?: PageableObject;
   /** @format int32 */
   size?: number;
   content?: Message[];
   /** @format int32 */
   number?: number;
   sort?: SortObject;
-  first?: boolean;
-  last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
-  pageable?: PageableObject;
   empty?: boolean;
 }
 
@@ -1571,6 +1605,11 @@ export interface ErrandAttachment {
   created?: string;
 }
 
+export interface CountResponse {
+  /** @format int64 */
+  count?: number;
+}
+
 /**
  * If the communication is inbound or outbound from the perspective of case-data/e-service.
  * @example "INBOUND"
@@ -1588,4 +1627,13 @@ export enum CommunicationCommunicationTypeEnum {
   SMS = "SMS",
   EMAIL = "EMAIL",
   WEB_MESSAGE = "WEB_MESSAGE",
+}
+
+/**
+ * Type of message (user or system created)
+ * @example "USER_CREATED"
+ */
+export enum MessageTypeEnum {
+  USER_CREATED = "USER_CREATED",
+  SYSTEM_CREATED = "SYSTEM_CREATED",
 }

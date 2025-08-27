@@ -12,12 +12,12 @@ import {
   SAML_CALLBACK_URL,
   SAML_ENTRY_SSO,
   SAML_FAILURE_REDIRECT,
-  SAML_SUCCESS_REDIRECT,
   SAML_IDP_PUBLIC_CERT,
   SAML_ISSUER,
   SAML_LOGOUT_CALLBACK_URL,
   SAML_PRIVATE_KEY,
   SAML_PUBLIC_KEY,
+  SAML_SUCCESS_REDIRECT,
   SECRET_KEY,
   SESSION_MEMORY,
   SWAGGER_ENABLED,
@@ -32,6 +32,7 @@ import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import session from 'express-session';
 import { existsSync, mkdirSync } from 'fs';
 import helmet from 'helmet';
@@ -50,9 +51,8 @@ import { Profile } from './interfaces/profile.interface';
 import { RepresentingMode } from './interfaces/representing.interface';
 import { User } from './interfaces/users.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
-import { isValidUrl } from './utils/util';
 import { isValidOrigin } from './utils/isValidOrigin';
-import rateLimit from 'express-rate-limit';
+import { isValidUrl } from './utils/util';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -335,7 +335,7 @@ class App {
               failureRedirect.search = failMessage.toString();
               res.redirect(failureRedirect.toString());
             }
-            return res.redirect(successRedirect.toString());
+            return res.redirect(successRedirect?.toString());
           });
         }
       })(req, res, next);

@@ -1,14 +1,26 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
+import {
+  Conversation,
+  Message,
+  MessageRequest,
+  MessageResponseDirectionEnum,
+  MessageTypeEnum,
+  PageMessage,
+} from '@/data-contracts/case-data/data-contracts';
 import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
-import { MessageRequest, MessageResponseDirectionEnum, Conversation, Message, PageMessage } from '@/data-contracts/case-data/data-contracts';
+import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
+import { WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
+import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
 import { CaseMessageDto } from '@/dtos/case-data.dto';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { CaseMessage, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import ApiService from '@/services/api.service';
+import { getUserData } from '@/services/user.service';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
+import { User } from '@interfaces/users.interface';
 import authMiddleware from '@middlewares/auth.middleware';
 import dayjs from 'dayjs';
 import { Body, Controller, Get, Param, Post, Put, Req, UploadedFiles, UseBefore } from 'routing-controllers';
@@ -16,11 +28,6 @@ import { OpenAPI } from 'routing-controllers-openapi';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
-import { WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
-import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
-import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
-import { User } from '@interfaces/users.interface';
-import { getUserData } from '@/services/user.service';
 
 const USE_CASES_CACHE = false;
 
@@ -324,7 +331,9 @@ export class CaseController {
       responseMessages: Message[],
       conversationId: string,
     ): MessageWithConversationId<Message>[] => {
-      return responseMessages.filter(onlyNewIds(seenMessages)).map(msg => ({ ...msg, conversationId: conversationId }));
+      return responseMessages
+        .filter(msg => onlyNewIds(seenMessages)(msg) && msg.type === MessageTypeEnum.USER_CREATED)
+        .map(msg => ({ ...msg, conversationId }));
     };
 
     try {
@@ -468,7 +477,8 @@ export class CaseController {
       const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
       let conversation: Conversation;
 
-      if (!resConversation.data || resConversation.data.length === 0) {
+      const externalConversation = resConversation.data?.find(con => con.type === 'EXTERNAL');
+      if (!resConversation.data || resConversation.data.length === 0 || !externalConversation) {
         const createConversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${
           _case.namespace
         }/errands/${caseId}/communication/conversations`;
@@ -482,12 +492,11 @@ export class CaseController {
           throw new HttpException(500, 'Could not create conversation');
         }
       } else {
-        conversation = resConversation.data[0];
+        conversation = externalConversation;
       }
       url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
         conversation.id
       }/messages`;
-
       headers = {
         'Content-Type': 'multipart/form-data',
       };
@@ -511,7 +520,8 @@ export class CaseController {
       const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
       let conversation: Conversation;
 
-      if (!resConversation.data || resConversation.data.length === 0) {
+      const externalConversation = resConversation.data?.find(con => con.type === 'EXTERNAL');
+      if (!resConversation.data || resConversation.data.length === 0 || !externalConversation) {
         const createConversationUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
           _case.namespace
         }/errands/${caseId}/communication/conversations`;
@@ -523,7 +533,7 @@ export class CaseController {
           conversation = resConversation.data[0];
         }
       } else {
-        conversation = resConversation.data[0];
+        conversation = externalConversation;
       }
       url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
         conversation.id

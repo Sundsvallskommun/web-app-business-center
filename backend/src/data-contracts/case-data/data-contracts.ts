@@ -276,8 +276,8 @@ export interface Problem {
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  detail?: string;
   title?: string;
+  detail?: string;
 }
 
 export interface StatusType {
@@ -347,8 +347,8 @@ export interface ThrowableProblem {
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  detail?: string;
   title?: string;
+  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -1193,6 +1193,34 @@ export interface KeyValues {
   values?: string[];
 }
 
+/** ConversationAttachment model */
+export interface ConversationAttachment {
+  /**
+   * ConversationAttachment ID
+   * @example "cb20c51f-fcf3-42c0-b613-de563634a8ec"
+   */
+  id?: string;
+  /**
+   * Name of the file
+   * @example "my-file.txt"
+   */
+  fileName?: string;
+  /**
+   * Size of the file in bytes
+   * @format int32
+   * @example 1024
+   */
+  fileSize?: number;
+  /** Mime type of the file */
+  mimeType?: string;
+  /**
+   * The attachment created date
+   * @format date-time
+   * @example "2023-01-01T00:00:00+01:00"
+   */
+  created?: string;
+}
+
 /** Message model */
 export interface Message {
   /**
@@ -1219,7 +1247,12 @@ export interface Message {
    */
   content: string;
   readBy?: ReadBy[];
-  attachments?: Attachment[];
+  attachments?: ConversationAttachment[];
+  /**
+   * Type of message (user or system created)
+   * @example "USER_CREATED"
+   */
+  type?: MessageTypeEnum;
 }
 
 /** Readby model */
@@ -1411,6 +1444,7 @@ export interface PageErrand {
   totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  pageable?: PageableObject;
   /** @format int32 */
   size?: number;
   content?: Errand[];
@@ -1421,26 +1455,25 @@ export interface PageErrand {
   last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
-  pageable?: PageableObject;
   empty?: boolean;
 }
 
 export interface PageableObject {
-  /** @format int64 */
-  offset?: number;
-  sort?: SortObject;
-  unpaged?: boolean;
   paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
+  /** @format int64 */
+  offset?: number;
+  sort?: SortObject;
+  unpaged?: boolean;
 }
 
 export interface SortObject {
+  sorted?: boolean;
   empty?: boolean;
   unsorted?: boolean;
-  sorted?: boolean;
 }
 
 export interface CommitMetadata {
@@ -1626,6 +1659,7 @@ export interface PageMessage {
   totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  pageable?: PageableObject;
   /** @format int32 */
   size?: number;
   content?: Message[];
@@ -1636,7 +1670,6 @@ export interface PageMessage {
   last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
-  pageable?: PageableObject;
   empty?: boolean;
 }
 
@@ -1721,6 +1754,15 @@ export enum ErrandPriorityEnum {
 export enum MessageRequestDirectionEnum {
   INBOUND = "INBOUND",
   OUTBOUND = "OUTBOUND",
+}
+
+/**
+ * Type of message (user or system created)
+ * @example "USER_CREATED"
+ */
+export enum MessageTypeEnum {
+  USER_CREATED = "USER_CREATED",
+  SYSTEM_CREATED = "SYSTEM_CREATED",
 }
 
 /**

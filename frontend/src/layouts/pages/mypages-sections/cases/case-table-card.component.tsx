@@ -1,6 +1,7 @@
 import { useAppContext } from '@contexts/app.context';
 import { ICaseStatusResponse } from '@interfaces/case';
 import { Button, Icon, Label } from '@sk-web-gui/react';
+import { getCaseTypeLabel } from '@utils/casetype-label-mapper';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { ChevronRight } from 'lucide-react';
 import NextLink from 'next/link';
@@ -11,12 +12,12 @@ export const CaseTableCard: React.FC<{ item: ICaseStatusResponse }> = ({ item })
   return (
     <NextLink
       href={`${getRepresentingModeRoute(representingMode)}/arenden/${item.caseId}`}
-      aria-label={`Visa ${item.caseType}`}
+      aria-label={`Visa ${getCaseTypeLabel(item.caseType)}`}
     >
       <div className={`list-item-card`}>
         <div className="list-item-card-content desktop:grid desktop:grid-cols-[48.6rem_1fr_1fr]">
           <div className="max-w-[40rem] grow">
-            <div className="list-item-card-content-title">{item.caseType}</div>
+            <div className="list-item-card-content-title">{getCaseTypeLabel(item.caseType)}</div>
             {item.errandNumber ? (
               <div className="list-item-card-content-subtitle">{`Ärendenummer ${item.errandNumber}`}</div>
             ) : null}

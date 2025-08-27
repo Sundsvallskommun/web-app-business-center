@@ -2,6 +2,7 @@
 
 import { useAppContext } from '@contexts/app.context';
 import { Label, Tabs } from '@sk-web-gui/react';
+import { getCaseTypeLabel } from '@utils/casetype-label-mapper';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useRouter } from 'next/navigation';
 import { useContext } from 'react';
@@ -29,7 +30,7 @@ export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { cas
   return (
     <div>
       <div className="flex flex-col-reverse desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mb-56">
-        <h1 className="text-h2-lg mb-0 break-all">{caseData?.caseType}</h1>
+        <h1 className="text-h2-lg mb-0 break-all">{getCaseTypeLabel(caseData?.caseType)}</h1>
         <span>
           <Label rounded inverted color={caseData?.status.color}>
             {caseData?.status.label}

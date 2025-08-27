@@ -7,6 +7,7 @@ import { PagesBreadcrumbsLayout } from '@layouts/pages-breadcrumbs-layout.compon
 import { useApi } from '@services/api-service';
 import { handleCase } from '@services/case-service';
 import { Breadcrumb } from '@sk-web-gui/react';
+import { getCaseTypeLabel } from '@utils/casetype-label-mapper';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { AxiosError } from 'axios';
 import NextLink from 'next/link';
@@ -63,7 +64,7 @@ export default function CaseLayout(props: { caseId: number; children: React.Reac
           </Breadcrumb.Item>
 
           <Breadcrumb.Item currentPage>
-            <Breadcrumb.Link href="#">{caseData?.caseType}</Breadcrumb.Link>
+            <Breadcrumb.Link href="#">{getCaseTypeLabel(caseData?.caseType)}</Breadcrumb.Link>
           </Breadcrumb.Item>
         </Breadcrumb>
       }

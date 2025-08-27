@@ -11,7 +11,7 @@ export const APIS = [
   // },
   {
     name: 'case-data',
-    version: '11.5',
+    version: '11.6',
   },
   {
     name: 'supportmanagement',

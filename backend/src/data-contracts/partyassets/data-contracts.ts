@@ -19,13 +19,13 @@ export enum Status {
 }
 
 export interface Problem {
+  title?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
-  title?: string;
-  detail?: string;
   status?: StatusType;
 }
 
@@ -54,10 +54,10 @@ export interface ConstraintViolationProblem {
   violations?: Violation[];
   title?: string;
   message?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   parameters?: Record<string, object>;
-  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -90,13 +90,13 @@ export interface ThrowableProblem {
     nativeMethod?: boolean;
   }[];
   message?: string;
+  title?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
-  title?: string;
-  detail?: string;
   status?: StatusType;
   suppressed?: {
     stackTrace?: {
@@ -119,6 +119,31 @@ export interface ThrowableProblem {
 export interface Violation {
   field?: string;
   message?: string;
+}
+
+export interface JsonSchemaCreateRequest {
+  /**
+   * Schema name
+   * @minLength 1
+   * @example "person"
+   */
+  name: string;
+  /**
+   * Schema version on the format [major version].[minor version]
+   * @pattern ^(\d+\.)?(\d+)$
+   * @example "1.0"
+   */
+  version: string;
+  /**
+   * The JSON schema, specified by: https://json-schema.org/draft/2020-12/schema
+   * @example "{"$id":"https://example.com/person.schema.json","$schema":"https://json-schema.org/draft/2020-12/schema","title":"Person","type":"object","properties":{"firstName":{"type":"string","description":"The person's first name."},"lastName":{"type":"string","description":"The person's last name."}}}"
+   */
+  value: string;
+  /**
+   * Description of the schema purpose
+   * @example "A JSON-schema that defines a person object"
+   */
+  description?: string;
 }
 
 export interface AssetCreateRequest {
@@ -178,6 +203,29 @@ export interface AssetCreateRequest {
    * @example {"foo":"bar"}
    */
   additionalParameters?: Record<string, string>;
+  /** JSON parameters */
+  jsonParameters?: AssetJsonParameter[];
+}
+
+/** JSON parameters */
+export interface AssetJsonParameter {
+  /**
+   * Parameter key
+   * @minLength 1
+   * @example "personParameter"
+   */
+  key: string;
+  /**
+   * Parameter value with the JSON structure
+   * @example "{"firstName":"Joe","lastName":"Doe"}"
+   */
+  value?: string;
+  /**
+   * Schema ID
+   * @minLength 1
+   * @example "person_1.0"
+   */
+  schemaId: string;
 }
 
 export interface AssetUpdateRequest {
@@ -204,6 +252,47 @@ export interface AssetUpdateRequest {
    * @example {"foo":"bar"}
    */
   additionalParameters?: Record<string, string>;
+  /** JSON parameters */
+  jsonParameters?: AssetJsonParameter[];
+}
+
+export interface JsonSchema {
+  /**
+   * Schema ID. The ID is composed by the municipalityId, schema name and version. I.e.: [municipality_id]_[schema_name]_[schema_version]
+   * @example "2281_person_1.0"
+   */
+  id?: string;
+  /**
+   * Schema name
+   * @example "person"
+   */
+  name?: string;
+  /**
+   * Schema version on the format [major version].[minor version]
+   * @example "1.0"
+   */
+  version?: string;
+  /**
+   * The number of schema references. I.e. number of json-objects that references the schema.
+   * @format int64
+   * @example 42
+   */
+  numberOfReferences?: number;
+  /**
+   * The JSON schema
+   * @example "{"$id":"https://example.com/person.schema.json","$schema":"https://json-schema.org/draft/2020-12/schema","title":"Person","type":"object","properties":{"firstName":{"type":"string","description":"The person's first name."},"lastName":{"type":"string","description":"The person's last name."}}}"
+   */
+  value?: string;
+  /**
+   * Description of the schema purpose
+   * @example "A JSON-schema that defines a person object"
+   */
+  description?: string;
+  /**
+   * Created timestamp
+   * @format date-time
+   */
+  created?: string;
 }
 
 export interface Asset {
@@ -266,4 +355,6 @@ export interface Asset {
    * @example {"foo":"bar"}
    */
   additionalParameters?: Record<string, string>;
+  /** JSON parameters */
+  jsonParameters?: AssetJsonParameter[];
 }

@@ -1,5 +1,6 @@
 import { FormControl, FormErrorMessage, FormLabel, Input } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
+import React from 'react';
 
 export const ConnectForm = ({ children }) => {
   const methods = useFormContext();
@@ -27,6 +28,7 @@ export const ConnectFormInput: React.FC<ConnectFormInputProps> = ({ name, header
         <>
           <FormLabel>{header}</FormLabel>
           <Input {...methods.register(name)} {...inputProps} />
+          {children}
         </>
       )}
       {methods.formState.errors?.[name]?.message ? (

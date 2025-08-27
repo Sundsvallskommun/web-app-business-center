@@ -1,17 +1,12 @@
 'use client';
 
-import { Button, Icon, Link } from '@sk-web-gui/react';
+import { Button, Divider, Icon, Link } from '@sk-web-gui/react';
 import _ from 'lodash';
-import { Info, Pen, X } from 'lucide-react';
-import { useState } from 'react';
+import { Info, Pen } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import ContactSettingsFormLogic from './components/contact-settings-form-logic.component';
 import { ClientContactSetting } from '@interfaces/contactsettings';
-import { useApi } from '@services/api-service';
-import ContentCard, {
-  ContactDetailsGrid,
-  ContentCardBody,
-  ContentCardHeader,
-} from '@components/content-card/content-card';
+import { useApi, useApiService } from '@services/api-service';
 import { FormBox } from '@components/form/form-box.component';
 
 const EmptyField = (text: string) => {
@@ -27,65 +22,110 @@ const getAddress = (address) => {
 };
 
 export const ContactDetails = () => {
-  const { data: contactsettings } = useApi<ClientContactSetting>({ url: '/contactsettings', method: 'get' });
-  const [isEdit, setIsEdit] = useState(false);
+  const queryClient = useApiService((s) => s.queryClient);
+  const { data: contactsettings, isError } = useApi<ClientContactSetting>({
+    url: '/contactsettings',
+    method: 'get',
+    queryKey: ['contactsetting'],
+  });
+  const [isEditPhone, setIsEditPhone] = useState<boolean>(false);
+  const [isEditEmail, setIsEditEmail] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isError) {
+      queryClient.setQueryData(['contactsetting'], []);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isError]);
+
+  const setIsEditFalse = () => {
+    setIsEditPhone(false);
+    setIsEditEmail(false);
+  };
 
   return (
-    <ContentCard>
-      <ContentCardHeader>
-        <h2 className="text-h4-sm medium-device:text-h4-lg mb-0">
-          <div className="flex items-center gap-md">
-            <span>Kontaktuppgifter</span>
-          </div>
-        </h2>
-        <Button
-          size="md"
-          variant="tertiary"
-          showBackground={false}
-          leftIcon={<Icon icon={isEdit ? <X /> : <Pen />} />}
-          onClick={() => setIsEdit((isEdit) => !isEdit)}
-        >
-          {isEdit ? 'Avbryt' : 'Redigera'}
-        </Button>
-      </ContentCardHeader>
+    <div className="pt-40 px-16">
+      <div className="flex items-start max-w-fit mb-40 gap-12 ">
+        <Icon icon={<Info />} className="shrink-0" />
+        <span>
+          Vi hämtar namn och adress från Skatteverket. Stämmer inte uppgifterna kan du ändra dem på{' '}
+          <Link href="https://www.skatteverket.se" external>
+            Skatteverkets hemsida
+          </Link>
+        </span>
+      </div>
 
-      <ContentCardBody>
-        <ContactSettingsFormLogic onSubmitSuccess={() => setIsEdit(false)} formData={contactsettings}>
-          {isEdit ? (
-            <div className="flex items-start max-w-fit mb-24 gap-12 px-14 py-12 bg-background-200 rounded-button">
-              <Icon icon={<Info />} className="shrink-0" />
-              <span>
-                Vi hämtar namn och adress från Skatteverket. Stämmer inte uppgifterna kan du ändra dem på{' '}
-                <Link href="https://www.skatteverket.se" external>
-                  Skatteverkets hemsida
-                </Link>
-              </span>
+      <ContactSettingsFormLogic onSubmitSuccess={() => setIsEditFalse()} formData={contactsettings}>
+        <>
+          <FormBox header="Namn">
+            <div data-cy="form-box-name">{contactsettings?.name ?? EmptyField('Inget namn tillagt')}</div>{' '}
+          </FormBox>
+          <Divider className="my-16" />
+          <FormBox header="Adress">
+            <div data-cy="form-box-address">
+              {getAddress(contactsettings?.address) ?? EmptyField('Ingen address tillagd')}
             </div>
-          ) : null}
-          <ContactDetailsGrid>
-            <FormBox header="Namn">
-              <div>{contactsettings?.name ?? EmptyField('Inget namn tillagt')}</div>{' '}
-            </FormBox>
-            <FormBox header="Adress">
-              <div>{getAddress(contactsettings?.address) ?? EmptyField('Ingen address tillagd')}</div>
-            </FormBox>
-            <FormBox name="email" header="E-post" isEdit={isEdit}>
-              <div>{contactsettings?.email ?? EmptyField('Ingen epost-address tillagd')}</div>
-            </FormBox>
-            <FormBox name="phone" header="Telefonnummer" isEdit={isEdit}>
-              <div>{contactsettings?.phone ?? EmptyField('Inget telefonnummer tillagt')}</div>
-            </FormBox>
-          </ContactDetailsGrid>
+          </FormBox>
+          <Divider className="my-16" />
 
-          {isEdit && (
-            <div className="mt-40">
-              <Button type="submit" color="vattjom">
-                Spara
-              </Button>
-            </div>
-          )}
-        </ContactSettingsFormLogic>
-      </ContentCardBody>
-    </ContentCard>
+          <FormBox name="email" header={isEditEmail ? 'Ändra e-postadress' : 'E-postadress'} isEdit={isEditEmail}>
+            {isEditEmail ? (
+              <div className="flex gap-16 mt-16">
+                <Button variant="secondary" data-cy="cancel-edit-email-button" onClick={() => setIsEditEmail(false)}>
+                  Avbryt
+                </Button>
+                <Button type="submit" data-cy="save-email-button">
+                  Spara
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div data-cy="form-box-email">
+                  {contactsettings?.email ?? EmptyField('Ingen e-postaddress tillagd')}
+                </div>
+                <Button
+                  size="md"
+                  variant="secondary"
+                  leftIcon={<Icon icon={<Pen />} />}
+                  onClick={() => setIsEditEmail(true)}
+                  className="mt-32"
+                  data-cy="edit-email-button"
+                >
+                  Ändra e-postadress
+                </Button>
+              </>
+            )}
+          </FormBox>
+          <Divider className="my-16" />
+
+          <FormBox name="phone" header={isEditPhone ? 'Ändra mobilnummer' : 'Mobilnummer'} isEdit={isEditPhone}>
+            {isEditPhone ? (
+              <div className="flex gap-16 mt-16">
+                <Button variant="secondary" data-cy="cancel-edit-phone-button" onClick={() => setIsEditPhone(false)}>
+                  Avbryt
+                </Button>
+                <Button type="submit" data-cy="save-phone-button">
+                  Spara
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div data-cy="form-box-phone">{contactsettings?.phone ?? EmptyField('Inget mobilnummer tillagt')}</div>
+                <Button
+                  size="md"
+                  variant="secondary"
+                  leftIcon={<Icon icon={<Pen />} />}
+                  onClick={() => setIsEditPhone(true)}
+                  className="mt-32"
+                  data-cy="edit-phone-button"
+                >
+                  Ändra mobilnummer
+                </Button>
+              </>
+            )}
+          </FormBox>
+        </>
+      </ContactSettingsFormLogic>
+    </div>
   );
 };

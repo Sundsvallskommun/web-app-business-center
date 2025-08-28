@@ -58,10 +58,26 @@ export const casesHandler = (data) => ({
   labels: [],
 });
 
+const getRelevantDate = (c: ICaseStatusResponse): number | null => {
+  const d = c.lastStatusChange ?? c.firstSubmitted;
+  return d ? Date.parse(d) : null;
+};
+
+export const sortCasesByDate = (a: ICaseStatusResponse, b: ICaseStatusResponse): number => {
+  const ta = getRelevantDate(a);
+  const tb = getRelevantDate(b);
+
+  if (ta === null && tb === null) return 0;
+  if (ta === null) return 1;
+  if (tb === null) return -1;
+
+  return tb - ta;
+};
+
 export const getOngoing: (cs: CasesData) => CasesData = (cs) => ({
   ...cs,
   labels: ongoingCasesLabels,
-  cases: cs.cases.filter((c) => c.status.code === statusCodes.Ongoing),
+  cases: cs.cases.filter((c) => c.status.code === statusCodes.Ongoing).sort(sortCasesByDate),
 });
 
 export const closedCasesLabels = [
@@ -75,7 +91,9 @@ export const closedCasesLabels = [
 export const getClosed: (cs: CasesData) => CasesData = (cs) => ({
   ...cs,
   labels: closedCasesLabels,
-  cases: cs.cases.filter((c) => c.status.code === statusCodes.Rejected || c.status.code === statusCodes.Approved),
+  cases: cs.cases
+    .filter((c) => c.status.code === statusCodes.Rejected || c.status.code === statusCodes.Approved)
+    .sort(sortCasesByDate),
 });
 
 export const getCasesInNeedOfData: (cs: CasesData) => CasesData = (cs) => ({

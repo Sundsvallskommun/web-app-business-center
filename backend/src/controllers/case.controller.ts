@@ -487,7 +487,11 @@ export class CaseController {
 
         if (resCreateConversation.message === 'success') {
           const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
-          conversation = resConversation.data[0];
+          const external = resConversation.data?.find(con => con.type === 'EXTERNAL');
+          if (!external) {
+            throw new HttpException(500, 'Could not find created EXTERNAL conversation');
+          }
+          conversation = external;
         } else {
           throw new HttpException(500, 'Could not create conversation');
         }

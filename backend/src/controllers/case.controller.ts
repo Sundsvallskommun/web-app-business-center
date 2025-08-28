@@ -18,6 +18,7 @@ import { RequestWithUser } from '@/interfaces/auth.interface';
 import { CaseMessage, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import ApiService from '@/services/api.service';
 import { getUserData } from '@/services/user.service';
+import { filterExternalConversation, findExternalConversation } from '@/utils/conversation-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
 import { User } from '@interfaces/users.interface';
@@ -342,7 +343,7 @@ export class CaseController {
       if (_case.system === 'CASE_DATA') {
         const conversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
         const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
-        const externalConversations = resConversation.data.filter(conversation => conversation.type === 'EXTERNAL');
+        const externalConversations = filterExternalConversation(resConversation.data);
         const messages: MessageWithConversationId<Message>[] = [];
 
         for (const conversation of externalConversations) {
@@ -362,7 +363,7 @@ export class CaseController {
           _case.namespace
         }/errands/${caseId}/communication/conversations`;
         const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
-        const externalConversations = resConversation.data.filter(conversation => conversation.type === 'EXTERNAL');
+        const externalConversations = filterExternalConversation(resConversation.data);
         const messages: MessageWithConversationId<Message>[] = [];
 
         for (const conversation of externalConversations) {
@@ -477,7 +478,7 @@ export class CaseController {
       const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
       let conversation: Conversation;
 
-      const externalConversation = resConversation.data?.find(con => con.type === 'EXTERNAL');
+      const externalConversation = findExternalConversation(resConversation.data);
       if (!resConversation.data || resConversation.data.length === 0 || !externalConversation) {
         const createConversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${
           _case.namespace
@@ -487,7 +488,11 @@ export class CaseController {
 
         if (resCreateConversation.message === 'success') {
           const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
-          conversation = resConversation.data[0];
+          const external = resConversation.data?.find(con => con.type === 'EXTERNAL');
+          if (!external) {
+            throw new HttpException(500, 'Could not find created EXTERNAL conversation');
+          }
+          conversation = external;
         } else {
           throw new HttpException(500, 'Could not create conversation');
         }
@@ -520,7 +525,7 @@ export class CaseController {
       const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
       let conversation: Conversation;
 
-      const externalConversation = resConversation.data?.find(con => con.type === 'EXTERNAL');
+      const externalConversation = findExternalConversation(resConversation.data);
       if (!resConversation.data || resConversation.data.length === 0 || !externalConversation) {
         const createConversationUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
           _case.namespace
@@ -530,7 +535,7 @@ export class CaseController {
 
         if (resCreateConversation.message === 'success') {
           const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
-          conversation = resConversation.data[0];
+          conversation = findExternalConversation(resConversation.data);
         }
       } else {
         conversation = externalConversation;

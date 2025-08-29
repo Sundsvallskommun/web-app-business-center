@@ -196,10 +196,10 @@ export class CaseController {
       try {
         const url = `${this.apiBase}/${MUNICIPALITY_ID}/${orgNumber}/statuses`;
         const res = await this.apiService.get<CaseStatusResponse[]>({ url, signal }, req);
-        const cases = res.data.filter(d => !forbiddenNamespaces.includes(d.namespace));
-        if (!cases) {
+        if (!res.data) {
           throw new HttpException(500, 'No data from API');
         }
+        const cases = res.data.filter(d => !forbiddenNamespaces.includes(d.namespace));
         this.setCasesCache(req, cases);
 
         return { data: cases, message: 'success' };
@@ -219,11 +219,10 @@ export class CaseController {
       try {
         const url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses`;
         const res = await this.apiService.get<CaseStatusResponse[]>({ url, signal }, req);
-        const cases = res.data.filter(d => !forbiddenNamespaces.includes(d.namespace));
-        if (!cases) {
+        if (!res.data) {
           throw new HttpException(500, 'No data from API');
         }
-
+        const cases = res.data.filter(d => !forbiddenNamespaces.includes(d.namespace));
         this.setCasesCache(req, cases);
 
         return { data: cases, message: 'success' };

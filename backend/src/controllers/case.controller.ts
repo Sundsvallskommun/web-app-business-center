@@ -32,6 +32,8 @@ import { formatOrgNr } from '../utils/util';
 
 const USE_CASES_CACHE = false;
 
+const forbiddenNamespaces: string[] = ['SALARYANDPENSION', 'INTERNALSERVICE'];
+
 @Controller()
 export class CaseController {
   private apiService = new ApiService();
@@ -202,10 +204,13 @@ export class CaseController {
       try {
         const url = `${this.apiBase}/${MUNICIPALITY_ID}/${orgNumber}/statuses`;
         const res = await this.apiService.get<CaseStatusResponse[]>({ url, signal }, req);
+        if (!res.data) {
+          throw new HttpException(500, 'No data from API');
+        }
+        const cases = res.data.filter(d => !forbiddenNamespaces.includes(d.namespace));
+        this.setCasesCache(req, cases);
 
-        this.setCasesCache(req, res.data);
-
-        return { data: res.data, message: 'success' };
+        return { data: cases, message: 'success' };
       } catch (error) {
         if (error.status === 404) {
           this.setCasesCache(req, []);
@@ -222,14 +227,13 @@ export class CaseController {
       try {
         const url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses`;
         const res = await this.apiService.get<CaseStatusResponse[]>({ url, signal }, req);
-
         if (!res.data) {
           throw new HttpException(500, 'No data from API');
         }
+        const cases = res.data.filter(d => !forbiddenNamespaces.includes(d.namespace));
+        this.setCasesCache(req, cases);
 
-        this.setCasesCache(req, res.data);
-
-        return { data: res.data, message: 'success' };
+        return { data: cases, message: 'success' };
       } catch (error) {
         if (error.status === 404) {
           this.setCasesCache(req, []);
@@ -262,7 +266,7 @@ export class CaseController {
         throw new HttpException(500, 'No data from API');
       }
 
-      const _case = res.data.find(c => c.caseId === caseId);
+      const _case = res.data.find(c => c.caseId === caseId && !forbiddenNamespaces.includes(c.namespace));
 
       if (_case === undefined) {
         throw new HttpException(404, 'Case not found');

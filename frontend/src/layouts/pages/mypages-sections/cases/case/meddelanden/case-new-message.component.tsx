@@ -105,7 +105,7 @@ export default function CaseNewMessage() {
                   </FormErrorMessage>
                 )}
               </FormControl>
-              <FileUpload.Button className="mt-16" name="files" />
+              <FileUpload.Button className="mt-16" name="files" maxFileSizeMB={25} />
             </div>
             {files.length ? (
               <div className="flex flex-col py-16 gap-y-16">

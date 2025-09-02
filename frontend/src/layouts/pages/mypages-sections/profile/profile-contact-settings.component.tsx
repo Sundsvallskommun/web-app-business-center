@@ -1,58 +1,65 @@
 'use client';
 
 import { Button, Checkbox, FormControl, FormLabel, Icon } from '@sk-web-gui/react';
-import { Pen, X } from 'lucide-react';
+import { Info, Pen } from 'lucide-react';
 import { useState } from 'react';
 import ContactSettingsFormLogic from './components/contact-settings-form-logic.component';
-import ContentCard, { ContentCardHeader, ContentCardBody } from '@components/content-card/content-card';
 import { ConnectForm } from '@components/form/connect-form.component';
 import { ClientContactSetting } from '@interfaces/contactsettings';
 import { useApi } from '@services/api-service';
 
 export const ContactSettings = () => {
-  const { data: contactsettings } = useApi<ClientContactSetting>({ url: '/contactsettings', method: 'get' });
+  const { data: contactsettings } = useApi<ClientContactSetting>({
+    url: '/contactsettings',
+    method: 'get',
+    queryKey: ['/contactsettings'],
+  });
   const [isEdit, setIsEdit] = useState(false);
 
   return (
-    <ContentCard>
+    <div className="px-14 pt-16">
       <ContactSettingsFormLogic onSubmitSuccess={() => setIsEdit(false)} formData={contactsettings}>
-        <ContentCardHeader>
-          <ConnectForm>
-            {({ reset }) => (
-              <>
-                <h2 className="text-h4-lg mb-0">
-                  <div className="flex items-center gap-md">
-                    <span>Kontaktvägar</span>
-                  </div>
-                </h2>
-                <Button
-                  size="md"
-                  variant="tertiary"
-                  showBackground={false}
-                  leftIcon={<Icon icon={isEdit ? <X /> : <Pen />} />}
-                  onClick={() => {
-                    reset();
-                    setIsEdit((isEdit) => !isEdit);
-                  }}
-                >
-                  {isEdit ? 'Avbryt' : 'Redigera'}
-                </Button>
-              </>
-            )}
-          </ConnectForm>
-        </ContentCardHeader>
-
-        <ContentCardBody>
-          <div className="flex flex-col gap-y-40">
+        <div>
+          <div className="flex flex-col gap-y-40 pb-24">
             <ConnectForm>
               {({ register, watch }) => {
                 if (isEdit) {
                   return (
                     <FormControl fieldset>
-                      <FormLabel className="text-large">Påminnelser och notiser</FormLabel>
-                      <Checkbox.Group>
-                        <Checkbox {...register('notifications.phone_disabled')}>Sms</Checkbox>
-                        <Checkbox {...register('notifications.email_disabled')}>E-post</Checkbox>
+                      <p className="text-large pb-8">Ändra dina aviseringar</p>
+                      <FormLabel>Välj kontaktväg för aviseringar</FormLabel>
+                      <Checkbox.Group className="gap-16 pb-16">
+                        <Checkbox
+                          {...register('notifications.phone_disabled')}
+                          data-cy="notification-channel-sms-checkbox"
+                          disabled={!watch().phone}
+                        >
+                          Sms
+                        </Checkbox>
+                        {!watch().phone ? (
+                          <div className="flex items-center gap-6">
+                            <Icon size={16} icon={<Info />} className="ml-32" />
+                            <p className="text-small">
+                              För att få aviseringar via sms behöver du lägga till ett mobilnummer.
+                            </p>
+                          </div>
+                        ) : null}
+                        <Checkbox
+                          {...register('notifications.email_disabled')}
+                          data-cy="notification-channel-email-checkbox"
+                          disabled={!watch().email}
+                          className="mt-8"
+                        >
+                          E-post
+                        </Checkbox>
+                        {!watch().email ? (
+                          <div className="flex items-center gap-6">
+                            <Icon size={16} icon={<Info />} className="ml-32" />
+                            <p className="text-small">
+                              För att få aviseringar via mail behöver du lägga till en e-post.
+                            </p>
+                          </div>
+                        ) : null}
                       </Checkbox.Group>
                     </FormControl>
                   );
@@ -68,11 +75,14 @@ export const ContactSettings = () => {
 
                   return (
                     <div className="text-content">
-                      <h3 className="text-large font-bold">Påminnelser och notiser</h3>
                       <p>
+                        Vi skickar aviseringar när du till exempel får en ny faktura eller ett nytt meddelande i ett
+                        ärende.
+                      </p>
+                      <p className="font-bold">
                         {contactWaysString
-                          ? `Du får påminnelser och notiser via ${contactWaysString}`
-                          : 'Du får inga påminnelser eller notiser'}
+                          ? `Du får just nu aviseringar via ${contactWaysString}`
+                          : 'Du får inga aviseringar'}
                       </p>
                     </div>
                   );
@@ -80,15 +90,48 @@ export const ContactSettings = () => {
               }}
             </ConnectForm>
           </div>
-          {isEdit && (
-            <div className="mt-40">
-              <Button type="submit" color="vattjom">
-                Spara
-              </Button>
-            </div>
-          )}
-        </ContentCardBody>
+
+          <ConnectForm>
+            {({ reset }) => (
+              <div className="flex gap-16">
+                {isEdit ? (
+                  <>
+                    <Button
+                      size="md"
+                      variant="secondary"
+                      showBackground={false}
+                      onClick={() => {
+                        reset();
+                        setIsEdit((isEdit) => !isEdit);
+                      }}
+                      data-cy="cancel-edit-notification-channel-button"
+                    >
+                      Avbryt
+                    </Button>
+                    <Button type="submit" data-cy="save-notification-channel-button">
+                      Spara
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    size="md"
+                    variant="secondary"
+                    showBackground={false}
+                    leftIcon={<Icon icon={<Pen />} />}
+                    onClick={() => {
+                      reset();
+                      setIsEdit((isEdit) => !isEdit);
+                    }}
+                    data-cy="edit-notification-channel-button"
+                  >
+                    Ändra aviseringar
+                  </Button>
+                )}
+              </div>
+            )}
+          </ConnectForm>
+        </div>
       </ContactSettingsFormLogic>
-    </ContentCard>
+    </div>
   );
 };

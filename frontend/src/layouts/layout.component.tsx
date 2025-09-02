@@ -134,7 +134,7 @@ export function Layout({ title, children }: { title: string; children: React.Rea
       </div>
 
       <CookieConsent
-        title="Kakor på minasidor.foretagscentersundsvall.se"
+        title="Kakor på minasidor.sundvall.se"
         body={
           <p>
             Vi använder kakor, cookies, för att ge dig en förbättrad upplevelse, sammanställa statistik och för att viss

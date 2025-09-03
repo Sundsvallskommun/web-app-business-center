@@ -32,7 +32,13 @@ import { formatOrgNr } from '../utils/util';
 
 const USE_CASES_CACHE = false;
 
-const forbiddenNamespaces: string[] = ['SALARYANDPENSION', 'INTERNALSERVICE'];
+const allowedNamespaces: string[] = ['SBK_MEX', 'SBK_PARKING_PERMIT', 'CONTACTSUNDSVALL'];
+const namespaceIsallowed = (c: CaseStatusResponse) => allowedNamespaces.includes(c.namespace);
+
+const allowedSystems: string[] = ['OPEN_E_PLATFORM', 'BYGGR'];
+const systemIsAllowed = (c: CaseStatusResponse) => allowedSystems.includes(c.system);
+
+const caseIsallowed = (c: CaseStatusResponse) => namespaceIsallowed(c) || (typeof c.namespace === 'undefined' && systemIsAllowed(c));
 
 @Controller()
 export class CaseController {
@@ -207,7 +213,7 @@ export class CaseController {
         if (!res.data) {
           throw new HttpException(500, 'No data from API');
         }
-        const cases = res.data.filter(d => !forbiddenNamespaces.includes(d.namespace));
+        const cases = res.data.filter(caseIsallowed);
         this.setCasesCache(req, cases);
 
         return { data: cases, message: 'success' };
@@ -230,7 +236,7 @@ export class CaseController {
         if (!res.data) {
           throw new HttpException(500, 'No data from API');
         }
-        const cases = res.data.filter(d => !forbiddenNamespaces.includes(d.namespace));
+        const cases = res.data.filter(caseIsallowed);
         this.setCasesCache(req, cases);
 
         return { data: cases, message: 'success' };
@@ -266,7 +272,7 @@ export class CaseController {
         throw new HttpException(500, 'No data from API');
       }
 
-      const _case = res.data.find(c => c.caseId === caseId && !forbiddenNamespaces.includes(c.namespace));
+      const _case = res.data.filter(caseIsallowed).find(c => c.caseId === caseId);
 
       if (_case === undefined) {
         throw new HttpException(404, 'Case not found');

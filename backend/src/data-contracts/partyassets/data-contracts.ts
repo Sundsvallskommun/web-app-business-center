@@ -19,14 +19,14 @@ export enum Status {
 }
 
 export interface Problem {
-  title?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
+  title?: string;
+  detail?: string;
 }
 
 export interface StatusType {
@@ -54,10 +54,10 @@ export interface ConstraintViolationProblem {
   violations?: Violation[];
   title?: string;
   message?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   parameters?: Record<string, object>;
+  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -90,14 +90,14 @@ export interface ThrowableProblem {
     nativeMethod?: boolean;
   }[];
   message?: string;
-  title?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
+  title?: string;
+  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -130,6 +130,7 @@ export interface JsonSchemaCreateRequest {
   name: string;
   /**
    * Schema version on the format [major version].[minor version]
+   * @minLength 1
    * @pattern ^(\d+\.)?(\d+)$
    * @example "1.0"
    */
@@ -217,9 +218,10 @@ export interface AssetJsonParameter {
   key: string;
   /**
    * Parameter value with the JSON structure
+   * @minLength 1
    * @example "{"firstName":"Joe","lastName":"Doe"}"
    */
-  value?: string;
+  value: string;
   /**
    * Schema ID
    * @minLength 1

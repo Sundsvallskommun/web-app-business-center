@@ -25,4 +25,5 @@ export interface ClientContactSetting {
   address?: ClientContactSettingAddress | null;
   notifications?: ClientContactSettingNotifications | null;
   decicionsAndDocuments?: ClientContactSettingDecicionsAndDocuments | null;
+  modified?: string;
 }

@@ -270,14 +270,14 @@ export interface Stakeholder {
 }
 
 export interface Problem {
+  title?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  title?: string;
-  detail?: string;
 }
 
 export interface StatusType {
@@ -305,10 +305,10 @@ export interface ConstraintViolationProblem {
   violations?: Violation[];
   title?: string;
   message?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   parameters?: Record<string, object>;
-  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -341,14 +341,14 @@ export interface ThrowableProblem {
     nativeMethod?: boolean;
   }[];
   message?: string;
+  title?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  title?: string;
-  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -1444,6 +1444,8 @@ export interface PageErrand {
   totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  first?: boolean;
+  last?: boolean;
   pageable?: PageableObject;
   /** @format int32 */
   size?: number;
@@ -1451,19 +1453,17 @@ export interface PageErrand {
   /** @format int32 */
   number?: number;
   sort?: SortObject;
-  first?: boolean;
-  last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   empty?: boolean;
 }
 
 export interface PageableObject {
-  paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
+  paged?: boolean;
   /** @format int64 */
   offset?: number;
   sort?: SortObject;
@@ -1659,6 +1659,8 @@ export interface PageMessage {
   totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  first?: boolean;
+  last?: boolean;
   pageable?: PageableObject;
   /** @format int32 */
   size?: number;
@@ -1666,8 +1668,6 @@ export interface PageMessage {
   /** @format int32 */
   number?: number;
   sort?: SortObject;
-  first?: boolean;
-  last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   empty?: boolean;

@@ -4,7 +4,7 @@ import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
 import { CasesData, ICaseStatusResponse } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { casesHandler, getCasesInNeedOfData } from '@services/case-service';
-import { Divider, useThemeQueries } from '@sk-web-gui/react';
+import { Divider, Spinner, useThemeQueries } from '@sk-web-gui/react';
 import { Fragment } from 'react';
 import { TodoCase } from './todo-case.component';
 import styles from './todos.module.scss';
@@ -49,7 +49,10 @@ export const Todos = () => {
       <p className="text-lead">Här visas ärenden som du behöver ta hand om</p>
       <div className={styles['todos']}>
         {casesIsFetching ? (
-          <p className="text-secondary">Laddar ärenden..</p>
+          <div className="flex items-center">
+            <p className="text-secondary">Laddar ärenden</p>
+            <Spinner className="ml-10" size={2} />
+          </div>
         ) : todoCases.length < 1 ? (
           <p className="text-secondary">Du har inga ärenden att ta hand om</p>
         ) : (

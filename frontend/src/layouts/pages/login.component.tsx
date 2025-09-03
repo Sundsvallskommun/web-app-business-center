@@ -72,26 +72,42 @@ function Login() {
         <CardElevated>
           <Main>
             <CenterDiv className="py-24 gap-y-40">
-              <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">Logga in som</h1>
-              <div className="flex flex-col desktop:flex-row gap-24 w-full desktop:w-fit">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  rightIcon={<Icon icon={<ArrowRight />} />}
-                  onClick={() => onLogin(RepresentingMode.PRIVATE)}
-                >
-                  Privatperson
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  rightIcon={<Icon icon={<ArrowRight />} />}
-                  onClick={() => onLogin(RepresentingMode.BUSINESS)}
-                >
-                  Organisation
-                </Button>
-              </div>
-              {errorMessage && <FormErrorMessage className="text-error mt-lg">{errorMessage}</FormErrorMessage>}
+              {isLoggedOut ? (
+                <>
+                  <div className="flex flex-col w-full gap-12">
+                    <h1 className="text-center text-h2-sm lg:text-h2-lg m-0">Du är nu utloggad</h1>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <Button variant="primary" color='vattjom' size="md" onClick={() => router.push('/login')}>
+                      Logga in igen
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">Logga in som</h1>
+                  <div className="flex flex-col desktop:flex-row gap-24 w-full desktop:w-fit">
+                    <Button
+                      variant="secondary"
+                      size="lg"
+                      rightIcon={<Icon icon={<ArrowRight />} />}
+                      onClick={() => onLogin(RepresentingMode.PRIVATE)}
+                    >
+                      Privatperson
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="lg"
+                      rightIcon={<Icon icon={<ArrowRight />} />}
+                      onClick={() => onLogin(RepresentingMode.BUSINESS)}
+                    >
+                      Organisation
+                    </Button>
+                  </div>
+                  {errorMessage && <FormErrorMessage className="text-error mt-lg">{errorMessage}</FormErrorMessage>}
+                </>
+              )}
             </CenterDiv>
           </Main>
         </CardElevated>

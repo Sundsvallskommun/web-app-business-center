@@ -4,6 +4,7 @@ import { CardList } from '@components/cards/cards.component';
 import { CasesData } from '@interfaces/case';
 import { useRef } from 'react';
 import { CaseTableCard } from '../case-table-card.component';
+import { Spinner } from '@sk-web-gui/react';
 
 export const ClosedCases: React.FC<{ caseData: CasesData; isFetchingCases: boolean }> = ({
   caseData,
@@ -18,7 +19,12 @@ export const ClosedCases: React.FC<{ caseData: CasesData; isFetchingCases: boole
         {caseData?.cases?.length === 0 && !isFetchingCases ? (
           <p>Det finns inga avslutade ärenden</p>
         ) : (
-          isFetchingCases && <p>Laddar avslutade ärenden</p>
+          isFetchingCases && (
+            <div className="flex items-center">
+              <p className="text-secondary">Laddar avslutade ärenden</p>
+              <Spinner className="ml-10" size={2} />
+            </div>
+          )
         )}
         {!isFetchingCases && caseData?.cases?.length > 0 ? (
           <div>

@@ -1,7 +1,7 @@
 import { useAppContext } from '@contexts/app.context';
 import { Asset } from '@data-contracts/partyassets/data-contracts';
 import { useApi } from '@services/api-service';
-import { Button, Icon } from '@sk-web-gui/react';
+import { Button, Icon, Spinner } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import dayjs from 'dayjs';
 import { ChevronRight, FileCheck2 } from 'lucide-react';
@@ -10,13 +10,23 @@ import NextLink from 'next/link';
 export const Assets = () => {
   const { representingMode } = useAppContext();
 
-  const { data: assetsData } = useApi<Asset[]>({
+  const { data: assetsData, isFetching: isFetchingAssets } = useApi<Asset[]>({
     url: '/assets',
     method: 'get',
   });
 
   return (
     <section>
+      {!isFetchingAssets && assetsData?.length === 0 ? (
+        <p>Du har inga beslut eller dokument ännu.</p>
+      ) : (
+        isFetchingAssets && (
+          <div className="flex items-center">
+            <p className="text-secondary">Laddar beslut och dokument</p>
+            <Spinner className="ml-10" size={2} />
+          </div>
+        )
+      )}
       <ul aria-label="Beslut" className="mt-24 flex flex-col gap-y-16">
         {assetsData?.map((asset, i) => (
           <li key={i}>

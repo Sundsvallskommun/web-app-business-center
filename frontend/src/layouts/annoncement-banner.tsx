@@ -4,7 +4,7 @@ import { ExternalLink } from 'lucide-react';
 import NextLink from 'next/link';
 
 //URL to the old minasidor website
-const URL_OLD = 'https://minasidor.stadsbacken.se/';
+const URL_OLD = 'https://e-tjanster.sundsvall.se/minasidor';
 
 export function AnnouncementBanner() {
   return (

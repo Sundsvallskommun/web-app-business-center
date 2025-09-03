@@ -37,7 +37,7 @@ export default function Invoices() {
   if (!invoicesIsLoading && invoices.invoices.length < 1) {
     return (
       <div>
-        <h1>Dina Fakturor</h1>
+        <h1>Dina fakturor</h1>
         <p>Du har inga fakturor än, men så fort det finns något att betala kan du se det här.</p>
       </div>
     );

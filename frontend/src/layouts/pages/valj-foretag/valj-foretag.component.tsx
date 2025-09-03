@@ -51,11 +51,6 @@ export default function ValjForetag() {
       setError('Misslyckades med att välja företag');
     }
   };
-  const goPrivate = async () => {
-    const res = await setRepresenting({ mode: RepresentingMode.PRIVATE, organizationNumber: undefined });
-    if (res?.error) return;
-    router.push('/privat/oversikt');
-  };
 
   useEffect(() => {
     if (engagements) {
@@ -89,11 +84,7 @@ export default function ValjForetag() {
             <CardElevated className="py-24 lg:py-40 px-14 lg:px-80">
               <Main>
                 <div>
-                  <h1 className="text-h1-small lg:text-h2-lg">
-                    {hasEngagements
-                      ? 'Välj företaget du vill företräda'
-                      : 'Vi hittade inget företag registrerat på dig'}
-                  </h1>
+                  <h1 className="text-h1-small lg:text-h2-lg">Välj företaget du vill företräda</h1>
                 </div>
                 <div className="break-words lg:my-56">
                   {!hasEngagements ? (
@@ -175,36 +166,23 @@ export default function ValjForetag() {
                       </Table.Footer>
                     </Table>
                   )}
-                  {hasEngagements && (
-                    <p className="pt-12 pb-12">
-                      *Genom att klicka på Fortsätt godkänner du att Sundsvalls kommun hämtar uppgifter om ditt företag
-                      från Bolagsverket.
-                    </p>
-                  )}
+                  <p className="pt-12 pb-12">
+                    *Genom att klicka på Fortsätt godkänner du att Sundsvalls kommun hämtar uppgifter om ditt företag
+                    från Bolagsverket.
+                  </p>
                 </div>
                 <div className="flex justify-end">
-                  {hasEngagements ? (
-                    <Button
-                      data-cy="representingEntityButton"
-                      loading={engagementsIsLoading}
-                      loadingText={'Hämtar bolagsengagemang'}
-                      color="vattjom"
-                      disabled={!choosen}
-                      onClick={() => onContinue()}
-                      rightIcon={<Icon icon={<ArrowRight />} />}
-                    >
-                      Fortsätt
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      color="vattjom"
-                      onClick={goPrivate}
-                      rightIcon={<Icon icon={<ArrowRight />} />}
-                    >
-                      Tillbaka till Mina sidor privat
-                    </Button>
-                  )}
+                  <Button
+                    data-cy="representingEntityButton"
+                    loading={engagementsIsLoading}
+                    loadingText={'Hämtar bolagsengagemang'}
+                    color="vattjom"
+                    disabled={!choosen}
+                    onClick={() => onContinue()}
+                    rightIcon={<Icon icon={<ArrowRight />} />}
+                  >
+                    Fortsätt
+                  </Button>
                 </div>
                 {error && <p className="pt-4 pb-4 text-red-500">{error}</p>}
               </Main>

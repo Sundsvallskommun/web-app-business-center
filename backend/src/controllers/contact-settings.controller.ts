@@ -91,6 +91,7 @@ export class ContactSettingsController {
         myPages: true,
         snailmail: false,
       },
+      modified: apiData.modified,
     };
     switch (representing.mode) {
       case RepresentingMode.BUSINESS:

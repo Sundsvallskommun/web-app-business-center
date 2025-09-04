@@ -77,7 +77,7 @@ export class ContactSettingsController {
     const phoneSettings = getPhoneSettingsFromChannels(apiData?.contactChannels);
 
     const data: ClientContactSetting = {
-      id: apiData.id,
+      id: apiData?.id,
       name: null,
       address: null,
       email: emailSettings.email,
@@ -91,7 +91,7 @@ export class ContactSettingsController {
         myPages: true,
         snailmail: false,
       },
-      modified: apiData.modified,
+      modified: apiData?.modified,
     };
     switch (representing.mode) {
       case RepresentingMode.BUSINESS:

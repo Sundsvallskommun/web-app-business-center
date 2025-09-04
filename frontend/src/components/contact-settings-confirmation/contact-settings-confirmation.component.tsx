@@ -60,8 +60,8 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
         >
           <Icon icon={<Mail />} size={56} />
         </div>
-        <div>
-          <FormBox name="email" header={'E-postadress'} isEdit={isInitial || isEdit}>
+        <div className="flex-1 min-w-0">
+          <FormBox name="email" header="E-postadress" isEdit={isInitial || isEdit}>
             {isInitial || isEdit ? null : (getValues()?.email ?? 'Ingen e-postadress tillagd')}
           </FormBox>
         </div>
@@ -73,10 +73,16 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
         >
           <Icon icon={<Smartphone />} size={56} />
         </div>
-        <div>
-          <FormBox name="phone" header={'Mobilnummer'} isEdit={isInitial || isEdit}>
+        <div className="flex-1 min-w-0">
+          <FormBox name="phone" header="Mobilnummer" isEdit={isInitial || isEdit}>
             {isInitial || isEdit ? null : (getValues()?.phone ?? 'Inget mobilnummer tillagt')}
           </FormBox>
+
+          {isInitial || isEdit ? (
+            <p className="text-small mt-1">
+              Ange mobilnumret i formatet: <code>+467XXXXXXXX</code>.
+            </p>
+          ) : null}
         </div>
       </div>
 

@@ -35,11 +35,11 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
   const title = isInitial ? 'Välkommen till Mina sidor' : 'Bekräfta kontaktuppgifter';
 
   const description = isInitial
-    ? 'Här får du en samlad överblick över dina avtal, fakturor och din förbrukning från Sundsvall Elnät och Sundsvall Energi.'
+    ? 'Vi har byggt en ny tjänst för att du lättare ska få en samlad överblick över dina ärenden, fakturor och meddelanden från Sundsvalls kommun.'
     : 'Vi behöver dina kontaktuppgifter för att skicka viktig information, bekräftelser och påminnelser. Stämmer uppgifterna nedan?';
 
   return (
-    <Modal.Content className="px-0 lg:px-56 gap-32 md:gap-40">
+    <Modal.Content className="px-0 lg:px-56 gap-32 md:gap-30">
       <div>
         <h1 className="pb-8">{title}</h1>
         <p className="text-[18px]">{description}</p>
@@ -93,7 +93,6 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
               <Link
                 href="https://sundsvall.se/kommun-och-politik/overklaga-beslut-rattssakerhet/behandling-av-personuppgifter"
                 target="_blank"
-                variant="tertiary"
                 external
               >
                 Läs mer om hur vi hanterar dina personuppgifter

@@ -1,12 +1,12 @@
 'use client';
 
 import { CardElevated } from '@components/cards/card-elevated.component';
-import { NoRepresent } from '@layouts/pages/valj-foretag/no-represent';
 import { useAppContext } from '@contexts/app.context';
 import { Engagement } from '@data-contracts/businessengagements/data-contracts';
 import { RepresentingMode } from '@interfaces/app';
 import { EntryLayout } from '@layouts/entry-layout.component';
 import Main from '@layouts/main.component';
+import { NoRepresent } from '@layouts/pages/valj-foretag/no-represent';
 import { useRepresentingSwitch } from '@layouts/site-menu/site-menu-items';
 import { useCombinedBusinessEngagements } from '@services/organisation-service';
 import { Button, Icon, Pagination, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
@@ -29,10 +29,9 @@ export default function ValjForetag() {
   const [choosen, setChoosen] = useState('');
 
   const pageSize = 10;
-
+  const hasEngagements = (engagements?.length ?? 0) > 0;
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pages, setPages] = useState<number>(1);
-
   const onChoice = (engagement: Engagement) => {
     setError('');
     setChoosen(engagement.organizationNumber ?? '');
@@ -81,16 +80,17 @@ export default function ValjForetag() {
           logoClasses="hidden medium-device:block"
           className="!py-0 !medium-device:py-40 !px-0"
         >
-          <div className="w-full max-w-[73.8rem]">
+          <div className="w-full max-w-[80rem]">
             <CardElevated className="py-24 lg:py-40 px-14 lg:px-80">
               <Main>
                 <div>
                   <h1 className="text-h1-small lg:text-h2-lg">Välj företaget du vill företräda</h1>
                 </div>
                 <div className="break-words lg:my-56">
-                  {engagements?.length === 0 ? (
-                    <div className="p-4 gap-2 grid grid-cols-2 bg-gray-lighter">
-                      <div className="row-header-name">Inga företag hittades</div>
+                  {!hasEngagements ? (
+                    <div className="rounded max-w-prose">
+                      Vi kontrollerar företagsangemang från Bolagsverket och Skatteverket. Det verkar inte som att ditt
+                      personnummer inte är kopplat till något företag.
                     </div>
                   ) : (
                     <Table background className={cx('mt-40', !isMinDesktop && '[&_.sk-table-thead]:sr-only')}>

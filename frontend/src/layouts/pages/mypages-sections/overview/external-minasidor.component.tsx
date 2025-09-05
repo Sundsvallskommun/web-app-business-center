@@ -15,7 +15,7 @@ const servicesSource: ExternalService[] = [
   { id: 3, label: 'Boka idrottshall och elcykel', url: 'https://sundsvall.actorsmartbook.se' },
   { id: 4, label: 'Vklass', url: 'https://auth.vklass.se/' },
   { id: 5, label: 'Förskola/Fritidshem', url: 'https://e-tjanster.sundsvall.se/oversikt/overview/74' },
-  { id: 6, label: 'Kulturskolan', url: 'http://www.studyalong.se/sundsvall' },
+  { id: 6, label: 'Kulturskolan', url: 'https://www.studyalong.se/sundsvall' },
 ];
 
 type ExternalMinaSidorProps = {

@@ -1,12 +1,12 @@
 'use client';
 
+import { Disclosure } from '@sk-web-gui/react';
 import { ContactDetails } from './profile-contact-details.component';
 import { ContactSettings } from './profile-contact-settings.component';
-import { Disclosure } from '@sk-web-gui/react';
 
 export const Profile = () => {
   return (
-    <div className="flex flex-col gap-40">
+    <div className="flex flex-col gap-20 md:gap-40">
       <h1 className="mb-0">Din profil och inställningar</h1>
 
       <Disclosure

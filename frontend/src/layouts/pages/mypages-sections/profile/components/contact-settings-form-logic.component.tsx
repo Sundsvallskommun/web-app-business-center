@@ -1,7 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ClientContactSetting } from '@interfaces/contactsettings';
 import { useApi, useApiService } from '@services/api-service';
-import { useSnackbar } from '@sk-web-gui/react';
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo } from 'react';
 import { FormProvider, UseFormReturn, useForm } from 'react-hook-form';
@@ -88,7 +87,6 @@ export default function ContactSettingsFormLogic({
   onSubmitSuccess,
   onSubmitFailed,
 }: ContactSettingsFormLogicProps) {
-  const snackBar = useSnackbar();
   const postMutation = useApi<ClientContactSetting>({
     url: '/contactsettings',
     method: 'post',
@@ -144,16 +142,8 @@ export default function ContactSettingsFormLogic({
         queryClient.invalidateQueries({
           queryKey: ['/contactsettings'],
         });
-        snackBar({
-          message: 'Uppgifterna sparades.',
-          status: 'success',
-        });
         if (onSubmitSuccess) onSubmitSuccess();
       } else {
-        snackBar({
-          message: 'Det gick inte att spara uppgifterna.',
-          status: 'error',
-        });
         if (onSubmitFailed) onSubmitFailed();
       }
     }

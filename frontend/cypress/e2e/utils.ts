@@ -18,8 +18,6 @@ export const testContactSettings = (representingMode: RepresentingMode = represe
   cy.get('input[name="phone"]').should('have.value', '+46701740605');
   cy.contains('button:visible', 'Spara').click();
   cy.wait('@postContactSettings');
-  cy.get('.sk-snackbar').contains('Uppgifterna sparades.').should('be.visible');
-  cy.get('.sk-snackbar').contains('button', 'Stäng').click();
   cy.contains('h2', 'Kontaktuppgifter').next().contains('button', 'Redigera').should('be.visible');
 
   // Kontaktvägar
@@ -28,8 +26,6 @@ export const testContactSettings = (representingMode: RepresentingMode = represe
   cy.get('[name="notifications.email_disabled"]').should('be.checked');
   cy.contains('button:visible', 'Spara').click();
   cy.wait('@postContactSettings');
-  cy.get('.sk-snackbar').contains('Uppgifterna sparades.').should('be.visible');
-  cy.get('.sk-snackbar').contains('button', 'Stäng').click();
   cy.contains('h2', 'Kontaktvägar').next().contains('button', 'Redigera').should('be.visible');
 };
 

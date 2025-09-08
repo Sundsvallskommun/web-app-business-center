@@ -32,7 +32,6 @@ export const ContactSettings = () => {
                         <Checkbox
                           {...register('notifications.phone_disabled')}
                           data-cy="notification-channel-sms-checkbox"
-                          disabled={!watch().phone}
                         >
                           Sms
                         </Checkbox>
@@ -47,7 +46,6 @@ export const ContactSettings = () => {
                         <Checkbox
                           {...register('notifications.email_disabled')}
                           data-cy="notification-channel-email-checkbox"
-                          disabled={!watch().email}
                           className="mt-8"
                         >
                           E-post

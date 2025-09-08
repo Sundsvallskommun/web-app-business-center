@@ -1,6 +1,6 @@
 import { IInvoice } from '@interfaces/invoice';
 import { getInvoicePdf } from '@services/invoice-service';
-import { Button, Icon, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
+import { Button, Icon, useThemeQueries } from '@sk-web-gui/react';
 import { ArrowDownToLine } from 'lucide-react';
 
 export const GetPdfButton: React.FC<{
@@ -8,7 +8,6 @@ export const GetPdfButton: React.FC<{
   setIsLoading?: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   item: IInvoice;
 }> = ({ isLoading, setIsLoading, item }) => {
-  const message = useSnackbar();
   const { isMinDesktop } = useThemeQueries();
 
   const getPdf = (invoiceNumber: string) => {
@@ -28,11 +27,6 @@ export const GetPdfButton: React.FC<{
           link.setAttribute('download', `${invoiceNumber}.pdf`);
           document.body.appendChild(link);
           link.click();
-        } else {
-          message({
-            message: 'Det gick inte att hämta filen.',
-            status: 'error',
-          });
         }
       })
       .finally(() => {

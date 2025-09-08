@@ -6,7 +6,6 @@ import {
   FormErrorMessage,
   Textarea,
   UploadFile,
-  useSnackbar,
   useThemeQueries,
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
@@ -36,7 +35,6 @@ export default function CaseNewMessage() {
       },
     },
   });
-  const snackBar = useSnackbar();
 
   const handleOnSubmit: SubmitHandler<NewMessage> = async (values) => {
     const formData = new FormData();
@@ -60,25 +58,12 @@ export default function CaseNewMessage() {
     postMessageMutation
       .mutateAsync(formData)
       .then((res) => {
-        if (res.error) {
-          snackBar({
-            message: 'Meddelandet kunde inte skickas',
-            status: 'error',
-          });
-        } else {
+        if (!res.error) {
           context.reset();
-          snackBar({
-            message: 'Meddelandet skickades',
-            status: 'success',
-          });
         }
       })
       .catch((error) => {
         console.error('Error sending message:', error);
-        snackBar({
-          message: 'Meddelandet kunde inte skickas',
-          status: 'error',
-        });
       });
   };
 
@@ -123,7 +108,13 @@ export default function CaseNewMessage() {
             ) : null}
           </div>
           <div className="flex desktop:justify-end">
-            <Button className="w-full desktop:w-fit" size={isMinDesktop ? 'md' : 'lg'} type="submit" color="vattjom" loading={postMessageMutation.isPending}>
+            <Button
+              className="w-full desktop:w-fit"
+              size={isMinDesktop ? 'md' : 'lg'}
+              type="submit"
+              color="vattjom"
+              loading={postMessageMutation.isPending}
+            >
               Skicka
             </Button>
           </div>

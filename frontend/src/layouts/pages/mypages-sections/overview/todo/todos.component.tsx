@@ -46,7 +46,7 @@ export const Todos = () => {
   return (
     <section>
       <h1>Att göra</h1>
-      <p className="text-lead">Här visas ärenden som du behöver ta hand om</p>
+      <p className="text-lead">Här visas ärenden där du har något att hantera.</p>
       <div className={styles['todos']}>
         {casesIsFetching ? (
           <div className="flex items-center">
@@ -54,7 +54,7 @@ export const Todos = () => {
             <Spinner className="ml-10" size={2} />
           </div>
         ) : todoCases.length < 1 ? (
-          <p className="text-secondary">Du har inga ärenden att ta hand om</p>
+          <p className="text-secondary">Du har inga ärenden att hantera.</p>
         ) : (
           <>
             {isMinDesktop && <Divider />}

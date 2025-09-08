@@ -81,7 +81,7 @@ export const ContactDetails = () => {
             ) : (
               <>
                 <div data-cy="form-box-email">
-                  {contactsettings?.email ?? EmptyField('Ingen e-postaddress tillagd')}
+                  {contactsettings?.email ? contactsettings.email : EmptyField('Ingen e-postaddress tillagd')}
                 </div>
                 <Button
                   size="md"
@@ -100,17 +100,24 @@ export const ContactDetails = () => {
 
           <FormBox name="phone" header={isEditPhone ? 'Ändra mobilnummer' : 'Mobilnummer'} isEdit={isEditPhone}>
             {isEditPhone ? (
-              <div className="flex gap-16 mt-16">
-                <Button variant="secondary" data-cy="cancel-edit-phone-button" onClick={() => setIsEditPhone(false)}>
-                  Avbryt
-                </Button>
-                <Button type="submit" data-cy="save-phone-button">
-                  Spara
-                </Button>
-              </div>
+              <>
+                <p className="text-small mt-1">
+                  Ange mobilnumret i formatet: <code>+467XXXXXXXX</code>.
+                </p>
+                <div className="flex gap-16 mt-16">
+                  <Button variant="secondary" data-cy="cancel-edit-phone-button" onClick={() => setIsEditPhone(false)}>
+                    Avbryt
+                  </Button>
+                  <Button type="submit" data-cy="save-phone-button">
+                    Spara
+                  </Button>
+                </div>
+              </>
             ) : (
               <>
-                <div data-cy="form-box-phone">{contactsettings?.phone ?? EmptyField('Inget mobilnummer tillagt')}</div>
+                <div data-cy="form-box-phone">
+                  {contactsettings?.phone ? contactsettings.phone : EmptyField('Inget mobilnummer tillagt')}
+                </div>
                 <Button
                   size="md"
                   variant="secondary"

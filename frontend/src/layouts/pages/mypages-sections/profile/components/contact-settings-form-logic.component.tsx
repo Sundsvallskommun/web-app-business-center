@@ -101,7 +101,7 @@ export default function ContactSettingsFormLogic({
   const context = useForm<Partial<ClientContactSetting>>({
     resolver: yupResolver(formSchema),
     defaultValues: useMemo(() => formData, [formData]),
-    mode: 'onChange',
+    mode: 'onSubmit',
   });
   const queryClient = useApiService((s) => s.queryClient);
 

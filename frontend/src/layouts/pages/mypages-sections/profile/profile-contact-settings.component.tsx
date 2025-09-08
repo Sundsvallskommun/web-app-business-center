@@ -1,12 +1,12 @@
 'use client';
 
+import { ConnectForm } from '@components/form/connect-form.component';
+import { ClientContactSetting } from '@interfaces/contactsettings';
+import { useApi } from '@services/api-service';
 import { Button, Checkbox, FormControl, FormLabel, Icon } from '@sk-web-gui/react';
 import { Info, Pen } from 'lucide-react';
 import { useState } from 'react';
 import ContactSettingsFormLogic from './components/contact-settings-form-logic.component';
-import { ConnectForm } from '@components/form/connect-form.component';
-import { ClientContactSetting } from '@interfaces/contactsettings';
-import { useApi } from '@services/api-service';
 
 export const ContactSettings = () => {
   const { data: contactsettings } = useApi<ClientContactSetting>({
@@ -38,7 +38,7 @@ export const ContactSettings = () => {
                         </Checkbox>
                         {!watch().phone ? (
                           <div className="flex items-center gap-6">
-                            <Icon size={16} icon={<Info />} className="ml-32" />
+                            <Icon size={16} icon={<Info />} className="ml-32 w-4 h-4 shrink-0" />
                             <p className="text-small">
                               För att få aviseringar via sms behöver du lägga till ett mobilnummer.
                             </p>
@@ -54,7 +54,7 @@ export const ContactSettings = () => {
                         </Checkbox>
                         {!watch().email ? (
                           <div className="flex items-center gap-6">
-                            <Icon size={16} icon={<Info />} className="ml-32" />
+                            <Icon size={16} icon={<Info />} className="ml-32 w-4 h-4 shrink-0" />
                             <p className="text-small">
                               För att få aviseringar via mail behöver du lägga till en e-post.
                             </p>

@@ -9,8 +9,8 @@ export default function OmWebbplatsen() {
     <PagesBreadcrumbsLayout>
       <h1>Om webbplatsen</h1>
       <div>
-        Jorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet
-        odio mattis.
+        Här hittar du information om hur webbplatsen fungerar, vår användning av kakor, tillgänglighet samt hur vi
+        hanterar personuppgifter.
       </div>
       <div className="mt-56 flex flex-col large-device:flex-row gap-24 justify-start text-body">
         <Card useHoverEffect href="/om-webbplatsen/kakor" layout="horizontal">
@@ -20,8 +20,8 @@ export default function OmWebbplatsen() {
             </Card.Header>
             <Card.Text>
               <p>
-                Amet enim adipiscing congue justo adipiscing sagittis volutpat nibh ac. Integer viverra lectus in
-                quisque. In nisl mauris faucibus egestas quis mi nam.
+                Vi använder kakor för att webbplatsen ska fungera, samla in statistik och ge dig en bättre upplevelse.
+                Du kan välja vilka kakor du vill tillåta.
               </p>
             </Card.Text>
           </Card.Body>
@@ -33,8 +33,8 @@ export default function OmWebbplatsen() {
             </Card.Header>
             <Card.Text>
               <p>
-                Amet enim adipiscing congue justo adipiscing sagittis volutpat nibh ac. Integer viverra lectus in
-                quisque. In nisl mauris faucibus egestas quis mi nam.
+                Vi vill att alla ska kunna använda webbplatsen. Här kan du läsa om vårt arbete, kända brister och hur du
+                kontaktar oss vid tillgänglighetsproblem.
               </p>
             </Card.Text>
           </Card.Body>
@@ -53,8 +53,8 @@ export default function OmWebbplatsen() {
             </Card.Header>
             <Card.Text>
               <p>
-                Amet enim adipiscing congue justo adipiscing sagittis volutpat nibh ac. Integer viverra lectus in
-                quisque. In nisl mauris faucibus egestas quis mi nam.
+                Vi behandlar personuppgifter enligt GDPR och värnar om din integritet. Här kan du läsa mer om hur vi
+                hanterar uppgifter och vilka rättigheter du har.
               </p>
             </Card.Text>
           </Card.Body>

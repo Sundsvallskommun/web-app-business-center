@@ -82,15 +82,9 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
           <Icon icon={<Smartphone />} size={56} />
         </div>
         <div className="flex-1 min-w-0">
-          <FormBox name="phone" header="Mobilnummer" isEdit={isInitial || isEdit}>
+          <FormBox name="phone" header="Mobilnummer" isEdit={isInitial || isEdit} inputProps={{ placeholder: '+46' }}>
             {isInitial || isEdit ? null : (getValues()?.phone ?? 'Inget mobilnummer tillagt')}
           </FormBox>
-
-          {isInitial || isEdit ? (
-            <p className="text-small mt-1">
-              Ange mobilnumret i formatet: <code>+467XXXXXXXX</code>.
-            </p>
-          ) : null}
           <FormErrorMessage className="text-error">
             {(methods.formState.errors?.[phone]?.message as string) ?? ''}
           </FormErrorMessage>

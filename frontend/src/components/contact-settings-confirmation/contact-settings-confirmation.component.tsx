@@ -156,26 +156,14 @@ export const ContactSettingsConfirmation: React.FC = () => {
     if (!isOpen) return;
 
     const scrollY = window.scrollY;
-    const { style } = document.body;
-    const prev = {
-      overflow: style.overflow,
-      position: style.position,
-      top: style.top,
-      width: style.width,
-    };
+    const html = document.documentElement;
+    const prevOverflow = html.style.overflow;
 
-    style.overflow = 'hidden';
-    style.position = 'fixed';
-    style.top = `-${scrollY}px`;
-    style.width = '100%';
+    html.style.overflow = 'hidden';
 
     return () => {
-      style.overflow = prev.overflow;
-      style.position = prev.position;
-      const y = -(parseInt(style.top || '0', 10) || 0);
-      style.top = prev.top;
-      style.width = prev.width;
-      window.scrollTo(0, y);
+      html.style.overflow = prevOverflow;
+      window.scrollTo(0, scrollY);
     };
   }, [isOpen]);
 
@@ -221,7 +209,7 @@ export const ContactSettingsConfirmation: React.FC = () => {
         hideClosebutton
       >
         <div
-          className="max-h-[100svh] sm:max-h-[80svh] overflow-y-auto overscroll-y-contain"
+          className="max-h-[100dvh] sm:max-h-[80dvh] overflow-y-auto overscroll-y-contain"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           <ContactSettingsFormLogic onSubmitSuccess={() => setIsOpen(false)} formData={contactSettings}>

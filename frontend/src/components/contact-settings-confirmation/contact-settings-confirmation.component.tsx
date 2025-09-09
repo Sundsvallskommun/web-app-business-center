@@ -186,7 +186,7 @@ export const ContactSettingsConfirmation: React.FC = () => {
 
   return (
     <Modal
-      className="fixed inset-0 sm:relative sm:inset-auto sm:mx-auto sm:my-auto sm:max-w-[720px] w-full rounded-0 sm:rounded-cards flex flex-col overflow-hidden"
+      className="inset-0 sm:relative sm:inset-auto sm:mx-auto sm:my-auto sm:max-w-[720px] w-full rounded-0 sm:rounded-cards"
       disableCloseOutside={false}
       show={isOpen}
       hideClosebutton

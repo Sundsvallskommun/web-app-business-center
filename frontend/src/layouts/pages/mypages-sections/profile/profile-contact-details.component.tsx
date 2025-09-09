@@ -105,19 +105,14 @@ export const ContactDetails = () => {
             inputProps={{ placeholder: '+46' }}
           >
             {isEditPhone ? (
-              <>
-                <p className="text-small mt-1">
-                  Ange mobilnumret i formatet: <code>+467XXXXXXXX</code>.
-                </p>
-                <div className="flex gap-16 mt-16">
-                  <Button variant="secondary" data-cy="cancel-edit-phone-button" onClick={() => setIsEditPhone(false)}>
-                    Avbryt
-                  </Button>
-                  <Button type="submit" data-cy="save-phone-button">
-                    Spara
-                  </Button>
-                </div>
-              </>
+              <div className="flex gap-16 mt-16">
+                <Button variant="secondary" data-cy="cancel-edit-phone-button" onClick={() => setIsEditPhone(false)}>
+                  Avbryt
+                </Button>
+                <Button type="submit" data-cy="save-phone-button">
+                  Spara
+                </Button>
+              </div>
             ) : (
               <>
                 <div data-cy="form-box-phone">

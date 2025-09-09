@@ -82,7 +82,7 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
           <Icon icon={<Smartphone />} size={56} />
         </div>
         <div className="flex-1 min-w-0">
-          <FormBox name="phone" header="Mobilnummer" isEdit={isInitial || isEdit}>
+          <FormBox name="phone" header="Mobilnummer" isEdit={isInitial || isEdit} inputProps={{ placeholder: '+46' }}>
             {isInitial || isEdit ? null : (getValues()?.phone ?? 'Inget mobilnummer tillagt')}
           </FormBox>
 

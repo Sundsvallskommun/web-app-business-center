@@ -98,7 +98,12 @@ export const ContactDetails = () => {
           </FormBox>
           <Divider className="my-16" />
 
-          <FormBox name="phone" header={isEditPhone ? 'Ändra mobilnummer' : 'Mobilnummer'} isEdit={isEditPhone}>
+          <FormBox
+            name="phone"
+            header={isEditPhone ? 'Ändra mobilnummer' : 'Mobilnummer'}
+            isEdit={isEditPhone}
+            inputProps={{ placeholder: '+46' }}
+          >
             {isEditPhone ? (
               <>
                 <p className="text-small mt-1">

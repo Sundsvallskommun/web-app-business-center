@@ -37,7 +37,7 @@ interface ContactSettingsFormLogicProps {
   onSubmitFailed?: () => void;
 }
 
-const phoneRegExp = /^(?:\+46\d{9})?$/;
+const phoneRegExp = /^$|^(?:\+|0)[0-9\s-]{6,19}$/;
 
 const formSchema = yup
   .object<ClientContactSetting>({
@@ -125,7 +125,7 @@ export default function ContactSettingsFormLogic({
       const data: Partial<ClientContactSetting> = _.merge(formData, {
         id: formData?.id,
         email: values.email,
-        phone: values.phone,
+        phone: values?.phone?.replace(/^0/, '+46').replaceAll('-', '').replaceAll(' ', ''), //Possible temporary fix until phonenumber component is avaliable in shared-components
         notifications: {
           email_disabled: !values.notifications?.email_disabled,
           phone_disabled: !values.notifications?.phone_disabled,

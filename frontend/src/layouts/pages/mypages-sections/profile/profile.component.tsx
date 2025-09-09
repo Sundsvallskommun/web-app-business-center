@@ -6,7 +6,7 @@ import { ContactSettings } from './profile-contact-settings.component';
 
 export const Profile = () => {
   return (
-    <div className="flex flex-col gap-20 md:gap-40">
+    <div className="flex flex-col gap-16 md:gap-40">
       <h1 className="mb-0">Din profil och inställningar</h1>
 
       <Disclosure

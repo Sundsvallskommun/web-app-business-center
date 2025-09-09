@@ -19,10 +19,7 @@ export default function OmWebbplatsen() {
               <h2>Kakor (cookies)</h2>
             </Card.Header>
             <Card.Text>
-              <p>
-                Vi använder kakor för att webbplatsen ska fungera, samla in statistik och ge dig en bättre upplevelse.
-                Du kan välja vilka kakor du vill tillåta.
-              </p>
+              <p>På den här webbplatsen använder vi kakor (cookies). Läs mer om kakor.</p>
             </Card.Text>
           </Card.Body>
         </Card>
@@ -32,10 +29,7 @@ export default function OmWebbplatsen() {
               <h2>Tillgänglighet</h2>
             </Card.Header>
             <Card.Text>
-              <p>
-                Vi vill att alla ska kunna använda webbplatsen. Här kan du läsa om vårt arbete, kända brister och hur du
-                kontaktar oss vid tillgänglighetsproblem.
-              </p>
+              <p>Vi strävar efter att vår webbplats ska vara tillgänglig för alla. Läs mer om webbtillgänglighet.</p>
             </Card.Text>
           </Card.Body>
         </Card>
@@ -52,10 +46,7 @@ export default function OmWebbplatsen() {
               </h2>
             </Card.Header>
             <Card.Text>
-              <p>
-                Vi behandlar personuppgifter enligt GDPR och värnar om din integritet. Här kan du läsa mer om hur vi
-                hanterar uppgifter och vilka rättigheter du har.
-              </p>
+              <p>Här kan du läsa om hur vi behandlar dina personuppgifter.</p>
             </Card.Text>
           </Card.Body>
         </Card>

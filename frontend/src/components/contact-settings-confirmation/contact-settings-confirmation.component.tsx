@@ -40,8 +40,8 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
   const title = isInitial ? 'Välkommen till Mina sidor' : 'Bekräfta kontaktuppgifter';
 
   const description = isInitial
-    ? 'Vi har byggt en ny tjänst för att du lättare ska få en samlad överblick över dina ärenden, fakturor och meddelanden från Sundsvalls kommun.'
-    : 'Vi behöver dina kontaktuppgifter för att skicka viktig information, bekräftelser och påminnelser. Stämmer uppgifterna nedan?';
+    ? 'I Mina sidor kan du enkelt följa de ärenden som du har hos Sundsvalls kommun.'
+    : 'Vi behöver dina kontaktuppgifter för att kunna meddela dig om dina ärenden. Stämmer uppgifterna nedan?';
 
   return (
     <Modal.Content className="px-0 lg:px-56 gap-32 md:gap-30">
@@ -55,7 +55,7 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
       {isInitial ? (
         <div>
           <h2 className="!text-[18px]">Lägg till dina kontaktuppgifter</h2>
-          <p>Vi behöver dina kontaktuppgifter för att skicka viktig information, bekräftelser och påminnelser.</p>
+          <p>Vi behöver dina kontaktuppgifter för att kunna meddela dig om dina ärenden.</p>
         </div>
       ) : null}
 

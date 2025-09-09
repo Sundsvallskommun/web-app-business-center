@@ -16,7 +16,7 @@ export const Profile = () => {
           <>
             <h4 className="text-h4-md">Kontaktuppgifter</h4>
             <p className="sm:text-base font-normal mb-0 text-small">
-              Uppdatera dina kontaktuppgifter så att vi kan nå dig.
+              Här kan du uppdatera dina kontaktuppgifter.
             </p>
           </>
         }
@@ -31,7 +31,7 @@ export const Profile = () => {
           <>
             <h4 className="text-h4-md">Aviseringar</h4>
             <p className="sm:text-base font-normal mb-0 text-small">
-              Välj hur du vill bli kontaktad när något nytt händer.
+              Här väljer hur du ska bli notifierad när något händer kring ditt ärende.
             </p>
           </>
         }

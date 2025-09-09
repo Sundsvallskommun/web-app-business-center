@@ -59,7 +59,7 @@ body {
 
 @layer components {
   .main-container {
-    @apply max-w-main-content grow w-full flex flex-col items-center my-20 desktop:my-80;
+    @apply max-w-main-content grow w-full flex flex-col items-center my-40 desktop:my-80;
   }
   .text-content {
     @apply flex flex-col max-w-[76.4rem];

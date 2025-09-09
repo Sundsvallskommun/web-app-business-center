@@ -6,11 +6,11 @@ import { ContactSettings } from './profile-contact-settings.component';
 
 export const Profile = () => {
   return (
-    <div className="flex flex-col gap-16 md:gap-40">
+    <div className="flex flex-col gap-20 md:gap-40">
       <h1 className="mb-0">Din profil och inställningar</h1>
 
       <Disclosure
-        className="bg-background-content rounded-cards shadow-50 md:py-16 py-32 px-24"
+        className="bg-background-content rounded-cards shadow-50 md:py-16 py-16 px-24"
         data-cy="contact-information-disclosure"
         header={
           <>
@@ -25,7 +25,7 @@ export const Profile = () => {
       </Disclosure>
 
       <Disclosure
-        className="bg-background-content rounded-cards shadow-50 md:py-16 py-32 px-24"
+        className="bg-background-content rounded-cards shadow-50 md:py-16 py-16 px-24"
         data-cy="notifications-disclosure"
         header={
           <>

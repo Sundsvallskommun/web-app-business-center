@@ -41,8 +41,12 @@ export const ExternalMinaSidor = ({ services }: ExternalMinaSidorProps) => {
             key={svc.id}
             href={svc.url}
             useHoverEffect
-            color={'mono'}
+            color="mono"
             aria-label={`Öppna ${svc.label} (extern länk)`}
+            onClick={(e) => {
+              e.preventDefault();
+              window.open(svc.url, '_blank', 'noopener,noreferrer');
+            }}
           >
             <MetaCard.Header>
               <h4 className="text-h4-md">{svc.label}</h4>

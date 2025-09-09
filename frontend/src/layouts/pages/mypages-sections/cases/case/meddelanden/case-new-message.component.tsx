@@ -124,6 +124,7 @@ export default function CaseNewMessage() {
                 <FileUpload.List name="files" showBorder>
                   {files?.map((file, i) => (
                     <FileUpload.ListItem
+                      className="whitespace-normal break-words"
                       key={`${file?.meta.name}-${i}`}
                       index={i}
                       actionsProps={{ showRemove: true }}

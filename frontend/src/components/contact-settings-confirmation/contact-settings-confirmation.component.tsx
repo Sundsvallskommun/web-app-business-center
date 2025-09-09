@@ -184,10 +184,13 @@ export const ContactSettingsConfirmation: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFetching, contactSettings]);
 
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : 'unset';
+  }, [isOpen]);
+
   return (
     <Modal
       className="fixed inset-0 sm:relative sm:inset-auto sm:mx-auto sm:my-auto sm:max-w-[720px] w-full rounded-0 sm:rounded-cards overflow-auto"
-      disableCloseOutside={false}
       show={isOpen}
       hideClosebutton
     >

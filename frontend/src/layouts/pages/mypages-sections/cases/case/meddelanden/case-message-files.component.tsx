@@ -1,10 +1,10 @@
 import { AttachmentResponse } from '@data-contracts/case-data/data-contracts';
+import { FrontendMessageResponse } from '@interfaces/case';
 import { getCaseMessageAttachment } from '@services/case-service';
 import { Button, Icon } from '@sk-web-gui/react';
 import { File, Image } from 'lucide-react';
 import { useCallback, useContext } from 'react';
 import { CaseContext } from '../case-layout.component';
-import { FrontendMessageResponse } from '@interfaces/case';
 
 export default function CaseMessageFiles(props: { message: FrontendMessageResponse }) {
   const { message } = props;
@@ -36,6 +36,7 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
           <Button
             onClick={handleOpenFile(file)}
             leftIcon={<Icon icon={iconType} />}
+            className={'whitespace-normal break-words max-w-full'}
             variant="tertiary"
             size="md"
             key={`${index}`}

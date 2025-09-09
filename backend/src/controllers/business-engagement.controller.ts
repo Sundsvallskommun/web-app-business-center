@@ -89,10 +89,9 @@ export class BusinessEngagementController {
     if (!res.data) {
       throw new HttpException(404, 'Not Found');
     }
-
     const responseData: InformationResponse = {
       information: {
-        companyLocation: (res.data.companyLocation as { address: BusinessInformation['companyLocation'] })?.address ?? null,
+        companyLocation: (res?.data?.companyLocation as BusinessInformation['companyLocation']) ?? null,
       },
     };
 

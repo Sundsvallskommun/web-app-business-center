@@ -44,7 +44,7 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
     : 'Vi behöver dina kontaktuppgifter för att kunna meddela dig om dina ärenden. Stämmer uppgifterna nedan?';
 
   return (
-    <Modal.Content className="px-0 lg:px-56 gap-32 md:gap-30 overflow-auto">
+    <Modal.Content className="px-0 lg:px-56 gap-32 md:gap-30">
       <div>
         <h1 className="pb-8">{title}</h1>
         <p className="text-[18px]">{description}</p>
@@ -186,7 +186,7 @@ export const ContactSettingsConfirmation: React.FC = () => {
 
   return (
     <Modal
-      className="inset-0 sm:relative sm:inset-auto sm:mx-auto sm:my-auto sm:max-w-[720px] w-full rounded-0 sm:rounded-cards"
+      className="fixed inset-0 sm:relative sm:inset-auto sm:mx-auto sm:my-auto sm:max-w-[720px] w-full rounded-0 sm:rounded-cards overflow-auto"
       disableCloseOutside={false}
       show={isOpen}
       hideClosebutton

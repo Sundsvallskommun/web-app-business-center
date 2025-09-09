@@ -34,7 +34,7 @@ export class InvoicesController {
 
     const params = {
       partyId: getRepresentingPartyId(representing),
-      organizationNumber: 2120002411, // Issuer, municipality
+      organizationNumber: MUNICIPALITY_ORG_NR, // Issuer, municipality
       invoiceDateFrom: invoiceDateFrom.toISOString().split('T')[0],
       // page: 1, // default
       // limit: 100, // default

@@ -152,6 +152,33 @@ export const ContactSettingsConfirmation: React.FC = () => {
   const { value: showedInitial, set: setShowedInitial } = useLocalStorageValue('showedInitialContactSettings');
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const scrollY = window.scrollY;
+    const { style } = document.body;
+    const prev = {
+      overflow: style.overflow,
+      position: style.position,
+      top: style.top,
+      width: style.width,
+    };
+
+    style.overflow = 'hidden';
+    style.position = 'fixed';
+    style.top = `-${scrollY}px`;
+    style.width = '100%';
+
+    return () => {
+      style.overflow = prev.overflow;
+      style.position = prev.position;
+      const y = -(parseInt(style.top || '0', 10) || 0);
+      style.top = prev.top;
+      style.width = prev.width;
+      window.scrollTo(0, y);
+    };
+  }, [isOpen]);
+
   const { data: contactSettings, isFetching } = useApi<ClientContactSetting>({
     url: '/contactsettings',
     method: 'get',
@@ -187,14 +214,20 @@ export const ContactSettingsConfirmation: React.FC = () => {
   return (
     <div>
       <Modal
-        className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px] w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-screen overflow-auto"
+        className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px]
+                 w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
         disableCloseOutside={false}
         show={isOpen}
         hideClosebutton
       >
-        <ContactSettingsFormLogic onSubmitSuccess={() => setIsOpen(false)} formData={contactSettings}>
-          <ContactSettingsConfirmationContent onClose={closeHandler} isInitial={!showedInitial} />
-        </ContactSettingsFormLogic>
+        <div
+          className="max-h-[100svh] sm:max-h-[80svh] overflow-y-auto overscroll-y-contain"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <ContactSettingsFormLogic onSubmitSuccess={() => setIsOpen(false)} formData={contactSettings}>
+            <ContactSettingsConfirmationContent onClose={closeHandler} isInitial={!showedInitial} />
+          </ContactSettingsFormLogic>
+        </div>
       </Modal>
     </div>
   );

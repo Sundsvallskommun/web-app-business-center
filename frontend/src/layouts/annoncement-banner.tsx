@@ -14,9 +14,8 @@ export function AnnouncementBanner() {
       aria-label="Informationsmeddelande"
     >
       <p className="text-base">
-        Mina sidor är under uppbyggnad och utvecklas med att visa flera ärenden och funktioner. Saknar du något kan du
-        fortfarande använda den äldre versionen av{' '}
-        <NextLink href={URL_OLD} className="underline inline-flex items-center gap-1 text-vattjom-surface-primary">
+        Du är nu inloggad i nya Mina sidor. Saknar du något? Du kan byta till den äldre versionen av Mina sidor här.{' '}
+        <NextLink target={'_blank'} href={URL_OLD} className="underline inline-flex items-center gap-1 text-vattjom-surface-primary">
           Mina sidor
           <ExternalLink size={14} aria-hidden className="inline-block shrink-0" />
         </NextLink>

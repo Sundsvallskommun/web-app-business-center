@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Divider, Icon, MenuVertical, Modal, cx } from '@sk-web-gui/react';
+import { Button, Divider, Icon, Link, MenuVertical, Modal, cx } from '@sk-web-gui/react';
 import { ArrowRight, LogOut, Menu } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -83,6 +83,17 @@ export const MobileMenu = () => {
           >
             Till Mina sidor {representingMode === RepresentingMode.BUSINESS ? 'privat' : 'företag'}
           </Button>
+          <Button className="w-full" showBackground={false}
+            variant="tertiary">
+              <Link
+                href={'https://e-tjanster.sundsvall.se/'}
+                variant="tertiary"
+                external={true}
+                strong={true}
+              >
+                E-tjänster
+              </Link>
+            </Button>
         </Modal.Content>
         <Modal.Footer>
           <Button

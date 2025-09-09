@@ -2,7 +2,7 @@
 
 import { useAppContext } from '@contexts/app.context';
 import { useCombinedBusinessEngagements } from '@services/organisation-service';
-import { Button, Icon, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
+import { Button, Icon, Link, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
 import { ArrowRight, ChevronDown, LogOut } from 'lucide-react';
 import NextLink from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -130,6 +130,16 @@ export const useSiteMenuItems = () => {
   const router = useRouter();
 
   return [
+    <Link
+      href={'https://e-tjanster.sundsvall.se/'}
+      key={`site-menu-items-1`}
+      variant="tertiary"
+      external={true}
+      strong={true}
+      className="ml-10"
+    >
+      E-tjänster
+    </Link>,
     <Button
       key={`site-menu-items-0`}
       onClick={() => router.push('/logout')}

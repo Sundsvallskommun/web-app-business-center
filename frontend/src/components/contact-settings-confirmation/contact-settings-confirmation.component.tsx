@@ -152,21 +152,6 @@ export const ContactSettingsConfirmation: React.FC = () => {
   const { value: showedInitial, set: setShowedInitial } = useLocalStorageValue('showedInitialContactSettings');
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const scrollY = window.scrollY;
-    const html = document.documentElement;
-    const prevOverflow = html.style.overflow;
-
-    html.style.overflow = 'hidden';
-
-    return () => {
-      html.style.overflow = prevOverflow;
-      window.scrollTo(0, scrollY);
-    };
-  }, [isOpen]);
-
   const { data: contactSettings, isFetching } = useApi<ClientContactSetting>({
     url: '/contactsettings',
     method: 'get',
@@ -200,23 +185,15 @@ export const ContactSettingsConfirmation: React.FC = () => {
   }, [isFetching, contactSettings]);
 
   return (
-    <div>
-      <Modal
-        className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px]
-                 w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
-        disableCloseOutside={false}
-        show={isOpen}
-        hideClosebutton
-      >
-        <div
-          className="max-h-[100dvh] sm:max-h-[80dvh] overflow-y-auto overscroll-y-contain"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          <ContactSettingsFormLogic onSubmitSuccess={() => setIsOpen(false)} formData={contactSettings}>
-            <ContactSettingsConfirmationContent onClose={closeHandler} isInitial={!showedInitial} />
-          </ContactSettingsFormLogic>
-        </div>
-      </Modal>
-    </div>
+    <Modal
+      className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px] w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh overflow-auto"
+      disableCloseOutside={false}
+      show={isOpen}
+      hideClosebutton
+    >
+      <ContactSettingsFormLogic onSubmitSuccess={() => setIsOpen(false)} formData={contactSettings}>
+        <ContactSettingsConfirmationContent onClose={closeHandler} isInitial={!showedInitial} />
+      </ContactSettingsFormLogic>
+    </Modal>
   );
 };

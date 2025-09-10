@@ -257,7 +257,10 @@ class App {
         }
         samlStrategy.logout(req as any, () => {
           req.logout(err => {
+            logger.info(`Logout url was: ${SAML_LOGOUT_URL}`);
+            logger.info(`User ${req.user ? (req.user as User).partyId : 'unknown'} logged out`);
             if (err) {
+              logger.error(err);
               return next(err);
             }
             res.redirect(successRedirect as string);

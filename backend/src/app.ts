@@ -260,9 +260,10 @@ class App {
             logger.info(`Logout url was: ${SAML_LOGOUT_URL}`);
             logger.info(`User ${req.user ? (req.user as User).partyId : 'unknown'} logged out`);
             if (err) {
-              logger.error(err);
+              logger.error(`Error during logout: ${err}`);
               return next(err);
             }
+            logger.info(`Redirecting to ${successRedirect} after logout`);
             res.redirect(successRedirect as string);
           });
         });

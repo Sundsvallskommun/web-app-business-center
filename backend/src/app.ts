@@ -263,8 +263,11 @@ class App {
               logger.error(`Error during logout: ${err}`);
               return next(err);
             }
-            logger.info(`Redirecting to ${successRedirect} after logout`);
-            res.redirect(successRedirect as string);
+            logger.info(`Redirecting to ${SAML_LOGOUT_URL}`);
+            res.redirect(`${SAML_LOGOUT_URL}?RelayState=${successRedirect}`);
+            //     // res.redirect(`${SAML_LOGOUT_URL}?RelayState=${successRedirect}`);
+            //     logger.info(`Redirecting to ${successRedirect} after logout`);
+            //     res.redirect(successRedirect as string);
           });
         });
       },

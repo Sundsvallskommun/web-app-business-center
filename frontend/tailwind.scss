@@ -95,6 +95,10 @@ body {
       &-card {
         @apply bg-background-content flex rounded-16 py-16 pl-20 pr-16 items-center gap-16 shadow-50;
 
+          &-link {
+            @apply focus-visible:ring-[.3rem] focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-0 block focus-visible:bg-background-content;
+          }
+
         &-content {
           @apply grow flex items-center gap-16 flex-wrap;
 

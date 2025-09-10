@@ -32,11 +32,13 @@ dayjs.updateLocale('se', {
   weekdaysMin: ['S', 'M', 'T', 'O', 'T', 'F', 'L'],
 });
 
+ const theme = {...defaultTheme, screens: {...defaultTheme.screens, 'desktop-min': '1024px'}};
+
 export default function MyAppLayout({ children }) {
   return (
     <html lang="se">
       <body>
-        <GuiProvider theme={defaultTheme}>
+        <GuiProvider theme={theme}>
           <ConfirmationDialogContextProvider>
             <AppWrapper>
               <LoginGuard>

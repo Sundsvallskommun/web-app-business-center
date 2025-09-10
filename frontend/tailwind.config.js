@@ -16,6 +16,9 @@ module.exports = {
   darkMode: 'selector', // or 'media' or 'class'
   theme: {
     extend: {
+      screens: {
+      'desktop': '1024px',
+      },
       maxWidth: {
         content: '128rem', // default in core is based on screens
         'main-content': '106.2rem',
@@ -24,6 +27,7 @@ module.exports = {
         'hero-logo': "url('/svg/S_logo.svg')",
       },
     },
+
   },
   presets: [preset()],
 };

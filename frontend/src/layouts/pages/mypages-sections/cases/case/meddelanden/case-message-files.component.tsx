@@ -36,7 +36,7 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
           <Button
             onClick={handleOpenFile(file)}
             leftIcon={<Icon icon={iconType} />}
-            className={'whitespace-normal break-words max-w-full'}
+            className={'whitespace-normal break-all max-w-full'}
             variant="tertiary"
             size="md"
             key={`${index}`}

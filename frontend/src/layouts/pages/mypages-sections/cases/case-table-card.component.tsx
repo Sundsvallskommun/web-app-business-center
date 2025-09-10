@@ -13,6 +13,7 @@ export const CaseTableCard: React.FC<{ item: ICaseStatusResponse }> = ({ item })
     <NextLink
       href={`${getRepresentingModeRoute(representingMode)}/arenden/${item.caseId}`}
       aria-label={`Visa ${getCaseTypeLabel(item.caseType)}`}
+      className={`list-item-card-link`}
     >
       <div className={`list-item-card`}>
         <div className="list-item-card-content desktop:grid desktop:grid-cols-[48.6rem_1fr_1fr]">

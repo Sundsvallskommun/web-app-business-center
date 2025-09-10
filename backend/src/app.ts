@@ -14,6 +14,7 @@ import {
   SAML_FAILURE_REDIRECT,
   SAML_IDP_PUBLIC_CERT,
   SAML_ISSUER,
+  SAML_LOGOUT_URL,
   SAML_LOGOUT_CALLBACK_URL,
   SAML_PRIVATE_KEY,
   SAML_PUBLIC_KEY,
@@ -79,6 +80,7 @@ const samlStrategy = new Strategy(
     wantAssertionsSigned: false,
     wantAuthnResponseSigned: false,
     audience: false,
+    logoutUrl: SAML_LOGOUT_URL,
     logoutCallbackUrl: SAML_LOGOUT_CALLBACK_URL,
   },
   async function (profile: Profile, done: VerifiedCallback) {

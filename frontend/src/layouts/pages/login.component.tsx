@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, FormErrorMessage, Icon } from '@sk-web-gui/react';
+import { Button, FormErrorMessage, Icon, Link } from '@sk-web-gui/react';
 import { ArrowRight } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -19,6 +19,7 @@ function Login() {
 
   const isLoggedOut = searchParams?.get('loggedout') === '';
   const failMessage = searchParams?.get('failMessage');
+  const url = 'https://elegitimation.se';
 
   // Turn on/off automatic login
   const autoLogin = false;
@@ -79,7 +80,7 @@ function Login() {
                   </div>
 
                   <div className="flex flex-col">
-                    <Button variant="primary" color='vattjom' size="md" onClick={() => router.push('/login')}>
+                    <Button variant="primary" color="vattjom" size="md" onClick={() => router.push('/login')}>
                       Logga in igen
                     </Button>
                   </div>
@@ -114,8 +115,15 @@ function Login() {
         <div className="mt-48 text-left">
           <h2 className="text-h3-md">Problem att logga in?</h2>
           <p>
-            Vi använder oss av BankID för en trygg och säker inloggning. BankID är en e-legitimation som du använder
-            till att styrka din identitet på Internet, t.ex. på banken, hos Försäkringskassan eller CSN.
+            Vi använder oss av BankID och FrejaID för en trygg och säker inloggning. BankID och FrejaID är en
+            e-legitimationer som du använder till att styrka din identitet på Internet, t.ex. till exempel hos banken,
+            hos Försäkringskassan eller CSN.
+          </p>
+          <p>
+            Du kan läsa mer om e-legitimation här.{' '}
+            <Link external href={url}>
+              E-legitimation
+            </Link>
           </p>
         </div>
       </div>

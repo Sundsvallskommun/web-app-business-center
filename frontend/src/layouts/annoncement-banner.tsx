@@ -1,7 +1,6 @@
 'use client';
 
-import { ExternalLink } from 'lucide-react';
-import NextLink from 'next/link';
+import { Link } from '@sk-web-gui/react';
 
 //URL to the old minasidor website
 const URL_OLD = 'https://e-tjanster.sundsvall.se/minasidor';
@@ -15,10 +14,7 @@ export function AnnouncementBanner() {
     >
       <p className="text-base">
         Du är nu inloggad i nya Mina sidor. Saknar du något? Du kan byta till den äldre versionen av Mina sidor här.{' '}
-        <NextLink target={'_blank'} href={URL_OLD} className="underline inline-flex items-center gap-1 text-vattjom-surface-primary">
-          Mina sidor
-          <ExternalLink size={14} aria-hidden className="inline-block shrink-0" />
-        </NextLink>
+        <Link external href={URL_OLD}>Mina sidor</Link>
       </p>
     </div>
   );

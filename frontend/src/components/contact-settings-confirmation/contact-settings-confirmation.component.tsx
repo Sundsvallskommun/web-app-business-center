@@ -5,7 +5,7 @@ import { ClientContactSetting } from '@interfaces/contactsettings';
 import ContactSettingsFormLogic from '@layouts/pages/mypages-sections/profile/components/contact-settings-form-logic.component';
 import { useLocalStorageValue } from '@react-hookz/web';
 import { useApi } from '@services/api-service';
-import { Accordion, Button, Divider, FormErrorMessage, Icon, Link, Modal } from '@sk-web-gui/react';
+import { Accordion, Button, Divider, FormErrorMessage, Icon, Link, Modal, useThemeQueries } from '@sk-web-gui/react';
 import { Mail, Smartphone } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -151,65 +151,136 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
 export const ContactSettingsConfirmation: React.FC = () => {
   const { value: showedInitial, set: setShowedInitial } = useLocalStorageValue('showedInitialContactSettings');
   const [isOpen, setIsOpen] = useState<boolean>(false);
+    const { isMinDesktop } = useThemeQueries();
+
+  // useEffect(() => {
+  //   if (!isOpen) return;
+
+  //   const scrollY = window.scrollY;
+  //   const body = document.body;
+  //   const cc = document.getElementsByClassName('sk-cookie-consent-wrapper');
+  //   const prevBodyStyle = {
+  //     overflow: body.style.overflow,
+  //     position: body.style.position,
+  //     top: body.style.top,
+  //     width: body.style.width,
+  //   };
+
+  //   let prevCcStyle = {
+  //     overflow: '',
+  //     position: '',
+  //     zIndex: '',
+  //     top: '',
+  //     width: '',
+  //     display: '',
+  //   };
+
+  //   const ccElem = cc[0] as HTMLElement;
+
+  //   if (cc && cc[0]) {
+  //     prevCcStyle = {
+  //       overflow: ccElem.style.overflow,
+  //       position: ccElem.style.position,
+  //       zIndex: ccElem.style.zIndex,
+  //       top: ccElem.style.top,
+  //       width: ccElem.style.width,
+  //       display: ccElem.style.display,
+  //     };
+
+  //     ccElem.style.overflow = 'hidden';
+  //     ccElem.style.position = 'fixed';
+  //     ccElem.style.zIndex = '10';
+  //         ccElem.style.top = `-${scrollY}px`;
+  //   ccElem.style.width = '100%';
+  //   ccElem.style.display = 'none';
+  //   }
+
+  //   body.style.overflow = 'hidden';
+  //   body.style.position = 'fixed';
+  //   body.style.top = `-${scrollY}px`;
+  //   body.style.width = '100%';
+
+  //   return () => {
+  //     body.style.overflow = prevBodyStyle.overflow;
+  //     body.style.position = prevBodyStyle.position;
+  //     const y = -(parseInt(body.style.top || '0', 10) || 0);
+  //     body.style.top = prevBodyStyle.top;
+  //     window.scrollTo(0, y);
+  //     if (cc && cc[0]) {
+  //       ccElem.style.overflow = prevCcStyle.overflow;
+  //       ccElem.style.position = prevCcStyle.position;
+  //       ccElem.style.zIndex = prevCcStyle.zIndex;
+  //       ccElem.style.top = prevCcStyle.top;
+  //       ccElem.style.display = prevCcStyle.display;
+  //     }
+  //   };
+  // }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
+  const cc = document.getElementsByClassName('sk-cookie-consent-wrapper')[0];
+  const body = document.body;
+  const scrollY = window.scrollY;
 
-    const scrollY = window.scrollY;
-    const body = document.body;
-    const cc = document.getElementsByClassName('sk-cookie-consent-wrapper');
-    const prevBodyStyle = {
-      overflow: body.style.overflow,
-      position: body.style.position,
-      top: body.style.top,
-      width: body.style.width,
-    };
+  const prevBodyStyle = {
+    overflow: body.style.overflow,
+    position: body.style.position,
+    top: body.style.top,
+    width: body.style.width,
+  };
 
-    let prevCcStyle = {
-      overflow: '',
-      position: '',
-      zIndex: '',
-      top: '',
-      width: '',
-    };
+  let prevCcStyle = {
+    overflow: '',
+    position: '',
+    zIndex: '',
+    top: '',
+    width: '',
+    display: '',
+  };
 
-    const ccElem = cc[0] as HTMLElement;
+  const ccElem = cc as HTMLElement;
 
-    if (cc && cc[0]) {
+  // Om isOpen är true, dölja wrappern och spara tidigare stil
+  if (isOpen) {
+    if (ccElem && !isMinDesktop) {
       prevCcStyle = {
         overflow: ccElem.style.overflow,
         position: ccElem.style.position,
         zIndex: ccElem.style.zIndex,
         top: ccElem.style.top,
         width: ccElem.style.width,
+        display: ccElem.style.display,
       };
 
+      // Döljer elementet och fixar andra stilar
+      ccElem.style.display = 'none';  // Döljer cookie consent
       ccElem.style.overflow = 'hidden';
       ccElem.style.position = 'fixed';
       ccElem.style.zIndex = '10';
-          ccElem.style.top = `-${scrollY}px`;
-    ccElem.style.width = '100%';
+      ccElem.style.top = `-${scrollY}px`;
+      ccElem.style.width = '100%';
     }
 
     body.style.overflow = 'hidden';
     body.style.position = 'fixed';
     body.style.top = `-${scrollY}px`;
     body.style.width = '100%';
+  }
 
-    return () => {
-      body.style.overflow = prevBodyStyle.overflow;
-      body.style.position = prevBodyStyle.position;
-      const y = -(parseInt(body.style.top || '0', 10) || 0);
-      body.style.top = prevBodyStyle.top;
-      window.scrollTo(0, y);
-      if (cc && cc[0]) {
-        ccElem.style.overflow = prevCcStyle.overflow;
-        ccElem.style.position = prevCcStyle.position;
-        ccElem.style.zIndex = prevCcStyle.zIndex;
-        ccElem.style.top = prevCcStyle.top;
-      }
-    };
-  }, [isOpen]);
+  return () => {
+    // Återställ stilar när isOpen ändras
+    body.style.overflow = prevBodyStyle.overflow;
+    body.style.position = prevBodyStyle.position;
+    body.style.top = prevBodyStyle.top;
+    body.style.width = prevBodyStyle.width;
+    if (ccElem && !isMinDesktop) {
+      ccElem.style.overflow = prevCcStyle.overflow;
+      ccElem.style.position = prevCcStyle.position;
+      ccElem.style.zIndex = prevCcStyle.zIndex;
+      ccElem.style.top = prevCcStyle.top;
+      ccElem.style.display = prevCcStyle.display;  // Återställ display
+    }
+  };
+}, [isOpen]); // Lägg till isOpen som beroende
 
   const { data: contactSettings, isFetching } = useApi<ClientContactSetting>({
     url: '/contactsettings',
@@ -247,19 +318,14 @@ export const ContactSettingsConfirmation: React.FC = () => {
     <div>
       <Modal
         className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px]
-                 w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
+                 w-full block left-0 bottom-10 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
         disableCloseOutside={false}
         show={isOpen}
         hideClosebutton
       >
-        <div
-          className="max-h-[100svh] sm:max-h-[80svh] overflow-y-auto overscroll-y-contain"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
           <ContactSettingsFormLogic onSubmitSuccess={() => setIsOpen(false)} formData={contactSettings}>
             <ContactSettingsConfirmationContent onClose={closeHandler} isInitial={!showedInitial} />
           </ContactSettingsFormLogic>
-        </div>
       </Modal>
     </div>
   );

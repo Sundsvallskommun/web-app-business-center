@@ -1,8 +1,8 @@
 import { AttachmentResponse } from '@data-contracts/case-data/data-contracts';
 import { FrontendMessageResponse } from '@interfaces/case';
 import { getCaseMessageAttachment } from '@services/case-service';
-import { Button, Icon } from '@sk-web-gui/react';
-import { File, Image } from 'lucide-react';
+import { Button } from '@sk-web-gui/react';
+import { Download } from 'lucide-react';
 import { useCallback, useContext } from 'react';
 import { CaseContext } from '../case-layout.component';
 
@@ -28,16 +28,14 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
   if (!message || message.attachments?.length === 0) return null;
 
   return (
-    <div className="flex gap-16 flex-wrap">
+    <div className="flex gap-16 flex-col">
       {message.attachments?.map((file, index) => {
-        // eslint-disable-next-line jsx-a11y/alt-text
-        const iconType = file.contentType?.includes('image') ? <Image /> : <File />; // || <Image />; // FIXME: implement filetype check
         return (
           <Button
             onClick={handleOpenFile(file)}
-            leftIcon={<Icon icon={iconType} />}
+            rightIcon={<Download className="ml-10" size={18} />}
             className={'whitespace-normal break-all max-w-full'}
-            variant="tertiary"
+            variant="link"
             size="md"
             key={`${index}`}
           >{`${file.name}`}</Button>

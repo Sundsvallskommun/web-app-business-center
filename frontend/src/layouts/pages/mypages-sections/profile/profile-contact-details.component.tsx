@@ -102,7 +102,6 @@ export const ContactDetails = () => {
             name="phone"
             header={isEditPhone ? 'Ändra mobilnummer' : 'Mobilnummer'}
             isEdit={isEditPhone}
-            inputProps={{ placeholder: '+46' }}
           >
             {isEditPhone ? (
               <div className="flex gap-16 mt-16">

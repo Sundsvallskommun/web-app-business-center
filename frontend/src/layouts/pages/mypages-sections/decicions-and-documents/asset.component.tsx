@@ -1,12 +1,12 @@
 'use client';
 
-import { useContext } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 import { AssetsContext } from './asset-layout.component';
 import dayjs from 'dayjs';
-import { Divider, Icon, Label } from '@sk-web-gui/react';
+import { Button, Divider, Icon, Label } from '@sk-web-gui/react';
 import { Card } from '@components/cards/card.component';
 import { Status } from '@data-contracts/partyassets/data-contracts';
-import { FileCheck2 } from 'lucide-react';
+import { File, FileCheck2 } from 'lucide-react';
 
 const getAssetProps = (status?: Status) => {
   let color: string;
@@ -32,7 +32,39 @@ const getAssetProps = (status?: Status) => {
 };
 
 export default function Asset() {
-  const { assetData } = useContext(AssetsContext);
+  const { assetData, decisions } = useContext(AssetsContext);
+  
+  const handleDownload = useCallback((mimeType: string, base64: string, name: string) => {
+    const uri = `data:${mimeType};base64,${base64}`;
+    const link = document.createElement('a');
+
+    link.href = uri;
+    link.setAttribute('download', `${name}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+  }, []);
+
+  const validAttachments = useMemo(() => {
+    if (!decisions?.length) {
+      return undefined;
+    }
+
+    const orderedDecisions = decisions.sort((a, b) => {
+      const aTime = new Date(a.decidedAt ?? 0).getTime();
+      const bTime = new Date(b.decidedAt ?? 0).getTime();
+      return Math.sign(bTime - aTime);
+    });
+
+    const activeAttachments = orderedDecisions[orderedDecisions.length - 1].attachments;
+    if (!activeAttachments?.length) {
+      return undefined;
+    }
+
+    return activeAttachments.filter(attachment =>
+      attachment.mimeType === 'application/json' && attachment.file && attachment.name
+    );
+  } , [decisions]);
+
   return (
     <Card>
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
@@ -75,6 +107,17 @@ export default function Asset() {
           </div>
         ) : null}
       </div>
+      { validAttachments ? (
+        <div className="flex flex-col items-start gap-4">
+          <div className="font-bold">Dokument</div>
+          { validAttachments.map(attachment => (
+            <Button variant="link" onClick={() => handleDownload(attachment.mimeType!, attachment.file!, attachment.name!)}>
+              <Icon size={16} icon={<File />} className="mr-8"/>
+              Ladda ner beslut ({attachment.extension})
+            </Button>
+          ))}
+        </div>
+      ): null }
     </Card>
   );
 }

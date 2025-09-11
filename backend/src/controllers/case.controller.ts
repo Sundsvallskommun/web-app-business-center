@@ -1,7 +1,9 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import {
+  Attachment,
   Conversation,
+  Decision,
   Message,
   MessageRequest,
   MessageResponseDirectionEnum,
@@ -658,6 +660,39 @@ export class CaseController {
         return { data: null, message: 'success' };
       }
       return { data: null, message: 'error' };
+    }
+  }
+
+  // decisions
+  @Get('/cases/:caseId/decisions')
+  @OpenAPI({ summary: 'Return decisions for case' })
+  @UseBefore(authMiddleware)
+  async getCaseDecisions(
+    @Req() req: RequestWithUser,
+    @Param('caseId') caseId: string,
+  ): Promise<ApiResponse<Attachment[]>> {
+    if (!caseId) {
+      throw new HttpException(400, 'Bad Request');
+    }
+
+    const _case = (await this.getCase(req, caseId)).data;
+
+    if (_case.system !== 'CASE_DATA') {
+      throw new HttpException(400, 'Bad Request');
+    }
+
+    try {
+      const url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${_case.caseId}/decisions`;
+      const res = await this.apiService.get<Decision[]>({ url }, req);
+
+      return { data: res.data ?? [], message: 'success' };
+    }
+    catch (error) {
+      if (error.status === 404) {
+        // handle 404 as empty
+        return { data: [], message: 'success' };
+      }
+      return { data: [], message: 'error' };
     }
   }
 }

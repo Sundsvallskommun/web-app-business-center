@@ -1,6 +1,7 @@
 'use client';
 
 import { useAppContext } from '@contexts/app.context';
+import { Decision } from '@data-contracts/case-data/data-contracts';
 import { Asset } from '@data-contracts/partyassets/data-contracts';
 import { PagesBreadcrumbsLayout } from '@layouts/pages-breadcrumbs-layout.component';
 import { useApi } from '@services/api-service';
@@ -13,6 +14,7 @@ import { createContext } from 'react';
 
 export const AssetsContext = createContext<{
   assetData?: Asset;
+  decisions?: Decision[];
 }>(
   /** @ts-expect-error is set on mount */
   null
@@ -23,6 +25,15 @@ export default function AssetLayout(props: { assetId: string; children: React.Re
   const { data: assetData, error: assetError } = useApi<Asset, AxiosError>({
     url: `/assets/${assetId}`,
     method: 'get',
+  });
+
+  const caseReference = assetData?.caseReferenceIds?.[0];
+  const { data: decisions } = useApi<Decision[], AxiosError>({
+    url: `/cases/${caseReference}/decisions`,
+    method: 'get',
+    queryOptions: {
+      enabled: !!caseReference,
+    },
   });
 
   const { representingMode } = useAppContext();
@@ -52,6 +63,7 @@ export default function AssetLayout(props: { assetId: string; children: React.Re
       <AssetsContext.Provider
         value={{
           assetData,
+          decisions,
         }}
       >
         {children}

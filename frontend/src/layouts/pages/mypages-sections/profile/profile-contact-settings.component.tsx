@@ -31,6 +31,20 @@ export const ContactSettings = () => {
                     <FormControl fieldset>
                       <p className="text-large pb-8">Ändra dina aviseringar</p>
                       <FormLabel>Välj kontaktväg för aviseringar</FormLabel>
+                      <Checkbox
+                        disabled={!hasEmail}
+                        {...register!('notifications.email_disabled')}
+                        data-cy="notification-channel-email-checkbox"
+                        className="mt-8"
+                      >
+                        E-post
+                      </Checkbox>
+                      {!watch().email ? (
+                        <div className="flex items-center gap-6">
+                          <Icon size={16} icon={<Info />} className="ml-32 w-4 h-4 shrink-0" />
+                          <p className="text-small">För att få aviseringar via mail behöver du lägga till en e-post.</p>
+                        </div>
+                      ) : null}
                       <Checkbox.Group className="gap-16 pb-16">
                         <Checkbox
                           disabled={!hasPhone}
@@ -44,22 +58,6 @@ export const ContactSettings = () => {
                             <Icon size={16} icon={<Info />} className="ml-32 w-4 h-4 shrink-0" />
                             <p className="text-small">
                               För att få aviseringar via sms behöver du lägga till ett mobilnummer.
-                            </p>
-                          </div>
-                        ) : null}
-                        <Checkbox
-                          disabled={!hasEmail}
-                          {...register!('notifications.email_disabled')}
-                          data-cy="notification-channel-email-checkbox"
-                          className="mt-8"
-                        >
-                          E-post
-                        </Checkbox>
-                        {!watch().email ? (
-                          <div className="flex items-center gap-6">
-                            <Icon size={16} icon={<Info />} className="ml-32 w-4 h-4 shrink-0" />
-                            <p className="text-small">
-                              För att få aviseringar via mail behöver du lägga till en e-post.
                             </p>
                           </div>
                         ) : null}

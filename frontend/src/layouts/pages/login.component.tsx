@@ -19,7 +19,8 @@ function Login() {
 
   const isLoggedOut = searchParams?.get('loggedout') === '';
   const failMessage = searchParams?.get('failMessage');
-  const url = 'https://elegitimation.se';
+  const url_e_identification = 'https://elegitimation.se';
+  const url_personal_data = 'https://sundsvall.se/kommun-och-politik/overklaga-beslut-rattssakerhet/behandling-av-personuppgifter';
 
   // Turn on/off automatic login
   const autoLogin = false;
@@ -121,8 +122,15 @@ function Login() {
           </p>
           <p>
             Du kan läsa mer om e-legitimation här.{' '}
-            <Link external href={url}>
+            <Link external href={url_e_identification}>
               E-legitimation
+            </Link>
+          </p>
+          <h2 className="text-h3-md mt-30">Behandling av personuppgifter</h2>
+          <p>
+            Här kan du läsa om hur dina personuppgifter behandlas när du använder våra e-tjänster och Mina Sidor.{' '}
+            <Link external href={url_personal_data}>
+              Behandling av personuppgifter
             </Link>
           </p>
         </div>

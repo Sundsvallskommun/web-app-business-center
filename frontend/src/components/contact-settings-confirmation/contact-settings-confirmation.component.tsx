@@ -150,34 +150,37 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
 
 export const ContactSettingsConfirmation: React.FC = () => {
   const { value: showedInitial, set: setShowedInitial } = useLocalStorageValue('showedInitialContactSettings');
+  const [cookieExists, setCookieExists] = useState(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    const scrollY = window.scrollY;
-    const { style } = document.body;
-    const prev = {
-      overflow: style.overflow,
-      position: style.position,
-      top: style.top,
-      width: style.width,
+    const getCookie = (name) => {
+      const value = '; ' + document.cookie;
+      const parts = value.split('; ' + name + '=');
+      if (parts.length === 2) {
+        const part = parts.pop();
+        return part ? part.split(';').shift() : null;
+      }
+      return null;
     };
 
-    style.overflow = 'hidden';
-    style.position = 'fixed';
-    style.top = `-${scrollY}px`;
-    style.width = '100%';
-
-    return () => {
-      style.overflow = prev.overflow;
-      style.position = prev.position;
-      const y = -(parseInt(style.top || '0', 10) || 0);
-      style.top = prev.top;
-      style.width = prev.width;
-      window.scrollTo(0, y);
+    const checkCookie = () => {
+      const cookieValue = getCookie('SKCookieConsent');
+      if (cookieValue) {
+        setCookieExists(true);
+      }
     };
-  }, [isOpen]);
+    checkCookie();
+    const interval = setInterval(() => {
+      const cookieValue = getCookie('SKCookieConsent');
+      if (cookieValue) {
+        setCookieExists(true);
+        clearInterval(interval);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: contactSettings, isFetching } = useApi<ClientContactSetting>({
     url: '/contactsettings',
@@ -212,23 +215,15 @@ export const ContactSettingsConfirmation: React.FC = () => {
   }, [isFetching, contactSettings]);
 
   return (
-    <div>
-      <Modal
-        className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px]
-                 w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
-        disableCloseOutside={false}
-        show={isOpen}
-        hideClosebutton
-      >
-        <div
-          className="max-h-[100svh] sm:max-h-[80svh] overflow-y-auto overscroll-y-contain"
-          style={{ WebkitOverflowScrolling: 'touch' }}
+        <Modal
+          className="w-full max-w-[720px]"
+          disableCloseOutside={false}
+          show={isOpen && cookieExists}
+          hideClosebutton
         >
           <ContactSettingsFormLogic onSubmitSuccess={() => setIsOpen(false)} formData={contactSettings}>
             <ContactSettingsConfirmationContent onClose={closeHandler} isInitial={!showedInitial} />
           </ContactSettingsFormLogic>
-        </div>
-      </Modal>
-    </div>
+        </Modal>
   );
 };

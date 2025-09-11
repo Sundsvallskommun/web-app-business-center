@@ -317,8 +317,10 @@ export const ContactSettingsConfirmation: React.FC = () => {
   return (
     <div>
       <Modal
-        className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px]
-                 w-full block left-0 bottom-10 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
+        // className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px]
+        //          w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
+                //  style={{ WebkitOverflowScrolling: 'touch' }}
+                className="max-w-[720px]"
         disableCloseOutside={false}
         show={isOpen}
         hideClosebutton

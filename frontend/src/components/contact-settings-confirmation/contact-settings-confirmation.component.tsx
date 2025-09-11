@@ -156,26 +156,45 @@ export const ContactSettingsConfirmation: React.FC = () => {
     if (!isOpen) return;
 
     const scrollY = window.scrollY;
-    const { style } = document.body;
-    const prev = {
-      overflow: style.overflow,
-      position: style.position,
-      top: style.top,
-      width: style.width,
+    const body = document.body;
+    const cc = document.getElementById('sk-cookie-consent-wrapper');
+    const prevBodyStyle = {
+      overflow: body.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
     };
 
-    style.overflow = 'hidden';
-    style.position = 'fixed';
-    style.top = `-${scrollY}px`;
-    style.width = '100%';
+    let prevCcStyle = {
+      overflow: '',
+      position: '',
+    };
+
+    if (cc) {
+      prevCcStyle = {
+        overflow: cc.style.overflow,
+        position: cc.style.position,
+      };
+
+      cc.style.overflow = 'hidden';
+      cc.style.position = 'fixed';
+    }
+
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
 
     return () => {
-      style.overflow = prev.overflow;
-      style.position = prev.position;
-      const y = -(parseInt(style.top || '0', 10) || 0);
-      style.top = prev.top;
-      style.width = prev.width;
+      body.style.overflow = prevBodyStyle.overflow;
+      body.style.position = prevBodyStyle.position;
+      const y = -(parseInt(body.style.top || '0', 10) || 0);
+      body.style.top = prevBodyStyle.top;
       window.scrollTo(0, y);
+      if (cc) {
+        cc.style.overflow = prevCcStyle.overflow;
+        cc.style.position = prevCcStyle.position;
+      }
     };
   }, [isOpen]);
 

@@ -34,7 +34,7 @@ export default function CaseInformation() {
           <div className="font-bold">Registrerat</div>
           <div>
             {dayjs(caseData?.firstSubmitted).isValid()
-              ? dayjs(caseData?.firstSubmitted).format('YYYY-MM-DD')
+              ? dayjs(caseData?.firstSubmitted).format('YYYY-MM-DD HH:mm')
               : caseData?.firstSubmitted}
           </div>
         </div>

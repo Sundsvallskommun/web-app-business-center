@@ -59,14 +59,14 @@ export function Layout({ title, children }: { title: string; children: React.Rea
                   <label>Kontakta oss</label>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'tel:+4660191000'}>
-                    <Link variant="tertiary">060-19 10 00</Link>
-                  </NextLink>
+                  <Link variant="tertiary" href={'tel:+4660191000'}>
+                    060-19 10 00
+                  </Link>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'mailto:kontakt@sundsvall.se'}>
-                    <Link variant="tertiary">kontakt@sundsvall.se</Link>
-                  </NextLink>
+                  <Link variant="tertiary" href={'mailto:kontakt@sundsvall.se'}>
+                    kontakt@sundsvall.se
+                  </Link>
                 </Footer.ListItem>
                 <Footer.ListItem className="w-full">
                   <span>Organisationsnummer: 212000-2411</span>

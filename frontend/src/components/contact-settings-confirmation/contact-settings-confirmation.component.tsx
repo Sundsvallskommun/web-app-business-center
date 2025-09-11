@@ -157,7 +157,7 @@ export const ContactSettingsConfirmation: React.FC = () => {
 
     const scrollY = window.scrollY;
     const body = document.body;
-    const cc = document.getElementById('sk-cookie-consent-wrapper');
+    const cc = document.getElementsByClassName('sk-cookie-consent-wrapper');
     const prevBodyStyle = {
       overflow: body.style.overflow,
       position: body.style.position,
@@ -168,16 +168,21 @@ export const ContactSettingsConfirmation: React.FC = () => {
     let prevCcStyle = {
       overflow: '',
       position: '',
+      zIndex: '',
     };
 
-    if (cc) {
+    const ccElem = cc[0] as HTMLElement;
+
+    if (cc && cc[0]) {
       prevCcStyle = {
-        overflow: cc.style.overflow,
-        position: cc.style.position,
+        overflow: ccElem.style.overflow,
+        position: ccElem.style.position,
+        zIndex: ccElem.style.zIndex,
       };
 
-      cc.style.overflow = 'hidden';
-      cc.style.position = 'fixed';
+      ccElem.style.overflow = 'hidden';
+      ccElem.style.position = 'fixed';
+      ccElem.style.zIndex = '10';
     }
 
     body.style.overflow = 'hidden';
@@ -191,9 +196,10 @@ export const ContactSettingsConfirmation: React.FC = () => {
       const y = -(parseInt(body.style.top || '0', 10) || 0);
       body.style.top = prevBodyStyle.top;
       window.scrollTo(0, y);
-      if (cc) {
-        cc.style.overflow = prevCcStyle.overflow;
-        cc.style.position = prevCcStyle.position;
+      if (cc && cc[0]) {
+        ccElem.style.overflow = prevCcStyle.overflow;
+        ccElem.style.position = prevCcStyle.position;
+        ccElem.style.zIndex = prevCcStyle.zIndex;
       }
     };
   }, [isOpen]);
@@ -234,7 +240,7 @@ export const ContactSettingsConfirmation: React.FC = () => {
     <div>
       <Modal
         className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px]
-                 w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
+                 w-full block left-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
         disableCloseOutside={false}
         show={isOpen}
         hideClosebutton

@@ -3,11 +3,11 @@ import { RepresentingEntity } from '../../interfaces/representing.interface';
 
 const emptyEmailSettings = {
   email: null,
-  email_disabled: false,
+  email_disabled: true,
 };
 const emptyPhoneSettings = {
   phone: null,
-  phone_disabled: false,
+  phone_disabled: true,
 };
 
 export const getEmailSettingsFromChannels = (contactChannels: ContactSettingChannel[]) => {

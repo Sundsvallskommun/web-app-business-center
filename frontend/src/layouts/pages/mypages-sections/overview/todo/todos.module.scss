@@ -2,10 +2,17 @@
   @apply mt-40 flex flex-col gap-md desktop:gap-0;
 }
 .todo {
-  @apply flex flex-wrap gap-x-12 border-1 border-divider rounded-cards p-20;
+  @apply flex flex-col gap-x-12 border-1 border-divider rounded-cards p-20;
 
   @screen desktop {
-    @apply items-center gap-x-16 border-0 flex-nowrap p-16;
+    @apply items-center gap-x-16 border-0 flex-row p-16;
+  }
+
+  &-main {
+    @apply flex flex-row gap-x-12;
+    @screen desktop {
+      @apply flex-row items-center flex-grow gap-x-16;
+    }
   }
 
   &-type {
@@ -24,8 +31,16 @@
     }
   }
 
+  &-body {
+    @apply flex flex-col;
+
+    @screen desktop {
+      @apply flex-row flex-grow items-center w-auto;
+    }
+  }
+
   &-content {
-    @apply flex flex-col gap-y-8 w-min mt-6;
+    @apply flex flex-col gap-y-8 mt-6 grow;
 
     @screen desktop {
       @apply gap-y-4 grow w-full;

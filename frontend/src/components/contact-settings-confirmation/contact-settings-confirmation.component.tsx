@@ -169,6 +169,8 @@ export const ContactSettingsConfirmation: React.FC = () => {
       overflow: '',
       position: '',
       zIndex: '',
+      top: '',
+      width: '',
     };
 
     const ccElem = cc[0] as HTMLElement;
@@ -178,11 +180,15 @@ export const ContactSettingsConfirmation: React.FC = () => {
         overflow: ccElem.style.overflow,
         position: ccElem.style.position,
         zIndex: ccElem.style.zIndex,
+        top: ccElem.style.top,
+        width: ccElem.style.width,
       };
 
       ccElem.style.overflow = 'hidden';
       ccElem.style.position = 'fixed';
       ccElem.style.zIndex = '10';
+          ccElem.style.top = `-${scrollY}px`;
+    ccElem.style.width = '100%';
     }
 
     body.style.overflow = 'hidden';
@@ -200,6 +206,7 @@ export const ContactSettingsConfirmation: React.FC = () => {
         ccElem.style.overflow = prevCcStyle.overflow;
         ccElem.style.position = prevCcStyle.position;
         ccElem.style.zIndex = prevCcStyle.zIndex;
+        ccElem.style.top = prevCcStyle.top;
       }
     };
   }, [isOpen]);

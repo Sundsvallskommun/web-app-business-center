@@ -81,14 +81,14 @@ function Login() {
                   </div>
 
                   <div className="flex flex-col">
-                    <Button variant="primary" color="vattjom" size="md" onClick={() => router.push('/login')}>
+                    <Button variant="primary" color="vattjom" size="lg" onClick={() => router.push('/login')}>
                       Logga in igen
                     </Button>
                   </div>
                 </>
               ) : (
                 <>
-                  <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">Logga in som</h1>
+                  <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">Logga in på Mina sidor</h1>
                   <div className="flex flex-col desktop:flex-row gap-24 w-full desktop:w-fit">
                     <Button
                       variant="secondary"

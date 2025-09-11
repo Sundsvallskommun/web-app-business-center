@@ -240,7 +240,7 @@ export const ContactSettingsConfirmation: React.FC = () => {
     <div>
       <Modal
         className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px]
-                 w-full block left-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
+                 w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
         disableCloseOutside={false}
         show={isOpen}
         hideClosebutton

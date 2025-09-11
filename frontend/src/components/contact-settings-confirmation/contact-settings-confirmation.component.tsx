@@ -106,7 +106,7 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
                 target="_blank"
                 external
               >
-                Läs mer om hur vi hanterar dina personuppgifter
+                Information om Personuppgiftshantering
               </Link>
             </p>
           </Accordion.Item>

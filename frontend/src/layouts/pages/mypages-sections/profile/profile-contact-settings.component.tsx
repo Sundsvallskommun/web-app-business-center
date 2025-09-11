@@ -23,6 +23,9 @@ export const ContactSettings = () => {
           <div className="flex flex-col gap-y-40 pb-24">
             <ConnectForm>
               {({ register, watch }) => {
+                const hasPhone = !!watch('phone');
+                const hasEmail = !!watch('email');
+
                 if (isEdit) {
                   return (
                     <FormControl fieldset>
@@ -30,7 +33,8 @@ export const ContactSettings = () => {
                       <FormLabel>Välj kontaktväg för aviseringar</FormLabel>
                       <Checkbox.Group className="gap-16 pb-16">
                         <Checkbox
-                          {...register('notifications.phone_disabled')}
+                          disabled={!hasPhone}
+                          {...register!('notifications.phone_disabled')}
                           data-cy="notification-channel-sms-checkbox"
                         >
                           Sms
@@ -44,7 +48,8 @@ export const ContactSettings = () => {
                           </div>
                         ) : null}
                         <Checkbox
-                          {...register('notifications.email_disabled')}
+                          disabled={!hasEmail}
+                          {...register!('notifications.email_disabled')}
                           data-cy="notification-channel-email-checkbox"
                           className="mt-8"
                         >

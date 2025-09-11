@@ -23,13 +23,25 @@ const getAddress = (address) => {
 
 export const ContactDetails = () => {
   const queryClient = useApiService((s) => s.queryClient);
-  const { data: contactsettings, isError } = useApi<ClientContactSetting>({
+  const {
+    data: contactsettings,
+    isError,
+    refetch,
+  } = useApi<ClientContactSetting>({
     url: '/contactsettings',
     method: 'get',
     queryKey: ['contactsetting'],
   });
   const [isEditPhone, setIsEditPhone] = useState<boolean>(false);
   const [isEditEmail, setIsEditEmail] = useState<boolean>(false);
+
+  const fetchLatestData = async () => {
+    try {
+      await refetch();
+    } catch (error) {
+      console.error('Error fetching contactsettings:', error);
+    }
+  };
 
   useEffect(() => {
     if (isError) {
@@ -87,7 +99,10 @@ export const ContactDetails = () => {
                   size="md"
                   variant="secondary"
                   leftIcon={<Icon icon={<Pen />} />}
-                  onClick={() => setIsEditEmail(true)}
+                  onClick={() => {
+                    setIsEditEmail(true);
+                    fetchLatestData();
+                  }}
                   className="mt-32"
                   data-cy="edit-email-button"
                 >
@@ -122,7 +137,10 @@ export const ContactDetails = () => {
                   size="md"
                   variant="secondary"
                   leftIcon={<Icon icon={<Pen />} />}
-                  onClick={() => setIsEditPhone(true)}
+                  onClick={() => {
+                    setIsEditPhone(true);
+                    fetchLatestData();
+                  }}
                   className="mt-32"
                   data-cy="edit-phone-button"
                 >

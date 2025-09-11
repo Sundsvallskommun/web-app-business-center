@@ -7,7 +7,6 @@ import Head from 'next/head';
 import NextLink from 'next/link';
 
 export function Layout({ title, children }: { title: string; children: React.ReactNode }) {
-  const { value: showedInitial} = useLocalStorageValue('showedInitialContactSettings');
   const { set: setMatomo } = useLocalStorageValue('matomoIsActive');
   
 
@@ -135,7 +134,6 @@ export function Layout({ title, children }: { title: string; children: React.Rea
         </Footer>
       </div>
 
-      {showedInitial &&
       <CookieConsent
         title="Kakor på minasidor.sundvall.se"
         body={
@@ -166,7 +164,6 @@ export function Layout({ title, children }: { title: string; children: React.Rea
         resetConsentOnInit={false}
         onConsent={cookieConsentHandler}
       />
-      }
     </>
   );
 }

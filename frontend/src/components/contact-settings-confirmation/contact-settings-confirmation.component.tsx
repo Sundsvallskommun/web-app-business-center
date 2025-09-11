@@ -5,7 +5,7 @@ import { ClientContactSetting } from '@interfaces/contactsettings';
 import ContactSettingsFormLogic from '@layouts/pages/mypages-sections/profile/components/contact-settings-form-logic.component';
 import { useLocalStorageValue } from '@react-hookz/web';
 import { useApi } from '@services/api-service';
-import { Accordion, Button, Divider, FormErrorMessage, Icon, Link, Modal, useThemeQueries } from '@sk-web-gui/react';
+import { Accordion, Button, Divider, FormErrorMessage, Icon, Link, Modal } from '@sk-web-gui/react';
 import { Mail, Smartphone } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -150,8 +150,40 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
 
 export const ContactSettingsConfirmation: React.FC = () => {
   const { value: showedInitial, set: setShowedInitial } = useLocalStorageValue('showedInitialContactSettings');
+
+  const [cookieExists, setCookieExists] = useState(false);
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
-    const { isMinDesktop } = useThemeQueries();
+  // const { isMinDesktop } = useThemeQueries();
+
+  useEffect(() => {
+    const getCookie = (name) => {
+      const value = '; ' + document.cookie;
+      const parts = value.split('; ' + name + '=');
+      if (parts.length === 2) {
+        const part = parts.pop();
+        return part ? part.split(';').shift() : null;
+      }
+      return null;
+    };
+
+    const checkCookie = () => {
+      const cookieValue = getCookie('SKCookieConsent');
+      if (cookieValue) {
+        setCookieExists(true);
+      }
+    };
+    checkCookie();
+    const interval = setInterval(() => {
+      const cookieValue = getCookie('SKCookieConsent');
+      if (cookieValue) {
+        setCookieExists(true);
+        clearInterval(interval);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // useEffect(() => {
   //   if (!isOpen) return;
@@ -216,71 +248,71 @@ export const ContactSettingsConfirmation: React.FC = () => {
   //   };
   // }, [isOpen]);
 
-  useEffect(() => {
-  const cc = document.getElementsByClassName('sk-cookie-consent-wrapper')[0];
-  const body = document.body;
-  const scrollY = window.scrollY;
+  //   useEffect(() => {
+  //   const cc = document.getElementsByClassName('sk-cookie-consent-wrapper')[0];
+  //   const body = document.body;
+  //   const scrollY = window.scrollY;
 
-  const prevBodyStyle = {
-    overflow: body.style.overflow,
-    position: body.style.position,
-    top: body.style.top,
-    width: body.style.width,
-  };
+  //   const prevBodyStyle = {
+  //     overflow: body.style.overflow,
+  //     position: body.style.position,
+  //     top: body.style.top,
+  //     width: body.style.width,
+  //   };
 
-  let prevCcStyle = {
-    overflow: '',
-    position: '',
-    zIndex: '',
-    top: '',
-    width: '',
-    display: '',
-  };
+  //   let prevCcStyle = {
+  //     overflow: '',
+  //     position: '',
+  //     zIndex: '',
+  //     top: '',
+  //     width: '',
+  //     display: '',
+  //   };
 
-  const ccElem = cc as HTMLElement;
+  //   const ccElem = cc as HTMLElement;
 
-  // Om isOpen är true, dölja wrappern och spara tidigare stil
-  if (isOpen) {
-    if (ccElem && !isMinDesktop) {
-      prevCcStyle = {
-        overflow: ccElem.style.overflow,
-        position: ccElem.style.position,
-        zIndex: ccElem.style.zIndex,
-        top: ccElem.style.top,
-        width: ccElem.style.width,
-        display: ccElem.style.display,
-      };
+  //   // Om isOpen är true, dölja wrappern och spara tidigare stil
+  //   if (isOpen) {
+  //     if (ccElem && !isMinDesktop) {
+  //       prevCcStyle = {
+  //         overflow: ccElem.style.overflow,
+  //         position: ccElem.style.position,
+  //         zIndex: ccElem.style.zIndex,
+  //         top: ccElem.style.top,
+  //         width: ccElem.style.width,
+  //         display: ccElem.style.display,
+  //       };
 
-      // Döljer elementet och fixar andra stilar
-      ccElem.style.display = 'none';  // Döljer cookie consent
-      ccElem.style.overflow = 'hidden';
-      ccElem.style.position = 'fixed';
-      ccElem.style.zIndex = '10';
-      ccElem.style.top = `-${scrollY}px`;
-      ccElem.style.width = '100%';
-    }
+  //       // Döljer elementet och fixar andra stilar
+  //       ccElem.style.display = 'none';  // Döljer cookie consent
+  //       ccElem.style.overflow = 'hidden';
+  //       ccElem.style.position = 'fixed';
+  //       ccElem.style.zIndex = '10';
+  //       ccElem.style.top = `-${scrollY}px`;
+  //       ccElem.style.width = '100%';
+  //     }
 
-    body.style.overflow = 'hidden';
-    body.style.position = 'fixed';
-    body.style.top = `-${scrollY}px`;
-    body.style.width = '100%';
-  }
+  //     body.style.overflow = 'hidden';
+  //     body.style.position = 'fixed';
+  //     body.style.top = `-${scrollY}px`;
+  //     body.style.width = '100%';
+  //   }
 
-  return () => {
-    // Återställ stilar när isOpen ändras
-    body.style.overflow = prevBodyStyle.overflow;
-    body.style.position = prevBodyStyle.position;
-    body.style.top = prevBodyStyle.top;
-    body.style.width = prevBodyStyle.width;
-    if (ccElem && !isMinDesktop) {
-      ccElem.style.overflow = prevCcStyle.overflow;
-      ccElem.style.position = prevCcStyle.position;
-      ccElem.style.zIndex = prevCcStyle.zIndex;
-      ccElem.style.top = prevCcStyle.top;
-      ccElem.style.display = prevCcStyle.display;  // Återställ display
-    }
-  };
-}, [isOpen]); // Lägg till isOpen som beroende
+  //   return () => {
+  //     // Återställ stilar när isOpen ändras
+  //     body.style.overflow = prevBodyStyle.overflow;
+  //     body.style.position = prevBodyStyle.position;
+  //     body.style.top = prevBodyStyle.top;
+  //     body.style.width = prevBodyStyle.width;
+  //     if (ccElem && !isMinDesktop) {
+  //       ccElem.style.overflow = prevCcStyle.overflow;
+  //       ccElem.style.position = prevCcStyle.position;
+  //       ccElem.style.zIndex = prevCcStyle.zIndex;
+  //       ccElem.style.top = prevCcStyle.top;
+  //       ccElem.style.display = prevCcStyle.display;  // Återställ display
+  //     }
+  //   };
+  // }, [isOpen]); // Lägg till isOpen som beroende
 
   const { data: contactSettings, isFetching } = useApi<ClientContactSetting>({
     url: '/contactsettings',
@@ -315,20 +347,22 @@ export const ContactSettingsConfirmation: React.FC = () => {
   }, [isFetching, contactSettings]);
 
   return (
-    <div>
-      <Modal
-        // className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px]
-        //          w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
-                //  style={{ WebkitOverflowScrolling: 'touch' }}
-                className="max-w-[720px]"
-        disableCloseOutside={false}
-        show={isOpen}
-        hideClosebutton
-      >
+    <>
+      {cookieExists && (
+        <Modal
+          // className="sm:mx-auto sm:my-auto sm:bottom-auto sm:relative sm:inline-flex sm:max-w-[720px]
+          //          w-full block left-0 bottom-0 fixed rounded-0 rounded-t-cards sm:rounded-b-cards max-h-dvh"
+          //  style={{ WebkitOverflowScrolling: 'touch' }}
+          className="max-w-[720px]"
+          disableCloseOutside={false}
+          show={isOpen}
+          hideClosebutton
+        >
           <ContactSettingsFormLogic onSubmitSuccess={() => setIsOpen(false)} formData={contactSettings}>
             <ContactSettingsConfirmationContent onClose={closeHandler} isInitial={!showedInitial} />
           </ContactSettingsFormLogic>
-      </Modal>
-    </div>
+        </Modal>
+      )}
+    </>
   );
 };

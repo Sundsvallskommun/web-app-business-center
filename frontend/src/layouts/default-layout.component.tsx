@@ -2,7 +2,6 @@
 
 import { Header, useThemeQueries } from '@sk-web-gui/react';
 import { appName } from '@utils/app-name';
-import NextLink from 'next/link';
 import { AnnouncementBanner } from './annoncement-banner';
 import { Layout } from './layout.component';
 import { MobileMenu } from './mobile-menu/mobile-menu.component';
@@ -17,7 +16,6 @@ export const DefaultLayout = ({ children }) => {
         wrapperClasses="py-16 [&_.sk-header-mobilemenu]:md:block [&_.sk-header-mobilemenu]:desktop:hidden "
         title={appName()}
         subtitle="Sundsvalls Kommun"
-        LogoLinkWrapperComponent={<NextLink href={'/'} legacyBehavior passHref />}
         mobileMenu={<MobileMenu />}
       >
         {isMinDesktop && <SiteMenu />}

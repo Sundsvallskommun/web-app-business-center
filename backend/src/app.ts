@@ -260,12 +260,10 @@ class App {
           logger.info(`Set relay state to: ${SAML_LOGOUT_CALLBACK_URL}`);
           const redirectUrl = parsed.toString();
           if (err) return res.status(500).send(err);
-          // req.logout(err => {
           if (err) return res.status(500).send(err);
           logger.info(`User ${req.user ? (req.user as User).partyId : 'unknown'} logged out`);
           logger.info(`Using logout url: ${redirectUrl}`);
           res.redirect(redirectUrl); // contains SAMLRequest, RelayState, etc.
-          // });
         });
       },
     );

@@ -4,7 +4,6 @@ import { InvoicesData } from '@interfaces/invoice';
 import { sortInvoices } from '@services/invoice-service';
 import { Label, Table, useThemeQueries } from '@sk-web-gui/react';
 import { useRef, useState } from 'react';
-import { GetPdfButton } from './get-pdf-button.component';
 import { InvoiceTableCard } from './invoices-table-card.component';
 
 export const InvoicesTable: React.FC<{
@@ -38,11 +37,12 @@ export const InvoicesTable: React.FC<{
         <Table.Column>
           <div className="text-left">{item.ocrNumber}</div>
         </Table.Column>
-        <Table.Column>
-          <div className="text-left">
+        {/* <Table.Column>
+          Disabled until third-party modifications are made
+           <div className="text-left">
             <GetPdfButton isLoading={isLoading} setIsLoading={setIsLoading} item={item} />
-          </div>
-        </Table.Column>
+          </div> 
+        </Table.Column> */}
       </Table.Row>
     );
   });

@@ -254,26 +254,26 @@ class App {
       },
       (req, res, next) => {
         samlStrategy.logout(req as any, (err, url) => {
+          const parsed = new URL(url);
+          parsed.searchParams.set('RelayState', SAML_LOGOUT_CALLBACK_URL);
+          const redirectUrl = parsed.toString();
           if (err) return res.status(500).send(err);
           req.logout(err => {
             if (err) return res.status(500).send(err);
             logger.info(`User ${req.user ? (req.user as User).partyId : 'unknown'} logged out`);
-            logger.info(`Using logout url: ${url}`);
-            res.redirect(url); // contains SAMLRequest, RelayState, etc.
+            logger.info(`Using logout url: ${redirectUrl}`);
+            res.redirect(redirectUrl); // contains SAMLRequest, RelayState, etc.
           });
         });
       },
     );
 
     this.app.get(`${BASE_URL_PREFIX}/saml/logout/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
-      req.logout(err => {
-        if (err) {
-          return next(err);
-        }
+      let successRedirect: URL = new URL(SAML_SUCCESS_REDIRECT);
+      let failureRedirect: URL;
+      const urls = req?.body?.RelayState?.split(',') ?? [];
 
-        let successRedirect: URL, failureRedirect: URL;
-        const urls = req?.body?.RelayState.split(',');
-
+      if (urls.length !== 0) {
         if (isValidUrl(urls[0])) {
           successRedirect = new URL(urls[0]);
         }
@@ -282,21 +282,23 @@ class App {
         } else {
           failureRedirect = successRedirect;
         }
+      }
 
-        const queries = new URLSearchParams(failureRedirect.searchParams);
+      const queries = new URLSearchParams(failureRedirect?.searchParams);
 
+      if (queries) {
         if (req.session.messages?.length > 0) {
           queries.append('failMessage', req.session.messages[0]);
         } else {
           queries.append('failMessage', 'SAML_UNKNOWN_ERROR');
         }
+      }
 
-        if (failureRedirect) {
-          res.redirect(failureRedirect.toString());
-        } else {
-          res.redirect(successRedirect.toString());
-        }
-      });
+      if (failureRedirect) {
+        res.redirect(failureRedirect.toString());
+      } else {
+        res.redirect(successRedirect.toString());
+      }
     });
 
     this.app.post(`${BASE_URL_PREFIX}/saml/login/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res, next) => {

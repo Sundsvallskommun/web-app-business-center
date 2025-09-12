@@ -15,7 +15,7 @@ export const DefaultLayout = ({ children }) => {
       <Header
         wrapperClasses="py-16 [&_.sk-header-mobilemenu]:md:block [&_.sk-header-mobilemenu]:desktop:hidden "
         title={appName()}
-        subtitle="Sundsvalls Kommun"
+        subtitle="Sundsvalls kommun"
         mobileMenu={<MobileMenu />}
       >
         {isMinDesktop && <SiteMenu />}

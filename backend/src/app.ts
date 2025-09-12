@@ -254,8 +254,10 @@ class App {
       },
       (req, res, next) => {
         samlStrategy.logout(req as any, (err, url) => {
+          logger.debug(`Parsing url: ${url}`);
           const parsed = new URL(url);
           parsed.searchParams.set('RelayState', SAML_SUCCESS_REDIRECT);
+          logger.debug(`Set relay state to: ${SAML_SUCCESS_REDIRECT}`);
           const redirectUrl = parsed.toString();
           if (err) return res.status(500).send(err);
           req.logout(err => {

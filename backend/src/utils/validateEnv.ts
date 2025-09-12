@@ -27,6 +27,10 @@ const validateEnv = () => {
     SAML_IDP_PUBLIC_CERT: str(),
     SAML_PRIVATE_KEY: str(),
     SAML_PUBLIC_KEY: str(),
+    SAML_LOGOUT_URL: str(),
+    SAML_LOGOUT_CALLBACK_URL: str(),
+    SAML_LOGOUT_REDIRECT: str(),
+    SAML_SUCCESS_REDIRECT: str(),
     FEEDBACK_EMAIL: emails(),
   });
 };

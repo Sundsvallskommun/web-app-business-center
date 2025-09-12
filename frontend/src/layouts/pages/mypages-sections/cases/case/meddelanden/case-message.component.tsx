@@ -1,10 +1,14 @@
+import { FrontendMessageResponse } from '@interfaces/case';
 import { User } from '@interfaces/user';
 import { useApi } from '@services/api-service';
 import sanitized from '@services/sanitizer-service';
-import { Avatar, AvatarProps } from '@sk-web-gui/react';
+import { AvatarProps } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
+import { UserRound } from 'lucide-react';
+import { JSX } from 'react';
+import { MessageAvatar } from './case-message-avatar.component';
 import CaseMessageFiles from './case-message-files.component';
-import { FrontendMessageResponse } from '@interfaces/case';
+import { SkSymbol } from './sk-symbol';
 
 export default function CaseMessage(props: { message: FrontendMessageResponse }) {
   const { data: user } = useApi<User>({ url: '/me', method: 'get' });
@@ -16,13 +20,13 @@ export default function CaseMessage(props: { message: FrontendMessageResponse })
         ? 'Jag'
         : message.sender;
 
-  const avatarSettings: { color: AvatarProps['color']; initials: string } =
+  const avatarSettings: { color: AvatarProps['color']; logo: JSX.Element } =
     message.direction === 'OUTBOUND'
       ? {
           color: 'bjornstigen',
-          initials: 'H',
+          logo: <SkSymbol />,
         }
-      : { color: 'gronsta', initials: 'J' };
+      : { color: 'gronsta', logo: <UserRound size={21} /> };
 
   // TODO: Uncomment when the API supports it
   // const { caseData } = useContext(CaseContext);
@@ -68,7 +72,7 @@ export default function CaseMessage(props: { message: FrontendMessageResponse })
   return (
     <div /**ref={messageRef}**/ className="case-message flex flex-col gap-y-16 py-20 px-8">
       <div className="case-message-header flex gap-16">
-        <Avatar color={avatarSettings.color} initials={avatarSettings.initials} accent size="sm" />
+        <MessageAvatar color={avatarSettings.color} logo={avatarSettings.logo} />
         <div className="flex items-center grow gap-16">
           <div className="flex flex-col desktop:flex-row desktop:items-center grow desktop:gap-16">
             <div className="text-large ellipsis">{sender}</div>

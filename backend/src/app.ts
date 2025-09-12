@@ -255,7 +255,7 @@ class App {
       (req, res, next) => {
         samlStrategy.logout(req as any, (err, url) => {
           const parsed = new URL(url);
-          parsed.searchParams.set('RelayState', SAML_LOGOUT_CALLBACK_URL);
+          parsed.searchParams.set('RelayState', SAML_SUCCESS_REDIRECT);
           const redirectUrl = parsed.toString();
           if (err) return res.status(500).send(err);
           req.logout(err => {

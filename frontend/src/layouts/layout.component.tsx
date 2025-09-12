@@ -135,12 +135,12 @@ export function Layout({ title, children }: { title: string; children: React.Rea
       </div>
 
       <CookieConsent
-        title="Kakor på minasidor.sundvall.se"
+        title="Kakor på minasidor.sundsvall.se"
         body={
           <p>
             Vi använder kakor, cookies, för att ge dig en förbättrad upplevelse, sammanställa statistik och för att viss
             nödvändig funktionalitet ska fungera på webbplatsen.{' '}
-            <NextLink href="/kakor" legacyBehavior passHref>
+            <NextLink href="/om-webbplatsen/kakor" legacyBehavior passHref>
               <Link>Läs mer om hur vi använder kakor</Link>
             </NextLink>
           </p>

@@ -33,6 +33,7 @@ export const Assets = () => {
             <NextLink
               href={`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument/${asset.assetId}`}
               aria-label={`Visa ${asset.assetId}`}
+              className={`list-item-card-link`}
             >
               <div className={`list-item-card`}>
                 <div className="list-item-card-content">

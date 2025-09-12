@@ -113,6 +113,7 @@ function Login() {
             </CenterDiv>
           </Main>
         </CardElevated>
+        {!isLoggedOut && (
         <div className="mt-48 text-left">
           <h2 className="text-h3-md">Problem att logga in?</h2>
           <p>
@@ -134,6 +135,7 @@ function Login() {
             </Link>
           </p>
         </div>
+        )}
       </div>
     </EntryLayout>
   );

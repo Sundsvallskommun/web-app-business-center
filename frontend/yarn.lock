@@ -2087,7 +2087,7 @@
     "@sk-web-gui/utils" "2.2.2"
     universal-cookie "^8.0.1"
 
-"@sk-web-gui/core@3.15.0":
+"@sk-web-gui/core@^3.15.0":
   version "3.15.0"
   resolved "https://registry.yarnpkg.com/@sk-web-gui/core/-/core-3.15.0.tgz#c8d6517c5c19e6620c7c8eb511224e7092ca914c"
   integrity sha512-ClXrJfVmuMOj/m53ysCd90LvRMHFFqftgZIgLrsNemi+SKz54wvnBoQ4b0w2YoSqVtY881T5d0XtofNk0S56JQ==

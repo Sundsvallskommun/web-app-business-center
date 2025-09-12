@@ -16,6 +16,7 @@ import {
   SAML_ISSUER,
   SAML_LOGOUT_URL,
   SAML_LOGOUT_CALLBACK_URL,
+  SAML_LOGOUT_REDIRECT,
   SAML_PRIVATE_KEY,
   SAML_PUBLIC_KEY,
   SAML_SUCCESS_REDIRECT,
@@ -52,7 +53,6 @@ import { Profile } from './interfaces/profile.interface';
 import { RepresentingMode } from './interfaces/representing.interface';
 import { User } from './interfaces/users.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
-import { isValidOrigin } from './utils/isValidOrigin';
 import { isValidUrl } from './utils/util';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
@@ -269,7 +269,7 @@ class App {
     );
 
     this.app.get(`${BASE_URL_PREFIX}/saml/logout/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
-      let successRedirect: URL = new URL(SAML_SUCCESS_REDIRECT);
+      let successRedirect: URL = new URL(SAML_LOGOUT_REDIRECT);
       let failureRedirect: URL;
       const urls = req?.body?.RelayState?.split(',') ?? [];
 

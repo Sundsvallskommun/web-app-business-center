@@ -5,7 +5,7 @@ import { ClientContactSetting } from '@interfaces/contactsettings';
 import ContactSettingsFormLogic from '@layouts/pages/mypages-sections/profile/components/contact-settings-form-logic.component';
 import { useLocalStorageValue } from '@react-hookz/web';
 import { useApi } from '@services/api-service';
-import { Accordion, Button, Divider, FormErrorMessage, Icon, Link, Modal } from '@sk-web-gui/react';
+import { Button, Disclosure, Divider, FormErrorMessage, Icon, Link, Modal } from '@sk-web-gui/react';
 import { Mail, Smartphone } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -93,8 +93,7 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
 
       <div>
         <Divider className="py-0 my-0" />
-        <Accordion>
-          <Accordion.Item header="Hantering av personuppgifter">
+          <Disclosure header="Hantering av personuppgifter">
             <p className="pb-16">
               Vi använder din e-postadress och ditt mobilnummer för att kunna skicka viktig information, bekräftelser
               och påminnelser som rör dina ärenden och tjänster. Sundsvalls kommun är personuppgiftsansvarig och
@@ -106,11 +105,10 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
                 target="_blank"
                 external
               >
-                Läs mer om hur vi hanterar dina personuppgifter
+                Information om Personuppgiftshantering (sundsvall.se)
               </Link>
             </p>
-          </Accordion.Item>
-        </Accordion>
+        </Disclosure>
         <Divider className="py-0 my-0" />
       </div>
 

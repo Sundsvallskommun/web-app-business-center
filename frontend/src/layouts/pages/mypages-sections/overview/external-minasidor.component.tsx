@@ -1,6 +1,7 @@
 'use client';
 
 import { MetaCard } from '@sk-web-gui/card';
+import { MonitorSmartphone } from 'lucide-react';
 
 type ExternalService = {
   id: number;
@@ -41,6 +42,7 @@ export const ExternalMinaSidor = ({ services }: ExternalMinaSidorProps) => {
             key={svc.id}
             href={svc.url}
             useHoverEffect
+            icon={<MonitorSmartphone />}
             color="mono"
             aria-label={`Öppna ${svc.label} (extern länk)`}
             onClick={(e) => {

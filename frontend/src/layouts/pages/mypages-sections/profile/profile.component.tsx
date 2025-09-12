@@ -1,6 +1,6 @@
 'use client';
 
-import { Disclosure } from '@sk-web-gui/react';
+import { Disclosure, Divider } from '@sk-web-gui/react';
 import { ContactDetails } from './profile-contact-details.component';
 import { ContactSettings } from './profile-contact-settings.component';
 
@@ -21,6 +21,7 @@ export const Profile = () => {
           </>
         }
       >
+        <Divider strong className="-ml-24 -mr-68"/>
         <ContactDetails />
       </Disclosure>
 
@@ -36,6 +37,7 @@ export const Profile = () => {
           </>
         }
       >
+        <Divider strong className="-ml-24 -mr-68"/>
         <ContactSettings />
       </Disclosure>
     </div>

@@ -42,8 +42,12 @@ const phoneRegExp = /^$|^(?:\+|0)[0-9\s-]{6,19}$/;
 const formSchema = yup
   .object<ClientContactSetting>({
     name: yup.string().nullable().optional(),
-    email: yup.string().email('E-postadress har fel format').nullable().optional(),
-    phone: yup.string().matches(phoneRegExp, 'Telefonnummer har fel format').nullable().optional(),
+    email: yup.string().email('Fyll i en giltig e-postadress i formatet namn@mail.se').nullable().optional(),
+    phone: yup
+      .string()
+      .matches(phoneRegExp, 'Fyll i ett giltigt mobilnummer, till exempel 0731234567 eller +46731234567.')
+      .nullable()
+      .optional(),
     notifications: yup
       .object({
         email_disabled: yup.boolean(),

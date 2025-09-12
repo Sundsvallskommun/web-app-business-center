@@ -5,7 +5,7 @@ import { ClientContactSetting } from '@interfaces/contactsettings';
 import ContactSettingsFormLogic from '@layouts/pages/mypages-sections/profile/components/contact-settings-form-logic.component';
 import { useLocalStorageValue } from '@react-hookz/web';
 import { useApi } from '@services/api-service';
-import { Accordion, Button, Divider, FormErrorMessage, Icon, Link, Modal } from '@sk-web-gui/react';
+import { Accordion, Button, Divider, Icon, Link, Modal } from '@sk-web-gui/react';
 import { Mail, Smartphone } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -69,9 +69,6 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
           <FormBox name="email" header="E-postadress" isEdit={isInitial || isEdit}>
             {isInitial || isEdit ? null : (getValues()?.email ?? 'Ingen e-postadress tillagd')}
           </FormBox>
-          <FormErrorMessage className="text-error">
-            {(methods.formState.errors?.[email]?.message as string) ?? ''}
-          </FormErrorMessage>
         </div>
       </div>
 
@@ -85,9 +82,6 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
           <FormBox name="phone" header="Mobilnummer" isEdit={isInitial || isEdit}>
             {isInitial || isEdit ? null : (getValues()?.phone ?? 'Inget mobilnummer tillagt')}
           </FormBox>
-          <FormErrorMessage className="text-error">
-            {(methods.formState.errors?.[phone]?.message as string) ?? ''}
-          </FormErrorMessage>
         </div>
       </div>
 
@@ -120,18 +114,14 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
             <Button variant="secondary" onClick={onClose}>
               Lägg till senare
             </Button>
-            <Button disabled={isSaveDisabled} type="submit">
-              Spara uppgifter
-            </Button>
+            <Button type="submit">Spara uppgifter</Button>
           </>
         ) : isEdit ? (
           <>
             <Button variant="secondary" onClick={handleToggleEdit}>
               Avbryt
             </Button>
-            <Button disabled={isSaveDisabled} type="submit">
-              Spara uppgifter
-            </Button>
+            <Button type="submit">Spara uppgifter</Button>
           </>
         ) : (
           <>
@@ -215,15 +205,10 @@ export const ContactSettingsConfirmation: React.FC = () => {
   }, [isFetching, contactSettings]);
 
   return (
-        <Modal
-          className="w-full max-w-[720px]"
-          disableCloseOutside={false}
-          show={isOpen && cookieExists}
-          hideClosebutton
-        >
-          <ContactSettingsFormLogic onSubmitSuccess={() => setIsOpen(false)} formData={contactSettings}>
-            <ContactSettingsConfirmationContent onClose={closeHandler} isInitial={!showedInitial} />
-          </ContactSettingsFormLogic>
-        </Modal>
+    <Modal className="w-full max-w-[720px]" disableCloseOutside={false} show={isOpen && cookieExists} hideClosebutton>
+      <ContactSettingsFormLogic onSubmitSuccess={() => setIsOpen(false)} formData={contactSettings}>
+        <ContactSettingsConfirmationContent onClose={closeHandler} isInitial={!showedInitial} />
+      </ContactSettingsFormLogic>
+    </Modal>
   );
 };

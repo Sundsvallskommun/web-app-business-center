@@ -1,12 +1,12 @@
 'use client';
 
+import { useAppContext } from '@contexts/app.context';
 import { MenuBar, cx, useThemeQueries } from '@sk-web-gui/react';
 import { usePathname } from 'next/navigation';
 import { SLogo } from '../../components/logos/s-logo.component';
 import { RepresentingEntity, RepresentingMode } from '../../interfaces/app';
 import { useApi } from '../../services/api-service';
 import { useBannerMenuItems } from './banner-menu-items';
-import { useAppContext } from '@contexts/app.context';
 
 export const BannerMenu: React.FC = () => {
   const pathname = usePathname();

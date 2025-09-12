@@ -8,7 +8,6 @@ import NextLink from 'next/link';
 
 export function Layout({ title, children }: { title: string; children: React.ReactNode }) {
   const { set: setMatomo } = useLocalStorageValue('matomoIsActive');
-  
 
   const cookieConsentHandler = (cookies) => {
     if (cookies.some((opt) => opt.cookieName === 'stats')) {

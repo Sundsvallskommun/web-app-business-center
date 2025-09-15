@@ -5,13 +5,14 @@ import {
   FormControl,
   FormErrorMessage,
   Link,
+  Modal,
   Textarea,
   UploadFile,
   useThemeQueries,
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
 import { Info } from 'lucide-react';
-import { useContext, useMemo } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { CaseContext } from '../case-layout.component';
 
@@ -24,6 +25,7 @@ export default function CaseNewMessage() {
   const { isMinDesktop } = useThemeQueries();
   const context = useForm<NewMessage>({ defaultValues: { files: [], message: '' }, mode: 'onChange' });
   const { caseData } = useContext(CaseContext);
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   const files = context.watch('files');
   const postMessageMutation = useApi({
@@ -93,61 +95,98 @@ export default function CaseNewMessage() {
   };
 
   return (
-    <div className="self-stretch flex flex-col gap-y-24 mx-20 desktop:mx-32">
-      <FormProvider {...context}>
-        <form className="flex flex-col gap-lg" onSubmit={context.handleSubmit(handleOnSubmit)}>
-          <div className="flex flex-col gap-y-24">
-            <div className="flex flex-col">
-              <p className="font-bold mb-[1.2rem]">
-                Skicka ett meddelande för att kontakta handläggaren för ditt ärende
-              </p>
-              <FormControl className="w-full">
-                <Textarea
-                  {...context.register('message', { required: 'Skriv ett meddelande' })}
-                  placeholder="Skriv ett meddelande"
-                  className="w-full min-h-72"
-                  value={context.getValues().message}
-                  readOnly={postMessageMutation.isPending}
-                />
-                {context.formState.errors.message && (
-                  <FormErrorMessage className="text-small text-error" role="alert">
-                    {context.formState.errors.message.message}
-                  </FormErrorMessage>
-                )}
-              </FormControl>
-              <FileUpload.Button className="mt-16" name="files" maxFileSizeMB={25} />
+    <>
+      <div className="self-stretch flex flex-col gap-y-24 mx-20 desktop:mx-32">
+        <FormProvider {...context}>
+          <form className="flex flex-col gap-lg" onSubmit={context.handleSubmit(handleOnSubmit)}>
+            <div className="flex flex-col gap-y-24">
+              <div className="flex flex-col">
+                <p className="font-bold mb-[1.2rem]">
+                  Skicka ett meddelande för att kontakta handläggaren för ditt ärende
+                </p>
+                <FormControl className="w-full">
+                  <Textarea
+                    {...context.register('message', { required: 'Skriv ett meddelande' })}
+                    placeholder="Skriv ett meddelande"
+                    className="w-full min-h-72"
+                    value={context.getValues().message}
+                    readOnly={postMessageMutation.isPending}
+                  />
+                  {context.formState.errors.message && (
+                    <FormErrorMessage className="text-small text-error" role="alert">
+                      {context.formState.errors.message.message}
+                    </FormErrorMessage>
+                  )}
+                </FormControl>
+                <FileUpload.Button className="mt-16" name="files" maxFileSizeMB={25} />
+                <div className="flex items-row text-small gap-5 mt-10">
+                  <span className="text-dark-secondary">Maximal filstorlek: 25 MB.</span>{' '}
+                  <Button variant="link" onClick={() => setShowModal(true)}>
+                    Visa tillåtna filtyper
+                  </Button>
+                </div>
+              </div>
+
+              {files.length ? (
+                <div className="flex flex-col py-16 gap-y-16">
+                  <h3 className="text-large font-normal font-[Arial]">Valda filer</h3>
+                  <FileUpload.List name="files" showBorder>
+                    {files?.map((file, i) => (
+                      <FileUpload.ListItem
+                        className="break-all"
+                        key={`${file?.meta.name}-${i}`}
+                        index={i}
+                        actionsProps={{ showRemove: true }}
+                      />
+                    ))}
+                  </FileUpload.List>
+                </div>
+              ) : null}
             </div>
 
-            {files.length ? (
-              <div className="flex flex-col py-16 gap-y-16">
-                <h3 className="text-large font-normal font-[Arial]">Valda filer</h3>
-                <FileUpload.List name="files" showBorder>
-                  {files?.map((file, i) => (
-                    <FileUpload.ListItem
-                      className="break-all"
-                      key={`${file?.meta.name}-${i}`}
-                      index={i}
-                      actionsProps={{ showRemove: true }}
-                    />
-                  ))}
-                </FileUpload.List>
-              </div>
-            ) : null}
-          </div>
-
-          <div className="flex desktop:justify-end">
-            <Button
-              className="w-full desktop:w-fit"
-              size={isMinDesktop ? 'md' : 'lg'}
-              type="submit"
-              color="vattjom"
-              loading={postMessageMutation.isPending}
-            >
-              Skicka
-            </Button>
-          </div>
-        </form>
-      </FormProvider>
-    </div>
+            <div className="flex desktop:justify-start">
+              <Button
+                className="w-full desktop:w-fit"
+                size={isMinDesktop ? 'md' : 'lg'}
+                type="submit"
+                color="vattjom"
+                loading={postMessageMutation.isPending}
+              >
+                Skicka meddelande
+              </Button>
+            </div>
+          </form>
+        </FormProvider>
+      </div>
+      <Modal
+        className="w-full max-w-[433px]"
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        label="Tillåtna filtyper"
+      >
+        <Modal.Content>
+          <ul className="text-dark-secondary space-y-3">
+            <li>.jpeg</li>
+            <li>.gif</li>
+            <li>.png</li>
+            <li>.tiff</li>
+            <li>.bmp</li>
+            <li>.pdf</li>
+            <li>.rtf</li>
+            <li>.doc</li>
+            <li>.txt</li>
+            <li>.html</li>
+            <li>.bin</li>
+            <li>.xls</li>
+            <li>.msg</li>
+            <li>.xlsx</li>
+            <li>.odt</li>
+            <li>.ods</li>
+            <li>.docx</li>
+            <li>.pptx</li>
+          </ul>
+        </Modal.Content>
+      </Modal>
+    </>
   );
 }

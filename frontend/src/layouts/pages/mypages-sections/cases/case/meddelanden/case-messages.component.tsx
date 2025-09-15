@@ -13,7 +13,11 @@ export default function CaseMessages() {
   return (
     <div className="flex flex-col gap-y-16 items-start self-stretch mx-20 desktop:mx-32">
       <div className="text-secondary w-full">
-        <span>{caseMessages?.length ? `${caseMessages.length} meddelanden` : `Inga meddelanden`}</span>
+        <span>
+          {caseMessages?.length
+            ? `${caseMessages.length} ${caseMessages.length === 1 ? 'meddelande' : 'meddelanden'}`
+            : 'Inga meddelanden'}
+        </span>
         <Divider className="mx-0 mb-0 mt-16" />
       </div>
       {caseMessages?.length ? (

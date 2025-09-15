@@ -5,4 +5,6 @@ export interface User extends Record<string, unknown> {
   givenName: string;
   surname: string;
   username: string;
+  nameID: string;
+  sessionIndex: string;
 }

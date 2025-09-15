@@ -32,14 +32,14 @@ export default function Kakor() {
       <div className="text-content">
         <h1>{pageName}</h1>
         <div className="flex flex-col gap-y-40">
-          <div className="text-lead">När du besöker sundsvall.se lagras kakor på din dator.</div>
+          <div className="text-lead">När du besöker minasidor.sundsvall.se lagras kakor på din dator.</div>
           <div>
             <p>
               En kaka är en textfil som används för att förenkla ditt besök på vår webbplats och göra det möjligt att
-              använda vissa funktioner. Sundsvall.se använder inga kakor som sparar personlig information om dig.
+              använda vissa funktioner. Minasidor.sundsvall.se använder inga kakor som sparar personlig information om dig.
             </p>
             <p>
-              När du besöker sundsvall.se lagras kakor på din dator. Sundsvalls kommun använder två olika typer av
+              När du besöker minasidor.sundsvall.se lagras kakor på din dator. Sundsvalls kommun använder två olika typer av
               kakor: Nödvändiga och analytiska kakor.
             </p>
             <p>
@@ -52,7 +52,7 @@ export default function Kakor() {
               permanent kaka.
             </p>
             <p>
-              Sundsvall.se använder funktionalitet från externa webbplatser som i sin tur lagrar kakor när du besöker
+              Minasidor.sundsvall.se använder funktionalitet från externa webbplatser som i sin tur lagrar kakor när du besöker
               dessa sidor. Dessa sidor och dess funktionalitet är följande;
             </p>
           </div>
@@ -61,17 +61,17 @@ export default function Kakor() {
             <p>
               Namn: SKCookieConsent.
               <br />
-              Används av: Sundsvall.se.
+              Används av: Minasidor.sundsvall.se.
               <br />
               Typ av kaka: Ett års kaka.
               <br />
-              Den här kakan sätts när du accepterar kakor på sundsvall.se och används för att hålla reda på att du
+              Den här kakan sätts när du accepterar kakor på minasidor.sundsvall.se och används för att hålla reda på att du
               godkänt kakor.
             </p>
             <p>
               Namn: connect.sid.
               <br />
-              Används av: Sundsvall.se.
+              Används av: Minasidor.sundsvall.se.
               <br />
               Typ av kaka: Sessionskaka.
               <br />
@@ -83,11 +83,11 @@ export default function Kakor() {
             <p>
               Namn: _pk_ses.21.8618.
               <br />
-              Används av: Sundsvall.se.
+              Används av: Minasidor.sundsvall.se.
               <br />
               Typ av kaka: Sessionskaka.
               <br />
-              Dessa kakor används av sundsvall.se för att samla in statistik till statistikverktyget Matomo. Id-kakan
+              Dessa kakor används av minasidor.sundsvall.se för att samla in statistik till statistikverktyget Matomo. Id-kakan
               används för att spara detaljer om användaren till exempel för att separera olika unika besökare. SES
               används för att temporärt spara data för en session på webbplatsen.
             </p>

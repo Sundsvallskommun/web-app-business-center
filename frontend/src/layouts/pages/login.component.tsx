@@ -20,7 +20,8 @@ function Login() {
   const isLoggedOut = searchParams?.get('loggedout') === '';
   const failMessage = searchParams?.get('failMessage');
   const url_e_identification = 'https://elegitimation.se';
-  const url_personal_data = 'https://sundsvall.se/kommun-och-politik/overklaga-beslut-rattssakerhet/behandling-av-personuppgifter';
+  const url_personal_data =
+    'https://sundsvall.se/kommun-och-politik/overklaga-beslut-rattssakerhet/behandling-av-personuppgifter';
 
   // Turn on/off automatic login
   const autoLogin = false;
@@ -114,27 +115,29 @@ function Login() {
           </Main>
         </CardElevated>
         {!isLoggedOut && (
-        <div className="mt-48 text-left">
-          <h2 className="text-h3-md">Problem att logga in?</h2>
-          <p>
-            Vi använder oss av BankID och FrejaID för en trygg och säker inloggning. BankID och FrejaID är en
-            e-legitimationer som du använder till att styrka din identitet på Internet, t.ex. till exempel hos banken,
-            hos Försäkringskassan eller CSN.
-          </p>
-          <p>
-            Du kan läsa mer om e-legitimation här.{' '}
-            <Link external href={url_e_identification}>
-              E-legitimation
-            </Link>
-          </p>
-          <h2 className="text-h3-md mt-30">Behandling av personuppgifter</h2>
-          <p>
-            Här kan du läsa om hur dina personuppgifter behandlas när du använder våra e-tjänster och Mina Sidor.{' '}
-            <Link external href={url_personal_data}>
-              Behandling av personuppgifter
-            </Link>
-          </p>
-        </div>
+          <div className="mt-48 text-left">
+            <h2 className="text-h3-md">Problem att logga in?</h2>
+            <p>
+              Vi använder oss av BankID och FrejaID för en trygg och säker inloggning. BankID och FrejaID är en
+              e-legitimationer som du använder till att styrka din identitet på Internet, t.ex. till exempel hos banken,
+              hos Försäkringskassan eller CSN.
+            </p>
+            <div className="mt-10">
+              <span>Du kan läsa mer om e-legitimation här.</span>{' '}
+              <Link external href={url_e_identification}>
+                E-legitimation
+              </Link>
+            </div>
+            <h2 className="text-h3-md mt-30">Behandling av personuppgifter</h2>
+            <div>
+              <span>
+                Här kan du läsa om hur dina personuppgifter behandlas när du använder våra e-tjänster och Mina Sidor.
+              </span>{' '}
+              <Link external href={url_personal_data}>
+                Behandling av personuppgifter
+              </Link>
+            </div>
+          </div>
         )}
       </div>
     </EntryLayout>

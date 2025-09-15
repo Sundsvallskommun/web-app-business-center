@@ -121,6 +121,7 @@ const samlStrategy = new Strategy(
         surname,
         username: 'unknown', // Username is not provided in the SAML profile, set a default value
         nameID: profile.nameID,
+        nameIDFormat: profile.nameIDFormat,
         sessionIndex: profile.sessionIndex,
       };
 
@@ -242,31 +243,42 @@ class App {
       res.status(200).send(metadata);
     });
 
-    this.app.get(
-      `${BASE_URL_PREFIX}/saml/logout`,
-      (req, res, next) => {
-        if (req.session.returnTo) {
-          req.query.RelayState = req.session.returnTo;
-        } else if (req.query.successRedirect) {
-          req.query.RelayState = req.query.successRedirect;
+    this.app.get(`${BASE_URL_PREFIX}/saml/logout`, (req, res) => {
+      if (req.session?.returnTo) {
+        req.query.RelayState = req.session.returnTo;
+      } else if (req.query.successRedirect) {
+        req.query.RelayState = req.query.successRedirect;
+      }
+
+      if (!req.user || !req.user.nameID || !req.user.nameIDFormat) {
+        logger.warn('User missing required SAML fields for logout', { user: req.user });
+        res.redirect(SAML_LOGOUT_REDIRECT);
+        return;
+      }
+
+      samlStrategy.logout(req as any, (err, url) => {
+        if (err || !url) {
+          logger.error('Failed to generate SAML logout URL', { err, user: req.user });
+          res.status(500).send('SAML logout failed');
+          return;
         }
-        next();
-      },
-      (req, res, next) => {
-        samlStrategy.logout(req as any, (err, url) => {
+
+        try {
           logger.info(`Parsing url: ${url}`);
           const parsed = new URL(url);
           parsed.searchParams.set('RelayState', SAML_LOGOUT_CALLBACK_URL);
-          logger.info(`Set relay state to: ${SAML_LOGOUT_CALLBACK_URL}`);
+
           const redirectUrl = parsed.toString();
-          if (err) return res.status(500).send(err);
-          if (err) return res.status(500).send(err);
           logger.info(`User ${req.user ? (req.user as User).partyId : 'unknown'} logged out`);
           logger.info(`Using logout url: ${redirectUrl}`);
-          res.redirect(redirectUrl); // contains SAMLRequest, RelayState, etc.
-        });
-      },
-    );
+
+          res.redirect(redirectUrl);
+        } catch (parseErr) {
+          logger.error('Error parsing SAML logout URL', { parseErr, url });
+          res.status(500).send('Invalid logout URL');
+        }
+      });
+    });
 
     this.app.get(`${BASE_URL_PREFIX}/saml/logout/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
       req.logout(err => {

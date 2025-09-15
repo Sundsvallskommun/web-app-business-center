@@ -2087,10 +2087,10 @@
     "@sk-web-gui/utils" "2.2.2"
     universal-cookie "^8.0.1"
 
-"@sk-web-gui/core@^3.16.0":
-  version "3.16.0"
-  resolved "https://registry.yarnpkg.com/@sk-web-gui/core/-/core-3.16.0.tgz#6604cc8a8ba0fc0f05a040a0b4a987cd0fed2663"
-  integrity sha512-9o9k30q7GTpqLcI2EYWhc2qFxLGo5L58L/V1zRRG1ejtDivSp/WktkbI7Omk0wRBK0DeCKKeNbheNNS7cF6Wgg==
+"@sk-web-gui/core@^3.16.1":
+  version "3.16.1"
+  resolved "https://registry.yarnpkg.com/@sk-web-gui/core/-/core-3.16.1.tgz#8320d43541a6915e5a305e8d58099ef6324ce819"
+  integrity sha512-DaS3Mnihi5G38wExcqSEltfjZA5Lcfh1Hqs2/jsgeV1rhX6TI5JD3tp3qC6IqKgLBIJKfK9byQzXHo2XffDEDA==
   dependencies:
     "@sk-web-gui/theme" "2.6.0"
     "@tailwindcss/container-queries" "^0.1.1"

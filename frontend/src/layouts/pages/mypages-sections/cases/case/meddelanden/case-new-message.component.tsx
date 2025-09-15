@@ -109,7 +109,6 @@ export default function CaseNewMessage() {
                     {...context.register('message', { required: 'Skriv ett meddelande' })}
                     placeholder="Skriv ett meddelande"
                     className="w-full min-h-72"
-                    value={context.getValues().message}
                     readOnly={postMessageMutation.isPending}
                   />
                   {context.formState.errors.message && (
@@ -118,7 +117,7 @@ export default function CaseNewMessage() {
                     </FormErrorMessage>
                   )}
                 </FormControl>
-                <FileUpload.Button className="mt-16" name="files" maxFileSizeMB={25} />
+                <FileUpload.Button className="mt-16" maxFileSizeMB={25} {...context.register("files")} />
                 <div className="flex items-row text-small gap-5 mt-10">
                   <span className="text-dark-secondary">Maximal filstorlek: 25 MB.</span>{' '}
                   <Button variant="link" onClick={() => setShowModal(true)}>
@@ -137,6 +136,7 @@ export default function CaseNewMessage() {
                         key={`${file?.meta.name}-${i}`}
                         index={i}
                         actionsProps={{ showRemove: true }}
+                        file={file}
                       />
                     ))}
                   </FileUpload.List>

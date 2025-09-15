@@ -1,6 +1,7 @@
-import { FormControl, FormErrorMessage, FormLabel, Input } from '@sk-web-gui/react';
-import { useFormContext } from 'react-hook-form';
+import { FormControl, FormErrorMessage, FormLabel, Icon, Input } from '@sk-web-gui/react';
+import { Info } from 'lucide-react';
 import React from 'react';
+import { useFormContext } from 'react-hook-form';
 
 export const ConnectForm = ({ children }) => {
   const methods = useFormContext();
@@ -33,7 +34,8 @@ export const ConnectFormInput: React.FC<ConnectFormInputProps> = ({ name, header
       )}
       {methods.formState.errors?.[name]?.message ? (
         <div className="my-sm">
-          <FormErrorMessage className="text-error">
+          <FormErrorMessage className="text-error flex flex-row">
+            <Icon icon={<Info />} className="mr-5 shrink-0" size={16} />
             {(methods.formState.errors?.[name]?.message as string) ?? ''}
           </FormErrorMessage>
         </div>

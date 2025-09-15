@@ -3,7 +3,7 @@ import { TableWrapper } from '@components/table-wrapper/table-wrapper.component'
 import { InvoicesData } from '@interfaces/invoice';
 import { sortInvoices } from '@services/invoice-service';
 import { Label, Table, useThemeQueries } from '@sk-web-gui/react';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { InvoiceTableCard } from './invoices-table-card.component';
 
 export const InvoicesTable: React.FC<{
@@ -11,7 +11,7 @@ export const InvoicesTable: React.FC<{
   heading: React.ReactNode;
   isFetchingData: boolean;
 }> = (props) => {
-  const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>();
+  // const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>();
   const ref = useRef<null | HTMLDivElement>(null);
   const { isMinDesktop } = useThemeQueries();
 

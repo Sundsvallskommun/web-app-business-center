@@ -22,13 +22,8 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
   onClose,
 }) => {
   const methods = useFormContext();
-  const { getValues, reset, watch } = methods;
+  const { getValues, reset } = methods;
   const [isEdit, setIsEdit] = useState<boolean>(false);
-
-  const email = watch('email');
-  const phone = watch('phone');
-
-  const isSaveDisabled = !email && !phone;
 
   const handleToggleEdit = useCallback(() => {
     if (isEdit) {

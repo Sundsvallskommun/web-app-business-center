@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useEffect, Fragment, useState } from 'react';
-import { init } from '@socialgouv/matomo-next';
-
+import { init, push } from '@socialgouv/matomo-next';
 import { useLocalStorageValue } from '@react-hookz/web';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { appURL } from './app-url';
 
 export function MatomoWrapper({ children }) {
   const localstorageKey = 'matomoIsActive';
@@ -27,6 +28,18 @@ export function MatomoWrapper({ children }) {
       location.reload();
     }
   }, [MATOMO_SITE_ID, MATOMO_URL, haveInit, matomo]);
+
+  // Track page view on route change
+  const searchParams = useSearchParams(),
+  pathname = usePathname()
+
+  const searchParamsString = searchParams.toString()
+  useEffect(() => {
+    if (!pathname) return
+    const url = appURL() + pathname + (searchParamsString ? '?' + searchParamsString : '')
+    push(['setCustomUrl', url])
+    push(['trackPageView'])
+  }, [pathname, searchParamsString])
 
   return <Fragment>{children}</Fragment>;
 }

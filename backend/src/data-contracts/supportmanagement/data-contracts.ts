@@ -32,14 +32,14 @@ export enum Priority {
 }
 
 export interface Problem {
+  title?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  title?: string;
-  detail?: string;
 }
 
 export interface StatusType {
@@ -67,10 +67,10 @@ export interface ConstraintViolationProblem {
   violations?: Violation[];
   title?: string;
   message?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   parameters?: Record<string, object>;
-  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -103,14 +103,14 @@ export interface ThrowableProblem {
     nativeMethod?: boolean;
   }[];
   message?: string;
+  title?: string;
+  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
   parameters?: Record<string, object>;
   status?: StatusType;
-  title?: string;
-  detail?: string;
   suppressed?: {
     stackTrace?: {
       classLoaderName?: string;
@@ -1190,12 +1190,12 @@ export interface PageableObject {
   /** @format int64 */
   offset?: number;
   sort?: SortObject;
+  unpaged?: boolean;
   paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
-  unpaged?: boolean;
 }
 
 export interface SortObject {
@@ -1439,12 +1439,12 @@ export interface Communication {
    */
   sent?: string;
   /**
-   * The email-subject of the message
+   * The email-subject of the communication
    * @example "Hello world"
    */
   subject?: string;
   /**
-   * The message was delivered by
+   * The communication was delivered by
    * @example "EMAIL"
    */
   communicationType?: CommunicationCommunicationTypeEnum;
@@ -1454,12 +1454,17 @@ export interface Communication {
    */
   target?: string;
   /**
-   * Indicates if the message is internal
+   * The recipients of the communication, if email
+   * @example ["kalle.anka@ankeborg.se"]
+   */
+  recipients?: string[];
+  /**
+   * Indicates if the communication is internal
    * @example false
    */
   internal?: boolean;
   /**
-   * Signal if the message has been viewed or not
+   * Signal if the communication has been viewed or not
    * @example true
    */
   viewed?: boolean;
@@ -1620,7 +1625,7 @@ export enum CommunicationDirectionEnum {
 }
 
 /**
- * The message was delivered by
+ * The communication was delivered by
  * @example "EMAIL"
  */
 export enum CommunicationCommunicationTypeEnum {

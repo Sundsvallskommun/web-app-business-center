@@ -633,6 +633,19 @@ export interface Law {
   article?: string;
 }
 
+export interface CaseType {
+  /**
+   * The case type
+   * @example "PARATRANSIT"
+   */
+  type?: string;
+  /**
+   * The display name of the case type
+   * @example "Färdtjänst"
+   */
+  displayName?: string;
+}
+
 export interface Errand {
   /**
    * The id of the errand
@@ -1440,10 +1453,10 @@ export interface PatchDecision {
 }
 
 export interface PageErrand {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
   pageable?: PageableObject;
@@ -1459,11 +1472,11 @@ export interface PageErrand {
 }
 
 export interface PageableObject {
+  paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
-  paged?: boolean;
   /** @format int64 */
   offset?: number;
   sort?: SortObject;
@@ -1655,10 +1668,10 @@ export interface MessageResponse {
 }
 
 export interface PageMessage {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
   pageable?: PageableObject;

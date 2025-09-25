@@ -10,7 +10,6 @@ export const emptyCaseList: CasesData = {
 
 export const ongoingCasesLabels = [
   { label: 'Ärende', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
-  // { label: 'Ansvarig förvaltning', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
   { label: 'Senast ändrat', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
   { label: 'Status', screenReaderOnly: false, sortable: true, shownForStatus: statusCodes.Any },
   { label: 'Skapa egen påminnelse', screenReaderOnly: false, sortable: false, shownForStatus: statusCodes.Any },
@@ -19,36 +18,22 @@ export const ongoingCasesLabels = [
 
 // getCaseStatus i confluence
 export const statusMapCases = {
-  Inskickat: { code: statusCodes.Ongoing, color: 'info' },
-  'Tilldelat för handläggning': { code: statusCodes.Ongoing, color: 'info' },
-  'Under behandling': { code: statusCodes.Ongoing, color: 'info' },
+  Inskickat: { code: statusCodes.Ongoing, color: 'tertiary' },
+  'Handläggning pågår': { code: statusCodes.Ongoing, color: 'info' },
   'Komplettering behövs': { code: statusCodes.Ongoing, color: 'warning' },
-  'Påminnelse om komplettering': { code: statusCodes.Ongoing, color: 'error' },
-  'Komplettering inkommen, behandling fortsätter': {
-    code: statusCodes.Ongoing,
-    color: 'info',
-  },
-  'Beslut finns, se separat information': {
-    code: statusCodes.Ongoing,
-    color: 'info',
-  },
-  'Väntar på komplettering': { code: statusCodes.Ongoing, color: 'warning' },
   Kompletterad: { code: statusCodes.Ongoing, color: 'info' },
-  Klart: { code: statusCodes.Approved, color: 'success' },
   Avslutat: { code: statusCodes.Approved, color: 'success' },
-  'Ärendet arkiveras': { code: statusCodes.Rejected, color: 'success' },
-  'Sparat ärende': { code: statusCodes.Rejected, color: 'success' },
 };
 
 export const mapStatus = (s: string) => {
   return Object.keys(statusMapCases).includes(s)
     ? { code: statusMapCases[s].code, color: statusMapCases[s].color, label: s }
-    : { code: statusCodes.Ongoing, color: 'neutral', label: s };
+    : { code: statusCodes.Ongoing, color: 'info', label: s };
 };
 
 export const handleCase = (n: CaseStatusResponse): ICaseStatusResponse => ({
   ...n,
-  status: mapStatus(n.status || ''),
+  status: mapStatus(n.externalStatus || ''),
 });
 
 export const handleCaseResponse: (data: CaseStatusResponse[]) => ICaseStatusResponse[] = (data) => data.map(handleCase);

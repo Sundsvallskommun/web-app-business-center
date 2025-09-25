@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, Fragment, useState } from 'react';
-import { init, push } from '@socialgouv/matomo-next';
 import { useLocalStorageValue } from '@react-hookz/web';
+import { init, push } from '@socialgouv/matomo-next';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { Fragment, useEffect, useState } from 'react';
 import { appURL } from './app-url';
 
 export function MatomoWrapper({ children }) {
@@ -30,16 +30,16 @@ export function MatomoWrapper({ children }) {
   }, [MATOMO_SITE_ID, MATOMO_URL, haveInit, matomo]);
 
   // Track page view on route change
-  const searchParams = useSearchParams(),
-  pathname = usePathname()
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
-  const searchParamsString = searchParams.toString()
+  const searchParamsString = searchParams.toString();
   useEffect(() => {
-    if (!pathname) return
-    const url = appURL() + pathname + (searchParamsString ? '?' + searchParamsString : '')
-    push(['setCustomUrl', url])
-    push(['trackPageView'])
-  }, [pathname, searchParamsString])
+    if (!pathname) return;
+    const url = appURL() + pathname + (searchParamsString ? '?' + searchParamsString : '');
+    push(['setCustomUrl', url]);
+    push(['trackPageView']);
+  }, [pathname, searchParamsString]);
 
   return <Fragment>{children}</Fragment>;
 }

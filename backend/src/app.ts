@@ -14,12 +14,11 @@ import {
   SAML_FAILURE_REDIRECT,
   SAML_IDP_PUBLIC_CERT,
   SAML_ISSUER,
-  SAML_LOGOUT_URL,
   SAML_LOGOUT_CALLBACK_URL,
   SAML_LOGOUT_REDIRECT,
+  SAML_LOGOUT_URL,
   SAML_PRIVATE_KEY,
   SAML_PUBLIC_KEY,
-  SAML_SUCCESS_REDIRECT,
   SECRET_KEY,
   SESSION_MEMORY,
   SWAGGER_ENABLED,
@@ -82,6 +81,7 @@ const samlStrategy = new Strategy(
     audience: false,
     logoutUrl: SAML_LOGOUT_URL,
     logoutCallbackUrl: SAML_LOGOUT_CALLBACK_URL,
+    acceptedClockSkewMs: -1,
   },
   async function (profile: Profile, done: VerifiedCallback) {
     if (!profile) {
@@ -300,7 +300,7 @@ class App {
       },
     );
 
-    this.app.get(`${BASE_URL_PREFIX}/saml/logout/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
+    this.app.get(`${BASE_URL_PREFIX}/saml/logout/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res) => {
       logger.info('SAML logout callback received', { query: req.query, body: req.body, user: req.user });
       req.logout(err => {
         if (err) return res.status(500).send(err);

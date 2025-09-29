@@ -11,6 +11,7 @@ import {
   useThemeQueries,
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
+import dayjs from 'dayjs';
 import { Info } from 'lucide-react';
 import { useContext, useMemo, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
@@ -37,11 +38,10 @@ export default function CaseNewMessage() {
   const isNewMessagesDisabled = useMemo(() => {
     if (!caseData || caseData?.status?.code !== 0) return false;
 
-    const lastChange = caseData.lastStatusChange ? new Date(caseData.lastStatusChange) : null;
-    if (!lastChange || Number.isNaN(lastChange.getTime())) return false;
-
-    const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
-    return Date.now() - lastChange.getTime() >= FOURTEEN_DAYS_MS;
+    const lastChanged = caseData?.lastStatusChange ? dayjs(caseData.lastStatusChange) : null;
+    if (!lastChanged || !lastChanged.isValid()) return false;
+    const inclusiveEnd = lastChanged.add(15, 'days').endOf('day');
+    return dayjs().isAfter(inclusiveEnd);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [caseData?.status?.code, caseData?.lastStatusChange]);
@@ -117,7 +117,7 @@ export default function CaseNewMessage() {
                     </FormErrorMessage>
                   )}
                 </FormControl>
-                <FileUpload.Button className="mt-16" maxFileSizeMB={25} {...context.register("files")} />
+                <FileUpload.Button className="mt-16" maxFileSizeMB={25} {...context.register('files')} />
                 <div className="flex items-row text-small gap-5 mt-10">
                   <span className="text-dark-secondary">Maximal filstorlek: 25 MB.</span>{' '}
                   <Button variant="link" onClick={() => setShowModal(true)}>

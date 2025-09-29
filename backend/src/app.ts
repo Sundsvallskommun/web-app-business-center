@@ -271,14 +271,14 @@ class App {
 
         if (!req.user || !req.user.nameID || !req.user.nameIDFormat) {
           logger.warn('User missing required SAML fields for logout', { user: req.user });
-          res.redirect(SAML_LOGOUT_REDIRECT);
+          res.redirect(SAML_LOGOUT_CALLBACK_URL);
           return;
         }
 
         samlStrategy.logout(req as any, (err, url) => {
           if (err || !url) {
             logger.error('Failed to generate SAML logout URL', { err, user: req.user });
-            res.status(500).send('SAML logout failed');
+            res.redirect(SAML_LOGOUT_CALLBACK_URL);
             return;
           }
 

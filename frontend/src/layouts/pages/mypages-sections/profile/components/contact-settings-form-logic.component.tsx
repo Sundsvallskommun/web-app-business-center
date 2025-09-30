@@ -1,6 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ClientContactSetting } from '@interfaces/contactsettings';
 import { useApi, useApiService } from '@services/api-service';
+import { phoneNumberFormatter } from '@utils/phoneNumberFormatter';
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo } from 'react';
 import { FormProvider, UseFormReturn, useForm } from 'react-hook-form';
@@ -45,7 +46,10 @@ const formSchema = yup
     email: yup.string().email('Fyll i en giltig e-postadress i formatet namn@mail.se').nullable().optional(),
     phone: yup
       .string()
-      .matches(phoneRegExp, 'Fyll i ett giltigt mobilnummer, till exempel 0731234567 eller +46731234567.')
+      .matches(
+        phoneRegExp,
+        'Fyll i ett giltigt mobilnummer, till exempel 0731234567, +46731234567 eller 0046731234567.'
+      )
       .nullable()
       .optional(),
     notifications: yup
@@ -129,7 +133,7 @@ export default function ContactSettingsFormLogic({
       const data: Partial<ClientContactSetting> = _.merge(formData, {
         id: formData?.id,
         email: values.email,
-        phone: values?.phone?.replace(/^0/, '+46').replaceAll('-', '').replaceAll(' ', ''), //Possible temporary fix until phonenumber component is avaliable in shared-components
+        phone: phoneNumberFormatter(values?.phone),
         notifications: {
           email_disabled: !values.notifications?.email_disabled,
           phone_disabled: !values.notifications?.phone_disabled,

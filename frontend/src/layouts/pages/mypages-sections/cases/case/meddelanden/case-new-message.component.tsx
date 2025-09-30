@@ -88,7 +88,7 @@ export default function CaseNewMessage() {
 
     try {
       const res = await postMessageMutation.mutateAsync(formData);
-      if (!res.error) context.reset();
+      if (!res.error) context.resetField('message');
     } catch (error) {
       console.error('Error sending message:', error);
     }

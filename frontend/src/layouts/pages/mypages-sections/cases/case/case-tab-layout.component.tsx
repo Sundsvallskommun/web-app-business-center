@@ -9,12 +9,15 @@ import { useContext } from 'react';
 import { CaseContext } from './case-layout.component';
 import CaseInformation from './information/information.component';
 import CaseMeddelanden from './meddelanden/meddelanden.component';
+import { ICaseStatusResponse } from '@interfaces/case';
 
 export enum CaseCurrentTab {
   // order must correspond to the <Tabs/> component
   UPPGIFTER = 'uppgifter',
   MEDDELANDEN = 'meddelanden',
 }
+
+const MESSAGES_ALLOWED_SYSTEMS = ['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM'];
 
 export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { caseId: string; currentTab: string }) {
   const currentTabWithDefault = _currentTab ? _currentTab[0] : CaseCurrentTab.UPPGIFTER;
@@ -25,6 +28,13 @@ export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { cas
 
   const handleGotoTab = (tab: string) => {
     router.push(`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/${tab}`);
+  };
+
+  const messageAllowed = (caseData: ICaseStatusResponse | undefined) => {
+    if (caseData?.system && MESSAGES_ALLOWED_SYSTEMS.includes(caseData?.system)) {
+      return true;
+    }
+    return false;
   };
 
   return (
@@ -44,18 +54,20 @@ export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { cas
             <CaseInformation />
           </Tabs.Content>
         </Tabs.Item>
-        <Tabs.Item>
-          <Tabs.Button onClick={() => handleGotoTab(CaseCurrentTab.MEDDELANDEN)}>
-            Meddelanden
-            {/* TODO: Uncomment when the API supports it
+        {messageAllowed(caseData) ? (
+          <Tabs.Item>
+            <Tabs.Button onClick={() => handleGotoTab(CaseCurrentTab.MEDDELANDEN)}>
+              Meddelanden
+              {/* TODO: Uncomment when the API supports it
             {caseMessages?.filter((m) => m.direction === 'OUTBOUND' && !messageIsViewed(m))?.length ? (
               <Callout className="-top-2" color="error" />
             ) : null} */}
-          </Tabs.Button>
-          <Tabs.Content>
-            <CaseMeddelanden />
-          </Tabs.Content>
-        </Tabs.Item>
+            </Tabs.Button>
+            <Tabs.Content>
+              <CaseMeddelanden />
+            </Tabs.Content>
+          </Tabs.Item>
+        ) : null}
       </Tabs>
     </div>
   );

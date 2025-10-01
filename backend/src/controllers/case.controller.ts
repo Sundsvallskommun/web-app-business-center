@@ -575,8 +575,11 @@ export class CaseController {
       data = this.postMessageToMessagingMessage(req, caseId, body.message, files);
     } else if (_case.system === 'BYGGR' || _case.system === 'ECOS') {
       // NOTE: BYGGR and ECOS are using externalCaseId
-      url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
-      data = this.postMessageToMessagingMessage(req, _case.externalCaseId, body.message, files);
+      // url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
+      // data = this.postMessageToMessagingMessage(req, _case.externalCaseId, body.message, files);
+
+      // At this time BYGGR and ECOS does not support sending messages
+      throw new HttpException(501, 'Not implemented yet');
     } else {
       throw new HttpException(400, 'Bad request');
     }

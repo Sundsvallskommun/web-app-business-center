@@ -17,7 +17,7 @@ export enum CaseCurrentTab {
   MEDDELANDEN = 'meddelanden',
 }
 
-const MESSAGES_ALLOWED_SYSTEMS = ['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM'];
+const MESSAGES_ALLOWED_SYSTEMS = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM']);
 
 export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { caseId: string; currentTab: string }) {
   const currentTabWithDefault = _currentTab ? _currentTab[0] : CaseCurrentTab.UPPGIFTER;
@@ -31,7 +31,7 @@ export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { cas
   };
 
   const messageAllowed = (caseData: ICaseStatusResponse | undefined) => {
-    if (caseData?.system && MESSAGES_ALLOWED_SYSTEMS.includes(caseData?.system)) {
+    if (caseData?.system && MESSAGES_ALLOWED_SYSTEMS.has(caseData?.system)) {
       return true;
     }
     return false;

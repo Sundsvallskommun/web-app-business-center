@@ -110,9 +110,17 @@ export function Layout({ title, children }: { title: string; children: React.Rea
                   </NextLink>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'/om-webbplatsen/tillganglighet'}>
+                  {/* Uncomment when tillganglighet.component.tsx is updated with new information */}
+                  {/* <NextLink passHref legacyBehavior href={'/om-webbplatsen/tillganglighet'}>
                     <Link variant="tertiary">Tillgänglighet</Link>
-                  </NextLink>
+                  </NextLink> */}
+                  <Link
+                    variant="tertiary"
+                    target="_blank"
+                    href="https://sundsvall.se/kommun/kommun-och-politik/om-webbplatsen/om-mina-sidor/tillganglighetsredogorelse-mina-sidor"
+                  >
+                    Tillgänglighet
+                  </Link>
                 </Footer.ListItem>
                 <Footer.ListItem>
                   <NextLink

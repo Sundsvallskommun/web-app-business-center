@@ -24,6 +24,7 @@ import { validateRequestBody } from '@/utils/validate';
 import { User } from '@interfaces/users.interface';
 import authMiddleware from '@middlewares/auth.middleware';
 import dayjs from 'dayjs';
+import { SessionData } from 'express-session';
 import { Body, Controller, Get, Param, Post, Put, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { RepresentingMode } from '../interfaces/representing.interface';
@@ -40,11 +41,21 @@ const systemIsAllowed = (c: CaseStatusResponse) => allowedSystems.includes(c.sys
 
 const caseIsallowed = (c: CaseStatusResponse) => namespaceIsallowed(c) || (typeof c.namespace === 'undefined' && systemIsAllowed(c));
 
+const ownershipCache = new WeakMap<SessionData, Record<string, boolean>>();
+
+function getOwnershipCache(req: RequestWithUser): Record<string, boolean> {
+  let oc = ownershipCache.get(req.session);
+  if (!oc) {
+    oc = {};
+    ownershipCache.set(req.session, oc);
+  }
+  return oc;
+}
+
 @Controller()
 export class CaseController {
   private apiService = new ApiService();
   private apiBase = getApiBase('casestatus');
-
   private setBusinesCasesCache(req: RequestWithUser, orgNumber: string, data: CaseStatusResponse[]) {
     if (!req.session.cache) {
       req.session.cache = {
@@ -141,6 +152,54 @@ export class CaseController {
     });
   }
 
+  //TEMP FIX UNTIL BACKEND SUPPORTS THIS
+  private async isErrandOwner(req: RequestWithUser, c: CaseStatusResponse): Promise<boolean> {
+    if (c.system !== 'CASE_DATA') return true;
+
+    const { representing } = req.session;
+
+    const repKey =
+      representing.mode === RepresentingMode.BUSINESS
+        ? `BUSINESS:${formatOrgNr(representing.BUSINESS.organizationNumber)}`
+        : `PRIVATE:${req.user.partyId}`;
+    const cacheKey = `${repKey}::${c.caseId}`;
+
+    const oc = getOwnershipCache(req);
+    if (oc[cacheKey] !== undefined) return oc[cacheKey];
+
+    const ownersUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${c.namespace}/errands/${c.caseId}/stakeholders`;
+
+    try {
+      const res = await this.apiService.get<Array<any>>({ url: ownersUrl }, req);
+      const stakeholders = res.data ?? [];
+
+      let isOwner = false;
+
+      if (representing.mode === RepresentingMode.BUSINESS) {
+        const expectedOrg = (formatOrgNr(representing.BUSINESS.organizationNumber) || '').replace(/\D/g, '');
+        const rolesOwnerish = new Set(['OWNER', 'CASE_OWNER', 'APPLICANT']);
+
+        for (const o of stakeholders) {
+          const roles = (o?.roles ?? []).map((r: string) => r.toUpperCase());
+          const hasOwnerish = roles.some(r => rolesOwnerish.has(r));
+          const org = (o?.organizationNumber ?? '').toString().replace(/\D/g, '');
+          if (hasOwnerish && org && org === expectedOrg) {
+            isOwner = true;
+            break;
+          }
+        }
+      } else {
+        isOwner = true;
+      }
+
+      oc[cacheKey] = isOwner;
+      return isOwner;
+    } catch {
+      oc[cacheKey] = false;
+      return false;
+    }
+  }
+
   private normalizeWebMessageCollectorMessages(messages: MessageDTO[]): FrontendMessageResponse[] {
     return messages.map(message => ({
       // FIXME: Finns conversationId i webmessagecollector?
@@ -214,9 +273,24 @@ export class CaseController {
           throw new HttpException(500, 'No data from API');
         }
         const cases = res.data.filter(caseIsallowed);
-        this.setCasesCache(req, cases);
+        console.log('cases', cases);
+        //FileredCases should be removed when backend does the filter correct for companies.
+        const filteredCases = await (async () => {
+          const checks = await Promise.all(
+            cases.map(async c => {
+              if (c.system === 'CASE_DATA') {
+                const ok = await this.isErrandOwner(req, c);
+                return ok ? c : null;
+              }
+              return c;
+            }),
+          );
+          return checks.filter(Boolean) as CaseStatusResponse[];
+        })();
 
-        return { data: cases, message: 'success' };
+        console.log('filtredcases', filteredCases);
+        this.setCasesCache(req, filteredCases);
+        return { data: filteredCases, message: 'success' };
       } catch (error) {
         if (error.status === 404) {
           this.setCasesCache(req, []);

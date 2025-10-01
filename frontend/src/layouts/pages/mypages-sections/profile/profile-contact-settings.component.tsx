@@ -33,7 +33,7 @@ export const ContactSettings = () => {
                       <FormLabel>Välj kontaktväg för aviseringar</FormLabel>
                       <Checkbox
                         disabled={!hasEmail}
-                        {...register!('notifications.email_disabled')}
+                        {...register('notifications.email_enabled')}
                         data-cy="notification-channel-email-checkbox"
                         className="mt-8"
                       >
@@ -48,7 +48,7 @@ export const ContactSettings = () => {
                       <Checkbox.Group className="gap-16 pb-16">
                         <Checkbox
                           disabled={!hasPhone}
-                          {...register!('notifications.phone_disabled')}
+                          {...register('notifications.phone_enabled')}
                           data-cy="notification-channel-sms-checkbox"
                         >
                           Sms
@@ -66,11 +66,11 @@ export const ContactSettings = () => {
                   );
                 } else {
                   const contactWaysString =
-                    watch('notifications.phone_disabled') && watch('notifications.email_disabled')
+                    watch('notifications.phone_enabled') && watch('notifications.email_enabled')
                       ? 'sms och e-post'
-                      : watch('notifications.phone_disabled')
+                      : watch('notifications.phone_enabled')
                         ? 'sms'
-                        : watch('notifications.email_disabled')
+                        : watch('notifications.email_enabled')
                           ? 'e-post'
                           : '';
 

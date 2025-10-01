@@ -24,13 +24,13 @@ export class ContactSettingsController {
     const emailSettings: ContactSettingChannel = {
       contactMethod: 'EMAIL',
       destination: userData.email,
-      disabled: userData.notifications.email_disabled,
+      disabled: !userData.notifications.email_enabled,
       alias: 'default',
     };
     const phoneSettings: ContactSettingChannel = {
       contactMethod: 'SMS',
       destination: userData.phone,
-      disabled: userData.notifications.phone_disabled,
+      disabled: !userData.notifications.phone_enabled,
       alias: 'default',
     };
     return [...(userData.email ? [emailSettings] : []), ...(userData.phone ? [phoneSettings] : [])];
@@ -83,8 +83,8 @@ export class ContactSettingsController {
       email: emailSettings.email,
       phone: phoneSettings.phone,
       notifications: {
-        email_disabled: emailSettings.email_disabled,
-        phone_disabled: phoneSettings.phone_disabled,
+        email_enabled: !emailSettings.email_disabled,
+        phone_enabled: !phoneSettings.phone_disabled,
       },
       decicionsAndDocuments: {
         digitalInbox: true,

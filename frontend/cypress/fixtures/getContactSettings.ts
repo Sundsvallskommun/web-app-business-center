@@ -16,8 +16,8 @@ export const getContactSettings: (representingMode: RepresentingMode) => ApiResp
       city: 'city',
     },
     notifications: {
-      email_disabled: false,
-      phone_disabled: false,
+      email_enabled: false,
+      phone_enabled: false,
     },
   },
   message: 'success',

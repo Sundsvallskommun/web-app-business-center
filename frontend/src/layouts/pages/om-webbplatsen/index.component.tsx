@@ -23,7 +23,14 @@ export default function OmWebbplatsen() {
             </Card.Text>
           </Card.Body>
         </Card>
-        <Card useHoverEffect href="/om-webbplatsen/tillganglighet" layout="horizontal">
+        {/* Uncomment when tillganglighet.component.tsx is updated with new information */}
+        {/* <Card useHoverEffect  href="/om-webbplatsen/tillganglighet" layout="horizontal"> */}
+        <Card
+          useHoverEffect
+          target="_blank"
+          href={`https://sundsvall.se/kommun/kommun-och-politik/om-webbplatsen/om-mina-sidor/tillganglighetsredogorelse-mina-sidor`}
+          layout="horizontal"
+        >
           <Card.Body>
             <Card.Header>
               <h2>Tillgänglighet</h2>

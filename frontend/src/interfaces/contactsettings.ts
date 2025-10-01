@@ -1,8 +1,8 @@
 import { User } from './user';
 
 export interface ClientContactSettingNotifications {
-  email_disabled: boolean;
-  phone_disabled: boolean;
+  email_enabled: boolean;
+  phone_enabled: boolean;
 }
 
 export interface ClientContactSettingDecicionsAndDocuments {

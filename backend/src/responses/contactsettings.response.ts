@@ -6,9 +6,9 @@ import { IsNullable } from '../utils/custom-validation-classes';
 
 export class ClientContactSettingNotifications {
   @IsBoolean()
-  email_disabled: boolean;
+  email_enabled: boolean;
   @IsBoolean()
-  phone_disabled: boolean;
+  phone_enabled: boolean;
 }
 
 export class ClientContactSettingDecicionsAndDocuments {

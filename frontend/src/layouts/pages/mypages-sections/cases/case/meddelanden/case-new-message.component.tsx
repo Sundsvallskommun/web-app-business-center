@@ -55,7 +55,7 @@ export default function CaseNewMessage() {
         >
           <Info className="w-20 h-20 shrink-0" aria-hidden="true" />
           <p className="text-small">
-            14 dagar från att ditt ärende är avslutat kan du inte längre skicka meddelanden till din handläggare. Har du
+            15 dagar från att ditt ärende är avslutat kan du inte längre skicka meddelanden till din handläggare. Har du
             frågor om ditt ärende kan du ringa kontaktcenter på <Link href="tel:+466012312">060-123 12</Link>
           </p>
         </div>

@@ -23,7 +23,7 @@ export default function CaseInformation() {
     setPdfIsLoading(false);
   }, [caseData?.caseId]);
 
-  const firstSubmittedValid = caseData?.firstSubmitted != undefined || null;
+  const firstSubmittedValid = !!caseData?.firstSubmitted;
 
   return (
     <Card>

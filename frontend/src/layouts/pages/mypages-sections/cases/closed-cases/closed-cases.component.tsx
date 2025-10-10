@@ -28,7 +28,7 @@ export const ClosedCases: React.FC<{ caseData: CasesData; isFetchingCases: boole
         )}
         {!isFetchingCases && caseData?.cases?.length > 0 ? (
           <div>
-            <CardList showMoreText="Visa fler ärenden" data={caseData?.cases} Card={CaseTableCard} />
+            <CardList showMoreText="Visa fler ärenden" data={caseData?.cases} Card={CaseTableCard} persistKey="closedCasesAmountDisplayed" />
           </div>
         ) : null}
       </div>

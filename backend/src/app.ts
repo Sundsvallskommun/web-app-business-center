@@ -76,6 +76,8 @@ const samlStrategy = new Strategy(
     privateKey: SAML_PRIVATE_KEY,
     idpCert: SAML_IDP_PUBLIC_CERT,
     issuer: SAML_ISSUER,
+    signatureAlgorithm: 'sha256',
+    digestAlgorithm: 'sha256',
     wantAssertionsSigned: false,
     wantAuthnResponseSigned: false,
     audience: false,

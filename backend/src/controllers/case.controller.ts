@@ -615,7 +615,7 @@ export class CaseController {
 
   // attachments
   @Get('/cases/:caseId/conversations/:conversationId/messages/:messageId/attachments/:attachmentId')
-  @OpenAPI({ summary: 'Return message attachment' })
+  @OpenAPI({ summary: 'Return message attachment for Casedata or Supportmanagement messages' })
   @UseBefore(authMiddleware)
   async getCaseMessageAttachment(
     @Req() req: RequestWithUser,
@@ -640,12 +640,42 @@ export class CaseController {
         url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
           _case.namespace
         }/errands/${caseId}/communication/conversations/${conversationId}/messages/${messageId}/attachments/${attachmentId}`;
-      } else if (_case.system === 'OPEN_E_PLATFORM' || _case.system === 'BYGGR' || _case.system === 'ECOS') {
-        url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
       } else {
         throw new HttpException(400, 'Bad request');
       }
 
+      const res = await this.apiService.get<string>({ url, responseType: 'arraybuffer', responseEncoding: 'base64' }, req);
+
+      if (!res.data) {
+        return { data: null, message: 'error' };
+      }
+
+      const base64 = Buffer.from(res.data).toString('base64');
+
+      return { data: base64, message: 'success' };
+    } catch (error) {
+      if (error.status === 404) {
+        // handle 404 as empty´
+        return { data: null, message: 'success' };
+      }
+      return { data: null, message: 'error' };
+    }
+  }
+
+  @Get('/cases/:caseId/messages/attachments/:attachmentId')
+  @OpenAPI({ summary: 'Return message attachment for OpenE, BYGGR or ECOS cases' })
+  @UseBefore(authMiddleware)
+  async getWebmessageAttachment(
+    @Req() req: RequestWithUser,
+    @Param('caseId') caseId: string,
+    @Param('attachmentId') attachmentId: string,
+  ): Promise<ApiResponse<string | null>> {
+    if (!caseId) {
+      throw new HttpException(400, 'Bad Request');
+    }
+
+    try {
+      const url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
       const res = await this.apiService.get<string>({ url, responseType: 'arraybuffer', responseEncoding: 'base64' }, req);
 
       if (!res.data) {

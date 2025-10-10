@@ -12,7 +12,13 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
 
   const handleOpenFile = useCallback(
     (file: NonNullable<AttachmentResponse>) => async () => {
-      const url = `/cases/${caseData?.caseId}/conversations/${message.conversationId}/messages/${message.messageId}/attachments/${file.attachmentId}`;
+      if (!caseData) return;
+      let url;
+      if (caseData.system === 'OPEN_E_PLATFORM' || caseData.system === 'BYGGR' || caseData.system === 'ECOS') {
+        url = `/cases/${caseData?.caseId}/messages/attachments/${file.attachmentId}`;
+      } else {
+        url = `/cases/${caseData?.caseId}/conversations/${message.conversationId}/messages/${message.messageId}/attachments/${file.attachmentId}`;
+      }
 
       const attachment = await getCaseMessageAttachment(url); // returns base64 string
 

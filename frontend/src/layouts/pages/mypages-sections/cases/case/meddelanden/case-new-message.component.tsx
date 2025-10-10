@@ -1,6 +1,7 @@
 import { useApi } from '@services/api-service';
 import {
   Button,
+  CustomOnChangeEventUploadFile,
   FileUpload,
   FormControl,
   FormErrorMessage,
@@ -27,6 +28,12 @@ export default function CaseNewMessage() {
   const context = useForm<NewMessage>({ defaultValues: { files: [], message: '' }, mode: 'onChange' });
   const { caseData } = useContext(CaseContext);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const {
+    ref: registerFilesRef,
+    onBlur: registerFilesOnBlur,
+    name: registerFilesName,
+    onChange: registerFilesOnChange,
+  } = context.register('files');
 
   const files = context.watch('files');
   const postMessageMutation = useApi({
@@ -94,6 +101,24 @@ export default function CaseNewMessage() {
     }
   };
 
+  const syncFilesFieldValue = (event?: CustomOnChangeEventUploadFile) => {
+    const currentFiles = [...(context.getValues('files') ?? [])];
+    registerFilesOnChange({
+      target: {
+        name: event?.target?.name ?? registerFilesName,
+        value: currentFiles,
+      },
+    });
+  };
+
+  const handleFilesChange = (event: CustomOnChangeEventUploadFile) => {
+    syncFilesFieldValue(event);
+  };
+
+  const handleFileRemove = () => {
+    syncFilesFieldValue();
+  };
+
   return (
     <>
       <div className="self-stretch flex flex-col gap-y-24 mx-20 desktop:mx-32">
@@ -117,7 +142,14 @@ export default function CaseNewMessage() {
                     </FormErrorMessage>
                   )}
                 </FormControl>
-                <FileUpload.Button className="mt-16" maxFileSizeMB={25} {...context.register('files')} />
+                <FileUpload.Button
+                  className="mt-16"
+                  maxFileSizeMB={25}
+                  name={registerFilesName}
+                  onBlur={registerFilesOnBlur}
+                  onChange={handleFilesChange}
+                  ref={registerFilesRef}
+                />
                 <div className="flex items-row text-small gap-5 mt-10">
                   <span className="text-dark-secondary">Maximal filstorlek: 25 MB.</span>{' '}
                   <Button variant="link" onClick={() => setShowModal(true)}>
@@ -135,7 +167,7 @@ export default function CaseNewMessage() {
                         className="break-all"
                         key={`${file?.meta.name}-${i}`}
                         index={i}
-                        actionsProps={{ showRemove: true }}
+                        actionsProps={{ showRemove: true, onRemove: handleFileRemove }}
                         file={file}
                       />
                     ))}

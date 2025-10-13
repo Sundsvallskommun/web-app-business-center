@@ -183,7 +183,7 @@ export class CaseController {
     };
   }
 
-  private fetchAttachment = async (url: string, req: RequestWithUser): Promise<ApiResponse<string | null>> => {
+  private readonly fetchAttachment = async (url: string, req: RequestWithUser): Promise<ApiResponse<string | null>> => {
     try {
       const res = await this.apiService.get<string>({ url, responseType: 'arraybuffer', responseEncoding: 'base64' }, req);
 

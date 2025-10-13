@@ -28,7 +28,7 @@ export const OngoingCases: React.FC<{ caseData: CasesData; isFetchingCases: bool
         )}
         {!isFetchingCases && caseData?.cases?.length > 0 ? (
           <div>
-            <CardList showMoreText="Visa fler ärenden" data={caseData?.cases} Card={CaseTableCard} />
+            <CardList showMoreText="Visa fler ärenden" data={caseData?.cases} Card={CaseTableCard} persistKey="ongoingCasesAmountDisplayed" />
           </div>
         ) : null}
       </div>

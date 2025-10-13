@@ -183,6 +183,26 @@ export class CaseController {
     };
   }
 
+  private fetchAttachment = async (url: string, req: RequestWithUser): Promise<ApiResponse<string | null>> => {
+    try {
+      const res = await this.apiService.get<string>({ url, responseType: 'arraybuffer', responseEncoding: 'base64' }, req);
+
+      if (!res.data) {
+        return { data: null, message: 'error' };
+      }
+
+      const base64 = Buffer.from(res.data).toString('base64');
+
+      return { data: base64, message: 'success' };
+    } catch (error) {
+      if (error.status === 404) {
+        // handle 404 as empty´
+        return { data: null, message: 'success' };
+      }
+      return { data: null, message: 'error' };
+    }
+  };
+
   @Get('/cases')
   @OpenAPI({ summary: 'Return a list of cases for current logged in user' })
   @UseBefore(authMiddleware)
@@ -507,7 +527,7 @@ export class CaseController {
       formData.append('message', JSON.stringify(messageData));
       if (files && files.length > 0) {
         files.forEach(file => {
-          formData.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
+          formData.append('attachments', new Blob([file.buffer as BlobPart], { type: file.mimetype }), file.originalname);
         });
       }
       return formData;
@@ -579,36 +599,20 @@ export class CaseController {
 
     const _case = (await this.getCase(req, caseId)).data;
 
-    try {
-      let url: string;
-      if (_case.system === 'CASE_DATA') {
-        url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${
-          _case.namespace
-        }/errands/${caseId}/communication/conversations/${conversationId}/messages/${messageId}/attachments/${attachmentId}`;
-      } else if (_case.system === 'SUPPORT_MANAGEMENT') {
-        url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
-          _case.namespace
-        }/errands/${caseId}/communication/conversations/${conversationId}/messages/${messageId}/attachments/${attachmentId}`;
-      } else {
-        throw new HttpException(400, 'Bad request');
-      }
-
-      const res = await this.apiService.get<string>({ url, responseType: 'arraybuffer', responseEncoding: 'base64' }, req);
-
-      if (!res.data) {
-        return { data: null, message: 'error' };
-      }
-
-      const base64 = Buffer.from(res.data).toString('base64');
-
-      return { data: base64, message: 'success' };
-    } catch (error) {
-      if (error.status === 404) {
-        // handle 404 as empty´
-        return { data: null, message: 'success' };
-      }
-      return { data: null, message: 'error' };
+    let url: string;
+    if (_case.system === 'CASE_DATA') {
+      url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${
+        _case.namespace
+      }/errands/${caseId}/communication/conversations/${conversationId}/messages/${messageId}/attachments/${attachmentId}`;
+    } else if (_case.system === 'SUPPORT_MANAGEMENT') {
+      url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
+        _case.namespace
+      }/errands/${caseId}/communication/conversations/${conversationId}/messages/${messageId}/attachments/${attachmentId}`;
+    } else {
+      throw new HttpException(400, 'Bad request');
     }
+
+    return this.fetchAttachment(url, req);
   }
 
   @Get('/cases/:caseId/messages/attachments/:attachmentId')
@@ -623,23 +627,7 @@ export class CaseController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    try {
-      const url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
-      const res = await this.apiService.get<string>({ url, responseType: 'arraybuffer', responseEncoding: 'base64' }, req);
-
-      if (!res.data) {
-        return { data: null, message: 'error' };
-      }
-
-      const base64 = Buffer.from(res.data).toString('base64');
-
-      return { data: base64, message: 'success' };
-    } catch (error) {
-      if (error.status === 404) {
-        // handle 404 as empty´
-        return { data: null, message: 'success' };
-      }
-      return { data: null, message: 'error' };
-    }
+    const url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
+    return this.fetchAttachment(url, req);
   }
 }

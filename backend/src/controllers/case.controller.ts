@@ -469,16 +469,15 @@ export class CaseController {
     let url: string;
     let headers: Record<string, string> = {};
     let data: MessageRequest | WebMessageRequest | MessagingWebMessageRequest | FormData;
-    if (_case.system === 'CASE_DATA') {
-      const conversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
+
+    const buildMessageData = async (apiBase: string) => {
+      const conversationUrl = `${apiBase}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
       const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
       let conversation: Conversation;
 
       const externalConversation = findExternalConversation(resConversation.data);
       if (!resConversation.data || resConversation.data.length === 0 || !externalConversation) {
-        const createConversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${
-          _case.namespace
-        }/errands/${caseId}/communication/conversations`;
+        const createConversationUrl = `${apiBase}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
         const createConversationdata = this.conversationInit(req.user);
         const resCreateConversation = await this.apiService.post({ data: createConversationdata, url: createConversationUrl }, req);
 
@@ -495,9 +494,7 @@ export class CaseController {
       } else {
         conversation = externalConversation;
       }
-      url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
-        conversation.id
-      }/messages`;
+      url = `${apiBase}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${conversation.id}/messages`;
       headers = {
         'Content-Type': 'multipart/form-data',
       };
@@ -513,49 +510,15 @@ export class CaseController {
           formData.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
         });
       }
-      data = formData;
+      return formData;
+    };
+
+    if (_case.system === 'CASE_DATA') {
+      const apiBase = getApiBase('case-data');
+      data = await buildMessageData(apiBase);
     } else if (_case.system === 'SUPPORT_MANAGEMENT') {
-      const conversationUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
-        _case.namespace
-      }/errands/${caseId}/communication/conversations`;
-      const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
-      let conversation: Conversation;
-
-      const externalConversation = findExternalConversation(resConversation.data);
-      if (!resConversation.data || resConversation.data.length === 0 || !externalConversation) {
-        const createConversationUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
-          _case.namespace
-        }/errands/${caseId}/communication/conversations`;
-        const createConversationdata = this.conversationInit(req.user);
-        const resCreateConversation = await this.apiService.post({ data: createConversationdata, url: createConversationUrl }, req);
-
-        if (resCreateConversation.message === 'success') {
-          const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
-          conversation = findExternalConversation(resConversation.data);
-        }
-      } else {
-        conversation = externalConversation;
-      }
-      url = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
-        conversation.id
-      }/messages`;
-
-      headers = {
-        'Content-Type': 'multipart/form-data',
-      };
-
-      const messageData = {
-        content: body.message,
-      };
-
-      const formData = new FormData();
-      formData.append('message', JSON.stringify(messageData));
-      if (files && files.length > 0) {
-        files.forEach(file => {
-          formData.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
-        });
-      }
-      data = formData;
+      const apiBase = getApiBase('supportmanagement');
+      data = await buildMessageData(apiBase);
     } else if (_case.system === 'OPEN_E_PLATFORM') {
       url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
       data = this.postMessageToMessagingMessage(req, caseId, body.message, files);

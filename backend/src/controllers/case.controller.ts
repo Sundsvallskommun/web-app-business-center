@@ -196,19 +196,8 @@ export class CaseController {
       req.destroy();
     });
 
-    if (representing?.mode === RepresentingMode.BUSINESS) {
-      if (!representing?.BUSINESS) {
-        throw new HttpException(400, 'Bad Request');
-      }
-
-      const orgNumber = formatOrgNr(representing.BUSINESS.organizationNumber);
-
-      if (USE_CASES_CACHE && req.session.cache?.cases?.BUSINESS?.[orgNumber]) {
-        return { data: req.session.cache.cases.BUSINESS[orgNumber], message: 'success' };
-      }
-
+    const fetchCases = async (url: string) => {
       try {
-        const url = `${this.apiBase}/${MUNICIPALITY_ID}/${orgNumber}/statuses`;
         const res = await this.apiService.get<CaseStatusResponse[]>({ url, signal }, req);
         if (!res.data) {
           throw new HttpException(500, 'No data from API');
@@ -225,30 +214,27 @@ export class CaseController {
           return { data: [], message: 'error' };
         }
       }
+    };
+    let url;
+
+    if (representing?.mode === RepresentingMode.BUSINESS) {
+      if (!representing?.BUSINESS) {
+        throw new HttpException(400, 'Bad Request');
+      }
+      const orgNumber = formatOrgNr(representing.BUSINESS.organizationNumber);
+      if (USE_CASES_CACHE && req.session.cache?.cases?.BUSINESS?.[orgNumber]) {
+        return { data: req.session.cache.cases.BUSINESS[orgNumber], message: 'success' };
+      }
+
+      url = `${this.apiBase}/${MUNICIPALITY_ID}/${orgNumber}/statuses`;
     } else {
       if (USE_CASES_CACHE && req.session.cache?.cases?.PRIVATE) {
         return { data: req.session.cache.cases.PRIVATE, message: 'success' };
       }
 
-      try {
-        const url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses`;
-        const res = await this.apiService.get<CaseStatusResponse[]>({ url, signal }, req);
-        if (!res.data) {
-          throw new HttpException(500, 'No data from API');
-        }
-        const cases = res.data.filter(caseIsallowed);
-        this.setCasesCache(req, cases);
-
-        return { data: cases, message: 'success' };
-      } catch (error) {
-        if (error.status === 404) {
-          this.setCasesCache(req, []);
-          return { data: [], message: '404 from api, Assumed empty array' };
-        } else {
-          throw new HttpException(500, 'Something went wrong');
-        }
-      }
+      url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses`;
     }
+    return fetchCases(url);
   }
 
   @Get('/cases/:caseId')

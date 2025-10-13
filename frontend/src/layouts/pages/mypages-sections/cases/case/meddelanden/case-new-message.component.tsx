@@ -22,6 +22,8 @@ interface NewMessage {
   message: string;
 }
 
+const MESSAGE_CHARACTER_LIMIT = 2000;
+
 export default function CaseNewMessage() {
   const { isMinDesktop } = useThemeQueries();
   const context = useForm<NewMessage>({ defaultValues: { files: [], message: '' }, mode: 'onChange' });
@@ -29,6 +31,15 @@ export default function CaseNewMessage() {
   const [showModal, setShowModal] = useState<boolean>(false);
 
   const files = context.watch('files');
+  const messageValue = context.watch('message') ?? '';
+  const messageRegister = context.register('message', {
+    required: 'Skriv ett meddelande',
+    validate: (value) =>
+      value.length <= MESSAGE_CHARACTER_LIMIT || `Du får skriva max ${MESSAGE_CHARACTER_LIMIT} tecken.`,
+  });
+  const messageLength = messageValue.length;
+  const isMessageOverLimit = messageLength > MESSAGE_CHARACTER_LIMIT;
+
   const postMessageMutation = useApi({
     url: `/cases/${caseData?.caseId}/messages`,
     method: 'post',
@@ -106,11 +117,17 @@ export default function CaseNewMessage() {
                 </p>
                 <FormControl className="w-full">
                   <Textarea
-                    {...context.register('message', { required: 'Skriv ett meddelande' })}
+                    {...messageRegister}
                     placeholder="Skriv ett meddelande"
                     className="w-full min-h-72"
                     readOnly={postMessageMutation.isPending}
                   />
+                  <div className="flex justify-between text-small mt-8">
+                    <span className="text-dark-secondary">Max 2000 tecken.</span>
+                    <span className={isMessageOverLimit ? 'text-error' : 'text-dark-secondary'}>
+                      {messageLength}/{MESSAGE_CHARACTER_LIMIT}
+                    </span>
+                  </div>
                   {context.formState.errors.message && (
                     <FormErrorMessage className="text-small text-error" role="alert">
                       {context.formState.errors.message.message}
@@ -151,6 +168,7 @@ export default function CaseNewMessage() {
                 type="submit"
                 color="vattjom"
                 loading={postMessageMutation.isPending}
+                disabled={isMessageOverLimit}
               >
                 Skicka meddelande
               </Button>

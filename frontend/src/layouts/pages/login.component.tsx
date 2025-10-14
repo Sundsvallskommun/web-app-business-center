@@ -125,7 +125,6 @@ function Login() {
                 E-legitimation
               </Link>
             </p>
-            <div className="mt-10"></div>
             <h2 className="text-h3-md mt-30">Behandling av personuppgifter</h2>
             <div>
               <span>

@@ -118,16 +118,13 @@ function Login() {
           <div className="mt-48 text-left">
             <h2 className="text-h3-md">Problem att logga in?</h2>
             <p>
-              Vi använder oss av BankID och FrejaID för en trygg och säker inloggning. BankID och FrejaID är en
-              e-legitimationer som du använder till att styrka din identitet på Internet, t.ex. till exempel hos banken,
-              hos Försäkringskassan eller CSN.
-            </p>
-            <div className="mt-10">
-              <span>Du kan läsa mer om e-legitimation här.</span>{' '}
+              Vi använder oss av BankID och FrejaID för en trygg och säker inloggning. Det är e-legitimationer som du
+              använder för att styrka din identitet på till exempel hos banken, Försäkringskassan eller Centrala
+              studiestödsnämnden (CSN). Du kan läsa mer om e-legitimation här.{' '}
               <Link external href={url_e_identification}>
                 E-legitimation
               </Link>
-            </div>
+            </p>
             <h2 className="text-h3-md mt-30">Behandling av personuppgifter</h2>
             <div>
               <span>

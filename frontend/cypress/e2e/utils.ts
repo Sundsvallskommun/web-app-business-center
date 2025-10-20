@@ -12,21 +12,25 @@ import { representingModeDefault } from 'cypress/support/e2e';
 export const testContactSettings = (representingMode: RepresentingMode = representingModeDefault) => {
   // Kontaktuppgifter
   cy.intercept('POST', '**/api/contactsettings', getContactSettings(representingMode)).as(`postContactSettings`);
-  cy.contains('h2', 'Kontaktuppgifter').next().contains('button', 'Redigera').click();
+  cy.contains('h4', 'Kontaktuppgifter').next().click();
   cy.contains('label', `name-${RepresentingMode[representingMode]}`).should('exist');
+  cy.get('[data-cy="edit-email-button"]').should("be.visible").click()
   cy.get('input[name="email"]').should('have.value', 'test@example.com');
+  cy.get('[data-cy="save-email-button"]').should("be.visible").click()
+  cy.get('[data-cy="edit-phone-button"]').should("be.visible").click()
   cy.get('input[name="phone"]').should('have.value', '+46701740605');
-  cy.contains('button:visible', 'Spara').click();
+  cy.get('[data-cy="save-phone-button"]').should("be.visible").click()
   cy.wait('@postContactSettings');
-  cy.contains('h2', 'Kontaktuppgifter').next().contains('button', 'Redigera').should('be.visible');
+  cy.contains('h4', 'Kontaktuppgifter').next().click();
 
   // Kontaktvägar
-  cy.contains('h2', 'Kontaktvägar').next().contains('button', 'Redigera').click();
-  cy.get('[name="notifications.phone_disabled"]').should('be.checked');
-  cy.get('[name="notifications.email_disabled"]').should('be.checked');
-  cy.contains('button:visible', 'Spara').click();
+  cy.contains('h4', 'Aviseringar').next().click();
+  cy.get('[data-cy="edit-notification-channel-button"]').should("be.visible").click()
+  cy.get('[data-cy="notification-channel-email-checkbox"]').should('be.checked');
+  cy.get('[data-cy="notification-channel-sms-checkbox"]').should('be.checked');
+  cy.get('[data-cy="save-notification-channel-button"]').should("be.visible").click()
   cy.wait('@postContactSettings');
-  cy.contains('h2', 'Kontaktvägar').next().contains('button', 'Redigera').should('be.visible');
+  cy.contains('h4', 'Aviseringar').next().should('be.visible');
 };
 
 export const testCase = (representingMode: RepresentingMode = representingModeDefault, caseId: string = 'caseId-0') => {
@@ -50,11 +54,11 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
   cy.contains('h1, h2', /pågående/i)
     .next()
     .find('ul li')
-    .should('have.length', 12);
+    .should('have.length', 24);
 
   cy.contains('h1, h2', /pågående/i)
     .next()
-    .contains('*', 'Visar 12 av 13')
+    .contains('*', 'Visar 24 av 25')
     .should('be.visible');
 
   cy.contains('h1, h2', /pågående/i)
@@ -65,12 +69,12 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
   cy.contains('h1, h2', /pågående/i)
     .next()
     .find('ul li')
-    .should('have.length', 13);
+    .should('have.length', 25);
 
   cy.contains('h1, h2', /pågående/i)
     .next()
-    .contains('*', 'Visar 12 av 13')
-    .should('not.exist');
+    .contains('*', 'Visar 25 av 25')
+    .should('be.visible');
 
   cy.contains('h1, h2', /pågående/i)
     .next('div')
@@ -122,7 +126,7 @@ export const testClosedCases = (representingMode: RepresentingMode = representin
       // Ärende
       cy.wait(300); // let render happen for table sorting to take place
       cy.wrap($elem)
-        .find(`a[aria-label="Visa caseType-Klart-${RepresentingMode[representingMode]}"]`, { timeout: 10000 })
+        .find(`a[aria-label="Visa caseType-AvslutatTest-${RepresentingMode[representingMode]}"]`, { timeout: 10000 })
         .should('be.visible')
         .click();
     });

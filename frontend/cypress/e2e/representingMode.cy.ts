@@ -6,6 +6,7 @@ import { setIntercepts } from 'cypress/support/e2e';
 
 describe('Ändra representationsläge (privat/företag)', () => {
   beforeEach(() => {
+    cy.clearLocalStorage();
     cy.intercept(
       'GET',
       '**/api/representing',
@@ -18,6 +19,9 @@ describe('Ändra representationsläge (privat/företag)', () => {
     ).as('postRepresenting');
     setIntercepts(RepresentingMode.PRIVATE);
     cy.visit('/privat');
+  });
+  afterEach(() => {
+    cy.clearLocalStorage();
   });
   it('should render /privat/oversikt then /foretag/valj-foretag then /foretag/oversikt with no chosen business', () => {
     cy.contains('[data-cy="representingLabel"]', getMe.data.name);
@@ -41,7 +45,7 @@ describe('Ändra representationsläge (privat/företag)', () => {
       cy.url().should('include', '/foretag/oversikt');
     });
   });
-  
+
   it('should render /privat/oversikt then /foretag/oversikt then /privat/oversikt', () => {
     cy.url().should('include', '/privat/oversikt');
     cy.wait(['@getCases', '@getRepresenting'])
@@ -79,6 +83,7 @@ describe('Ändra representationsläge (privat/företag)', () => {
 
       // RepresentingSwitchButton
       cy.contains('[role="navigationitem"]', 'Företag').click();
+      cy.clearLocalStorage();
 
       cy.url().should('include', '/foretag/arenden');
       cy.wait(['@getCases', '@getRepresenting']).then(() => {

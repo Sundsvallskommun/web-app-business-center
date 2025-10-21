@@ -17,17 +17,21 @@ export const testContactSettings = (representingMode: RepresentingMode = represe
   // Edit email
   cy.get('[data-cy="edit-email-button"]').should('be.visible').click();
   cy.contains('label', `name-${RepresentingMode[representingMode]}`).should('exist');
-  cy.get('[data-cy="edit-email-button"]').should('be.visible').click();
+  cy.get('[data-cy="cancel-edit-email-button"]').should('be.visible');
   cy.get('input[name="email"]').should('have.value', 'test@example.com');
-  cy.contains('button:visible', 'Spara').click();
+  cy.get('[data-cy="save-email-button"]').should('be.visible').click();
+  cy.wait('@postContactSettings');
+  cy.get('[data-cy="form-box-email"]').should('contain', 'test@example.com');
   cy.get('[data-cy="edit-email-button"]').should('be.visible');
 
   // Edit phone
   cy.get('[data-cy="edit-phone-button"]').should('be.visible').click();
   cy.contains('label', `name-${RepresentingMode[representingMode]}`).should('exist');
+  cy.get('[data-cy="cancel-edit-phone-button"]').should('be.visible');
   cy.get('input[name="phone"]').should('have.value', '+46701740605');
   cy.get('[data-cy="save-phone-button"]').should('be.visible').click();
   cy.wait('@postContactSettings');
+  cy.get('[data-cy="form-box-phone"]').should('contain', '+46701740605');
   cy.get('[data-cy="edit-phone-button"]').should('be.visible');
 
   // Aviseringar
@@ -55,6 +59,7 @@ export const testCase = (representingMode: RepresentingMode = representingModeDe
 
 export const testOngoingCases = (representingMode: RepresentingMode = representingModeDefault) => {
   cy.intercept('GET', '**/api/cases/caseId-0', getCase(representingMode, 'caseId-0')).as(`getCase0`);
+  cy.intercept('GET', '**/api/cases/caseId-9', getCase(representingMode, 'caseId-9')).as(`getCase9`);
   cy.intercept('GET', '**/api/cases/*/messages', getCaseMessages()).as(`getCaseMessages`);
 
   // correct length
@@ -65,7 +70,7 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
 
   cy.contains('h1, h2', /pågående/i)
     .next()
-    .contains('*', 'Visar 24 av 25')
+    .contains('*', 'Visar 24 av 27')
     .should('be.visible');
 
   // load more
@@ -77,11 +82,11 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
   cy.contains('h1, h2', /pågående/i)
     .next()
     .find('ul li')
-    .should('have.length', 25);
+    .should('have.length', 27);
 
   cy.contains('h1, h2', /pågående/i)
     .next()
-    .contains('*', 'Visar 25 av 25')
+    .contains('*', 'Visar 27 av 27')
     .should('be.visible');
 
   cy.contains('h1, h2', /pågående/i)
@@ -113,11 +118,11 @@ export const testClosedCases = (representingMode: RepresentingMode = representin
   cy.contains('h1, h2', /avslutade/i)
     .next()
     .find('ul li')
-    .should('have.length', 4);
+    .should('have.length', 5);
 
   cy.contains('h1, h2', /avslutade/i)
     .next()
-    .contains('*', /Visar 4 av 4/)
+    .contains('*', /Visar 5 av 5/)
     .should('be.visible');
 
   cy.contains('h1, h2', /avslutade/i)
@@ -139,7 +144,7 @@ export const testClosedCases = (representingMode: RepresentingMode = representin
         .should('be.visible')
         .click();
     });
-  testCase(representingMode, 'caseId-13');
+  testCase(representingMode, 'caseId-9');
   cy.go('back');
 };
 

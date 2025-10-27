@@ -2,7 +2,7 @@
 
 import { useAppContext } from '@contexts/app.context';
 import { useCombinedBusinessEngagements } from '@services/organisation-service';
-import { Button, Icon, Link, MenuBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
+import { Button, Icon, Link, NavigationBar, PopupMenu, Select, cx, useThemeQueries } from '@sk-web-gui/react';
 import { ArrowRight, ChevronDown, LogOut } from 'lucide-react';
 import NextLink from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -48,14 +48,14 @@ export const MyPagesToggle = () => {
   const pathname = usePathname();
 
   return (
-    <MenuBar showBackground current={representingMode} size="md" className="!bg-tertiary-surface">
-      <MenuBar.Item menuIndex={RepresentingMode.PRIVATE}>
+    <NavigationBar showBackground current={representingMode} size="md" className="!bg-tertiary-surface">
+      <NavigationBar.Item menuIndex={RepresentingMode.PRIVATE}>
         <NextLink href={`${newRepresentingModePathname(RepresentingMode.PRIVATE, pathname)}`}>Privat</NextLink>
-      </MenuBar.Item>
-      <MenuBar.Item menuIndex={RepresentingMode.BUSINESS}>
+      </NavigationBar.Item>
+      <NavigationBar.Item menuIndex={RepresentingMode.BUSINESS}>
         <NextLink href={`${newRepresentingModePathname(RepresentingMode.BUSINESS, pathname)}`}>Företag</NextLink>
-      </MenuBar.Item>
-    </MenuBar>
+      </NavigationBar.Item>
+    </NavigationBar>
   );
 };
 

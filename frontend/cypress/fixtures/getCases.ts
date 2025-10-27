@@ -18,7 +18,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
       system: 'OPEN_E_PLATFORM',
     },
     {
-      caseType: `caseType-Tilldelat för handläggning-${RepresentingMode[representingMode]}`,
+      caseType: `caseType-Handläggning pågår-${RepresentingMode[representingMode]}`,
       caseId: 'caseId-1',
       id: 'id-1',
       externalStatus: 'Tilldelat för handläggning',
@@ -28,7 +28,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
       system: 'OPEN_E_PLATFORM',
     },
     {
-      caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
+      caseType: `caseType-Handläggning pågår-${RepresentingMode[representingMode]}`,
       caseId: 'caseId-2',
       id: 'id-2',
       externalStatus: 'Under behandling',
@@ -38,7 +38,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
       system: 'OPEN_E_PLATFORM',
     },
     {
-      caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
+      caseType: `caseType-Handläggning pågår-${RepresentingMode[representingMode]}`,
       caseId: 'caseId-3',
       id: 'id-3',
       externalStatus: 'Under behandling',
@@ -48,7 +48,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
       system: 'OPEN_E_PLATFORM',
     },
     {
-      caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
+      caseType: `caseType-Handläggning pågår-${RepresentingMode[representingMode]}`,
       caseId: 'caseId-4',
       id: 'id-4',
       externalStatus: 'Under behandling',
@@ -58,7 +58,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
       system: 'OPEN_E_PLATFORM',
     },
     {
-      caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
+      caseType: `caseType-Handläggning pågår-${RepresentingMode[representingMode]}`,
       caseId: 'caseId-4',
       id: 'id-4',
       externalStatus: 'Under behandling',
@@ -68,7 +68,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
       system: 'OPEN_E_PLATFORM',
     },
     {
-      caseType: `caseType-Under behandling-${RepresentingMode[representingMode]}`,
+      caseType: `caseType-Handläggning pågår-${RepresentingMode[representingMode]}`,
       caseId: 'caseId-5',
       id: 'id-5',
       externalStatus: 'Under behandling',
@@ -88,7 +88,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
       system: 'OPEN_E_PLATFORM',
     },
     {
-      caseType: `caseType-Påminnelse om komplettering-${RepresentingMode[representingMode]}`,
+      caseType: `caseType-Komplettering behövs-${RepresentingMode[representingMode]}`,
       caseId: 'caseId-7',
       id: 'id-7',
       externalStatus: 'Påminnelse om komplettering',
@@ -138,7 +138,31 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
       system: 'OPEN_E_PLATFORM',
     },
     {
-      caseType: `caseType-Klart-${RepresentingMode[representingMode]}`,
+      caseType: `caseType-Avslutat-${RepresentingMode[representingMode]}`,
+      caseId: 'caseId-9',
+      id: 'id-9',
+      externalStatus: 'Avslutat',
+      lastStatusChange: '2024-08-24T12:00:00Z',
+      firstSubmitted: '2024-08-20T08:30:00Z',
+    },
+    {
+      caseType: `caseType-Komplettering behövs-${RepresentingMode[representingMode]}`,
+      caseId: 'caseId-10',
+      id: 'id-10',
+      externalStatus: 'Komplettering behövs',
+      lastStatusChange: '2024-08-23T09:45:00Z',
+      firstSubmitted: '2024-08-20T08:30:00Z',
+    },
+    {
+      caseType: `caseType-Komplettering behövs-${RepresentingMode[representingMode]}`,
+      caseId: 'caseId-11',
+      id: 'id-11',
+      externalStatus: 'Komplettering behövs',
+      lastStatusChange: '2024-08-22T13:00:00Z',
+      firstSubmitted: '2024-08-20T08:30:00Z',
+    },
+    {
+      caseType: `caseType-AvslutatTest-${RepresentingMode[representingMode]}`,
       caseId: 'caseId-12',
       id: 'id-12',
       externalStatus: 'Klart',
@@ -158,7 +182,7 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
       system: 'OPEN_E_PLATFORM',
     },
     {
-      caseType: `caseType-Ärendet arkiveras-${RepresentingMode[representingMode]}`,
+      caseType: `caseType-Avslutat-${RepresentingMode[representingMode]}`,
       caseId: 'caseId-14',
       id: 'id-14',
       externalStatus: 'Ärendet arkiveras',

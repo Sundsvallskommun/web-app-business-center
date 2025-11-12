@@ -252,7 +252,7 @@ export function useApi<
           return { newBody };
         },
         onSuccess: (result) => {
-          _queryClient.setQueryData<TQueryFnData & { error?: DefaultError }>(queryKey, result);
+          _queryClient.setQueryData<TQueryFnData & { error?: DefaultError }>(queryKey, result as TQueryFnData & { error?: DefaultError });
         },
         throwOnError: (error) => {
           handleError(error);

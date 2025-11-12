@@ -105,6 +105,13 @@ export default function CaseNewMessage() {
     }
   };
 
+  const handleRemoveFile = (file: UploadFile) => {
+    context.setValue(
+      'files',
+      context.watch('files').filter((x) => x !== file)
+    );
+  };
+
   return (
     <>
       <div className="self-stretch flex flex-col gap-y-24 mx-20 desktop:mx-32">
@@ -134,7 +141,12 @@ export default function CaseNewMessage() {
                     </FormErrorMessage>
                   )}
                 </FormControl>
-                <FileUpload.Button className="mt-16" maxFileSizeMB={25} {...context.register('files')} />
+                <FileUpload.Button
+                  appendFiles={files}
+                  className="mt-16"
+                  maxFileSizeMB={25}
+                  {...context.register('files')}
+                />
                 <div className="flex items-row text-small gap-5 mt-10">
                   <span className="text-dark-secondary">Maximal filstorlek: 25 MB.</span>{' '}
                   <Button variant="link" onClick={() => setShowModal(true)}>
@@ -152,7 +164,7 @@ export default function CaseNewMessage() {
                         className="break-all"
                         key={`${file?.meta.name}-${i}`}
                         index={i}
-                        actionsProps={{ showRemove: true }}
+                        actionsProps={{ showRemove: true, onRemove: () => handleRemoveFile(file) }}
                         file={file}
                       />
                     ))}

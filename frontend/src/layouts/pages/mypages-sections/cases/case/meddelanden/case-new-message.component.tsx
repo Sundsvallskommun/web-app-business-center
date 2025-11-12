@@ -22,7 +22,7 @@ interface NewMessage {
   message: string;
 }
 
-const MESSAGE_CHARACTER_LIMIT = 2000;
+const MESSAGE_CHARACTER_LIMIT = 10000;
 
 export default function CaseNewMessage() {
   const { isMinDesktop } = useThemeQueries();
@@ -123,7 +123,7 @@ export default function CaseNewMessage() {
                     readOnly={postMessageMutation.isPending}
                   />
                   <div className="flex justify-between text-small mt-8">
-                    <span className="text-dark-secondary">Max 2000 tecken.</span>
+                    <span className="text-dark-secondary">Max {MESSAGE_CHARACTER_LIMIT} tecken.</span>
                     <span className={isMessageOverLimit ? 'text-error' : 'text-dark-secondary'}>
                       {messageLength}/{MESSAGE_CHARACTER_LIMIT}
                     </span>

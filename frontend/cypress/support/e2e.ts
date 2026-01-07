@@ -1,5 +1,3 @@
-import '@cypress/code-coverage/support';
-
 import { RepresentingMode } from '@interfaces/app';
 import { CookieConsentUtils } from '@sk-web-gui/react';
 import { getBusinessEngagements } from 'cypress/fixtures/getBusinessEngagements';

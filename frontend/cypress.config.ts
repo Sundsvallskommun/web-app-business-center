@@ -1,5 +1,4 @@
 import { defineConfig } from 'cypress';
-import codeCoverageTask from '@cypress/code-coverage/task';
 
 export default defineConfig({
   e2e: {
@@ -22,12 +21,6 @@ export default defineConfig({
     // pass when suddenly the tenth, eleventh, or.. fails.
     chromeWebSecurity: false,
     defaultCommandTimeout: 10000,
-    setupNodeEvents(on, config) {
-      codeCoverageTask(on, config);
-      // It's IMPORTANT to return the config object
-      // with any changed environment variables
-      return config;
-    },
   },
 
   component: {
@@ -36,11 +29,5 @@ export default defineConfig({
       bundler: 'webpack',
     },
     chromeWebSecurity: false,
-    setupNodeEvents(on, config) {
-      codeCoverageTask(on, config);
-      // It's IMPORTANT to return the config object
-      // with any changed environment variables
-      return config;
-    },
   },
 });

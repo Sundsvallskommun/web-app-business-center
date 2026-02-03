@@ -1,5 +1,6 @@
 import { IInvoice } from '@interfaces/invoice';
 import { getInvoicePdf } from '@services/invoice-service';
+import { downloadBlob } from '@utils/download-blob';
 import { Button, Icon, useThemeQueries } from '@sk-web-gui/react';
 import { ArrowDownToLine } from 'lucide-react';
 
@@ -21,12 +22,7 @@ export const GetPdfButton: React.FC<{
     getInvoicePdf(invoiceNumber)
       .then((d) => {
         if (typeof d.error === 'undefined') {
-          const uri = `data:application/pdf;base64,${d.pdf.file}`;
-          const link = document.createElement('a');
-          link.href = uri;
-          link.setAttribute('download', `${invoiceNumber}.pdf`);
-          document.body.appendChild(link);
-          link.click();
+          downloadBlob(d.pdf.file, 'application/pdf', `${invoiceNumber}.pdf`);
         }
       })
       .finally(() => {

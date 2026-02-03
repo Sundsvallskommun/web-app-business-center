@@ -1,5 +1,6 @@
 import { Card } from '@components/cards/card.component';
 import { getCasePdf } from '@services/case-service';
+import { downloadBlob } from '@utils/download-blob';
 import { Button, Icon } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import { File } from 'lucide-react';
@@ -14,12 +15,7 @@ export default function CaseInformation() {
     if (!caseData?.caseId) return;
     setPdfIsLoading(true);
     const attachment = await getCasePdf(caseData?.caseId); // returns base64 string
-
-    const uri = `data:application/pdf;base64,${attachment}`;
-    const link = document.createElement('a');
-    link.href = uri;
-    link.download = `${caseData?.caseId}.pdf`;
-    link.click();
+    downloadBlob(attachment, 'application/pdf', `${caseData?.caseId}.pdf`);
     setPdfIsLoading(false);
   }, [caseData?.caseId]);
 

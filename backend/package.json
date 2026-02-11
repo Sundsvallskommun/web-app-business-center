@@ -14,6 +14,7 @@
     "build:swc": "swc src -d dist --source-maps --copy-files",
     "lint": "eslint --ignore-path .gitignore --ext .ts src/",
     "lint:fix": "npm run lint -- --fix",
+    "type-check": "tsc --pretty --noEmit",
     "deploy:prod": "npm run build && pm2 start ecosystem.config.js --only prod",
     "deploy:dev": "pm2 start ecosystem.config.js --only dev"
   },

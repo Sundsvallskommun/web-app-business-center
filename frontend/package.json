@@ -14,7 +14,8 @@
     "cypress:headless": "npx cypress run --component && npx cypress run --e2e",
     "jest": "jest --watch",
     "jest:coverage": "jest --coverage",
-    "test": "concurrently \"yarn jest\" \"yarn cypress\""
+    "test": "concurrently \"yarn jest\" \"yarn cypress\"",
+    "type-check": "tsc --pretty --noEmit"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

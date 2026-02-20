@@ -1,8 +1,8 @@
 import { Card } from '@components/cards/card.component';
 import { useState } from 'react';
-import { ParkingPermitRenewalForm } from './parkingpermit-renewal-form.compontent';
-import { RenewalInfo } from './parkingpermit-renewal-info.compontent';
-import { RenewalSuccess } from './parkingpermit-renewal-success.compontent';
+import { ParkingPermitRenewalForm } from './parkingpermit-renewal-form.component';
+import { RenewalInfo } from './parkingpermit-renewal-info.component';
+import { RenewalSuccess } from './parkingpermit-renewal-success.component';
 
 export default function ParkingPermitRenewal({
   setIsEditing,

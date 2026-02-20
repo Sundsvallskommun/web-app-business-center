@@ -37,7 +37,7 @@ export class AssetsController {
   @OpenAPI({ summary: 'Return a list of assets for current representing entity' })
   @UseBefore(authMiddleware)
   async getAssets(@Req() req: RequestWithUser): Promise<ApiResponse<Asset[]>> {
-    const { representing } = req?.session;
+    const { representing } = req.session ?? {};
 
     const controller = new AbortController();
     const { signal } = controller;
@@ -71,7 +71,7 @@ export class AssetsController {
   @OpenAPI({ summary: 'Return a asset' })
   @UseBefore(authMiddleware)
   async getAsset(@Req() req: RequestWithUser, @Param('assetId') assetId: string): Promise<ApiResponse<Asset>> {
-    const { representing } = req?.session;
+    const { representing } = req.session ?? {};
 
     const controller = new AbortController();
     const { signal } = controller;
@@ -118,16 +118,13 @@ export class AssetsController {
     @Body() body: any,
     @UploadedFiles('files', { options: fileUploadOptions, required: false }) files: Express.Multer.File[],
   ): Promise<ApiResponse<{ success: boolean }>> {
-    const { representing } = req?.session;
-    console.log('Extend parking permit for representing entity', representing);
-    console.log('Request body', body);
-    console.log('Request files', files);
+    const { representing } = req.session ?? {};
 
     if (!representing?.PRIVATE?.partyId) {
       throw new HttpException(400, 'Missing party-id');
     }
 
-    const partyId = representing?.PRIVATE?.partyId;
+    const partyId = representing.PRIVATE.partyId;
     const mockPartyId = 'cbfdcea3-72d9-40ee-ad9c-4472b6b37bd1';
     const citizenUrl = `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}`;
     const citizenRes = await this.apiService.get<CitizenExtended>({ url: citizenUrl }, req).catch(() => null);
@@ -167,11 +164,8 @@ export class AssetsController {
       stakeholders: [stakeholder],
     };
 
-    console.log('Registering errand', data);
-
     const url = `${this.casedataApiBase}/${MUNICIPALITY_ID}/SBK_PARKING_PERMIT/errands`;
-    const res = await this.apiService.post<204>({ url, data }, req);
-    console.log('res:', res);
+    await this.apiService.post<204>({ url, data }, req);
 
     return { data: { success: true }, message: 'ok' };
   }

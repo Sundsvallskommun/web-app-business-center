@@ -1,7 +1,11 @@
 import { Button, Icon } from '@sk-web-gui/react';
 import { ArrowRight, CircleCheckBig } from 'lucide-react';
 
-export const RenewalSuccess = ({ setIsEditing }) => {
+export const RenewalSuccess = ({
+  setIsEditing,
+}: {
+  setIsEditing: React.Dispatch<React.SetStateAction<null | 'PERMIT_RENEWAL' | 'LOST_PERMIT'>>;
+}) => {
   return (
     <>
       <div className="flex flex-col gap-24">
@@ -15,11 +19,9 @@ export const RenewalSuccess = ({ setIsEditing }) => {
         </div>
       </div>
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mt-40">
-        <>
-          <Button size="lg" color="vattjom" rightIcon={<ArrowRight />} onClick={() => setIsEditing(null)}>
-            Tillbaka till översikt
-          </Button>
-        </>
+        <Button size="lg" color="vattjom" rightIcon={<ArrowRight />} onClick={() => setIsEditing(null)}>
+          Tillbaka till översikt
+        </Button>
       </div>
     </>
   );

@@ -8,8 +8,8 @@ import dayjs from 'dayjs';
 import { FileCheck2 } from 'lucide-react';
 import { useContext, useState } from 'react';
 import { AssetsContext } from './asset-layout.component';
-import ParkingPermitRenewalAlert from './parkingpermits/parkingpermit-renewal-alert.compontent';
-import ParkingPermitRenewal from './parkingpermits/parkingpermit-renewal.compontent';
+import ParkingPermitRenewalAlert from './parkingpermits/parkingpermit-renewal-alert.component';
+import ParkingPermitRenewal from './parkingpermits/parkingpermit-renewal.component';
 
 const getAssetProps = (status?: Status) => {
   let color: string;

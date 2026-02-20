@@ -239,7 +239,7 @@ export const testAssetPage = (representingMode: RepresentingMode = representingM
   cy.get('main').contains('Kortnummer').next().should('contain.text', 'assetId-0').should('be.visible');
   cy.get('main').contains('Beslutad').next().should('contain.text', '1 Jan 2021').should('be.visible');
   cy.get('main')
-    .contains('Giltighetstid')
+    .contains(/^Giltighetstid$/)
     .next()
     .should('contain.text', '1 Jan 2021 - 31 Dec 2025')
     .should('be.visible');

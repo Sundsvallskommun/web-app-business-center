@@ -65,7 +65,6 @@ export const ACCEPTED_UPLOAD_FILETYPES = [
   'msg',
   'heic',
   'heif',
-  '',
   ...documentMimeTypes,
 ];
 
@@ -91,7 +90,6 @@ export const ParkingPermitRenewalForm = ({
 }: {
   setFormState: React.Dispatch<React.SetStateAction<'showForm' | 'showInfo' | 'success'>>;
 }) => {
-  //   const [files, setFiles] = useState<UploadFile[]>([]);
   const confirm = useConfirm();
   const toastMessage = useSnackbar();
 
@@ -113,7 +111,6 @@ export const ParkingPermitRenewalForm = ({
   });
 
   const onSubmit = async (data: PermitRenewalFormModel) => {
-    console.log('submit', data);
     const confirmed = await confirm.showConfirmation(
       'Ansök om förlängning?',
       'Vill skicka in ansökan om förlängning av parkeringstillstånd?',
@@ -137,20 +134,17 @@ export const ParkingPermitRenewalForm = ({
                 const buf = Buffer.from(fileData, 'base64');
                 const blob = new Blob([buf], { type: file.file.type });
                 formData.append('files', blob, `${file.meta.name}.${file.meta.ending}`);
-              } else {
-                console.warn('Invalid file structure:', file);
               }
             })
           );
-        } catch (error) {
-          console.error('Error processing files:', error);
+        } catch {
+          // File processing error - continue with submission
         }
       }
 
       try {
-        const res = await registerErrand.mutateAsync(formData);
-        console.log('API response:', res);
-        if (!res.error) form.reset();
+        await registerErrand.mutateAsync(formData);
+        form.reset();
         toastMessage({
           position: 'bottom',
           closeable: false,
@@ -158,8 +152,7 @@ export const ParkingPermitRenewalForm = ({
           status: 'success',
         });
         setFormState('success');
-      } catch (error) {
-        console.log('Error:', error);
+      } catch {
         toastMessage({
           position: 'bottom',
           closeable: false,
@@ -278,7 +271,6 @@ export const ParkingPermitRenewalForm = ({
           name="files"
           maxFileSizeMB={MAX_FILE_SIZE_MB}
           onChange={(e) => {
-            console.log(e);
             form.setValue('files', e.target.value);
           }}
         />

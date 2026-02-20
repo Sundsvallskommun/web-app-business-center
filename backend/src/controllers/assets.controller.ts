@@ -1,19 +1,24 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
+import { AddressAddressCategoryEnum, Errand, Stakeholder, StakeholderTypeEnum } from '@/data-contracts/case-data/data-contracts';
+import { CitizenExtended } from '@/data-contracts/citizen/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
+import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
-import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
+import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
 @Controller()
 export class AssetsController {
   private apiService = new ApiService();
   private apiBase = getApiBase('partyassets');
+  private casedataApiBase = getApiBase('case-data');
+  private citizenApiBase = getApiBase('citizen');
 
   private toClientAsset = (asset: Asset): Asset => {
     delete asset.partyId;
@@ -103,5 +108,71 @@ export class AssetsController {
       }
       throw new HttpException(500, 'Something went wrong');
     }
+  }
+
+  @Post('/assets/parkingpermit/extend')
+  @OpenAPI({ summary: 'Extend parking permit' })
+  @UseBefore(authMiddleware)
+  async extendParkingPermit(
+    @Req() req: RequestWithUser,
+    @Body() body: any,
+    @UploadedFiles('files', { options: fileUploadOptions, required: false }) files: Express.Multer.File[],
+  ): Promise<ApiResponse<{ success: boolean }>> {
+    const { representing } = req?.session;
+    console.log('Extend parking permit for representing entity', representing);
+    console.log('Request body', body);
+    console.log('Request files', files);
+
+    if (!representing?.PRIVATE?.partyId) {
+      throw new HttpException(400, 'Missing party-id');
+    }
+
+    const partyId = representing?.PRIVATE?.partyId;
+    const mockPartyId = 'cbfdcea3-72d9-40ee-ad9c-4472b6b37bd1';
+    const citizenUrl = `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}`;
+    const citizenRes = await this.apiService.get<CitizenExtended>({ url: citizenUrl }, req).catch(() => null);
+
+    if (!citizenRes?.data) {
+      throw new HttpException(500, 'Could not fetch citizen data');
+    }
+
+    const citizen = citizenRes.data;
+    const address = citizen.addresses?.find(a => a.address);
+
+    const stakeholder: Stakeholder = {
+      firstName: citizen.givenname,
+      lastName: citizen.lastname,
+      type: StakeholderTypeEnum.PERSON,
+      roles: ['APPLICANT'],
+      personId: mockPartyId,
+      addresses: [
+        {
+          addressCategory: AddressAddressCategoryEnum.POSTAL_ADDRESS,
+          street: address?.address ?? '',
+          houseNumber: address?.addressNumber ?? '',
+          postalCode: address?.postalCode ?? '',
+          city: address?.city ?? '',
+          country: address?.country ?? '',
+          careOf: address?.co ?? '',
+          apartmentNumber: address?.appartmentNumber ?? '',
+        },
+      ],
+    };
+
+    const data: Errand = {
+      caseType: 'PARKING_PERMIT_RENEWAL',
+      status: {
+        statusType: 'Ärende inkommit',
+      },
+      stakeholders: [stakeholder],
+    };
+
+    console.log('Registering errand', data);
+
+    const url = `${this.casedataApiBase}/${MUNICIPALITY_ID}/SBK_PARKING_PERMIT/errands`;
+    const res = await this.apiService.post<204>({ url, data }, req);
+    console.log('res:', res);
+
+    return { data: { success: true }, message: 'ok' };
   }
 }

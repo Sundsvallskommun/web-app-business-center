@@ -1,12 +1,15 @@
 'use client';
 
-import { useContext } from 'react';
-import { AssetsContext } from './asset-layout.component';
-import dayjs from 'dayjs';
-import { Divider, Icon, Label } from '@sk-web-gui/react';
 import { Card } from '@components/cards/card.component';
 import { Status } from '@data-contracts/partyassets/data-contracts';
+import { isParkingPermit, soonExpiring } from '@services/asset-service';
+import { Divider, Icon, Label } from '@sk-web-gui/react';
+import dayjs from 'dayjs';
 import { FileCheck2 } from 'lucide-react';
+import { useContext, useState } from 'react';
+import { AssetsContext } from './asset-layout.component';
+import ParkingPermitRenewalAlert from './parkingpermits/parkingpermit-renewal-alert.compontent';
+import ParkingPermitRenewal from './parkingpermits/parkingpermit-renewal.compontent';
 
 const getAssetProps = (status?: Status) => {
   let color: string;
@@ -32,8 +35,11 @@ const getAssetProps = (status?: Status) => {
 };
 
 export default function Asset() {
+  const [isEditing, setisEditing] = useState<null | 'PERMIT_RENEWAL' | 'LOST_PERMIT'>(null);
   const { assetData } = useContext(AssetsContext);
-  return (
+  return isEditing === 'PERMIT_RENEWAL' ? (
+    <ParkingPermitRenewal setIsEditing={setisEditing} />
+  ) : (
     <Card>
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
         <div className="flex gap-x-8 desktop:gap-x-24">
@@ -49,11 +55,18 @@ export default function Asset() {
         </span>
       </div>
       <Divider className="my-0" />
+      {assetData && isParkingPermit(assetData) && soonExpiring(assetData) ? (
+        <ParkingPermitRenewalAlert setIsEditing={setisEditing} />
+      ) : null}
       <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
         {assetData?.caseReferenceIds?.length ? (
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">Ärendenummer</div>
-            <div>{assetData?.caseReferenceIds?.map((id) => <div key={id}>{id}</div>)}</div>
+            <div>
+              {assetData?.caseReferenceIds?.map((id) => (
+                <div key={id}>{id}</div>
+              ))}
+            </div>
           </div>
         ) : null}
         {assetData?.assetId ? (

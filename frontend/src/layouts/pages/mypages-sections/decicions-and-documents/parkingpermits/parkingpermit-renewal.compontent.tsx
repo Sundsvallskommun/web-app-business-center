@@ -1,0 +1,34 @@
+import { Card } from '@components/cards/card.component';
+import { useState } from 'react';
+import { ParkingPermitRenewalForm } from './parkingpermit-renewal-form.compontent';
+import { RenewalInfo } from './parkingpermit-renewal-info.compontent';
+import { RenewalSuccess } from './parkingpermit-renewal-success.compontent';
+
+export default function ParkingPermitRenewal({
+  setIsEditing,
+}: {
+  setIsEditing: React.Dispatch<React.SetStateAction<null | 'PERMIT_RENEWAL' | 'LOST_PERMIT'>>;
+}) {
+  const [formState, setFormState] = useState<'showForm' | 'showInfo' | 'success'>('showInfo');
+
+  return (
+    <Card className="px-20 desktop:px-32 desktop:py-40">
+      <div className="flex flex-col gap-40">
+        {formState === 'showForm' || formState === 'showInfo' ? (
+          <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
+            <h1 className="text-h2-sm desktop:text-h2-lg mb-0 break-word hyphens-auto">
+              Ansök om att förlänga parkeringstillstånd
+            </h1>
+          </div>
+        ) : null}
+        {formState === 'showForm' ? (
+          <ParkingPermitRenewalForm setFormState={setFormState} />
+        ) : formState === 'showInfo' ? (
+          <RenewalInfo setIsEditing={setIsEditing} setFormState={setFormState} />
+        ) : formState === 'success' ? (
+          <RenewalSuccess setIsEditing={setIsEditing} />
+        ) : null}
+      </div>
+    </Card>
+  );
+}

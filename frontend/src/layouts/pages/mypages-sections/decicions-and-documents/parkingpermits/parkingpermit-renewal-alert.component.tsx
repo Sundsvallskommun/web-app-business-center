@@ -17,13 +17,18 @@ export default function ParkingPermitRenewalAlert({
 
   return (
     <div className="py-8 pl-14 pr-12 border-1 border-vattjom-surface-primary rounded-12 bg-vattjom-background-100 flex gap-40">
-      <div className="flex gap-12">
-        <div className="mt-6">
+      <div className="flex flex-col desktop:flex-row gap-12">
+        <div className="mt-6 mb-0">
           <Icon color="vattjom" icon={<Info />} />
         </div>
         <div>
           <p className="mb-12">{text}</p>
-          <Button color="vattjom" rightIcon={<ArrowRight />} onClick={() => setIsEditing('PERMIT_RENEWAL')}>
+          <Button
+            className="w-full desktop:w-auto"
+            color="vattjom"
+            rightIcon={<ArrowRight />}
+            onClick={() => setIsEditing('PERMIT_RENEWAL')}
+          >
             Förläng giltighet
           </Button>
         </div>

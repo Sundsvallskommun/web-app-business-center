@@ -159,14 +159,79 @@ describe('Parking Permit Renewal', () => {
     // Confirm submission
     cy.contains('button', 'Ja').click();
 
-    // Wait for API call
-    cy.wait('@extendParkingPermit');
+    // Wait for API call and verify request body
+    cy.wait('@extendParkingPermit').should(({ request }) => {
+      // Verify content type
+      expect(request.headers['content-type']).to.include('multipart/form-data');
+
+      // Verify form fields are present
+      expect(request.body).to.include('name="description"');
+      expect(request.body).to.include('Försämrad rörlighet i höger ben');
+
+      expect(request.body).to.include('name="circumstancesChanged"');
+      expect(request.body).to.include('TRUE');
+
+      expect(request.body).to.include('name="date"');
+      expect(request.body).to.include('2025-12-31');
+
+      expect(request.body).to.include('name="walkingAids"');
+      expect(request.body).to.include('Rullator');
+      expect(request.body).to.include('Rullstol (manuell)');
+    });
 
     // Verify success page
     cy.contains('h1', 'Ansökan inskickad').should('be.visible');
     cy.contains('Din ansökan om att förlänga ditt parkeringstillstånd är inskickad').should('be.visible');
     cy.contains('Vi handlägger ärendet').should('be.visible');
     cy.contains('button', 'Tillbaka till översikt').should('be.visible');
+  });
+
+  it('should submit renewal form with file attachment', () => {
+    navigateToAssetPage();
+
+    cy.contains('button', 'Förläng giltighet').click();
+    cy.contains('button', 'Påbörja ansökan').click();
+
+    // Fill out the form
+    cy.get('input[name="description"]').type('Behöver ny bedömning');
+    cy.get('input[type="date"]').type('2025-12-31');
+
+    // Upload a medical certificate
+    cy.get('input[type="file"]').selectFile(
+      {
+        contents: Cypress.Buffer.from('fake medical certificate content'),
+        fileName: 'lakarintyg.pdf',
+        mimeType: 'application/pdf',
+      },
+      { force: true }
+    );
+
+    // Verify file is shown in the list
+    cy.contains('lakarintyg.pdf').should('be.visible');
+
+    // Submit the form
+    cy.contains('button', 'Skicka in').click();
+    cy.contains('button', 'Ja').click();
+
+    // Wait for API call and verify request body
+    cy.wait('@extendParkingPermit').should(({ request }) => {
+      // Verify content type
+      expect(request.headers['content-type']).to.include('multipart/form-data');
+
+      // Verify form fields
+      expect(request.body).to.include('name="description"');
+      expect(request.body).to.include('Behöver ny bedömning');
+      expect(request.body).to.include('name="date"');
+      expect(request.body).to.include('2025-12-31');
+
+      // Verify file attachment
+      expect(request.body).to.include('name="files"');
+      expect(request.body).to.include('filename="lakarintyg.pdf"');
+      expect(request.body).to.include('application/pdf');
+    });
+
+    // Verify success page
+    cy.contains('h1', 'Ansökan inskickad').should('be.visible');
   });
 
   it('should cancel submission in confirm dialog', () => {

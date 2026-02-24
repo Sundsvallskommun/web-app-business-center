@@ -3,11 +3,12 @@
 import { Card } from '@components/cards/card.component';
 import { Status } from '@data-contracts/partyassets/data-contracts';
 import { isParkingPermit, soonExpiring } from '@services/asset-service';
-import { Divider, Icon, Label } from '@sk-web-gui/react';
+import { Button, Divider, Icon, Label } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
-import { FileCheck2 } from 'lucide-react';
+import { ArrowRight, FileCheck2 } from 'lucide-react';
 import { useContext, useState } from 'react';
 import { AssetsContext } from './asset-layout.component';
+import ParkingPermitLost from './parkingpermits/parkingpermit-lost.component';
 import ParkingPermitRenewalAlert from './parkingpermits/parkingpermit-renewal-alert.component';
 import ParkingPermitRenewal from './parkingpermits/parkingpermit-renewal.component';
 
@@ -39,6 +40,8 @@ export default function Asset() {
   const { assetData } = useContext(AssetsContext);
   return isEditing === 'PERMIT_RENEWAL' ? (
     <ParkingPermitRenewal setIsEditing={setisEditing} />
+  ) : isEditing === 'LOST_PERMIT' ? (
+    <ParkingPermitLost setIsEditing={setisEditing} />
   ) : (
     <Card>
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
@@ -57,6 +60,19 @@ export default function Asset() {
       <Divider className="my-0" />
       {assetData && isParkingPermit(assetData) && soonExpiring(assetData) ? (
         <ParkingPermitRenewalAlert setIsEditing={setisEditing} />
+      ) : null}
+      {assetData && isParkingPermit(assetData) ? (
+        <div className="mt-0 w-full desktop:w-auto">
+          <Button
+            className="w-full desktop:w-auto"
+            variant="secondary"
+            rightIcon={<ArrowRight />}
+            onClick={() => setisEditing('LOST_PERMIT')}
+            data-cy="report-lost-permit-button"
+          >
+            Anmäl borttappat tillstånd
+          </Button>
+        </div>
       ) : null}
       <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
         {assetData?.caseReferenceIds?.length ? (

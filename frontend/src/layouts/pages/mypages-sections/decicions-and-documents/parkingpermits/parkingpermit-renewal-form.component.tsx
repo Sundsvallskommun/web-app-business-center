@@ -21,7 +21,7 @@ import { useForm } from 'react-hook-form';
 const walkingAids = [
   { label: 'Rullator', value: 'Rullator' },
   { label: 'Elrullstol', value: 'Elrullstol' },
-  { label: 'Krycka/kryckor/annat', value: 'Krycka/kryckor/annat' },
+  { label: 'Krycka/kryckor/käpp', value: 'Krycka/kryckor/käpp' },
   { label: 'Rullstol (manuell)', value: 'Rullstol (manuell)' },
 ];
 

@@ -90,7 +90,7 @@ describe('Parking Permit Renewal', () => {
     // Verify walking aids checkboxes
     cy.get('[data-cy="walking-aids-checkbox-0"]').should('exist'); // Rullator
     cy.get('[data-cy="walking-aids-checkbox-1"]').should('exist'); // Elrullstol
-    cy.get('[data-cy="walking-aids-checkbox-2"]').should('exist'); // Krycka/kryckor/annat
+    cy.get('[data-cy="walking-aids-checkbox-2"]').should('exist'); // Krycka/kryckor/käpp
     cy.get('[data-cy="walking-aids-checkbox-3"]').should('exist'); // Rullstol (manuell)
 
     cy.contains('När gick ditt nuvarande parkeringstillstånd ut').should('be.visible');

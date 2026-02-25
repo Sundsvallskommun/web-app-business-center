@@ -1,5 +1,5 @@
 import { Button, Icon } from '@sk-web-gui/react';
-import { Mail } from 'lucide-react';
+import { ArrowRight, Mail } from 'lucide-react';
 import styles from './todos.module.scss';
 
 export const TodoMessage = () => {
@@ -15,7 +15,7 @@ export const TodoMessage = () => {
         </p>
       </div>
       <div className={styles['todo-action']}>
-        <Button className={styles['todo-action-button']} color="vattjom" aria-label={`MEDDELANDE, till meddelandet`}>
+        <Button className={styles['todo-action-button']} color="vattjom" rightIcon={<ArrowRight />} aria-label={`MEDDELANDE, till meddelandet`}>
           Till meddelandet
         </Button>
       </div>

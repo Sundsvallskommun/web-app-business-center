@@ -48,9 +48,7 @@ class ApiService {
           'Content-Type': 'application/json',
           'X-Request-Id': uuidv4(),
         };
-        console.log('response:', response.headers);
-        console.log('response:', response.config.baseURL);
-        if (response.headers.location && response.config.baseURL.includes('case-data')) {
+        if (response.headers?.location && response.config?.baseURL?.includes('case-data')) {
           logger.info(`Response contained location header: ${response.headers.location}`);
           logger.info(`Base URL was: ${response.config.baseURL}`);
           return axios.get(response.headers.location, { baseURL: response.config.baseURL, headers: defaultHeaders }).catch(e => {

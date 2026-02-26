@@ -1,50 +1,85 @@
-import { HttpException } from '@/exceptions/HttpException';
-import { RequestWithUser } from '@/interfaces/auth.interface';
-import { User } from '@/interfaces/users.interface';
-import { logger } from '@/utils/logger';
-import { apiURL } from '@/utils/util';
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { Request } from 'express';
-import ApiTokenService from './api-token.service';
+import { HttpException } from '@exceptions/HttpException';
+import { logger } from '@utils/logger';
+import { apiURL } from '@utils/util';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import ApiTokenService from './api-token.service';
 
-class ApiResponse<T> {
+export class ApiResponse<T> {
   data: T;
   message: string;
 }
 
-interface ApiRequest extends Omit<Partial<RequestWithUser>, 'session'> {
-  session: Omit<Partial<Request['session']>, 'user'> & { user?: Pick<User, 'username'> };
-}
+const apiTokenService = new ApiTokenService();
 
 class ApiService {
-  private apiTokenService = new ApiTokenService();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async request<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
-    const token = await this.apiTokenService.getToken();
+  private instance: AxiosInstance;
+  constructor() {
+    this.instance = axios.create();
+    this.instance.interceptors.request.use(
+      async function (request) {
+        if (request.url === apiURL('token')) {
+          return Promise.resolve(request);
+        }
+        const token = await apiTokenService.getToken();
+        const defaultHeaders = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Request-Id': uuidv4(),
+        };
+        logger.info(`x-request-id: ${defaultHeaders['X-Request-Id']}`);
+        request.headers = { ...defaultHeaders, ...request.headers } as any;
+        request.headers['Content-Type'] = request.headers['Content-Type'] || defaultHeaders['Content-Type'];
+        return Promise.resolve(request);
+      },
+      function (error) {
+        return Promise.reject(error);
+      },
+    );
 
-    const defaultHeaders = {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'X-Request-Id': uuidv4(),
-    };
+    this.instance.interceptors.response.use(
+      async function (response) {
+        // TODO This is an ugly workaround for the fact that setting correct API version
+        // in the location header is difficult for some APIs, such as Messaging
+        // So, for Messaging specifically, we - for now - ignore the location header
+        const token = await apiTokenService.getToken();
+        const defaultHeaders = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Request-Id': uuidv4(),
+        };
+        console.log('response:', response.headers);
+        console.log('response:', response.config.baseURL);
+        if (response.headers.location && response.config.baseURL.includes('case-data')) {
+          logger.info(`Response contained location header: ${response.headers.location}`);
+          logger.info(`Base URL was: ${response.config.baseURL}`);
+          return axios.get(response.headers.location, { baseURL: response.config.baseURL, headers: defaultHeaders }).catch(e => {
+            logger.error(`Error in location header request: ${e.details}`);
+            logger.error(`Base URL was: ${e.config?.baseURL}`);
+            logger.error(`URL was: ${e.config?.url}`);
+            logger.error(`Method was: ${e.config?.method}`);
+            return Promise.resolve(response);
+          });
+        }
+        return Promise.resolve(response);
+      },
+      function (error) {
+        return Promise.reject(error);
+      },
+    );
+  }
+  private async request<T>(config: AxiosRequestConfig, user: { username: string }): Promise<ApiResponse<T>> {
     const defaultParams = {};
-
-    const sentBy = req?.user?.partyId ? { 'X-Sent-By': `${req?.user?.partyId};type=partyId` } : {};
-
     const preparedConfig: AxiosRequestConfig = {
       ...config,
-      headers: { ...defaultHeaders, ...config.headers, ...sentBy },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+      headers: { ...config.headers, 'X-Sent-By': [`type=adAccount; ${user.username}`] },
       params: { ...defaultParams, ...config.params },
-      url: apiURL(config.url),
+      url: config.baseURL ? config.url : apiURL(config.url),
     };
-
     try {
-      if (process.env.NODE_ENV === 'development') {
-        logger.info(`API request [${preparedConfig.method}]: ${preparedConfig.url}`);
-        logger.info(`x-request-id: ${defaultHeaders['X-Request-Id']}`);
-      }
-      const res = await axios(preparedConfig);
+      const res = await this.instance(preparedConfig);
       return { data: res.data, message: 'success' };
     } catch (error: unknown | AxiosError) {
       if (axios.isAxiosError(error) && (error as AxiosError).response?.status === 404) {
@@ -63,33 +98,34 @@ class ApiService {
         logger.error(`Error method: ${error.response.config.method}`);
         logger.error(`Error headers: ${error.response.config.headers}`);
       } else {
-        console.error(`Unknown error: ${JSON.stringify(error).slice(0, 150)}`);
-        logger.error(`Unknown error: ${JSON.stringify(error).slice(0, 150)}`);
+        logger.error(`Unknown error: ${error}`);
       }
-      // NOTE: did you subscribe to the API called?
-      throw new HttpException(500, 'Internal server error from gateway');
+      throw new HttpException(500, 'Internal server error');
     }
   }
 
-  public async get<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'GET' }, req);
+  public async get<T>(config: AxiosRequestConfig, user: { username: string }): Promise<ApiResponse<T>> {
+    logger.info(`MAKING GET REQUEST TO URL ${config.baseURL || ''}/${config.url}`);
+    return this.request<T>({ ...config, method: 'GET' }, user);
   }
 
-  public async post<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'POST' }, req);
+  public async post<T, D>(config: AxiosRequestConfig<D>, user: { username: string }): Promise<ApiResponse<T>> {
+    logger.info(`MAKING POST REQUEST TO URL ${config.baseURL || ''}/${config.url}`);
+    return this.request<T>({ ...config, method: 'POST' }, user);
   }
 
-  public async put<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'PUT' }, req);
+  public async patch<T, D>(config: AxiosRequestConfig<D>, user: { username: string }): Promise<ApiResponse<T>> {
+    logger.info(`MAKING PATCH REQUEST TO URL ${config.baseURL || ''}/${config.url}`);
+    return this.request<T>({ ...config, method: 'PATCH' }, user);
   }
 
-  public async patch<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'PATCH' }, req);
+  public async put<T, D>(config: AxiosRequestConfig<D>, user: { username: string }): Promise<ApiResponse<T>> {
+    logger.info(`MAKING PUT REQUEST TO URL ${config.baseURL || ''}/${config.url}`);
+    return this.request<T>({ ...config, method: 'PUT' }, user);
   }
 
-  public async delete<T>(config: AxiosRequestConfig, req: ApiRequest): Promise<ApiResponse<T>> {
-    return this.request<T>({ ...config, method: 'DELETE' }, req);
+  public async delete<T>(config: AxiosRequestConfig, user: { username: string }): Promise<ApiResponse<T>> {
+    return this.request<T>({ ...config, method: 'DELETE' }, user);
   }
 }
-
 export default ApiService;

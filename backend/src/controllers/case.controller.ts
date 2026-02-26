@@ -185,7 +185,7 @@ export class CaseController {
 
   private readonly fetchAttachment = async (url: string, req: RequestWithUser): Promise<ApiResponse<string | null>> => {
     try {
-      const res = await this.apiService.get<string>({ url, responseType: 'arraybuffer', responseEncoding: 'base64' }, req);
+      const res = await this.apiService.get<string>({ url, responseType: 'arraybuffer', responseEncoding: 'base64' }, req.user);
 
       if (!res.data) {
         return { data: null, message: 'error' };
@@ -218,7 +218,7 @@ export class CaseController {
 
     const fetchCases = async (url: string) => {
       try {
-        const res = await this.apiService.get<CaseStatusResponse[]>({ url, signal }, req);
+        const res = await this.apiService.get<CaseStatusResponse[]>({ url, signal }, req.user);
         if (!res.data) {
           throw new HttpException(500, 'No data from API');
         }
@@ -314,7 +314,7 @@ export class CaseController {
     }
 
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/${_case.externalCaseId}/pdf`;
-    const res = await this.apiService.get<CasePdfResponse>({ url }, req);
+    const res = await this.apiService.get<CasePdfResponse>({ url }, req.user);
 
     if (!res.data) {
       return { data: null, message: 'error' };
@@ -358,7 +358,7 @@ export class CaseController {
       let data: FrontendMessageResponse[];
       if (_case.system === 'CASE_DATA') {
         const conversationUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
-        const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+        const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req.user);
         const externalConversations = filterExternalConversation(resConversation.data);
         const messages: MessageWithConversationId<Message>[] = [];
 
@@ -366,7 +366,7 @@ export class CaseController {
           const messagesUrl = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations/${
             conversation.id
           }/messages?page=0&size=9000`;
-          const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req);
+          const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req.user);
           if (resMessages.data) {
             const messagesWithConversationId = handleMessageResponse(messages, resMessages.data.content, conversation.id);
             messages.push(...messagesWithConversationId);
@@ -378,7 +378,7 @@ export class CaseController {
         const conversationUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
           _case.namespace
         }/errands/${caseId}/communication/conversations`;
-        const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+        const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req.user);
         const externalConversations = filterExternalConversation(resConversation.data);
         const messages: MessageWithConversationId<Message>[] = [];
 
@@ -386,7 +386,7 @@ export class CaseController {
           const messagesUrl = `${getApiBase('supportmanagement')}/${MUNICIPALITY_ID}/${
             _case.namespace
           }/errands/${caseId}/communication/conversations/${conversation.id}/messages?page=0&size=9000`;
-          const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req);
+          const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req.user);
           if (resMessages.data) {
             const messagesWithConversationId = handleMessageResponse(messages, resMessages.data.content, conversation.id);
             messages.push(...messagesWithConversationId);
@@ -396,7 +396,7 @@ export class CaseController {
         data = await this.normalizeConversationMessages(messages, req.user);
       } else if (_case.system === 'OPEN_E_PLATFORM') {
         url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/flow-instances/${caseId}`;
-        const resWebMessageCollector = await this.apiService.get<MessageDTO[]>({ url }, req);
+        const resWebMessageCollector = await this.apiService.get<MessageDTO[]>({ url }, req.user);
         if (!resWebMessageCollector.data) {
           throw new HttpException(500, 'No data from API');
         }
@@ -404,7 +404,7 @@ export class CaseController {
       } else if (_case.system === 'BYGGR' || _case.system === 'ECOS') {
         // NOTE: BYGGR and ECOS are using externalCaseId
         url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/flow-instances/${_case.externalCaseId}`;
-        const resWebMessageCollector = await this.apiService.get<MessageDTO[]>({ url }, req);
+        const resWebMessageCollector = await this.apiService.get<MessageDTO[]>({ url }, req.user);
         if (!resWebMessageCollector.data) {
           throw new HttpException(500, 'No data from API');
         }
@@ -462,7 +462,7 @@ export class CaseController {
         throw new HttpException(400, 'Bad request');
       }
 
-      await this.apiService.put<204>({ url }, req);
+      await this.apiService.put<204, void>({ url }, req.user);
       return { data: true, message: 'success' };
     } catch {
       throw new HttpException(500, 'Could not set message as viewed');
@@ -492,17 +492,17 @@ export class CaseController {
 
     const buildMessageData = async (apiBase: string) => {
       const conversationUrl = `${apiBase}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
-      const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+      const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req.user);
       let conversation: Conversation;
 
       const externalConversation = findExternalConversation(resConversation.data);
       if (!resConversation.data || resConversation.data.length === 0 || !externalConversation) {
         const createConversationUrl = `${apiBase}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
         const createConversationdata = this.conversationInit(req.user);
-        const resCreateConversation = await this.apiService.post({ data: createConversationdata, url: createConversationUrl }, req);
+        const resCreateConversation = await this.apiService.post<Conversation, typeof createConversationdata>({ data: createConversationdata, url: createConversationUrl }, req.user);
 
         if (resCreateConversation.message === 'success') {
-          const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req);
+          const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req.user);
           const external = resConversation.data?.find(con => con.type === 'EXTERNAL');
           if (!external) {
             throw new HttpException(500, 'Could not find created EXTERNAL conversation');
@@ -559,7 +559,7 @@ export class CaseController {
         'X-Sent-By': `${req.user.partyId};type=partyId`,
       };
 
-      await this.apiService.post(
+      await this.apiService.post<void, typeof data>(
         {
           url,
           data,
@@ -568,7 +568,7 @@ export class CaseController {
             ...defaultHeaders,
           },
         },
-        req,
+        req.user,
       );
     } catch {
       throw new HttpException(500, 'Could not send message');

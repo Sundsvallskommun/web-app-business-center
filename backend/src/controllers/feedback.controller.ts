@@ -75,7 +75,7 @@ export class FeedbackController {
       const headers = {
         'X-Sent-By': `${req.user.partyId};type=partyId`,
       };
-      await this.apiService.post({ url, data: sendFeedback, headers }, req);
+      await this.apiService.post<void, typeof sendFeedback>({ url, data: sendFeedback, headers }, req.user);
     });
 
     return { message: 'feedback sent' };

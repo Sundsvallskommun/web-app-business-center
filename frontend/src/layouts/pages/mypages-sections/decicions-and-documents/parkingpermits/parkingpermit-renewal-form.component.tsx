@@ -1,10 +1,12 @@
 import { useApi } from '@services/api-service';
+import { ACCEPTED_UPLOAD_FILETYPES } from '@services/asset-service';
 import {
   Button,
   Checkbox,
   FileUpload,
   FormControl,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
   Input,
   RadioButton,
@@ -15,58 +17,6 @@ import {
 import { toBase64 } from '@utils/toBase64';
 import { ArrowRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-
-export const documentMimeTypes = [
-  'video/quicktime',
-  'video/mp4',
-  'video/mpeg',
-  'video/x-ms-wmv',
-  'video/x-msvideo',
-  'application/pdf',
-  'application/rtf',
-  'application/msword',
-  'application/x-tika-msoffice',
-  'text/plain',
-  'application/vnd.ms-excel',
-  'application/vnd.ms-outlook',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.oasis.opendocument.text',
-  'application/vnd.oasis.opendocument.spreadsheet',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-];
-
-export const ACCEPTED_UPLOAD_FILETYPES = [
-  'mov',
-  'mp4',
-  'mpeg',
-  'wmv',
-  'avi',
-  'bmp',
-  'gif',
-  'tif',
-  'tiff',
-  'jpeg',
-  'jpg',
-  'png',
-  'htm',
-  'html',
-  'pdf',
-  'rtf',
-  'docx',
-  'doc',
-  'txt',
-  'xlsx',
-  'xls',
-  'pptx',
-  'odt',
-  'ods',
-  'text/html',
-  'msg',
-  'heic',
-  'heif',
-  ...documentMimeTypes,
-];
 
 const walkingAids = [
   { label: 'Rullator', value: 'Rullator' },
@@ -242,39 +192,43 @@ export const ParkingPermitRenewalForm = ({
           <FormErrorMessage className="text-error">{form.formState.errors.date.message}</FormErrorMessage>
         )}
       </FormControl>
-      {files && files.length > 0 ? (
-        <FileUpload.List name="files">
-          {files.map((file, i) => (
-            <FileUpload.ListItem
-              key={file.id}
-              index={i}
-              file={file}
-              categoryProps={{
-                categories: { MEDICAL_CONFIRMATION: 'Läkarintyg' },
-              }}
-              actionsProps={{
-                showRemove: true,
-                onRemove: () =>
-                  form.setValue(
-                    'files',
-                    form.watch('files').filter((f) => f !== file)
-                  ),
-              }}
-            />
-          ))}
-        </FileUpload.List>
-      ) : (
-        <FileUpload.Field
-          className="inline-block w-full"
-          accept={ACCEPTED_UPLOAD_FILETYPES}
-          variant="horizontal"
-          name="files"
-          maxFileSizeMB={MAX_FILE_SIZE_MB}
-          onChange={(e) => {
-            form.setValue('files', e.target.value);
-          }}
-        />
-      )}
+      <FormControl className="w-full">
+        <FormLabel>Bifoga läkarintyg</FormLabel>
+        <FormHelperText className="mb-12">Tillåtna filtyper: PDF, Word, JPEG. Max filstorlek: 25 MB</FormHelperText>
+        {files && files.length > 0 ? (
+          <FileUpload.List name="files">
+            {files.map((file, i) => (
+              <FileUpload.ListItem
+                key={file.id}
+                index={i}
+                file={file}
+                categoryProps={{
+                  categories: { MEDICAL_CONFIRMATION: 'Läkarintyg' },
+                }}
+                actionsProps={{
+                  showRemove: true,
+                  onRemove: () =>
+                    form.setValue(
+                      'files',
+                      form.watch('files').filter((f) => f !== file)
+                    ),
+                }}
+              />
+            ))}
+          </FileUpload.List>
+        ) : (
+          <FileUpload.Field
+            className="inline-block w-full"
+            accept={ACCEPTED_UPLOAD_FILETYPES}
+            variant="horizontal"
+            name="files"
+            maxFileSizeMB={MAX_FILE_SIZE_MB}
+            onChange={(e) => {
+              form.setValue('files', e.target.value);
+            }}
+          />
+        )}
+      </FormControl>
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mt-40">
         <Button size="lg" variant="secondary" onClick={() => setFormState('showInfo')}>
           Avbryt

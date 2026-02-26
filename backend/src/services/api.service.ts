@@ -39,9 +39,6 @@ class ApiService {
 
     this.instance.interceptors.response.use(
       async function (response) {
-        // TODO This is an ugly workaround for the fact that setting correct API version
-        // in the location header is difficult for some APIs, such as Messaging
-        // So, for Messaging specifically, we - for now - ignore the location header
         const token = await apiTokenService.getToken();
         const defaultHeaders = {
           Authorization: `Bearer ${token}`,

@@ -82,7 +82,12 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
 
       <div>
         <Divider className="py-0 my-0" />
-        <Disclosure header="Hantering av personuppgifter">
+        <Disclosure>
+          <Disclosure.Header>
+            <Disclosure.Title>Hantering av personuppgifter</Disclosure.Title>
+             <Disclosure.Button />
+          </Disclosure.Header>
+          <Disclosure.Content>
           <p className="pb-16">
             Vi använder din e-postadress och ditt mobilnummer för att kunna skicka viktig information, bekräftelser och
             påminnelser som rör dina ärenden och tjänster. Sundsvalls kommun är personuppgiftsansvarig och behandlar
@@ -97,6 +102,7 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
               Information om Personuppgiftshantering (sundsvall.se)
             </Link>
           </p>
+          </Disclosure.Content>
         </Disclosure>
         <Divider className="py-0 my-0" />
       </div>

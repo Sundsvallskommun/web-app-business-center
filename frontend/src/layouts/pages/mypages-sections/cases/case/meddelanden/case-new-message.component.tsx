@@ -102,6 +102,10 @@ export default function CaseNewMessage() {
       if (!res.error) context.reset();
     } catch (error) {
       console.error('Error sending message:', error);
+      context.setError('root', {
+        type: 'manual',
+        message: 'Något gick fel när meddelandet skickades, försök igen senare',
+      });
     }
   };
 
@@ -173,7 +177,7 @@ export default function CaseNewMessage() {
               ) : null}
             </div>
 
-            <div className="flex desktop:justify-start">
+            <div className="flex flex-col gap-y-8 desktop:items-start">
               <Button
                 className="w-full desktop:w-fit"
                 size={isMinDesktop ? 'md' : 'lg'}
@@ -184,6 +188,11 @@ export default function CaseNewMessage() {
               >
                 Skicka meddelande
               </Button>
+              {context.formState.errors.root && (
+                <FormErrorMessage className="text-small text-error" role="alert">
+                  {context.formState.errors.root.message}
+                </FormErrorMessage>
+              )}
             </div>
           </form>
         </FormProvider>

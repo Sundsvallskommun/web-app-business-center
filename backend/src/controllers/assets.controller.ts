@@ -62,7 +62,6 @@ export class AssetsController {
   }
 
   private async getApplicantStakeholder(partyId: string, user: User): Promise<Stakeholder> {
-    const mockPartyId = 'cbfdcea3-72d9-40ee-ad9c-4472b6b37bd1';
     const citizenUrl = `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}`;
     const citizenRes = await this.apiService.get<CitizenExtended>({ url: citizenUrl }, user).catch(() => null);
 
@@ -78,7 +77,7 @@ export class AssetsController {
       lastName: citizen.lastname,
       type: StakeholderTypeEnum.PERSON,
       roles: ['APPLICANT'],
-      personId: mockPartyId,
+      personId: partyId,
       addresses: [
         {
           addressCategory: AddressAddressCategoryEnum.POSTAL_ADDRESS,

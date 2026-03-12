@@ -1,7 +1,7 @@
 import { ICaseStatusResponse } from '@interfaces/case';
 import { Button, Icon } from '@sk-web-gui/react';
 import { getCaseTypeLabel } from '@utils/casetype-label-mapper';
-import { FilePen } from 'lucide-react';
+import { ArrowRight, FilePen } from 'lucide-react';
 import NextLink from 'next/link';
 import styles from './todos.module.scss';
 
@@ -29,6 +29,7 @@ export const TodoCase = ({ data }: TodoCaseProps) => {
           <Button
             className={styles['todo-action-button']}
             color="vattjom"
+            rightIcon={<ArrowRight />}
             aria-label={`${getCaseTypeLabel(data.caseType)}, till ärendet`}
           >
             Till ärendet

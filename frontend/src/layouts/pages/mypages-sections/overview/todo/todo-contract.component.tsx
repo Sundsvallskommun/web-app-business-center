@@ -1,5 +1,5 @@
 import { Button, Icon } from '@sk-web-gui/react';
-import { FilePlus2 } from 'lucide-react';
+import { ArrowRight, FilePlus2 } from 'lucide-react';
 import styles from './todos.module.scss';
 
 export const TodoContract = () => {
@@ -15,7 +15,7 @@ export const TodoContract = () => {
         </p>
       </div>
       <div className={styles['todo-action']}>
-        <Button className={styles['todo-action-button']} color="vattjom" aria-label={`AVTAL, till avtalet`}>
+        <Button className={styles['todo-action-button']} color="vattjom" rightIcon={<ArrowRight />} aria-label={`AVTAL, till avtalet`}>
           Till avtalet
         </Button>
       </div>

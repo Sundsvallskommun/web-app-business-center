@@ -39,18 +39,13 @@ class ApiService {
 
     this.instance.interceptors.response.use(
       async function (response) {
-        // TODO This is an ugly workaround for the fact that setting correct API version
-        // in the location header is difficult for some APIs, such as Messaging
-        // So, for Messaging specifically, we - for now - ignore the location header
         const token = await apiTokenService.getToken();
         const defaultHeaders = {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
           'X-Request-Id': uuidv4(),
         };
-        console.log('response:', response.headers);
-        console.log('response:', response.config.baseURL);
-        if (response.headers.location && response.config.baseURL.includes('case-data')) {
+        if (response.headers?.location && response.config?.baseURL?.includes('case-data')) {
           logger.info(`Response contained location header: ${response.headers.location}`);
           logger.info(`Base URL was: ${response.config.baseURL}`);
           return axios.get(response.headers.location, { baseURL: response.config.baseURL, headers: defaultHeaders }).catch(e => {

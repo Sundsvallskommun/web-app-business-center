@@ -8,7 +8,7 @@ export const isParkingPermit = (asset: Asset): boolean => {
 };
 
 export const soonExpiring = (asset: Asset): boolean => {
-  return dayjs().add(PARKING_PERMIT_EXPIRY_WARNING_MONTHS, 'month').isAfter(dayjs(asset.validTo));
+  return !!asset?.validTo && dayjs().add(PARKING_PERMIT_EXPIRY_WARNING_MONTHS, 'month').isAfter(dayjs(asset.validTo));
 };
 
 export const documentMimeTypes = [

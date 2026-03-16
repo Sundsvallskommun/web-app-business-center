@@ -16,7 +16,7 @@ describe('Privat', () => {
       cy.url().should('include', '/privat/oversikt');
     });
   });
-  it.only('should render Ärenden when clicked', () => {
+  it('should render Ärenden when clicked', () => {
     cy.contains('[role="navigationitem"]', 'Ärenden').click();
     cy.wait('@getCases').then(() => {
       cy.url().should('include', '/privat/arenden');
@@ -24,14 +24,14 @@ describe('Privat', () => {
     });
   });
   // Temporarily disabled due to the fact that api doesnt provide all invoices
-  it.only('should render Fakturor when clicked', () => {
+  it('should render Fakturor when clicked', () => {
     cy.contains('[role="navigationitem"]', 'Fakturor').click();
     cy.wait('@getInvoices').then(() => {
       cy.url().should('include', '/privat/fakturor');
       // testInvoices(RepresentingMode.PRIVATE);
     });
   });
-  it.only('should render Profil och inställningar when clicked', () => {
+  it('should render Profil och inställningar when clicked', () => {
     cy.contains('[role="navigationitem"]', 'Profil och inställningar').click();
     cy.wait('@getContactSettings').then(() => {
       cy.url().should('include', '/privat/profil');

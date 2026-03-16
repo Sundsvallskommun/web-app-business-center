@@ -11,6 +11,8 @@ interface TodoParkingPermitExpiryProps {
 
 export const TodoParkingPermitExpiry = ({ asset }: TodoParkingPermitExpiryProps) => {
   const expiryDate = dayjs(asset.validTo).format('D MMMM YYYY');
+  const perfectTense = dayjs(asset?.validTo).isBefore(dayjs()) ? 'har löpt ut' : 'löper ut';
+  const pastTense = dayjs(asset?.validTo).isBefore(dayjs()) ? 'löpte ut' : 'löper ut';
 
   return (
     <div className={styles['todo']}>
@@ -19,9 +21,9 @@ export const TodoParkingPermitExpiry = ({ asset }: TodoParkingPermitExpiryProps)
           <Icon className={styles['todo-type-icon']} icon={<Mail />} />
         </div>
         <div className={styles['todo-content']}>
-          <h2 className={styles['todo-content-heading']}>Ditt parkeringstillstånd löper ut</h2>
+          <h2 className={styles['todo-content-heading']}>Ditt parkeringstillstånd {perfectTense}</h2>
           <p className={styles['todo-content-text']}>
-            Ditt parkeringstillstånd löper ut den {expiryDate}. Gå in på tillståndet om du vill förlänga det.
+            Ditt parkeringstillstånd {pastTense} den {expiryDate}. Gå in på tillståndet om du vill förlänga det.
           </p>
         </div>
       </div>

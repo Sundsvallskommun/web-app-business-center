@@ -3,6 +3,7 @@
 import { Card } from '@components/cards/card.component';
 import { Status } from '@data-contracts/partyassets/data-contracts';
 import { isParkingPermit, soonExpiring } from '@services/asset-service';
+import { PARKING_PERMIT_ACTIONS_ENABLED } from '@utils/feature-flags';
 import { Button, Divider, Icon, Label } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import { ArrowRight, FileCheck2 } from 'lucide-react';
@@ -58,10 +59,10 @@ export default function Asset() {
         </span>
       </div>
       <Divider className="my-0" />
-      {assetData && isParkingPermit(assetData) && soonExpiring(assetData) ? (
+      {PARKING_PERMIT_ACTIONS_ENABLED && assetData && isParkingPermit(assetData) && soonExpiring(assetData) ? (
         <ParkingPermitRenewalAlert setIsEditing={setisEditing} />
       ) : null}
-      {assetData && isParkingPermit(assetData) ? (
+      {PARKING_PERMIT_ACTIONS_ENABLED && assetData && isParkingPermit(assetData) ? (
         <div className="mt-0 w-full desktop:w-auto">
           <Button
             className="w-full desktop:w-auto"

@@ -5,6 +5,7 @@ import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
 import { CasesData, ICaseStatusResponse } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { isParkingPermit, soonExpiring } from '@services/asset-service';
+import { PARKING_PERMIT_ACTIONS_ENABLED } from '@utils/feature-flags';
 import { casesHandler, getCasesInNeedOfData } from '@services/case-service';
 import { Divider, Spinner, useThemeQueries } from '@sk-web-gui/react';
 import { Fragment } from 'react';
@@ -55,11 +56,12 @@ export const Todos = () => {
     ? getCasesInNeedOfData(cases)?.cases.map((data) => dataToTodo<TodoType.CASE>(data, TodoType.CASE))
     : [];
 
-  const todoPermitExpiry: TodoItem<TodoType.PARKING_PERMIT_EXPIRY>[] = assets
-    ? assets
-        .filter((asset) => isParkingPermit(asset) && soonExpiring(asset))
-        .map((asset) => dataToTodo<TodoType.PARKING_PERMIT_EXPIRY>(asset, TodoType.PARKING_PERMIT_EXPIRY))
-    : [];
+  const todoPermitExpiry: TodoItem<TodoType.PARKING_PERMIT_EXPIRY>[] =
+    PARKING_PERMIT_ACTIONS_ENABLED && assets
+      ? assets
+          .filter((asset) => isParkingPermit(asset) && soonExpiring(asset))
+          .map((asset) => dataToTodo<TodoType.PARKING_PERMIT_EXPIRY>(asset, TodoType.PARKING_PERMIT_EXPIRY))
+      : [];
 
   const todoItems = [...todoCases, ...todoPermitExpiry];
   const { isMinDesktop } = useThemeQueries();

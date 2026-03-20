@@ -1,6 +1,14 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { AddressAddressCategoryEnum, Attachment, Errand, Stakeholder, StakeholderTypeEnum } from '@/data-contracts/case-data/data-contracts';
+import {
+  AddressAddressCategoryEnum,
+  Attachment,
+  Errand,
+  ExtraParameter,
+  PageErrand,
+  Stakeholder,
+  StakeholderTypeEnum,
+} from '@/data-contracts/case-data/data-contracts';
 import { CitizenExtended } from '@/data-contracts/citizen/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
@@ -21,10 +29,7 @@ interface AttachmentOptions {
 }
 
 interface ParkingPermitRenewalBody {
-  description?: string;
-  circumstancesChanged?: string;
-  date?: string;
-  walkingAids?: string; // JSON string of string[]
+  extraParameters?: string; // JSON string of Array<{ key: string; values: string[] }>
 }
 
 interface CreateErrandOptions {
@@ -132,7 +137,7 @@ export class AssetsController {
   };
 
   private toClientAssets = (assets: Asset[]): Asset[] => {
-    return assets.map(this.toClientAsset).filter(asset => asset.status === Status.ACTIVE);
+    return assets.filter(asset => asset.status === Status.ACTIVE).map(this.toClientAsset);
   };
 
   @Get('/assets')
@@ -212,6 +217,126 @@ export class AssetsController {
     }
   }
 
+  @Get('/assets/errand/:errandNumber')
+  @OpenAPI({ summary: 'Get errand extra parameters by errand number' })
+  @UseBefore(authMiddleware)
+  async getErrandExtraParameters(@Req() req: RequestWithUser, @Param('errandNumber') errandNumber: string): Promise<ApiResponse<ExtraParameter[]>> {
+    const controller = new AbortController();
+    const { signal } = controller;
+    req.on('aborted', () => {
+      controller.abort();
+      req.destroy();
+    });
+
+    if (!errandNumber) {
+      return { data: [], message: 'No errand number provided' };
+    }
+
+    try {
+      const baseURL = apiURL(this.casedataApiBase);
+      const url = `${MUNICIPALITY_ID}/SBK_PARKING_PERMIT/errands`;
+      const params = {
+        filter: `errandNumber:'${errandNumber}'`,
+      };
+
+      const res = await this.apiService.get<PageErrand>({ url, baseURL, signal, params }, req.user);
+
+      if (!res.data?.content?.length) {
+        return { data: [], message: 'Errand not found' };
+      }
+
+      const errand = res.data.content[0];
+      return { data: errand.extraParameters ?? [], message: 'success' };
+    } catch (error) {
+      console.error('Error fetching errand:', error);
+      // Return empty array on error to allow form to work without prepopulation
+      return { data: [], message: 'Could not fetch errand data' };
+    }
+  }
+
+  @Get('/assets/errand/id/:errandId')
+  @OpenAPI({ summary: 'Get errand data by errand ID' })
+  @UseBefore(authMiddleware)
+  async getErrandById(
+    @Req() req: RequestWithUser,
+    @Param('errandId') errandId: string,
+  ): Promise<ApiResponse<{ extraParameters: ExtraParameter[]; errandNumber?: string }>> {
+    const controller = new AbortController();
+    const { signal } = controller;
+    req.on('aborted', () => {
+      controller.abort();
+      req.destroy();
+    });
+
+    if (!errandId) {
+      return { data: { extraParameters: [] }, message: 'No errand ID provided' };
+    }
+
+    try {
+      const baseURL = apiURL(this.casedataApiBase);
+      const url = `${MUNICIPALITY_ID}/SBK_PARKING_PERMIT/errands/${errandId}`;
+
+      const res = await this.apiService.get<Errand>({ url, baseURL, signal }, req.user);
+
+      if (!res.data) {
+        return { data: { extraParameters: [] }, message: 'Errand not found' };
+      }
+
+      return {
+        data: {
+          extraParameters: res.data.extraParameters ?? [],
+          errandNumber: res.data.errandNumber,
+        },
+        message: 'success',
+      };
+    } catch (error) {
+      console.error('Error fetching errand by ID:', error);
+      // Return empty data on error to allow form to work without prepopulation
+      return { data: { extraParameters: [] }, message: 'Could not fetch errand data' };
+    }
+  }
+
+  private parseExtraParameters(extraParametersJson?: string): Errand['extraParameters'] {
+    if (!extraParametersJson) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(extraParametersJson);
+      if (Array.isArray(parsed)) {
+        return parsed.map((param: { key: string; values: string[] }) => ({
+          key: param.key,
+          values: param.values,
+        }));
+      }
+    } catch {
+      // Invalid JSON, use empty array
+    }
+
+    return [];
+  }
+
+  @Post('/assets/parkingpermit/new')
+  @OpenAPI({ summary: 'Apply for new parking permit' })
+  @UseBefore(authMiddleware)
+  async newParkingPermit(
+    @Req() req: RequestWithUser,
+    @Body() body: ParkingPermitRenewalBody,
+    @UploadedFiles('files', { options: fileUploadOptions, required: false }) files: Express.Multer.File[],
+  ): Promise<ApiResponse<{ success: boolean }>> {
+    const extraParameters = this.parseExtraParameters(body.extraParameters);
+
+    return this.createParkingPermitErrand(req, {
+      caseType: 'PARKING_PERMIT',
+      extraParameters: extraParameters.length > 0 ? extraParameters : undefined,
+      files,
+      attachmentOptions: {
+        category: 'MEDICAL_CONFIRMATION',
+        note: 'Läkarintyg för parkeringstillstånd',
+      },
+    });
+  }
+
   @Post('/assets/parkingpermit/extend')
   @OpenAPI({ summary: 'Extend parking permit' })
   @UseBefore(authMiddleware)
@@ -220,26 +345,7 @@ export class AssetsController {
     @Body() body: ParkingPermitRenewalBody,
     @UploadedFiles('files', { options: fileUploadOptions, required: false }) files: Express.Multer.File[],
   ): Promise<ApiResponse<{ success: boolean }>> {
-    const extraParameters: Errand['extraParameters'] = [];
-
-    extraParameters.push({
-      key: 'application.reason',
-      values: [body.description ?? ''],
-    });
-
-    if (body.walkingAids) {
-      try {
-        const walkingAidsArray: string[] = JSON.parse(body.walkingAids);
-        if (Array.isArray(walkingAidsArray) && walkingAidsArray.length > 0) {
-          extraParameters.push({
-            key: 'disability.aid',
-            values: walkingAidsArray,
-          });
-        }
-      } catch {
-        // Invalid JSON, skip walkingAids
-      }
-    }
+    const extraParameters = this.parseExtraParameters(body.extraParameters);
 
     return this.createParkingPermitErrand(req, {
       caseType: 'PARKING_PERMIT_RENEWAL',

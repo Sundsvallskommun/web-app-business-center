@@ -140,6 +140,13 @@ export class AssetsController {
     return assets.filter(asset => asset.status === Status.ACTIVE).map(this.toClientAsset);
   };
 
+  private isUserApplicant(errand: Errand, userPartyId: string): boolean {
+    if (!errand.stakeholders || !userPartyId) {
+      return false;
+    }
+    return errand.stakeholders.some(stakeholder => stakeholder.personId === userPartyId && stakeholder.roles?.includes('APPLICANT'));
+  }
+
   @Get('/assets')
   @OpenAPI({ summary: 'Return a list of assets for current representing entity' })
   @UseBefore(authMiddleware)
@@ -228,6 +235,13 @@ export class AssetsController {
       req.destroy();
     });
 
+    const { representing } = req.session ?? {};
+    const userPartyId = getRepresentingPartyId(representing);
+
+    if (!userPartyId) {
+      throw new HttpException(400, 'Bad Request');
+    }
+
     if (!errandNumber) {
       return { data: [], message: 'No errand number provided' };
     }
@@ -246,10 +260,16 @@ export class AssetsController {
       }
 
       const errand = res.data.content[0];
+
+      if (!this.isUserApplicant(errand, userPartyId)) {
+        throw new HttpException(403, 'Forbidden');
+      }
+
       return { data: errand.extraParameters ?? [], message: 'success' };
     } catch (error) {
-      console.error('Error fetching errand:', error);
-      // Return empty array on error to allow form to work without prepopulation
+      if (error.status === 403) {
+        throw error;
+      }
       return { data: [], message: 'Could not fetch errand data' };
     }
   }
@@ -268,6 +288,13 @@ export class AssetsController {
       req.destroy();
     });
 
+    const { representing } = req.session ?? {};
+    const userPartyId = getRepresentingPartyId(representing);
+
+    if (!userPartyId) {
+      throw new HttpException(400, 'Bad Request');
+    }
+
     if (!errandId) {
       return { data: { extraParameters: [] }, message: 'No errand ID provided' };
     }
@@ -282,6 +309,10 @@ export class AssetsController {
         return { data: { extraParameters: [] }, message: 'Errand not found' };
       }
 
+      if (!this.isUserApplicant(res.data, userPartyId)) {
+        throw new HttpException(403, 'Forbidden');
+      }
+
       return {
         data: {
           extraParameters: res.data.extraParameters ?? [],
@@ -290,8 +321,9 @@ export class AssetsController {
         message: 'success',
       };
     } catch (error) {
-      console.error('Error fetching errand by ID:', error);
-      // Return empty data on error to allow form to work without prepopulation
+      if (error.status === 403) {
+        throw error;
+      }
       return { data: { extraParameters: [] }, message: 'Could not fetch errand data' };
     }
   }

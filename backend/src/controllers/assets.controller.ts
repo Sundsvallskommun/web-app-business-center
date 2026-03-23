@@ -242,8 +242,9 @@ export class AssetsController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    if (!errandNumber) {
-      return { data: [], message: 'No errand number provided' };
+    const ERRAND_NUMBER_PATTERN = /^PRH-\d{4}-\d{6}$/;
+    if (!errandNumber || !ERRAND_NUMBER_PATTERN.test(errandNumber)) {
+      return { data: [], message: 'Invalid errand number format' };
     }
 
     try {
@@ -255,22 +256,15 @@ export class AssetsController {
 
       const res = await this.apiService.get<PageErrand>({ url, baseURL, signal, params }, req.user);
 
-      if (!res.data?.content?.length) {
+      const errand = res.data?.content?.[0];
+
+      if (!errand || !this.isUserApplicant(errand, userPartyId)) {
         return { data: [], message: 'Errand not found' };
       }
 
-      const errand = res.data.content[0];
-
-      if (!this.isUserApplicant(errand, userPartyId)) {
-        throw new HttpException(403, 'Forbidden');
-      }
-
       return { data: errand.extraParameters ?? [], message: 'success' };
-    } catch (error) {
-      if (error.status === 403) {
-        throw error;
-      }
-      return { data: [], message: 'Could not fetch errand data' };
+    } catch {
+      return { data: [], message: 'Errand not found' };
     }
   }
 
@@ -295,8 +289,9 @@ export class AssetsController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    if (!errandId) {
-      return { data: { extraParameters: [] }, message: 'No errand ID provided' };
+    const INTEGER_PATTERN = /^\d+$/;
+    if (!errandId || !INTEGER_PATTERN.test(errandId)) {
+      return { data: { extraParameters: [] }, message: 'Invalid errand ID format' };
     }
 
     try {
@@ -305,12 +300,8 @@ export class AssetsController {
 
       const res = await this.apiService.get<Errand>({ url, baseURL, signal }, req.user);
 
-      if (!res.data) {
+      if (!res.data || !this.isUserApplicant(res.data, userPartyId)) {
         return { data: { extraParameters: [] }, message: 'Errand not found' };
-      }
-
-      if (!this.isUserApplicant(res.data, userPartyId)) {
-        throw new HttpException(403, 'Forbidden');
       }
 
       return {
@@ -320,11 +311,8 @@ export class AssetsController {
         },
         message: 'success',
       };
-    } catch (error) {
-      if (error.status === 403) {
-        throw error;
-      }
-      return { data: { extraParameters: [] }, message: 'Could not fetch errand data' };
+    } catch {
+      return { data: { extraParameters: [] }, message: 'Errand not found' };
     }
   }
 

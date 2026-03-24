@@ -7,6 +7,8 @@ import { getInvoices } from 'cypress/fixtures/getInvoices';
 import { getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { getMe } from '../fixtures/getMe';
 import { getAssets } from 'cypress/fixtures/getAssets';
+import { getCase } from 'cypress/fixtures/getCase';
+import { getErrandExtraParameters } from 'cypress/fixtures/getErrandExtraParameters';
 
 export const DEFAULT_COOKIE_VALUE = 'necessary%2Cstats';
 
@@ -30,6 +32,7 @@ export const setIntercepts = (representingMode: RepresentingMode = representingM
   cy.intercept('GET', '**/api/assets/*', { data: getAssets(representingMode).data[0], message: 'success' }).as(
     'getAsset'
   );
+  cy.intercept('GET', '**/api/assets/errand/id/*', getErrandExtraParameters()).as('getErrandById');
 };
 
 beforeEach(() => {

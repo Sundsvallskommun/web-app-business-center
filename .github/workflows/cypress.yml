@@ -33,3 +33,4 @@ jobs:
           HEALTH_AUTH: false
           HEALTH_USERNAME: ""
           HEALTH_PASSWORD: ""
+          NEXT_PUBLIC_PARKING_PERMIT_ACTIONS_ENABLED: true

@@ -1,6 +1,14 @@
-import { IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { RepresentingMode } from '../interfaces/representing.interface';
 
 export class RepresentsDto {
   @IsString()
-  public organizationNumber: string;
+  @IsOptional()
+  public organizationNumber?: string;
+  @IsString()
+  @IsOptional()
+  public personNumber?: string;
+  @IsEnum(RepresentingMode)
+  @IsOptional()
+  public mode?: RepresentingMode;
 }

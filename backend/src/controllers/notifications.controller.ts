@@ -34,7 +34,7 @@ export class NotificationsController {
 
     const userNotifications = await prisma.userReadNotification.findMany({
       where: {
-        userId: req.user.guid,
+        userId: req.user.partyId,
       },
     });
 
@@ -55,15 +55,15 @@ export class NotificationsController {
   @OpenAPI({ summary: 'Create new read notifications for current logged in user' })
   @UseBefore(authMiddleware, validationMiddleware(CreateReadNotificationsDto, 'body'))
   async newReadNotification(@Req() req: RequestWithUser, @Body() userData: CreateReadNotificationsDto): Promise<any> {
-    const { guid } = req.user;
+    const { partyId } = req.user;
 
-    if (!guid) {
+    if (!partyId) {
       throw new HttpException(400, 'Bad Request');
     }
 
     await prisma.userReadNotification.create({
       data: {
-        userId: guid,
+        userId: partyId,
         caseId: userData.caseId,
       },
     });
@@ -75,21 +75,21 @@ export class NotificationsController {
   @OpenAPI({ summary: 'Mark all read notifications for current logged in user' })
   @UseBefore(authMiddleware)
   async clearNotifications(@Req() req: RequestWithUser): Promise<any> {
-    const { guid } = req.user;
+    const { partyId } = req.user;
 
-    if (!guid) {
+    if (!partyId) {
       throw new HttpException(400, 'Bad Request');
     }
 
     await prisma.userReadNotification.deleteMany({
       where: {
-        userId: req.user.guid,
+        userId: req.user.partyId,
       },
     });
 
     await prisma.userSettings.update({
       where: {
-        userId: req.user.guid,
+        userId: req.user.partyId,
       },
       data: {
         readNotificationsClearedDate: new Date().toISOString(),

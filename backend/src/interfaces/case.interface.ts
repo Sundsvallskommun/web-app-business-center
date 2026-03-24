@@ -1,14 +1,18 @@
-export interface Case {
-  caseType: string;
-  serviceName: string;
-  id: string;
-  status: string;
-  lastStatusChange: string;
-  firstSubmitted: string;
-  isOpenEErrand: boolean;
+import { AttachmentResponse, MessageResponseDirectionEnum } from '@/data-contracts/case-data/data-contracts';
+
+export interface CaseMessage {
+  message: string;
+  files?: File[];
 }
 
-export interface CasePdf {
-  externalCaseId: string;
-  base64: string;
+export type MessageWithConversationId<T> = T & { conversationId: string };
+
+export interface FrontendMessageResponse {
+  conversationId: string;
+  messageId: string;
+  direction: MessageResponseDirectionEnum;
+  message: string;
+  sent: string;
+  sender: string;
+  attachments: AttachmentResponse[];
 }

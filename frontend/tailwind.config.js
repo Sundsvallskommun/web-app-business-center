@@ -1,9 +1,11 @@
+import { preset } from '@sk-web-gui/core';
+
 module.exports = {
-  mode: 'jit',
   content: [
-    './pages/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}',
-    './layouts/**/*.{js,ts,jsx,tsx}',
+    './src/app/**/*.tsx',
+    './src/components/**/*.tsx',
+    './src/layouts/**/*.tsx',
+    './src/utils/**/*.tsx',
     './node_modules/@sk-web-gui/*/dist/**/*.js',
   ],
   safelist: [
@@ -11,41 +13,21 @@ module.exports = {
       pattern: /(bg|text|border)-(info|warning|error|neutral)/,
     },
   ],
-  darkMode: 'class', // or 'media' or 'class'
+  darkMode: 'selector', // or 'media' or 'class'
   theme: {
-    /* screens: {
-      sm: '640px',
-      md: '768px',
-      lg: '1024px',
-    },*/
-    backgroundImage: {
-      main: "url('./public/main-bg.png')",
+    extend: {
+      screens: {
+      'desktop': '1024px',
+      },
+      maxWidth: {
+        content: '128rem', // default in core is based on screens
+        'main-content': '106.2rem',
+      },
+      backgroundImage: {
+        'hero-logo': "url('/svg/S_logo.svg')",
+      },
     },
-    screens: {
-      xs: '375px',
 
-      sm: '640px',
-      // => @media (min-width: 640px) { ... }
-
-      md: '768px',
-      // => @media (min-width: 768px) { ... }
-
-      lg: '1024px',
-      // => @media (min-width: 1024px) { ... }
-
-      xl: '1280px',
-      // => @media (min-width: 1280px) { ... }
-
-      //'2xl': '1536px',
-      // => @media (min-width: 1536px) { ... }
-    },
   },
-  plugins: [
-    //require('@tailwindcss/typography'),
-    require('@tailwindcss/forms'),
-    require('@sk-web-gui/core')({
-      colors: [],
-      cssBase: true,
-    }),
-  ],
+  presets: [preset()],
 };

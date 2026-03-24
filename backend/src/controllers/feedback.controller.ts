@@ -1,11 +1,13 @@
-import { Controller, Body, Post, HttpCode, UseBefore } from 'routing-controllers';
+import { Controller, Body, Post, HttpCode, UseBefore, Req } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { validationMiddleware } from '@middlewares/validation.middleware';
 import { IsString } from 'class-validator';
 import sanitizeHtml from 'sanitize-html';
-import { FEEDBACK_EMAIL } from '@config';
+import { FEEDBACK_EMAIL, MUNICIPALITY_ID } from '@config';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
+import { getApiBase } from '@/config/api-config';
+import { RequestWithUser } from '@/interfaces/auth.interface';
 
 const messageHTML = (body: string) => {
   const lines = sanitizeHtml(body, {
@@ -50,12 +52,13 @@ export class FeedbackDto {
 @Controller()
 export class FeedbackController {
   private apiService = new ApiService();
+  private apiBase = getApiBase('messaging');
 
   @Post('/feedback')
   @HttpCode(201)
   @OpenAPI({ summary: 'Send feedback to chosen email adresses' })
   @UseBefore(authMiddleware, validationMiddleware(FeedbackDto, 'body'))
-  async sendFeedback(@Body() userData: FeedbackDto): Promise<any> {
+  async sendFeedback(@Req() req: RequestWithUser, @Body() userData: FeedbackDto): Promise<any> {
     const mailAdresses = FEEDBACK_EMAIL.split(',');
     mailAdresses.forEach(async email => {
       const sendFeedback = {
@@ -66,11 +69,13 @@ export class FeedbackController {
         emailAddress: email,
         subject: 'Feedback för Mina sidor företag',
         message: message(userData.body),
-        // FIXME: seems like html message gets wrong encoding? ÅÄÖ not working.
         htmlMessage: base64Encode(messageHTML(userData.body)),
       };
-      const url = 'messaging/3.0/email';
-      const res = await this.apiService.post({ url, data: sendFeedback });
+      const url = `${this.apiBase}/${MUNICIPALITY_ID}/email`;
+      const headers = {
+        'X-Sent-By': `${req.user.partyId};type=partyId`,
+      };
+      await this.apiService.post<void, typeof sendFeedback>({ url, data: sendFeedback, headers }, req.user);
     });
 
     return { message: 'feedback sent' };

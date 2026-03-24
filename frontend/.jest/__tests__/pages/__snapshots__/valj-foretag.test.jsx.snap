@@ -115,10 +115,11 @@ exports[`Välj företag renders Välj företag unchanged 1`] = `
               </p>
               <button
                 aria-disabled="true"
-                class="btn btn-md btn-solid btn-disabled rounded-md"
+                class="sk-btn sk-btn-md sk-btn-disabled rounded-md"
                 data-color="primary"
                 data-cy="representingEntityButton"
                 disabled=""
+                type="button"
               >
                 Fortsätt
               </button>
@@ -210,10 +211,11 @@ exports[`Välj företag renders Välj företag unchanged 1`] = `
             </p>
             <button
               aria-disabled="true"
-              class="btn btn-md btn-solid btn-disabled rounded-md"
+              class="sk-btn sk-btn-md sk-btn-disabled rounded-md"
               data-color="primary"
               data-cy="representingEntityButton"
               disabled=""
+              type="button"
             >
               Fortsätt
             </button>

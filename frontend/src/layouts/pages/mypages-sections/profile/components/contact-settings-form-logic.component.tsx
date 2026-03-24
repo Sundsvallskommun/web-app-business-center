@@ -1,0 +1,155 @@
+import { yupResolver } from '@hookform/resolvers/yup';
+import { ClientContactSetting } from '@interfaces/contactsettings';
+import { useApi, useApiService } from '@services/api-service';
+import { phoneNumberFormatter } from '@utils/phoneNumberFormatter';
+import _ from 'lodash';
+import { useCallback, useEffect, useMemo } from 'react';
+import { FormProvider, UseFormReturn, useForm } from 'react-hook-form';
+import * as yup from 'yup';
+
+const defaultContactSettingsForm: Partial<ClientContactSetting> = {
+  name: undefined,
+  email: undefined,
+  phone: undefined,
+  notifications: {
+    email_enabled: false,
+    phone_enabled: false,
+  },
+  address: {
+    street: '',
+    postcode: '',
+    city: '',
+  },
+  decicionsAndDocuments: {
+    digitalInbox: true,
+    myPages: true,
+    snailmail: false,
+  },
+};
+
+interface ContactSettingsFormLogicProps {
+  children: React.ReactNode | React.ReactNode[];
+  formData?: Partial<ClientContactSetting>;
+  onSubmit?: (
+    values: Partial<ClientContactSetting>,
+    context: UseFormReturn<Partial<ClientContactSetting>, unknown, unknown>
+  ) => void;
+  onSubmitSuccess?: () => void;
+  onSubmitFailed?: () => void;
+}
+
+const phoneRegExp = /^$|^(?:\+|0)[0-9\s-]{6,19}$/;
+
+const formSchema = yup
+  .object<ClientContactSetting>({
+    name: yup.string().nullable().optional(),
+    email: yup.string().email('Fyll i en giltig e-postadress i formatet namn@mail.se').nullable().optional(),
+    phone: yup
+      .string()
+      .matches(
+        phoneRegExp,
+        'Fyll i ett giltigt mobilnummer, till exempel 0731234567, +46731234567 eller 0046731234567.'
+      )
+      .nullable()
+      .optional(),
+    notifications: yup
+      .object({
+        email_disabled: yup.boolean(),
+        phone_disabled: yup.boolean(),
+      })
+      .nullable()
+      .optional(),
+    address: yup
+      .object({
+        street: yup.string(),
+        postcode: yup.string(),
+        city: yup.string(),
+      })
+      .nullable()
+      .optional(),
+    decicionsAndDocuments: yup
+      .object({
+        digitalInbox: yup.boolean(),
+        myPages: yup.boolean(),
+        snailmail: yup.boolean(),
+      })
+      .nullable()
+      .optional(),
+  })
+  .required();
+
+export default function ContactSettingsFormLogic({
+  children,
+  formData = defaultContactSettingsForm,
+  onSubmit,
+  onSubmitSuccess,
+  onSubmitFailed,
+}: ContactSettingsFormLogicProps) {
+  const postMutation = useApi<ClientContactSetting>({
+    url: '/contactsettings',
+    method: 'post',
+  });
+  const patchMutation = useApi<ClientContactSetting>({
+    url: `/contactsettings`,
+    method: 'patch',
+  });
+
+  const context = useForm<Partial<ClientContactSetting>>({
+    resolver: yupResolver(formSchema),
+    defaultValues: useMemo(() => formData, [formData]),
+    mode: 'onSubmit',
+  });
+  const queryClient = useApiService((s) => s.queryClient);
+
+  const isPatch = useCallback(() => {
+    return typeof formData?.id === 'string';
+  }, [formData]);
+
+  const { handleSubmit, reset } = context;
+
+  useEffect(() => {
+    const newFormData = { ...formData };
+    if (JSON.stringify(newFormData) !== JSON.stringify(context.formState.defaultValues)) {
+      reset(newFormData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, reset]);
+
+  const _onSubmit = async (values: Partial<ClientContactSetting>) => {
+    if (onSubmit) {
+      onSubmit(values, context);
+    } else {
+      const apiCall = isPatch() ? await patchMutation.mutateAsync : await postMutation.mutateAsync;
+      const data: Partial<ClientContactSetting> = _.merge(formData, {
+        id: formData?.id,
+        email: values.email,
+        phone: phoneNumberFormatter(values?.phone),
+        notifications: {
+          email_enabled: values.notifications?.email_enabled,
+          phone_enabled: values.notifications?.phone_enabled,
+        },
+        decicionsAndDocuments: {
+          digitalInbox: values.decicionsAndDocuments?.digitalInbox,
+          myPages: values.decicionsAndDocuments?.myPages,
+          snailmail: values.decicionsAndDocuments?.snailmail,
+        },
+      });
+      const res = await apiCall(data);
+      if (!res.error) {
+        reset(res);
+        queryClient.invalidateQueries({
+          queryKey: ['/contactsettings'],
+        });
+        if (onSubmitSuccess) onSubmitSuccess();
+      } else {
+        if (onSubmitFailed) onSubmitFailed();
+      }
+    }
+  };
+
+  return (
+    <FormProvider {...context}>
+      <form onSubmit={handleSubmit(_onSubmit)}>{children}</form>
+    </FormProvider>
+  );
+}

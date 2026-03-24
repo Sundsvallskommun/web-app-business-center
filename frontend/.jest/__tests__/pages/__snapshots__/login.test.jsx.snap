@@ -34,9 +34,10 @@ exports[`Login renders Login unchanged 1`] = `
                 </p>
               </div>
               <button
-                class="btn btn-md btn-solid"
+                class="sk-btn sk-btn-md"
                 data-color="primary"
                 data-cy="loginButton"
+                type="button"
               >
                 Logga in
               </button>
@@ -72,9 +73,10 @@ exports[`Login renders Login unchanged 1`] = `
               </p>
             </div>
             <button
-              class="btn btn-md btn-solid"
+              class="sk-btn sk-btn-md"
               data-color="primary"
               data-cy="loginButton"
+              type="button"
             >
               Logga in
             </button>

@@ -21,7 +21,7 @@
   "resolutions": {
     "@types/express": "^5.0.0",
     "@types/express-serve-static-core": "^5.0.6",
-    "qs": "6.14.1"
+    "qs": "6.14.2"
   },
   "dependencies": {
     "@node-saml/passport-saml": "^5.1.0",
@@ -48,7 +48,7 @@
     "memorystore": "^1.6.7",
     "morgan": "^1.10.0",
     "passport": "^0.6.0",
-    "qs": "^6.14.1",
+    "qs": "^6.14.2",
     "reflect-metadata": "^0.1.13",
     "routing-controllers": "^0.10.4",
     "routing-controllers-openapi": "^4.0.0",

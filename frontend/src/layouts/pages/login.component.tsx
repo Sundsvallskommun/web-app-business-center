@@ -11,6 +11,7 @@ import { EntryLayout } from '../../layouts/entry-layout.component';
 import Main from '../../layouts/main.component';
 import { appURL } from '../../utils/app-url';
 import { getAdjustedPathname, getRepresentingModeRoute } from '../../utils/representingModeRoute';
+import { AlertBanner } from '@layouts/alert-banner.component';
 
 function Login() {
   const router = useRouter();
@@ -144,6 +145,7 @@ function Login() {
 export default function LoginPage() {
   return (
     <Suspense>
+      <AlertBanner />
       <Login />
     </Suspense>
   );

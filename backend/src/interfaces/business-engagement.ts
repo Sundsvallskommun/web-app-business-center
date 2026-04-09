@@ -1,5 +1,10 @@
-import { BusinessInformation } from '@/data-contracts/businessengagements/data-contracts';
+export interface Address {
+  city?: string;
+  street?: string;
+  postcode?: string;
+  careOf?: string;
+}
 
 export interface ClientBusinessInformation {
-  companyLocation?: BusinessInformation['companyLocation'];
+  companyLocation?: Address;
 }

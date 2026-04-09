@@ -1,6 +1,6 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { BusinessEngagementsResponse, BusinessInformation, Engagement } from '@/data-contracts/businessengagements/data-contracts';
+import { LegalEntity2, PersonEngagement } from '@/data-contracts/legalentity/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
@@ -9,24 +9,29 @@ import authMiddleware from '@middlewares/auth.middleware';
 import { Controller, Get, QueryParam, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
+export interface Engagement {
+  organizationName?: string;
+  organizationNumber?: string;
+}
+
 interface InformationResponse {
   information: {
-    companyLocation: BusinessInformation['companyLocation'];
+    companyLocation: LegalEntity2;
   };
 }
 
 @Controller()
-export class BusinessEngagementController {
+export class LegalEntityController {
   private apiService = new ApiService();
-  private apiBase = getApiBase('businessengagements');
+  private apiBase = getApiBase('legalentity');
 
   @Get('/businessengagements')
   @OpenAPI({ summary: 'Return a list of business engagements for current logged in user' })
   @UseBefore(authMiddleware)
   async businessEngagments(@Req() req: RequestWithUser): Promise<ApiResponse<Engagement[]>> {
-    const { partyId, name } = req?.user;
+    const { personNumber } = req?.user;
 
-    if (!partyId) {
+    if (!personNumber) {
       throw new HttpException(400, 'Bad Request');
     }
 
@@ -36,22 +41,47 @@ export class BusinessEngagementController {
       req.destroy();
     });
 
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/engagements/${partyId}`;
-    const params = {
-      personalName: name,
-      serviceName: 'Mina Sidor',
-    };
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/engagements/person/${personNumber}`;
 
-    const res = await this.apiService.get<BusinessEngagementsResponse>({ url, params }, req.user);
+    const res = await this.apiService.get<PersonEngagement[]>({ url }, req.user);
 
-    if (!res.data?.engagements) {
+    if (!res.data) {
       throw new HttpException(404, 'Not Found');
     }
 
-    // NOTE: set representing to session so we can use it to lookup later
-    req.session.representingBusinessChoices = res.data && res.data.engagements ? res.data.engagements : [];
+    const engagements: Engagement[] = res.data
+      .filter(e => e?.name && e?.organizationNumber)
+      .map(e => ({
+        organizationName: e?.name,
+        organizationNumber: e?.organizationNumber,
+      }));
 
-    return { data: res.data.engagements, message: 'success' };
+    // NOTE: set representing to session so we can use it to lookup later
+    req.session.representingBusinessChoices = engagements ?? [];
+
+    return { data: engagements, message: 'success' };
+  }
+
+  async getGuid(organizationNumber: string, user: RequestWithUser['user']): Promise<string> {
+    const guidUrl = `${this.apiBase}/${MUNICIPALITY_ID}/${organizationNumber}/guid`;
+    const guidRes = await this.apiService.get<string>({ url: guidUrl }, user);
+
+    if (!guidRes.data) {
+      throw new HttpException(404, 'Not Found');
+    }
+
+    return guidRes.data;
+  }
+
+  async getLegalEntity(guid: string, user: RequestWithUser['user']): Promise<LegalEntity2> {
+    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${guid}`;
+    const res = await this.apiService.get<LegalEntity2>({ url }, user);
+
+    if (!res.data) {
+      throw new HttpException(404, 'Not Found');
+    }
+
+    return res.data;
   }
 
   @Get('/businessinformation')
@@ -70,28 +100,17 @@ export class BusinessEngagementController {
     if (!engagement) {
       throw new HttpException(400, 'Bad Request - No choices');
     }
-    if (!engagement) {
-      throw new HttpException(400, 'Bad Request - Does not exists');
-    }
 
-    if (!engagement.organizationId || !engagement.organizationName || !engagement.organizationNumber) {
+    if (!engagement.organizationName || !engagement.organizationNumber) {
       throw new HttpException(500, 'Internal Server Error - Data not complete');
     }
 
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/information/${engagement.organizationId}`;
-    const params = {
-      organizationName: engagement.organizationName,
-      serviceName: 'Mina Sidor',
-    };
+    const guid = await this.getGuid(engagement.organizationNumber, req.user);
+    const legalEntity = await this.getLegalEntity(guid, req.user);
 
-    const res = await this.apiService.get<BusinessInformation>({ url, params }, req.user);
-
-    if (!res.data) {
-      throw new HttpException(404, 'Not Found');
-    }
     const responseData: InformationResponse = {
       information: {
-        companyLocation: (res?.data?.companyLocation as BusinessInformation['companyLocation']) ?? null,
+        companyLocation: legalEntity ?? null,
       },
     };
 

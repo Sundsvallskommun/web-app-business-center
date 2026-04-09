@@ -2,8 +2,8 @@
 
 import { CardElevated } from '@components/cards/card-elevated.component';
 import { useAppContext } from '@contexts/app.context';
-import { Engagement } from '@data-contracts/businessengagements/data-contracts';
 import { RepresentingMode } from '@interfaces/app';
+import { BusinessEngagement } from '@interfaces/organisation-info';
 import { EntryLayout } from '@layouts/entry-layout.component';
 import Main from '@layouts/main.component';
 import { NoRepresent } from '@layouts/pages/valj-foretag/no-represent';
@@ -32,7 +32,7 @@ export default function ValjForetag() {
   const hasEngagements = (engagements?.length ?? 0) > 0;
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pages, setPages] = useState<number>(1);
-  const onChoice = (engagement: Engagement) => {
+  const onChoice = (engagement: BusinessEngagement) => {
     setError('');
     setChoosen(engagement.organizationNumber ?? '');
   };

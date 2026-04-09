@@ -1,4 +1,4 @@
-import { BusinessInformation } from '@/data-contracts/businessengagements/data-contracts';
+import { ClientBusinessInformation } from './business-engagement';
 
 export enum RepresentingMode {
   PRIVATE,
@@ -9,7 +9,7 @@ export interface RepresentingBusinessEntity {
   partyId: string;
   organizationName: string;
   organizationNumber: string;
-  information: BusinessInformation;
+  information: ClientBusinessInformation;
 }
 export type RepresentingBusinessEntityClient = Omit<RepresentingBusinessEntity, 'partyId'>;
 

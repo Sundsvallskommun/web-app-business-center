@@ -8,6 +8,13 @@ import { getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { getMe } from '../fixtures/getMe';
 import { getAssets } from 'cypress/fixtures/getAssets';
 
+// Ignore React 19 / Next.js 15 dev mode performance measurement errors
+Cypress.on('uncaught:exception', (err) => {
+  if (err.message.includes('cannot have a negative time stamp')) {
+    return false;
+  }
+});
+
 export const DEFAULT_COOKIE_VALUE = 'necessary%2Cstats';
 
 localStorage.clear();

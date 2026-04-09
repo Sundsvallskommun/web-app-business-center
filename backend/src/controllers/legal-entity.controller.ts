@@ -1,5 +1,6 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
+import { ClientBusinessInformation } from '@/interfaces/business-engagement';
 import { LegalEntity2, PersonEngagement } from '@/data-contracts/legalentity/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
@@ -15,9 +16,7 @@ export interface Engagement {
 }
 
 interface InformationResponse {
-  information: {
-    companyLocation: LegalEntity2;
-  };
+  information: ClientBusinessInformation;
 }
 
 @Controller()
@@ -107,10 +106,18 @@ export class LegalEntityController {
 
     const guid = await this.getGuid(engagement.organizationNumber, req.user);
     const legalEntity = await this.getLegalEntity(guid, req.user);
+    const address = legalEntity?.postAddress;
 
     const responseData: InformationResponse = {
       information: {
-        companyLocation: legalEntity ?? null,
+        companyLocation: legalEntity
+          ? {
+              city: address?.city ?? '',
+              street: address?.address1 ?? '',
+              postcode: address?.postalCode ?? '',
+              careOf: address?.coAdress ?? '',
+            }
+          : undefined,
       },
     };
 

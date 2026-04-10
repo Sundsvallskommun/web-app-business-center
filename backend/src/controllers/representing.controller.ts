@@ -6,9 +6,8 @@ import authMiddleware from '@middlewares/auth.middleware';
 import { validationMiddleware } from '@middlewares/validation.middleware';
 import { Body, Controller, Get, Post, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
-import { RepresentingEntity, RepresentingEntityClient, RepresentingMode } from '../interfaces/representing.interface';
-import { BusinessEngagementController } from './business-engagement.controller';
-import { Engagement } from '@/data-contracts/businessengagements/data-contracts';
+import { RepresentingBusinessEntity, RepresentingEntity, RepresentingEntityClient, RepresentingMode } from '../interfaces/representing.interface';
+import { Engagement, LegalEntityController } from './legal-entity.controller';
 
 interface ResponseData {
   data: any;
@@ -19,12 +18,21 @@ type IntersectByProperties<T, U> = Pick<T & U, Extract<keyof T, keyof U>>;
 
 @Controller()
 export class RepresentingController {
-  getBusinessInformation = async (req, selected) => {
-    const businessController = new BusinessEngagementController();
-    const businessInformationRes = await businessController.businessInformation(req, selected);
+  private legalEntityController = new LegalEntityController();
+
+  getBusinessInformation = async (guid: string, user: RequestWithUser['user']): Promise<ClientBusinessInformation> => {
+    const legalEntity = await this.legalEntityController.getLegalEntity(guid, user);
+    const address = legalEntity?.postAddress;
     let businessInformation: ClientBusinessInformation = {};
-    if (businessInformationRes.data?.information) {
-      businessInformation = businessInformationRes.data.information;
+    if (legalEntity) {
+      businessInformation = {
+        companyLocation: {
+          city: address?.city ?? '',
+          street: address?.address1 ?? '',
+          postcode: address?.postalCode ?? '',
+          careOf: address?.coAdress ?? '',
+        },
+      };
     }
     return businessInformation;
   };
@@ -53,13 +61,14 @@ export class RepresentingController {
     name: req.user.name,
   });
 
-  getDefaultBUSINESS = async (req: RequestWithUser) => {
+  getDefaultBUSINESS = async (req: RequestWithUser): Promise<RepresentingBusinessEntity> => {
     const { representingBusinessChoices } = req?.session;
     const selected = this.getSelected<Engagement, 'organizationNumber'>(representingBusinessChoices, req.body, 'organizationNumber');
-    const businessInformation = await this.getBusinessInformation(req, selected);
+    const guid = await this.legalEntityController.getGuid(selected.organizationNumber, req.user);
+    const businessInformation = await this.getBusinessInformation(guid, req.user);
 
     return {
-      partyId: this.fixGuid(selected.organizationId),
+      partyId: this.fixGuid(guid),
       organizationName: selected.organizationName,
       organizationNumber: selected.organizationNumber,
       information: businessInformation,

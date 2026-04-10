@@ -1,8 +1,8 @@
 //Subscribed APIS as lowercased
 export const APIS = [
   {
-    name: 'businessengagements',
-    version: '3.0',
+    name: 'legalentity',
+    version: '2.0',
   },
   {
     name: 'case-data',

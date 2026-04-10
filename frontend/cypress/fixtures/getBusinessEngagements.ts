@@ -1,7 +1,7 @@
-import { Engagement } from '@data-contracts/businessengagements/data-contracts';
+import { BusinessEngagement } from '@interfaces/organisation-info';
 import { ApiResponse } from '@services/api-service';
 
-export const getBusinessEngagements: ApiResponse<Engagement[]> = {
+export const getBusinessEngagements: ApiResponse<BusinessEngagement[]> = {
   data: [
     {
       organizationName: 'Styrbjörns båtar',

@@ -1,8 +1,8 @@
-import { Address } from '@/data-contracts/businessengagements/data-contracts';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { User } from '../interfaces/users.interface';
 import { IsNullable } from '../utils/custom-validation-classes';
+import { Address } from '@/interfaces/business-engagement';
 
 export class ClientContactSettingNotifications {
   @IsBoolean()

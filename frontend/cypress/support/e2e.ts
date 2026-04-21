@@ -7,6 +7,7 @@ import { getInvoices } from 'cypress/fixtures/getInvoices';
 import { getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { getMe } from '../fixtures/getMe';
 import { getAssets } from 'cypress/fixtures/getAssets';
+import { getDecisions } from 'cypress/fixtures/getDecisions';
 
 // Ignore React 19 / Next.js 15 dev mode performance measurement errors
 Cypress.on('uncaught:exception', (err) => {
@@ -37,6 +38,7 @@ export const setIntercepts = (representingMode: RepresentingMode = representingM
   cy.intercept('GET', '**/api/assets/*', { data: getAssets(representingMode).data[0], message: 'success' }).as(
     'getAsset'
   );
+  cy.intercept('GET', '**/api/decisions', getDecisions(representingMode)).as('getDecisions');
 };
 
 beforeEach(() => {

@@ -109,6 +109,7 @@ const samlStrategy = new Strategy(
         { url },
         {
           username: 'unknown',
+          partyId: 'unknown',
         },
       );
       const { data: personId } = citizenResult;

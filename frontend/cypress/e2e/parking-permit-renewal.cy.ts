@@ -29,7 +29,7 @@ describe('Parking Permit Renewal', () => {
   const navigateToAssetPage = () => {
     const expiringAsset = getExpiringAsset();
     cy.intercept('GET', '**/api/assets/*', { data: expiringAsset.data[0], message: 'success' }).as('getAsset');
-    cy.get('ul[aria-label="Beslut"] li a').first().click();
+    cy.get('ul[aria-label="Dokument"] li a').first().click();
     cy.wait('@getAsset');
   };
 

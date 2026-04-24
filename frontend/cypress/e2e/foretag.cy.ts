@@ -1,5 +1,5 @@
 import { RepresentingMode } from '@interfaces/app';
-import { testAssets, testCases, testContactSettings } from 'cypress/e2e/utils';
+import { testAssets, testCases, testContactSettings, testDecisions } from 'cypress/e2e/utils';
 import { getBusinessRepresentFromEngagements, getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { setIntercepts } from 'cypress/support/e2e';
 
@@ -60,6 +60,13 @@ describe('Företag', () => {
     cy.wait('@getAssets').then(() => {
       cy.url().should('include', '/foretag/beslut-och-dokument');
       testAssets(RepresentingMode.BUSINESS);
+    });
+  });
+  it('should render decisions list /foretag', () => {
+    cy.contains('[role="navigationitem"]', 'Beslut och dokument').click();
+    cy.wait('@getDecisions').then(() => {
+      cy.url().should('include', '/foretag/beslut-och-dokument');
+      testDecisions();
     });
   });
 });

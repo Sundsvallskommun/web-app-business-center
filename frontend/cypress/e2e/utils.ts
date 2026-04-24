@@ -237,24 +237,34 @@ export const testAssetPage = (representingMode: RepresentingMode = representingM
   cy.get('main').contains(RepresentingMode[representingMode]).should('exist');
   cy.get('main').contains('Ärendenummer').next().should('contain.text', 'case-0').should('be.visible');
   cy.get('main').contains('Kortnummer').next().should('contain.text', 'assetId-0').should('be.visible');
-  cy.get('main').contains('Beslutad').next().should('contain.text', '1 Jan 2021').should('be.visible');
+  cy.get('main').contains('Beslutad').next().should('contain.text', '1 jan 2021').should('be.visible');
   cy.get('main')
     .contains(/^Giltighetstid$/)
     .next()
-    .should('contain.text', '1 Jan 2021 - 31 Dec 2025')
+    .should('contain.text', '1 jan 2021 - 31 dec 2025')
     .should('be.visible');
 };
 
 export const testAssets = (representingMode: RepresentingMode = representingModeDefault) => {
-  cy.get('ul[aria-label="Beslut"] li').should('have.length', 1);
-  cy.get('ul[aria-label="Beslut"] li').within(() => {
+  cy.get('ul[aria-label="Dokument"] li').should('have.length', 1);
+  cy.get('ul[aria-label="Dokument"] li').within(() => {
     cy.contains('Parkeringstillstånd för funktionshindrad').should('exist');
     cy.contains(RepresentingMode[representingMode]).should('exist');
-    cy.contains('1 Jan 2021').should('exist');
+    cy.contains('1 jan 2021').should('exist');
   });
-  cy.get('ul[aria-label="Beslut"] li a[aria-label="Visa assetId-0"]')
+  cy.get('ul[aria-label="Dokument"] li a[aria-label="Visa assetId-0"]')
     .click()
     .then(() => {
       testAssetPage(representingMode);
+    });
+};
+
+export const testDecisions = () => {
+  cy.get('ul[aria-label="Beslut i ärenden"] li').should('have.length', 2);
+  cy.get('ul[aria-label="Beslut i ärenden"] li')
+    .first()
+    .within(() => {
+      cy.contains('Beslut').should('exist');
+      cy.contains('Beslutad 20 februari 2024').should('exist');
     });
 };

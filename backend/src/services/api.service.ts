@@ -63,15 +63,15 @@ class ApiService {
       },
     );
   }
-  private async request<T>(config: AxiosRequestConfig, user: { username: string }): Promise<ApiResponse<T>> {
+  private async request<T>(config: AxiosRequestConfig, user: { username: string; partyId: string }): Promise<ApiResponse<T>> {
     const defaultParams = {};
     const preparedConfig: AxiosRequestConfig = {
       ...config,
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
-      headers: { ...config.headers, 'X-Sent-By': [`type=adAccount; ${user.username}`] },
+      headers: { ...config.headers, 'X-Sent-By': [`type=partyID; ${user.partyId}`] },
       params: { ...defaultParams, ...config.params },
-      url: config.baseURL ? config.url : apiURL(config.url),
+      url: config.baseURL ? config.url : apiURL(config?.url ?? ''),
     };
     try {
       const res = await this.instance(preparedConfig);
@@ -79,19 +79,19 @@ class ApiService {
     } catch (error: unknown | AxiosError) {
       if (axios.isAxiosError(error) && (error as AxiosError).response?.status === 404) {
         logger.error(`ERROR: API request failed with status: ${error.response?.status}`);
-        logger.error(`Error details: ${JSON.stringify(error.response.data)}`);
-        logger.error(`Error url: ${error.response.config.baseURL || ''}/${error.response.config.url}`);
-        logger.error(`Error data: ${error.response.config.data?.slice(0, 1500)}`);
-        logger.error(`Error method: ${error.response.config.method}`);
-        logger.error(`Error headers: ${error.response.config.headers}`);
+        logger.error(`Error details: ${JSON.stringify(error.response?.data)}`);
+        logger.error(`Error url: ${error.response?.config.baseURL || ''}/${error.response?.config.url}`);
+        logger.error(`Error data: ${error.response?.config.data?.slice(0, 1500)}`);
+        logger.error(`Error method: ${error.response?.config.method}`);
+        logger.error(`Error headers: ${error.response?.config.headers}`);
         throw new HttpException(404, 'Not found');
       } else if (axios.isAxiosError(error) && (error as AxiosError).response?.data) {
         logger.error(`ERROR: API request failed with status: ${error.response?.status}`);
-        logger.error(`Error details: ${JSON.stringify(error.response.data)}`);
-        logger.error(`Error url: ${error.response.config.baseURL || ''}/${error.response.config.url}`);
-        logger.error(`Error data: ${error.response.config.data?.slice(0, 1500)}`);
-        logger.error(`Error method: ${error.response.config.method}`);
-        logger.error(`Error headers: ${error.response.config.headers}`);
+        logger.error(`Error details: ${JSON.stringify(error.response?.data)}`);
+        logger.error(`Error url: ${error.response?.config.baseURL || ''}/${error.response?.config.url}`);
+        logger.error(`Error data: ${error.response?.config.data?.slice(0, 1500)}`);
+        logger.error(`Error method: ${error.response?.config.method}`);
+        logger.error(`Error headers: ${error.response?.config.headers}`);
       } else {
         logger.error(`Unknown error: ${error}`);
       }
@@ -99,27 +99,27 @@ class ApiService {
     }
   }
 
-  public async get<T>(config: AxiosRequestConfig, user: { username: string }): Promise<ApiResponse<T>> {
+  public async get<T>(config: AxiosRequestConfig, user: { username: string; partyId: string }): Promise<ApiResponse<T>> {
     logger.info(`MAKING GET REQUEST TO URL ${config.baseURL || ''}/${config.url}`);
     return this.request<T>({ ...config, method: 'GET' }, user);
   }
 
-  public async post<T, D>(config: AxiosRequestConfig<D>, user: { username: string }): Promise<ApiResponse<T>> {
+  public async post<T, D>(config: AxiosRequestConfig<D>, user: { username: string; partyId: string }): Promise<ApiResponse<T>> {
     logger.info(`MAKING POST REQUEST TO URL ${config.baseURL || ''}/${config.url}`);
     return this.request<T>({ ...config, method: 'POST' }, user);
   }
 
-  public async patch<T, D>(config: AxiosRequestConfig<D>, user: { username: string }): Promise<ApiResponse<T>> {
+  public async patch<T, D>(config: AxiosRequestConfig<D>, user: { username: string; partyId: string }): Promise<ApiResponse<T>> {
     logger.info(`MAKING PATCH REQUEST TO URL ${config.baseURL || ''}/${config.url}`);
     return this.request<T>({ ...config, method: 'PATCH' }, user);
   }
 
-  public async put<T, D>(config: AxiosRequestConfig<D>, user: { username: string }): Promise<ApiResponse<T>> {
+  public async put<T, D>(config: AxiosRequestConfig<D>, user: { username: string; partyId: string }): Promise<ApiResponse<T>> {
     logger.info(`MAKING PUT REQUEST TO URL ${config.baseURL || ''}/${config.url}`);
     return this.request<T>({ ...config, method: 'PUT' }, user);
   }
 
-  public async delete<T>(config: AxiosRequestConfig, user: { username: string }): Promise<ApiResponse<T>> {
+  public async delete<T>(config: AxiosRequestConfig, user: { username: string; partyId: string }): Promise<ApiResponse<T>> {
     return this.request<T>({ ...config, method: 'DELETE' }, user);
   }
 }

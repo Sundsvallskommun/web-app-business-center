@@ -11,101 +11,39 @@
  */
 
 export interface Problem {
-  title?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
-  parameters?: Record<string, object>;
-  status?: StatusType;
-}
-
-export interface StatusType {
+  title?: string;
+  detail?: string;
   /** @format int32 */
-  statusCode?: number;
-  reasonPhrase?: string;
+  status?: number;
 }
 
 export interface ConstraintViolationProblem {
-  cause?: ThrowableProblem;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
   /** @format uri */
   type?: string;
-  status?: StatusType;
+  /** @format int32 */
+  status?: number;
   violations?: Violation[];
   title?: string;
-  message?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
-  parameters?: Record<string, object>;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
+  detail?: string;
+  causeAsProblem?: ThrowableProblem;
 }
 
 export interface ThrowableProblem {
-  cause?: ThrowableProblem;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
-  message?: string;
+  /** @format uri */
+  type?: string;
   title?: string;
+  /** @format int32 */
+  status?: number;
   detail?: string;
   /** @format uri */
   instance?: string;
-  /** @format uri */
-  type?: string;
-  parameters?: Record<string, object>;
-  status?: StatusType;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
+  causeAsProblem?: any;
 }
 
 export interface Violation {
@@ -113,31 +51,17 @@ export interface Violation {
   message?: string;
 }
 
-/**
- * List of attachments for the message
- * @example "attachment1, attachment2"
- */
 export interface MessageAttachment {
   /**
    * The Id for the attachment
    * @format int32
-   * @example 1
    */
   attachmentId?: number;
-  /**
-   * The name of the file
-   * @example "file.txt"
-   */
+  /** The name of the file */
   name?: string;
-  /**
-   * The extension of the file
-   * @example "txt"
-   */
+  /** The extension of the file */
   extension?: string;
-  /**
-   * The mime type of the file
-   * @example "text/plain"
-   */
+  /** The mime type of the file */
   mimeType?: string;
 }
 
@@ -145,81 +69,38 @@ export interface MessageDTO {
   /**
    * The webMessageCollector Id for the message
    * @format int32
-   * @example 1
    */
   id?: number;
-  /**
-   * If the message is inbound or outbound from the perspective of case-data/e-service.
-   * @example "INBOUND"
-   */
+  /** If the message is inbound or outbound from the perspective of case-data/e-service. */
   direction?: MessageDtoDirectionEnum;
-  /**
-   * The municipality id
-   * @example "2281"
-   */
+  /** The municipality id */
   municipalityId?: string;
-  /**
-   * What E-service the message was found in
-   * @example "501"
-   */
+  /** What E-service the message was found in */
   familyId?: string;
-  /**
-   * The external caseID
-   * @example "caa230c6-abb4-4592-ad9a-34e263c2787b"
-   */
+  /** The external caseID  */
   externalCaseId?: string;
-  /**
-   * The message
-   * @example "Hello World"
-   */
+  /** The message  */
   message?: string;
-  /**
-   * The unique messageId from openE for the message
-   * @example "12"
-   */
+  /** The unique messageId from openE for the message */
   messageId?: string;
-  /**
-   * Time and date the message was sent
-   * @example "2023-02-23 17:26:23"
-   */
+  /** Time and date the message was sent  */
   sent?: string;
-  /**
-   * Username for the poster
-   * @example "te01st"
-   */
+  /** Username for the poster */
   username?: string;
-  /**
-   * Firstname of the poster
-   * @example "Test"
-   */
+  /** Firstname of the poster  */
   firstName?: string;
-  /**
-   * Lastname of the poster
-   * @example "Testsson"
-   */
+  /** Lastname of the poster */
   lastName?: string;
-  /**
-   * Email for the poster
-   * @example "test@sundsvall.se"
-   */
+  /** Email for the poster */
   email?: string;
-  /**
-   * The userId for the poster
-   * @example "123"
-   */
+  /** The userId for the poster */
   userId?: string;
   attachments?: MessageAttachment[];
-  /**
-   * The instance of the message
-   * @example "external"
-   */
+  /** The instance of the message */
   instance?: string;
 }
 
-/**
- * If the message is inbound or outbound from the perspective of case-data/e-service.
- * @example "INBOUND"
- */
+/** If the message is inbound or outbound from the perspective of case-data/e-service. */
 export enum MessageDtoDirectionEnum {
   INBOUND = "INBOUND",
   OUTBOUND = "OUTBOUND",

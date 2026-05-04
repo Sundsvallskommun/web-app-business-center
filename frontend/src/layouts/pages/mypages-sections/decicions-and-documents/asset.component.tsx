@@ -75,16 +75,6 @@ export default function Asset() {
         </div>
       ) : null}
       <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
-        {assetData?.caseReferenceIds?.length ? (
-          <div className="flex flex-col items-start gap-4">
-            <div className="font-bold">Ärendenummer</div>
-            <div>
-              {assetData?.caseReferenceIds?.map((id) => (
-                <div key={id}>{id}</div>
-              ))}
-            </div>
-          </div>
-        ) : null}
         {assetData?.assetId ? (
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">Kortnummer</div>

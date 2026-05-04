@@ -8,6 +8,7 @@ import { UserController } from '@controllers/user.controller';
 import validateEnv from '@utils/validateEnv';
 import { AssetsController } from './controllers/assets.controller';
 import { ContactSettingsController } from './controllers/contact-settings.controller';
+import { EconomicAidController } from './controllers/economic-aid.controller';
 import { HealthController } from './controllers/health.controller';
 import { InvoicesController } from './controllers/invoices.controller';
 import { LegalEntityController } from './controllers/legal-entity.controller';
@@ -28,6 +29,7 @@ const app = new App([
   InvoicesController,
   HealthController,
   ContactSettingsController,
+  EconomicAidController,
 ]);
 
 app.listen();

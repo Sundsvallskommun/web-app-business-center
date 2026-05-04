@@ -23,19 +23,26 @@ export const useBannerMenuItems = () => {
     <NextLink
       key={`banner-menu-item-2`}
       className="w-full flex items-center justify-center"
+      href={`${myPagesRoute}/ansok`}
+    >
+      Ansök
+    </NextLink>,
+    <NextLink
+      key={`banner-menu-item-3`}
+      className="w-full flex items-center justify-center"
       href={`${myPagesRoute}/beslut-och-dokument`}
     >
       Beslut och dokument
     </NextLink>,
     <NextLink
-      key={`banner-menu-item-3`}
+      key={`banner-menu-item-4`}
       className="w-full flex items-center justify-center"
       href={`${myPagesRoute}/fakturor`}
     >
       Fakturor
     </NextLink>,
     <NextLink
-      key={`banner-menu-item-4`}
+      key={`banner-menu-item-5`}
       className="w-full flex items-center justify-center"
       href={`${myPagesRoute}/profil`}
     >

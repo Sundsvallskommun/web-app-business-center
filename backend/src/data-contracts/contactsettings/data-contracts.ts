@@ -10,10 +10,7 @@
  * ---------------------------------------------------------------
  */
 
-/**
- * Operator model
- * @example "EQUALS"
- */
+/** Operator model */
 export enum Operator {
   EQUALS = "EQUALS",
   NOT_EQUALS = "NOT_EQUALS",
@@ -26,101 +23,39 @@ export enum ContactMethod {
 }
 
 export interface Problem {
-  title?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
-  parameters?: Record<string, object>;
-  status?: StatusType;
-}
-
-export interface StatusType {
+  title?: string;
+  detail?: string;
   /** @format int32 */
-  statusCode?: number;
-  reasonPhrase?: string;
+  status?: number;
 }
 
 export interface ConstraintViolationProblem {
-  cause?: ThrowableProblem;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
   /** @format uri */
   type?: string;
-  status?: StatusType;
+  /** @format int32 */
+  status?: number;
   violations?: Violation[];
   title?: string;
-  message?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
-  parameters?: Record<string, object>;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
+  detail?: string;
+  causeAsProblem?: ThrowableProblem;
 }
 
 export interface ThrowableProblem {
-  cause?: ThrowableProblem;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
-  message?: string;
+  /** @format uri */
+  type?: string;
   title?: string;
+  /** @format int32 */
+  status?: number;
   detail?: string;
   /** @format uri */
   instance?: string;
-  /** @format uri */
-  type?: string;
-  parameters?: Record<string, object>;
-  status?: StatusType;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
+  causeAsProblem?: any;
 }
 
 export interface Violation {
@@ -130,44 +65,32 @@ export interface Violation {
 
 /** ContactChannel model */
 export interface ContactChannel {
-  /** ContactMethod model */
+  /** Method of contact */
   contactMethod: ContactMethod;
   /**
    * Alias for the destination
    * @minLength 1
-   * @example "Private phone"
    */
   alias: string;
   /**
    * Point of destination
    * @minLength 1
-   * @example "+46701234567"
    */
   destination: string;
   /**
    * Signal if channel should be used or not when sending message
    * @default false
-   * @example true
    */
   disabled?: boolean;
 }
 
 /** ContactSettingCreateRequest model */
 export interface ContactSettingCreateRequest {
-  /**
-   * ID of the person or organization to whom the contact setting applies. Set to null when creating a 'virtual' contact setting.
-   * @example "15aee472-46ab-4f03-9605-68bd64ebc73f"
-   */
+  /** ID of the person or organization to whom the contact setting applies. Set to null when creating a 'virtual' contact setting. */
   partyId?: string;
-  /**
-   * ID of the contact setting that created this instance. Mandatory for virtual contact settings.
-   * @example "9ca9425e-42cf-4145-a9e7-d77e1ea9e5b0"
-   */
+  /** ID of the contact setting that created this instance. Mandatory for virtual contact settings. */
   createdById?: string;
-  /**
-   * Alias for this contact setting
-   * @example "My contact-settings"
-   */
+  /** Alias for this contact setting */
   alias?: string;
   /** List of contact channels connected to this contact setting */
   contactChannels?: ContactChannel[];
@@ -175,15 +98,9 @@ export interface ContactSettingCreateRequest {
 
 /** DelegateCreateRequest model */
 export interface DelegateCreateRequest {
-  /**
-   * Contact setting ID of the delegate principal (owner)
-   * @example "0d64c132-3aea-11ec-8d3d-0242ac130003"
-   */
+  /** Contact setting ID of the delegate principal (owner) */
   principalId: string;
-  /**
-   * Contact setting ID of the delegate agent
-   * @example "4a758ca4-6df5-43f4-a7ce-612f51f9da09"
-   */
+  /** Contact setting ID of the delegate agent */
   agentId: string;
   /**
    * Filters used by this delegate
@@ -194,31 +111,20 @@ export interface DelegateCreateRequest {
 
 /** Filter model */
 export interface Filter {
-  /**
-   * ID of the filter
-   * @example "5d8403b1-1bf0-4cb1-b39e-c7c504d501a1"
-   */
+  /** ID of the filter */
   id?: string;
-  /**
-   * The filter alias
-   * @example "My filter for delegating messages to a friend"
-   */
+  /** The filter alias */
   alias?: string;
-  /**
-   * The channel that created this filter.
-   * @example "Sundsvalls Energi"
-   */
+  /** The channel that created this filter. */
   channel?: string;
   /**
    * Timestamp when filter was created
    * @format date-time
-   * @example "2020-08-31T01:30:00+02:00"
    */
   created?: string;
   /**
    * Timestamp when filter was last modified
    * @format date-time
-   * @example "2020-08-31T01:30:00+02:00"
    */
   modified?: string;
   /**
@@ -260,25 +166,20 @@ export interface Rule {
   /**
    * The attribute name to apply the filter rule on
    * @minLength 1
-   * @example "facilityId"
    */
   attributeName: string;
-  /** Operator model */
+  /** The rule operator */
   operator: Operator;
   /**
    * The attribute value to apply the filter rule on
    * @minLength 1
-   * @example "12345678"
    */
   attributeValue: string;
 }
 
 /** ContactSettingUpdateRequest model */
 export interface ContactSettingUpdateRequest {
-  /**
-   * Alias for this contact setting
-   * @example "My contact-setting"
-   */
+  /** Alias for this contact setting */
   alias?: string;
   /** List of contact channels connected to this contact setting */
   contactChannels?: ContactChannel[];
@@ -286,48 +187,28 @@ export interface ContactSettingUpdateRequest {
 
 /** ContactSetting model */
 export interface ContactSetting {
-  /**
-   * ID of the contact setting
-   * @example "0d64c132-3aea-11ec-8d3d-0242ac130003"
-   */
+  /** ID of the contact setting */
   id?: string;
-  /**
-   * ID of the person or organization to which the contact setting applies
-   * @example "15aee472-46ab-4f03-9605-68bd64ebc73f"
-   */
+  /** ID of the person or organization to which the contact setting applies */
   partyId?: string;
-  /**
-   * Municipality ID
-   * @example "2281"
-   */
+  /** Municipality ID */
   municipalityId?: string;
-  /**
-   * ID of the contact setting that created this instance. Applicable for virtual contact settings.
-   * @example "9ca9425e-42cf-4145-a9e7-d77e1ea9e5b0"
-   */
+  /** ID of the contact setting that created this instance. Applicable for virtual contact settings. */
   createdById?: string;
-  /**
-   * Alias for the person or organization to which the contact setting applies
-   * @example "My contact-settings"
-   */
+  /** Alias for the person or organization to which the contact setting applies */
   alias?: string;
-  /**
-   * Shows if the contact setting is virtual or not. A virtual instance doesn't have a partyId (i.e. doesn't have a direct relation to a real person/organization)
-   * @example false
-   */
+  /** Shows if the contact setting is virtual or not. A virtual instance doesn't have a partyId (i.e. doesn't have a direct relation to a real person/organization) */
   virtual?: boolean;
   /** List of contact channels connected to this contact setting */
   contactChannels?: ContactChannel[];
   /**
    * Timestamp when contact setting was created
    * @format date-time
-   * @example "2020-08-31T01:30:00+02:00"
    */
   created?: string;
   /**
    * Timestamp when contact setting was last modified
    * @format date-time
-   * @example "2020-08-31T01:30:00+02:00"
    */
   modified?: string;
 }
@@ -340,45 +221,28 @@ export interface MultiValueMapStringString {
 
 /** FindDelegatesParameters model */
 export interface FindDelegatesParameters {
-  /**
-   * Agent contact setting ID
-   * @example "15aee472-46ab-4f03-9605-68bd64ebc73f"
-   */
+  /** Agent contact setting ID */
   agentId?: string;
-  /**
-   * Principal contact setting ID
-   * @example "15aee472-46ab-4f03-9605-68bd64ebc73f"
-   */
+  /** Principal contact setting ID */
   principalId?: string;
 }
 
 /** Delegate model */
 export interface Delegate {
-  /**
-   * ID of the delegate
-   * @example "0d64c132-3aea-11ec-8d3d-0242ac130003"
-   */
+  /** ID of the delegate */
   id?: string;
-  /**
-   * Contact setting ID of the delegate principal (owner)
-   * @example "0d64c132-3aea-11ec-8d3d-0242ac130003"
-   */
+  /** Contact setting ID of the delegate principal (owner) */
   principalId?: string;
-  /**
-   * Contact setting ID of the delegate agent (performer)
-   * @example "0d64c132-3aea-11ec-8d3d-0242ac130003"
-   */
+  /** Contact setting ID of the delegate agent (performer) */
   agentId?: string;
   /**
    * Timestamp when delegate was created
    * @format date-time
-   * @example "2020-08-31T01:30:00+02:00"
    */
   created?: string;
   /**
    * Timestamp when delegate was last modified
    * @format date-time
-   * @example "2020-08-31T01:30:00+02:00"
    */
   modified?: string;
   /**

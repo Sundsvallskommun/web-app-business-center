@@ -18,6 +18,8 @@ interface PageDecision {
 
 export interface ClientDecision {
   id?: number;
+  errandId?: number;
+  errandNumber?: string;
   decisionType?: string;
   decisionOutcome?: string;
   description?: string;
@@ -40,6 +42,8 @@ export class DecisionsController {
   private toClientDecision = (decision: Decision): ClientDecision => {
     return {
       id: decision.id,
+      errandId: decision.errandId,
+      errandNumber: decision.errandNumber,
       decisionType: decision.decisionType,
       decisionOutcome: decision.decisionOutcome,
       description: decision.description,

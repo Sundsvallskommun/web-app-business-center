@@ -7,9 +7,11 @@ import { emptyCaseList, casesHandler, getOngoing, getClosed } from '@services/ca
 import { ClosedCases } from './cases/closed-cases/closed-cases.component';
 import { OngoingCases } from './cases/ongoing-cases/ongoing-cases.component';
 import { Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import FullscreenMainSpinner from '@components/spinner/fullscreen-main-spinner.component';
 
 function Page() {
+  const { t } = useTranslation('cases');
   const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseStatusResponse, Error, CasesData>({
     url: '/cases',
     method: 'get',
@@ -21,7 +23,7 @@ function Page() {
     <Suspense fallback={<FullscreenMainSpinner />}>
       <div className="flex flex-col gap-40">
         <div className="text-content">
-          <h1>Dina ärenden</h1>
+          <h1>{t('cases:title')}</h1>
         </div>
         <div>
           <OngoingCases caseData={getOngoing(cases)} isFetchingCases={isFetchingCases} />

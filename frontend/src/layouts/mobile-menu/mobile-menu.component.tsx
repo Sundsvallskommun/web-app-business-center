@@ -4,6 +4,7 @@ import { Button, Divider, Icon, Link, MenuVertical, Modal, cx } from '@sk-web-gu
 import { ArrowRight, LogOut, Menu } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../contexts/app.context';
 import { RepresentingMode } from '../../interfaces/app';
 import { getSwitchedRepresentingMode, newRepresentingModePathname } from '../../utils/representingModeRoute';
@@ -16,6 +17,7 @@ export const MobileMenu = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { representingMode } = useAppContext();
+  const { t } = useTranslation('common');
 
   const openHandler = () => {
     setIsOpen(true);
@@ -31,7 +33,7 @@ export const MobileMenu = () => {
 
   return (
     <div>
-      <Button aria-label="Meny" iconButton size="lg" onClick={openHandler}>
+      <Button aria-label={t('common:menu')} iconButton size="lg" onClick={openHandler}>
         <Icon icon={<Menu />} />
       </Button>
 
@@ -40,8 +42,8 @@ export const MobileMenu = () => {
         className="fixed rounded-0 pt-30 right-0 top-0 w-[calc(100%_-_4.4rem)] h-dvh"
         onClose={closeHandler}
         closeButtonProps={{ size: 'lg', className: cx('-mr-md') }}
-        label={<h1 className="text-h4-md mb-0">Meny</h1>}
-        closeLabel="Stäng meny"
+        label={<h1 className="text-h4-md mb-0">{t('common:menu')}</h1>}
+        closeLabel={t('common:closeMenu')}
         contentTransitionProps={{
           enter: 'transform transition ease-out duration-200',
           enterFrom: 'translate-x-full',
@@ -53,8 +55,8 @@ export const MobileMenu = () => {
       >
         <Modal.Content className="grow overflow-y-scroll gap-24">
           <MenuVertical.Provider>
-            <MenuVertical.Nav aria-label="Undersidor">
-              <MenuVertical aria-label="Undersidor">
+            <MenuVertical.Nav aria-label={t('common:subpages')}>
+              <MenuVertical aria-label={t('common:subpages')}>
                 {bannerMenuItems.map((item, index) => (
                   <MenuVertical.Item
                     className="font-bold"
@@ -81,7 +83,7 @@ export const MobileMenu = () => {
             variant="tertiary"
             rightIcon={<Icon icon={<ArrowRight />} />}
           >
-            Till Mina sidor {representingMode === RepresentingMode.BUSINESS ? 'privat' : 'företag'}
+            {representingMode === RepresentingMode.BUSINESS ? t('common:toMyPagesPrivate') : t('common:toMyPagesBusiness')}
           </Button>
           <Button className="w-full" showBackground={false}
             variant="tertiary">
@@ -91,7 +93,7 @@ export const MobileMenu = () => {
                 external={true}
                 strong={true}
               >
-                E-tjänster
+                {t('common:eServices')}
               </Link>
             </Button>
         </Modal.Content>
@@ -103,7 +105,7 @@ export const MobileMenu = () => {
             variant="secondary"
             leftIcon={<Icon icon={<LogOut />} />}
           >
-            Logga ut
+            {t('common:logout.logout')}
           </Button>
         </Modal.Footer>
       </Modal>

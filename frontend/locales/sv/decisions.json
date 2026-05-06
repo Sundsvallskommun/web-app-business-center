@@ -1,0 +1,117 @@
+{
+  "title": "Dina beslut och dokument",
+  "description": "Här samlar vi dina avtal, beslut och andra dokument som du får från oss.",
+  "pendingCaseInfo": "Väntar du på ett beslut eller har ett pågående ärende så hittar du det under Ärenden i menyn.",
+  "decisionsInCases": "Beslut i dina ärenden",
+  "loading": "Laddar beslut",
+  "decision": "Beslut",
+  "case": "Ärende",
+  "documents": "Dokument",
+  "noDocuments": "Du har inga beslut eller dokument ännu.",
+  "loadingDocuments": "Laddar beslut och dokument",
+  "goToDecisions": "Gå till beslut",
+  "asset": {
+    "status": {
+      "active": "Aktiv",
+      "blocked": "Blockerad",
+      "expired": "Utgången",
+      "unknown": "Okänd"
+    },
+    "caseReferenceIds": "Ärendenummer",
+    "cardNumber": "Kortnummer",
+    "decided": "Beslutad",
+    "validityPeriod": "Giltighetstid",
+    "reportLostPermit": "Anmäl borttappat tillstånd"
+  },
+  "parkingPermit": {
+    "renewal": {
+      "title": "Ansök om att förlänga parkeringstillstånd",
+      "extendValidity": "Förläng giltighet",
+      "alertDescription": "Giltighetstiden för ditt parkeringstillstånd {{pastTense}} den {{date}}. Om du fortfarande vill ha ett parkeringstillstånd kan du ansöka om att förlänga det.",
+      "info": {
+        "title": "Innan du ansöker",
+        "medicalCertificateRequired": "Du måste alltid bifoga ett läkarintyg när du ansöker om parkeringstillstånd för första gången.",
+        "medicalCertificateRenewal": "Vid ansökan om förlängning av befintligt parkeringstillstånd kan nytt läkarintyg behöva bifogas, vilket i regel framgår av tidigare beslut.",
+        "certificateVia1177": "Har du fått läkarintyget via 1177:",
+        "saveCertificate": "1. Spara läkarintyget på din dator eller mobil.",
+        "uploadFile": "2. Ladda upp filen i ansökan",
+        "whatHappensTitle": "Vad händer efter din ansökan?",
+        "whatHappensDescription": "När du har skickat in din ansökan kommer ärendet att granskas av en handläggare innan du får ett beslut. Normal handläggningstid är cirka 10 arbetsdagar.",
+        "back": "Tillbaka",
+        "startApplication": "Påbörja ansökan"
+      },
+      "form": {
+        "confirmTitle": "Ansök om förlängning?",
+        "confirmDescription": "Vill skicka in ansökan om förlängning av parkeringstillstånd?",
+        "yes": "Ja",
+        "no": "Nej",
+        "successMessage": "Din ansökan har skickats in!",
+        "errorMessage": "Något gick fel när ansökan skulle skickas in. Försök igen senare.",
+        "circumstancesChanged": "Har förutsättningarna för din ansökan förändrats gentemot ditt nuvarande parkeringstillstånd?",
+        "describeChanges": "Beskriv kort vad som förändrats",
+        "descriptionRequired": "Ange en beskrivning",
+        "walkingAidsLabel": "Vilket eller vilka hjälpmedel används vid förflyttning?",
+        "walkingAids": {
+          "rollator": "Rullator",
+          "electricWheelchair": "Elrullstol",
+          "crutch": "Krycka/kryckor/käpp",
+          "manualWheelchair": "Rullstol (manuell)"
+        },
+        "expiryDateLabel": "När gick ditt nuvarande parkeringstillstånd ut?",
+        "expiryDatePlaceholder": "Datum för utgång av parkeringstillståndet",
+        "dateRequired": "Ange ett datum",
+        "attachMedicalCertificate": "Bifoga läkarintyg",
+        "allowedFileTypes": "Tillåtna filtyper: PDF, Word, JPEG. Max filstorlek: 25 MB",
+        "medicalCertificateCategory": "Läkarintyg",
+        "cancel": "Avbryt",
+        "submitting": "Sparar",
+        "submit": "Skicka in"
+      },
+      "success": {
+        "title": "Ansökan inskickad",
+        "description": "Din ansökan om att förlänga ditt parkeringstillstånd är inskickad.",
+        "processing": "Vi handlägger ärendet och meddelar dig när ett beslut finns tillgängligt på Mina sidor.",
+        "backToOverview": "Tillbaka till översikt"
+      }
+    },
+    "lost": {
+      "title": "Anmäl borttappat parkeringstillstånd",
+      "info": {
+        "title": "Innan du anmäler",
+        "makePoliceReport": "Gör en polisanmälan gällande ditt borttappade tillstånd.",
+        "haveCopy": "Se till att du har tillgång till en kopia av polisanmälan i PDF-format.",
+        "identifyNumber": "Samt identifiera diarienumret i polisanmälan.",
+        "whatHappensTitle": "Vad händer efter din anmälan?",
+        "whatHappensDescription": "När du har skickat in din anmälan kommer ärendet att granskas av en handläggare innan du får ett beslut. Normal handläggningstid är cirka 10 arbetsdagar.",
+        "back": "Tillbaka",
+        "startReport": "Påbörja anmälan"
+      },
+      "form": {
+        "confirmTitle": "Skicka in anmälan?",
+        "confirmDescription": "Vill du skicka in anmälan om borttappat parkeringstillstånd?",
+        "yes": "Ja",
+        "no": "Nej",
+        "successMessage": "Din anmälan har skickats in!",
+        "errorMessage": "Något gick fel när anmälan skulle skickas in. Försök igen senare.",
+        "attachDescription": "Bifoga din polisanmälan och ange diarienumret nedan.",
+        "policeReportNumberLabel": "Ange diarienummer från polisanmälan",
+        "policeReportNumberRequired": "Ange diarienummer",
+        "policeReportNumberHelp": "Diarienumret hittar du i din polisanmälan.",
+        "attachPoliceReport": "Bifoga kopia av polisanmälan",
+        "allowedFileTypes": "Tillåtna filtyper: PDF, Word, JPEG. Max filstorlek: 25 MB",
+        "policeReportCategory": "Polisanmälan",
+        "cancel": "Avbryt",
+        "submitting": "Skickar",
+        "submit": "Skicka in"
+      },
+      "success": {
+        "title": "Anmälan inskickad",
+        "description": "Din anmälan om borttappat parkeringstillstånd är inskickad.",
+        "processing": "Vi handlägger ärendet och meddelar dig när ett beslut finns tillgängligt på Mina sidor.",
+        "backToOverview": "Tillbaka till översikt"
+      }
+    },
+    "expired": "löpte ut",
+    "expiring": "löper ut"
+  }
+}

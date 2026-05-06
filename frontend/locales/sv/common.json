@@ -1,0 +1,56 @@
+{
+  "continue": "Fortsätt",
+  "person": "Privatperson",
+  "private": "Privat",
+  "organization": "Organisation",
+  "organizationNumber": "Organisationsnummer",
+  "select": "Välj",
+  "selectOrganization": "Välj organisation",
+  "selectOrganizationToRepresent": "Välj organisationen du vill företräda",
+  "switchOrganization": "Byt organisation",
+  "switchOrganizationAriaLabel": "Byt organisation, nuvarande: {{current}}",
+  "switchBusiness": "Byt företag",
+  "isRepresentative": "(ombud)",
+  "unknown": "Okänd",
+  "address": "Adress",
+  "logIn": "Logga in",
+  "overview": "Översikt",
+  "cases": "Ärenden",
+  "decisionsAndDocuments": "Beslut och dokument",
+  "invoices": "Fakturor",
+  "profile": "Profil och inställningar",
+  "login": {
+    "title": "Logga in på Mina sidor",
+    "error": {
+      "login": "Det gick inte att logga in, försök igen senare.",
+      "missingGroups": "Användaren saknar rätt grupper",
+      "missingAttributes": "Användaren saknar rätt attribut",
+      "missingPermissions": "Användaren saknar rättigheter"
+    }
+  },
+  "logout": {
+    "logout": "Logga ut",
+    "title": "Du är nu utloggad",
+    "loginAgain": "Logga in igen"
+  },
+  "noRepresent": {
+    "title": "Hoppsan, vi hittade inget företag som är registrerat på dig",
+    "description": "När du loggar in gör vi en kontroll mot Bolagsverket och Skatteverket, men vi fick ingen träff på ditt personnummer.",
+    "goBack": "Tillbaka till Mina sidor privat"
+  },
+  "eServices": "E-tjänster",
+  "myPages": "Mina sidor",
+  "toMyPagesPrivate": "Till Mina sidor privat",
+  "toMyPagesBusiness": "Till Mina sidor företag",
+  "menu": "Meny",
+  "closeMenu": "Stäng meny",
+  "subpages": "Undersidor",
+  "loading": "Laddar",
+  "showMore": "Visa fler",
+  "showLess": "Visa färre",
+  "name": "Namn",
+  "download": "Ladda ner",
+  "goTo": "Gå till",
+  "ok": "Okej",
+  "close": "Stäng"
+}

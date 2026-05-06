@@ -4,6 +4,7 @@ import { Button, FormErrorMessage, Icon, Link } from '@sk-web-gui/react';
 import { ArrowRight } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CardElevated } from '../../components/cards/card-elevated.component';
 import { RepresentingMode } from '../../interfaces/app';
 import { CenterDiv } from '../../layouts/center-div.component';
@@ -15,6 +16,7 @@ import { AlertBanner } from '@layouts/alert-banner.component';
 
 function Login() {
   const router = useRouter();
+  const { t } = useTranslation(['common', 'login']);
   const [errorMessage, setErrorMessage] = useState('');
   const searchParams = useSearchParams();
 
@@ -51,18 +53,18 @@ function Login() {
       } else if (failMessage) {
         switch (failMessage) {
           case 'SAML_MISSING_GROUP':
-            setErrorMessage('Användaren saknar rätt grupper');
+            setErrorMessage(t('common:login.error.missingGroups'));
             break;
           case 'NOT_AUTHORIZED':
             break;
           case 'SAML_MISSING_ATTRIBUTES':
-            setErrorMessage('Användaren saknar rätt attribut');
+            setErrorMessage(t('common:login.error.missingAttributes'));
             break;
           case 'MISSING_PERMISSIONS':
-            setErrorMessage('Användaren saknar rättigheter');
+            setErrorMessage(t('common:login.error.missingPermissions'));
             break;
           default:
-            setErrorMessage('Det gick inte att logga in, försök igen senare.');
+            setErrorMessage(t('common:login.error.login'));
             break;
         }
       }
@@ -71,7 +73,7 @@ function Login() {
   }, []);
 
   return (
-    <EntryLayout title="Logga in">
+    <EntryLayout title={t('common:logIn')}>
       <div className="w-full max-w-[64rem]">
         <CardElevated>
           <Main>
@@ -79,18 +81,18 @@ function Login() {
               {isLoggedOut ? (
                 <>
                   <div className="flex flex-col w-full gap-12">
-                    <h1 className="text-center text-h2-sm lg:text-h2-lg m-0">Du är nu utloggad</h1>
+                    <h1 className="text-center text-h2-sm lg:text-h2-lg m-0">{t('common:logout.title')}</h1>
                   </div>
 
                   <div className="flex flex-col">
                     <Button variant="primary" color="vattjom" size="lg" onClick={() => router.push('/login')}>
-                      Logga in igen
+                      {t('common:logout.loginAgain')}
                     </Button>
                   </div>
                 </>
               ) : (
                 <>
-                  <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">Logga in på Mina sidor</h1>
+                  <h1 className="text-center text-h2-sm lg:text-h2-lg mb-0">{t('common:login.title')}</h1>
                   <div className="flex flex-col desktop:flex-row gap-24 w-full desktop:w-fit">
                     <Button
                       variant="secondary"
@@ -98,7 +100,7 @@ function Login() {
                       rightIcon={<Icon icon={<ArrowRight />} />}
                       onClick={() => onLogin(RepresentingMode.PRIVATE)}
                     >
-                      Privatperson
+                      {t('common:person')}
                     </Button>
                     <Button
                       variant="secondary"
@@ -106,7 +108,7 @@ function Login() {
                       rightIcon={<Icon icon={<ArrowRight />} />}
                       onClick={() => onLogin(RepresentingMode.BUSINESS)}
                     >
-                      Organisation
+                      {t('common:organization')}
                     </Button>
                   </div>
                   {errorMessage && <FormErrorMessage className="text-error mt-lg">{errorMessage}</FormErrorMessage>}
@@ -117,22 +119,20 @@ function Login() {
         </CardElevated>
         {!isLoggedOut && (
           <div className="mt-48 text-left">
-            <h2 className="text-h3-md">Problem att logga in?</h2>
+            <h2 className="text-h3-md">{t('login:loginProblems')}</h2>
             <p>
-              Vi använder oss av BankID och FrejaID för en trygg och säker inloggning. Det är e-legitimationer som du
-              använder för att styrka din identitet på till exempel hos banken, Försäkringskassan eller Centrala
-              studiestödsnämnden (CSN). Du kan läsa mer om e-legitimation här.{' '}
+              {t('login:bankIdInfo')}{' '}
               <Link external href={url_e_identification}>
-                E-legitimation
+                {t('login:eIdentification')}
               </Link>
             </p>
-            <h2 className="text-h3-md mt-30">Behandling av personuppgifter</h2>
+            <h2 className="text-h3-md mt-30">{t('login:personalDataTitle')}</h2>
             <div>
               <span>
-                Här kan du läsa om hur dina personuppgifter behandlas när du använder våra e-tjänster och Mina Sidor.
+                {t('login:personalDataDescription')}
               </span>{' '}
               <Link external href={url_personal_data}>
-                Behandling av personuppgifter
+                {t('login:personalDataLink')}
               </Link>
             </div>
           </div>

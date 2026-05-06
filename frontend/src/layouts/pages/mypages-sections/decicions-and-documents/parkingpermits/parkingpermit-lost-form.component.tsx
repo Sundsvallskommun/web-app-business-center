@@ -15,6 +15,7 @@ import {
 import { toBase64 } from '@utils/toBase64';
 import { ArrowRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 const MAX_FILE_SIZE_MB = 25;
 
@@ -28,6 +29,7 @@ export const ParkingPermitLostForm = ({
 }: {
   setFormState: React.Dispatch<React.SetStateAction<'showForm' | 'showInfo' | 'success'>>;
 }) => {
+  const { t } = useTranslation('decisions');
   const confirm = useConfirm();
   const toastMessage = useSnackbar();
 
@@ -47,10 +49,10 @@ export const ParkingPermitLostForm = ({
 
   const onSubmit = async (data: LostPermitFormModel) => {
     const confirmed = await confirm.showConfirmation(
-      'Skicka in anmälan?',
-      'Vill du skicka in anmälan om borttappat parkeringstillstånd?',
-      'Ja',
-      'Nej',
+      t('decisions:parkingPermit.lost.form.confirmTitle'),
+      t('decisions:parkingPermit.lost.form.confirmDescription'),
+      t('decisions:parkingPermit.lost.form.yes'),
+      t('decisions:parkingPermit.lost.form.no'),
       'info'
     );
     if (confirmed) {
@@ -80,7 +82,7 @@ export const ParkingPermitLostForm = ({
         toastMessage({
           position: 'bottom',
           closeable: false,
-          message: 'Din anmälan har skickats in!',
+          message: t('decisions:parkingPermit.lost.form.successMessage'),
           status: 'success',
         });
         setFormState('success');
@@ -88,7 +90,7 @@ export const ParkingPermitLostForm = ({
         toastMessage({
           position: 'bottom',
           closeable: false,
-          message: 'Något gick fel när anmälan skulle skickas in. Försök igen senare.',
+          message: t('decisions:parkingPermit.lost.form.errorMessage'),
           status: 'error',
         });
       }
@@ -99,24 +101,24 @@ export const ParkingPermitLostForm = ({
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-56">
-      <p className="text-base">Bifoga din polisanmälan och ange diarienumret nedan.</p>
+      <p className="text-base">{t('decisions:parkingPermit.lost.form.attachDescription')}</p>
 
       <FormControl className="w-full desktop:w-3/4">
-        <FormLabel htmlFor="policeReportNumber">Ange diarienummer från polisanmälan</FormLabel>
+        <FormLabel htmlFor="policeReportNumber">{t('decisions:parkingPermit.lost.form.policeReportNumberLabel')}</FormLabel>
         <Input
-          {...form.register('policeReportNumber', { required: 'Ange diarienummer' })}
+          {...form.register('policeReportNumber', { required: t('decisions:parkingPermit.lost.form.policeReportNumberRequired') })}
           placeholder=""
           data-cy="police-report-number-input"
         />
-        <FormHelperText>Diarienumret hittar du i din polisanmälan.</FormHelperText>
+        <FormHelperText>{t('decisions:parkingPermit.lost.form.policeReportNumberHelp')}</FormHelperText>
         {form.formState.errors.policeReportNumber && (
           <FormErrorMessage className="text-error">{form.formState.errors.policeReportNumber.message}</FormErrorMessage>
         )}
       </FormControl>
 
       <FormControl className="w-full">
-        <FormLabel>Bifoga kopia av polisanmälan</FormLabel>
-        <FormHelperText className="mb-12">Tillåtna filtyper: PDF, Word, JPEG. Max filstorlek: 25 MB</FormHelperText>
+        <FormLabel>{t('decisions:parkingPermit.lost.form.attachPoliceReport')}</FormLabel>
+        <FormHelperText className="mb-12">{t('decisions:parkingPermit.lost.form.allowedFileTypes')}</FormHelperText>
         {files && files.length > 0 ? (
           <FileUpload.List name="files">
             {files.map((file, i) => (
@@ -125,7 +127,7 @@ export const ParkingPermitLostForm = ({
                 index={i}
                 file={file}
                 categoryProps={{
-                  categories: { POLICE_REPORT: 'Polisanmälan' },
+                  categories: { POLICE_REPORT: t('decisions:parkingPermit.lost.form.policeReportCategory') },
                 }}
                 actionsProps={{
                   showRemove: true,
@@ -158,7 +160,7 @@ export const ParkingPermitLostForm = ({
 
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mt-40">
         <Button size="lg" variant="secondary" onClick={() => setFormState('showInfo')}>
-          Avbryt
+          {t('decisions:parkingPermit.lost.form.cancel')}
         </Button>
         <Button
           size="lg"
@@ -166,10 +168,10 @@ export const ParkingPermitLostForm = ({
           rightIcon={<ArrowRight />}
           type="submit"
           loading={reportLostPermit.isPending}
-          loadingText="Skickar"
+          loadingText={t('decisions:parkingPermit.lost.form.submitting')}
           data-cy="submit-lost-permit-button"
         >
-          Skicka in
+          {t('decisions:parkingPermit.lost.form.submit')}
         </Button>
       </div>
     </form>

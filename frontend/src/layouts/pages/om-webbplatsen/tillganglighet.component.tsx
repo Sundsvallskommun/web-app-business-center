@@ -3,96 +3,92 @@
 import { Breadcrumb, Link } from '@sk-web-gui/react';
 import { PagesBreadcrumbsLayout } from '../../../layouts/pages-breadcrumbs-layout.component';
 import NextLink from 'next/link';
-const pageName = 'Tillgänglighet';
+import { useTranslation } from 'react-i18next';
 
 export default function Tillganglighet() {
+  const { t } = useTranslation(['accessibility', 'about']);
+
   return (
     <PagesBreadcrumbsLayout
       breadcrumbs={
         <Breadcrumb className="">
           <Breadcrumb.Item>
-            <NextLink href="/om-webbplatsen">
-              <Breadcrumb.Link variant="body" as="span" href="/om-webbplatsen">
-                Om webbplatsen
+            <NextLink href='/om-webbplatsen'>
+              <Breadcrumb.Link variant="body" as="span" href='/om-webbplatsen'>
+                {t('about:title')}
               </Breadcrumb.Link>
             </NextLink>
           </Breadcrumb.Item>
 
           <Breadcrumb.Item currentPage>
-            <Breadcrumb.Link href="/om-webbplatsen/tillganglighet">{pageName}</Breadcrumb.Link>
+            <Breadcrumb.Link href={t('accessibility:pageLink')}>{t('accessibility:title')}</Breadcrumb.Link>
           </Breadcrumb.Item>
         </Breadcrumb>
       }
     >
       <div className="text-content">
-        <h1>{pageName}</h1>
+        <h1>{t('accessibility:title')}</h1>
         <div className="flex flex-col gap-y-40">
-          <div className="text-lead">Här hittar du tillgänglighetsredogörelsen för Sundsvalls kommuns Mina sidor.</div>
+          <div className="text-lead">{t('accessibility:description')}</div>
           <div>
-            <h2 className="text-h4-md">Tillgänglighet för minasidor.se</h2>
+            <h2 className="text-h4-md">{t('accessibility:subTitle')}</h2>
             <p>
-              Tillgänglighetsredogörelsen beskriver hur sundsvall.se uppfyller lagen om tillgänglighet till digital
-              offentlig service, eventuella kända tillgänglighetsproblem och hur du kan rapportera brister till oss så
-              att vi kan åtgärda dem.
+              {t('accessibility:subDescription')}
             </p>
-            <p>Webbplatsen offentliggjordes den 17 maj 2022.</p>
+            <p>{t('accessibility:publishDate')}</p>
           </div>
           <div>
-            <h2 className="text-h4-md">Hur tillgänglig är webbplatsen?</h2>
-            <p>Delar av webbplatsen är inte helt tillgängliga.</p>
+            <h2 className="text-h4-md">{t('accessibility:howAccessible')}</h2>
+            <p>{t('accessibility:howAccessibleDescription')}</p>
             <p>
-              Länkarna nedan leder till avsnitt som beskriver vilka problem att uppfatta, hantera eller förstå
-              webbplatsen du kan möta i olika situationer.
+              {t('accessibility:howAccessibleProblemsIntro')}
             </p>
             <ul>
               <li>
-                <span className="underline">Utan synförmåga</span>
+                <span className="underline">{t('accessibility:howAccessibleWithoutVision')}</span>
               </li>
               <li>
-                <span className="underline">Utan synförmåga</span>
+                <span className="underline">{t('accessibility:howAccessibleWithoutVision')}</span>
               </li>
               <li>
-                <span className="underline">Utan synförmåga</span>
+                <span className="underline">{t('accessibility:howAccessibleWithoutVision')}</span>
               </li>
               <li>
-                <span className="underline">Utan synförmåga</span>
+                <span className="underline">{t('accessibility:howAccessibleWithoutVision')}</span>
               </li>
               <li>
-                <span className="underline">Utan synförmåga</span>
+                <span className="underline">{t('accessibility:howAccessibleWithoutVision')}</span>
               </li>
             </ul>
           </div>
           <div>
-            <h2 className="text-h4-md">Rapportera brister i webbplatsens tillgänglighet</h2>
+            <h2 className="text-h4-md">{t('accessibility:reportTitle')}</h2>
             <p className="my-16">
-              Om du upptäcker problem som inte är beskrivna på den här sidan, eller om du anser att vi inte uppfyller
-              lagens krav,{' '}
-              <Link external href="https://e-tjanster.sundsvall.se/oversikt/overview/77">
-                lämna synpunkt via Synpunkt Sundsvall
+              {t('accessibility:reportDescription')}{' '}
+              <Link external href={t('accessibility:reportDescriptionUrl')}>
+                {t('accessibility:reportDescriptionLink')}
               </Link>{' '}
               så att vi får veta att problemet finns.
             </p>
-            <p>Du kan också kontakta oss om digital tillgänglighet via:</p>
+            <p>{t('accessibility:digitalReportContactTitle')}</p>
             <ul>
               <li>
-                E-post: <Link href="mailto:sundsvalls.kommun@sundsvall.se">sundsvalls.kommun@sundsvall.se</Link>
+                E-post: <Link href={t('accessibility:digitalReportContactEmailUrl')}>{t('accessibility:digitalReportContactEmail')}</Link>
               </li>
               <li>
-                Telefon: <Link href="tel:+4660191000">060-19 10 00</Link>
+                Telefon: <Link href={t('accessibility:digitalReportContactPhoneUrl')}>{t('accessibility:digitalReportContactPhone')}</Link>
               </li>
             </ul>
           </div>
           <div>
-            <h2 className="text-h4-md">Tillsyn</h2>
+            <h2 className="text-h4-md">{t('accessibility:oversight')}</h2>
             <p>
-              Myndigheten för digital förvaltning har ansvaret för tillsyn över lagen om tillgänglighet till digital
-              offentlig service.
+              {t('accessibility:oversightDescription')}
             </p>
             <p>
-              Om du inte är nöjd med hur vi hanterar ditt påpekande om bristande webbtillgänglighet eller din begäran om
-              tillgängliggörande av innehåll kan du{' '}
-              <Link external href="https://www.digg.se/tdosanmalan">
-                anmäla till Myndigheten för digital förvaltning
+              {t('accessibility:oversightComplaint')}{' '}
+              <Link external href={t('accessibility:oversightUrl')}>
+                {t('accessibility:oversightLink')}
               </Link>
               .
             </p>

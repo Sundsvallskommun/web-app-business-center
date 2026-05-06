@@ -3,6 +3,7 @@ import { Button, Icon } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import { ArrowRight, Mail } from 'lucide-react';
 import NextLink from 'next/link';
+import { useTranslation } from 'react-i18next';
 import styles from './todos.module.scss';
 
 interface TodoParkingPermitExpiryProps {
@@ -10,9 +11,12 @@ interface TodoParkingPermitExpiryProps {
 }
 
 export const TodoParkingPermitExpiry = ({ asset }: TodoParkingPermitExpiryProps) => {
+  const { t } = useTranslation('overview');
+
   const expiryDate = dayjs(asset.validTo).format('D MMMM YYYY');
-  const perfectTense = dayjs(asset?.validTo).isBefore(dayjs()) ? 'har löpt ut' : 'löper ut';
-  const pastTense = dayjs(asset?.validTo).isBefore(dayjs()) ? 'löpte ut' : 'löper ut';
+  const isExpired = dayjs(asset?.validTo).isBefore(dayjs());
+  const perfectTense = isExpired ? t('overview:todo.parkingPermitExpired') : t('overview:todo.parkingPermitExpiring');
+  const pastTense = isExpired ? t('overview:todo.expired') : t('overview:todo.expiring');
 
   return (
     <div className={styles['todo']}>
@@ -21,9 +25,9 @@ export const TodoParkingPermitExpiry = ({ asset }: TodoParkingPermitExpiryProps)
           <Icon className={styles['todo-type-icon']} icon={<Mail />} />
         </div>
         <div className={styles['todo-content']}>
-          <h2 className={styles['todo-content-heading']}>Ditt parkeringstillstånd {perfectTense}</h2>
+          <h2 className={styles['todo-content-heading']}>{perfectTense}</h2>
           <p className={styles['todo-content-text']}>
-            Ditt parkeringstillstånd {pastTense} den {expiryDate}. Gå in på tillståndet om du vill förlänga det.
+            {t('overview:todo.parkingPermitDescription', { pastTense, date: expiryDate })}
           </p>
         </div>
       </div>
@@ -33,9 +37,9 @@ export const TodoParkingPermitExpiry = ({ asset }: TodoParkingPermitExpiryProps)
             className={styles['todo-action-button']}
             color="vattjom"
             rightIcon={<ArrowRight />}
-            aria-label="Parkeringstillstånd, till ärendet"
+            aria-label={t('overview:todo.parkingPermitAriaLabel')}
           >
-            Till ärendet
+            {t('overview:todo.goToCase')}
           </Button>
         </NextLink>
       </div>

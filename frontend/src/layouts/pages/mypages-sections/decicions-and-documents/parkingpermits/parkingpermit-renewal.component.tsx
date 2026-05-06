@@ -1,5 +1,6 @@
 import { Card } from '@components/cards/card.component';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ParkingPermitRenewalForm } from './parkingpermit-renewal-form.component';
 import { RenewalInfo } from './parkingpermit-renewal-info.component';
 import { RenewalSuccess } from './parkingpermit-renewal-success.component';
@@ -9,6 +10,7 @@ export default function ParkingPermitRenewal({
 }: {
   setIsEditing: React.Dispatch<React.SetStateAction<null | 'PERMIT_RENEWAL' | 'LOST_PERMIT'>>;
 }) {
+  const { t } = useTranslation('decisions');
   const [formState, setFormState] = useState<'showForm' | 'showInfo' | 'success'>('showInfo');
 
   return (
@@ -17,7 +19,7 @@ export default function ParkingPermitRenewal({
         {formState === 'showForm' || formState === 'showInfo' ? (
           <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
             <h1 className="text-h2-sm desktop:text-h2-lg mb-0 break-word hyphens-auto">
-              Ansök om att förlänga parkeringstillstånd
+              {t('decisions:parkingPermit.renewal.title')}
             </h1>
           </div>
         ) : null}

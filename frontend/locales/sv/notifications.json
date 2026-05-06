@@ -1,0 +1,17 @@
+{
+  "title": "Aviseringar",
+  "edit": "Ändra aviseringar",
+  "description": "Här väljer hur du ska bli notifierad när något händer kring ditt ärende.",
+  "changeNotifications": "Ändra dina aviseringar",
+  "chooseContactMethod": "Välj kontaktväg för aviseringar",
+  "byEmail": "E-post",
+  "byEmailWarning": "För att få aviseringar via mail behöver du lägga till en e-post.",
+  "bySms": "Sms",
+  "bySmsWarning": "För att få aviseringar via sms behöver du lägga till ett mobilnummer.",
+  "notificationDescription": "Vi skickar aviseringar när du till exempel får en ny faktura eller ett nytt meddelande i ett ärende.",
+  "contactBy": "Du får just nu aviseringar via {{methods}}",
+  "none": "Du får inga aviseringar",
+  "smsAndEmail": "sms och e-post",
+  "cancel": "Avbryt",
+  "save": "Spara"
+}

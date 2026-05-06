@@ -17,13 +17,7 @@ import {
 import { toBase64 } from '@utils/toBase64';
 import { ArrowRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-
-const walkingAids = [
-  { label: 'Rullator', value: 'Rullator' },
-  { label: 'Elrullstol', value: 'Elrullstol' },
-  { label: 'Krycka/kryckor/käpp', value: 'Krycka/kryckor/käpp' },
-  { label: 'Rullstol (manuell)', value: 'Rullstol (manuell)' },
-];
+import { useTranslation } from 'react-i18next';
 
 export const MAX_FILE_SIZE_MB = 50;
 
@@ -40,8 +34,16 @@ export const ParkingPermitRenewalForm = ({
 }: {
   setFormState: React.Dispatch<React.SetStateAction<'showForm' | 'showInfo' | 'success'>>;
 }) => {
+  const { t } = useTranslation('decisions');
   const confirm = useConfirm();
   const toastMessage = useSnackbar();
+
+  const walkingAids = [
+    { label: t('decisions:parkingPermit.renewal.form.walkingAids.rollator'), value: 'Rullator' },
+    { label: t('decisions:parkingPermit.renewal.form.walkingAids.electricWheelchair'), value: 'Elrullstol' },
+    { label: t('decisions:parkingPermit.renewal.form.walkingAids.crutch'), value: 'Krycka/kryckor/käpp' },
+    { label: t('decisions:parkingPermit.renewal.form.walkingAids.manualWheelchair'), value: 'Rullstol (manuell)' },
+  ];
 
   const form = useForm<PermitRenewalFormModel>({
     defaultValues: {
@@ -62,10 +64,10 @@ export const ParkingPermitRenewalForm = ({
 
   const onSubmit = async (data: PermitRenewalFormModel) => {
     const confirmed = await confirm.showConfirmation(
-      'Ansök om förlängning?',
-      'Vill skicka in ansökan om förlängning av parkeringstillstånd?',
-      'Ja',
-      'Nej',
+      t('decisions:parkingPermit.renewal.form.confirmTitle'),
+      t('decisions:parkingPermit.renewal.form.confirmDescription'),
+      t('decisions:parkingPermit.renewal.form.yes'),
+      t('decisions:parkingPermit.renewal.form.no'),
       'info'
     );
     if (confirmed) {
@@ -98,7 +100,7 @@ export const ParkingPermitRenewalForm = ({
         toastMessage({
           position: 'bottom',
           closeable: false,
-          message: 'Din ansökan har skickats in!',
+          message: t('decisions:parkingPermit.renewal.form.successMessage'),
           status: 'success',
         });
         setFormState('success');
@@ -106,7 +108,7 @@ export const ParkingPermitRenewalForm = ({
         toastMessage({
           position: 'bottom',
           closeable: false,
-          message: 'Något gick fel när ansökan skulle skickas in. Försök igen senare.',
+          message: t('decisions:parkingPermit.renewal.form.errorMessage'),
           status: 'error',
         });
       }
@@ -119,7 +121,7 @@ export const ParkingPermitRenewalForm = ({
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-56">
       <div className="flex flex-col">
         <FormLabel className="mb-12">
-          Har förutsättningarna för din ansökan förändrats gentemot ditt nuvarande parkeringstillstånd? 
+          {t('decisions:parkingPermit.renewal.form.circumstancesChanged')}
         </FormLabel>
         <RadioButton.Group inline>
           <RadioButton
@@ -135,7 +137,7 @@ export const ParkingPermitRenewalForm = ({
               form.setValue('circumstancesChanged', 'TRUE');
             }}
           >
-            Ja
+            {t('decisions:parkingPermit.renewal.form.yes')}
           </RadioButton>
           <RadioButton
             data-cy={`circumstances-changed-false`}
@@ -150,22 +152,22 @@ export const ParkingPermitRenewalForm = ({
               form.setValue('circumstancesChanged', 'FALSE');
             }}
           >
-            Nej
+            {t('decisions:parkingPermit.renewal.form.no')}
           </RadioButton>
         </RadioButton.Group>
       </div>
       {form.watch('circumstancesChanged') === 'TRUE' && (
         <>
           <FormControl className="w-full desktop:w-3/4">
-            <FormLabel htmlFor="description">Beskriv kort vad som förändrats</FormLabel>
-            <Input {...form.register('description', { required: 'Ange en beskrivning' })} placeholder="" />
+            <FormLabel htmlFor="description">{t('decisions:parkingPermit.renewal.form.describeChanges')}</FormLabel>
+            <Input {...form.register('description', { required: t('decisions:parkingPermit.renewal.form.descriptionRequired') })} placeholder="" />
             {form.formState.errors.description && (
               <FormErrorMessage className="text-error">{form.formState.errors.description.message}</FormErrorMessage>
             )}
           </FormControl>
 
           <FormControl>
-            <FormLabel>Vilket eller vilka hjälpmedel används vid förflyttning?</FormLabel>
+            <FormLabel>{t('decisions:parkingPermit.renewal.form.walkingAidsLabel')}</FormLabel>
             <Checkbox.Group direction="row" defaultValue={['TRUE']} className="gap-16 flex flex-col desktop:flex-row">
               {walkingAids.map((aid, index) => (
                 <Checkbox
@@ -182,19 +184,19 @@ export const ParkingPermitRenewalForm = ({
         </>
       )}
       <FormControl>
-        <FormLabel htmlFor="date">När gick ditt nuvarande parkeringstillstånd ut?</FormLabel>
+        <FormLabel htmlFor="date">{t('decisions:parkingPermit.renewal.form.expiryDateLabel')}</FormLabel>
         <Input
           type="date"
-          {...form.register('date', { required: 'Ange ett datum' })}
-          placeholder="Datum för utgång av parkeringstillståndet"
+          {...form.register('date', { required: t('decisions:parkingPermit.renewal.form.dateRequired') })}
+          placeholder={t('decisions:parkingPermit.renewal.form.expiryDatePlaceholder')}
         />
         {form.formState.errors.date && (
           <FormErrorMessage className="text-error">{form.formState.errors.date.message}</FormErrorMessage>
         )}
       </FormControl>
       <FormControl className="w-full">
-        <FormLabel>Bifoga läkarintyg</FormLabel>
-        <FormHelperText className="mb-12">Tillåtna filtyper: PDF, Word, JPEG. Max filstorlek: 25 MB</FormHelperText>
+        <FormLabel>{t('decisions:parkingPermit.renewal.form.attachMedicalCertificate')}</FormLabel>
+        <FormHelperText className="mb-12">{t('decisions:parkingPermit.renewal.form.allowedFileTypes')}</FormHelperText>
         {files && files.length > 0 ? (
           <FileUpload.List name="files">
             {files.map((file, i) => (
@@ -203,7 +205,7 @@ export const ParkingPermitRenewalForm = ({
                 index={i}
                 file={file}
                 categoryProps={{
-                  categories: { MEDICAL_CONFIRMATION: 'Läkarintyg' },
+                  categories: { MEDICAL_CONFIRMATION: t('decisions:parkingPermit.renewal.form.medicalCertificateCategory') },
                 }}
                 actionsProps={{
                   showRemove: true,
@@ -231,7 +233,7 @@ export const ParkingPermitRenewalForm = ({
       </FormControl>
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mt-40">
         <Button size="lg" variant="secondary" onClick={() => setFormState('showInfo')}>
-          Avbryt
+          {t('decisions:parkingPermit.renewal.form.cancel')}
         </Button>
         <Button
           size="lg"
@@ -239,9 +241,9 @@ export const ParkingPermitRenewalForm = ({
           rightIcon={<ArrowRight />}
           type="submit"
           loading={registerErrand.isPending}
-          loadingText="Sparar"
+          loadingText={t('decisions:parkingPermit.renewal.form.submitting')}
         >
-          Skicka in
+          {t('decisions:parkingPermit.renewal.form.submit')}
         </Button>
       </div>
     </form>

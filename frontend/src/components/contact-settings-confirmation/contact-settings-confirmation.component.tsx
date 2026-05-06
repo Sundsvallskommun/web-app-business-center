@@ -9,6 +9,7 @@ import { Button, Disclosure, Divider, Icon, Link, Modal } from '@sk-web-gui/reac
 import { Mail, Smartphone } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 interface ContactSettingsConfirmationContentProps {
   isInitial: boolean;
@@ -21,6 +22,7 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
   isInitial,
   onClose,
 }) => {
+  const { t } = useTranslation('confirmation');
   const methods = useFormContext();
   const { getValues, reset } = methods;
   const [isEdit, setIsEdit] = useState<boolean>(false);
@@ -32,11 +34,11 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
     setIsEdit(!isEdit);
   }, [isEdit, setIsEdit, reset]);
 
-  const title = isInitial ? 'Välkommen till Mina sidor' : 'Bekräfta kontaktuppgifter';
+  const title = isInitial ? t('confirmation:welcomeTitle') : t('confirmation:confirmTitle');
 
   const description = isInitial
-    ? 'På Mina sidor kan du följa dina ärenden som du har hos Sundsvalls kommun.'
-    : 'Vi behöver dina kontaktuppgifter för att kunna meddela dig om dina ärenden. Stämmer uppgifterna nedan?';
+    ? t('confirmation:welcomeDescription')
+    : t('confirmation:confirmDescription');
 
   return (
     <Modal.Content className="px-0 lg:px-56 gap-32 md:gap-30">
@@ -49,8 +51,8 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
 
       {isInitial ? (
         <div>
-          <h2 className="!text-[18px]">Lägg till dina kontaktuppgifter</h2>
-          <p>Vi behöver dina kontaktuppgifter för att kunna meddelade om uppdateringar på dina ärenden.</p>
+          <h2 className="!text-[18px]">{t('confirmation:addContactInfo')}</h2>
+          <p>{t('confirmation:confirmDescription')}</p>
         </div>
       ) : null}
 
@@ -61,8 +63,8 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
           <Icon icon={<Mail />} size={56} />
         </div>
         <div className="flex-1 min-w-0">
-          <FormBox name="email" header="E-postadress" isEdit={isInitial || isEdit}>
-            {isInitial || isEdit ? null : (getValues()?.email ?? 'Ingen e-postadress tillagd')}
+          <FormBox name="email" header={t('confirmation:emailLabel')} isEdit={isInitial || isEdit}>
+            {isInitial || isEdit ? null : (getValues()?.email ?? t('confirmation:noEmail'))}
           </FormBox>
         </div>
       </div>
@@ -74,8 +76,8 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
           <Icon icon={<Smartphone />} size={56} />
         </div>
         <div className="flex-1 min-w-0">
-          <FormBox name="phone" header="Mobilnummer" isEdit={isInitial || isEdit}>
-            {isInitial || isEdit ? null : (getValues()?.phone ?? 'Inget mobilnummer tillagt')}
+          <FormBox name="phone" header={t('confirmation:phoneLabel')} isEdit={isInitial || isEdit}>
+            {isInitial || isEdit ? null : (getValues()?.phone ?? t('confirmation:noPhone'))}
           </FormBox>
         </div>
       </div>
@@ -84,14 +86,12 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
         <Divider className="py-0 my-0" />
         <Disclosure>
           <Disclosure.Header>
-            <Disclosure.Title>Hantering av personuppgifter</Disclosure.Title>
+            <Disclosure.Title>{t('confirmation:personalDataTitle')}</Disclosure.Title>
              <Disclosure.Button />
           </Disclosure.Header>
           <Disclosure.Content>
           <p className="pb-16">
-            Vi använder din e-postadress och ditt mobilnummer för att kunna skicka viktig information, bekräftelser och
-            påminnelser som rör dina ärenden och tjänster. Sundsvalls kommun är personuppgiftsansvarig och behandlar
-            dina uppgifter enligt dataskyddsförordningen (GDPR).
+            {t('confirmation:gdprText')}
           </p>
           <p>
             <Link
@@ -99,7 +99,7 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
               target="_blank"
               external
             >
-              Information om Personuppgiftshantering (sundsvall.se)
+              {t('confirmation:personalDataLink')}
             </Link>
           </p>
           </Disclosure.Content>
@@ -111,24 +111,24 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
         {isInitial ? (
           <>
             <Button variant="secondary" onClick={onClose}>
-              Lägg till senare
+              {t('confirmation:addLater')}
             </Button>
-            <Button type="submit">Spara uppgifter</Button>
+            <Button type="submit">{t('confirmation:save')}</Button>
           </>
         ) : isEdit ? (
           <>
             <Button variant="secondary" onClick={handleToggleEdit}>
-              Avbryt
+              {t('confirmation:cancel')}
             </Button>
-            <Button type="submit">Spara uppgifter</Button>
+            <Button type="submit">{t('confirmation:save')}</Button>
           </>
         ) : (
           <>
             <Button variant="secondary" onClick={handleToggleEdit}>
-              Nej, ändra
+              {t('confirmation:noChange')}
             </Button>
             <Button type="submit" onClick={onClose}>
-              Ja, bekräfta
+              {t('confirmation:yesConfirm')}
             </Button>
           </>
         )}

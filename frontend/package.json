@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "dev": "dotenv -e .env -- next dev",
-    "build": "dotenv -e .env -- next build",
-    "start": "dotenv -e .env -- next start",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "next lint --no-cache",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",

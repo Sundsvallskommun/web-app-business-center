@@ -1,11 +1,12 @@
 'use client';
 
 import { Button, Icon } from '@sk-web-gui/react';
-import { Eye, EyeClosed, FileQuestion } from 'lucide-react';
+import { FileQuestion } from 'lucide-react';
 import { CardElevated } from '../components/cards/card-elevated.component';
 import { CenterDiv } from '../layouts/center-div.component';
 import { EntryLayout } from '../layouts/entry-layout.component';
 import Main from '../layouts/main.component';
+import Link from 'next/link';
 
 export default function NotFound() {
   return (
@@ -19,9 +20,11 @@ export default function NotFound() {
                 <Icon icon={<FileQuestion />} size={96} />
               </div>
               <p className="text-center text-large m-0">Sidan du söker finns inte eller har flyttats.</p>
-              <Button as="a" href="/" variant="primary" color="vattjom" size="lg">
-                Till startsidan
-              </Button>
+              <Link href="/" passHref>
+                <Button as="a" variant="primary" color="vattjom" size="lg">
+                  Till startsidan
+                </Button>
+              </Link>
             </CenterDiv>
           </Main>
         </CardElevated>

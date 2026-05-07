@@ -7,9 +7,10 @@ import { RepresentingEntity, RepresentingMode } from '../../../../interfaces/app
 import { DefaultLayout } from '../../../../layouts/default-layout.component';
 import { useApi } from '../../../../services/api-service';
 import { useParams } from 'next/navigation';
+import { toRepresentingLabel } from '@utils/to-representing-label';
 
 export default function Layout({ children }) {
-  const { representingMode, setRepresentingMode } = useAppContext();
+  const { representingMode, setRepresentingMode, setRepresentingName } = useAppContext();
   const { mode } = useParams();
   const {
     data: representingEntity,
@@ -38,6 +39,7 @@ export default function Layout({ children }) {
       ) {
         setRepresentingMode(RepresentingMode.PRIVATE);
       }
+      setRepresentingName(toRepresentingLabel(representingEntity));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, representingIsLoading, representingIsFetching]);

@@ -111,7 +111,8 @@ describe('Ändra representationsläge (privat/företag)', () => {
     });
   });
   it('should render /privat/profil then /foretag/profil', () => {
-    cy.contains('[role="navigationitem"]', 'Profil och inställningar').click();
+    cy.get('[data-cy="user-menu"]').click();
+    cy.contains('[role="menuitem"]', 'Profil och inställningar').click();
 
     cy.url().should('include', '/privat/profil');
     cy.wait(['@getContactSettings', '@getRepresenting']).then(() => {

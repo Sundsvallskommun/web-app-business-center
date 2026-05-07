@@ -1,5 +1,5 @@
 import { RepresentingMode } from '@interfaces/app';
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getRepresentingModeRoute } from '../../../utils/representingModeRoute';
 
 interface IndexProps {
@@ -11,7 +11,9 @@ export default async function Index(props: IndexProps) {
 
   if (mode === 'foretag') {
     redirect(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/oversikt`);
-  } else {
+  } else if (mode === 'privat') {
     redirect(`${getRepresentingModeRoute(RepresentingMode.PRIVATE)}/oversikt`);
+  } else {
+    notFound();
   }
 }

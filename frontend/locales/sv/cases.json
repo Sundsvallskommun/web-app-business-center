@@ -1,0 +1,14 @@
+{
+  "title": "Dina ärenden",
+  "ongoing": {
+    "title": "Pågående",
+    "empty": "Det finns inga pågående ärenden",
+    "loading": "Laddar pågående ärenden",
+    "showMore": "Visa fler ärenden"
+  },
+  "closed": {
+    "title": "Avslutade",
+    "empty": "Det finns inga avslutade ärenden",
+    "loading": "Laddar avslutade ärenden"
+  }
+}

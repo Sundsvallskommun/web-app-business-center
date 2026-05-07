@@ -7,35 +7,37 @@ import { Button, Divider, Icon, Label } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import { ArrowRight, FileCheck2 } from 'lucide-react';
 import { useContext, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AssetsContext } from './asset-layout.component';
 import ParkingPermitLost from './parkingpermits/parkingpermit-lost.component';
 import ParkingPermitRenewalAlert from './parkingpermits/parkingpermit-renewal-alert.component';
 import ParkingPermitRenewal from './parkingpermits/parkingpermit-renewal.component';
 
-const getAssetProps = (status?: Status) => {
+const getAssetProps = (status: Status | undefined, t: (key: string) => string) => {
   let color: string;
   let name: string;
   switch (status) {
     case 'ACTIVE':
       color = 'success';
-      name = 'Aktiv';
+      name = t('decisions:asset.status.active');
       break;
     case 'BLOCKED':
       color = 'error';
-      name = 'Blockerad';
+      name = t('decisions:asset.status.blocked');
       break;
     case 'EXPIRED':
       color = 'error';
-      name = 'Utgången';
+      name = t('decisions:asset.status.expired');
       break;
     default:
       color = 'primary';
-      name = 'Okänd';
+      name = t('decisions:asset.status.unknown');
   }
   return { color, name };
 };
 
 export default function Asset() {
+  const { t } = useTranslation('decisions');
   const [isEditing, setisEditing] = useState<null | 'PERMIT_RENEWAL' | 'LOST_PERMIT'>(null);
   const { assetData } = useContext(AssetsContext);
   return isEditing === 'PERMIT_RENEWAL' ? (
@@ -52,8 +54,8 @@ export default function Asset() {
           <h1 className="text-h2-sm desktop:text-h2-lg mb-0 break-word hyphens-auto">{assetData?.description}</h1>
         </div>
         <span>
-          <Label rounded inverted color={getAssetProps(assetData?.status).color}>
-            {getAssetProps(assetData?.status).name}
+          <Label rounded inverted color={getAssetProps(assetData?.status, t).color}>
+            {getAssetProps(assetData?.status, t).name}
           </Label>
         </span>
       </div>
@@ -70,14 +72,14 @@ export default function Asset() {
             onClick={() => setisEditing('LOST_PERMIT')}
             data-cy="report-lost-permit-button"
           >
-            Anmäl borttappat tillstånd
+            {t('decisions:asset.reportLostPermit')}
           </Button>
         </div>
       ) : null}
       <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
         {assetData?.caseReferenceIds?.length ? (
           <div className="flex flex-col items-start gap-4">
-            <div className="font-bold">Ärendenummer</div>
+            <div className="font-bold">{t('decisions:asset.caseReferenceIds')}</div>
             <div>
               {assetData?.caseReferenceIds?.map((id) => (
                 <div key={id}>{id}</div>
@@ -87,19 +89,19 @@ export default function Asset() {
         ) : null}
         {assetData?.assetId ? (
           <div className="flex flex-col items-start gap-4">
-            <div className="font-bold">Kortnummer</div>
+            <div className="font-bold">{t('decisions:asset.cardNumber')}</div>
             <div>{assetData?.assetId}</div>
           </div>
         ) : null}
         {assetData?.issued ? (
           <div className="flex flex-col items-start gap-4">
-            <div className="font-bold">Beslutad</div>
+            <div className="font-bold">{t('decisions:asset.decided')}</div>
             <div>{dayjs(assetData?.issued).format('D MMM YYYY')}</div>
           </div>
         ) : null}
         {assetData?.issued && assetData?.validTo ? (
           <div className="flex flex-col items-start gap-4">
-            <div className="font-bold">Giltighetstid</div>
+            <div className="font-bold">{t('decisions:asset.validityPeriod')}</div>
             <div>{`${dayjs(assetData?.issued).format('D MMM YYYY')} - ${dayjs(assetData?.validTo).format('D MMM YYYY')}`}</div>
           </div>
         ) : null}

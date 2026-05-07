@@ -1,0 +1,19 @@
+{
+  "welcomeTitle": "Välkommen till Mina sidor",
+  "confirmTitle": "Bekräfta kontaktuppgifter",
+  "welcomeDescription": "På Mina sidor kan du följa dina ärenden som du har hos Sundsvalls kommun.",
+  "confirmDescription": "Vi behöver dina kontaktuppgifter för att kunna meddela dig om dina ärenden. Stämmer uppgifterna nedan?",
+  "addContactInfo": "Lägg till dina kontaktuppgifter",
+  "emailLabel": "E-postadress",
+  "phoneLabel": "Mobilnummer",
+  "noEmail": "Ingen e-postadress tillagd",
+  "noPhone": "Inget mobilnummer tillagt",
+  "personalDataTitle": "Hantering av personuppgifter",
+  "gdprText": "Vi använder din e-postadress och ditt mobilnummer för att kunna skicka viktig information, bekräftelser och påminnelser som rör dina ärenden och tjänster. Sundsvalls kommun är personuppgiftsansvarig och behandlar dina uppgifter enligt dataskyddsförordningen (GDPR).",
+  "personalDataLink": "Information om Personuppgiftshantering (sundsvall.se)",
+  "addLater": "Lägg till senare",
+  "save": "Spara uppgifter",
+  "cancel": "Avbryt",
+  "noChange": "Nej, ändra",
+  "yesConfirm": "Ja, bekräfta"
+}

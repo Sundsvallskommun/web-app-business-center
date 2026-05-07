@@ -1,0 +1,24 @@
+{
+  "title": "Din profil och inställningar",
+  "contactSetting": {
+    "title": "Kontaktuppgifter",
+    "description": "Här kan du uppdatera dina kontaktuppgifter.",
+    "taxAgencyUrl": "https://www.skatteverket.se"
+  },
+  "contactDetails": {
+    "infoText": "Vi hämtar namn och adress från Skatteverket. Stämmer inte uppgifterna kan du ändra dem på",
+    "skatteverketLink": "Skatteverkets hemsida",
+    "name": "Namn",
+    "noName": "Inget namn tillagt",
+    "address": "Adress",
+    "noAddress": "Ingen address tillagd",
+    "emailAddress": "E-postadress",
+    "changeEmail": "Ändra e-postadress",
+    "noEmail": "Ingen e-postaddress tillagd",
+    "phoneNumber": "Mobilnummer",
+    "changePhone": "Ändra mobilnummer",
+    "noPhone": "Inget mobilnummer tillagt",
+    "cancel": "Avbryt",
+    "save": "Spara"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Dina fakturor",
+  "empty": "Du har inga fakturor än, men så fort det finns något att betala kan du se det här.",
+  "unhandled": "Ohanterade",
+  "handled": "Hanterade",
+  "table": {
+    "name": "Namn",
+    "status": "Status",
+    "dueDate": "Förfallodatum",
+    "amount": "Belopp",
+    "reference": "Referensnummer/OCR",
+    "download": "Hämta faktura",
+    "empty": "Inga fakturor",
+    "loading": "Laddar fakturor"
+  }
+}

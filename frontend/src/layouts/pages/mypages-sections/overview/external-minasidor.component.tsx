@@ -2,6 +2,7 @@
 
 import { MetaCard } from '@sk-web-gui/card';
 import { MonitorSmartphone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 type ExternalService = {
   id: number;
@@ -24,16 +25,16 @@ type ExternalMinaSidorProps = {
 };
 
 export const ExternalMinaSidor = ({ services }: ExternalMinaSidorProps) => {
+  const { t } = useTranslation('overview');
   const items = services?.length ? services : servicesSource;
   if (!items.length) return null;
 
   return (
     <section className="pt-80">
-      <h3>Fler Mina sidor</h3>
+      <h3>{t('overview:externalServices.title')}</h3>
 
       <p className="mt-12 max-w-[106rem]">
-        Här hittar du de av kommunens system som har egna e-tjänster och Mina sidor. Har du ett ärende i någon av dessa
-        behöver du logga in där för att följa ditt ärende.
+        {t('overview:externalServices.description')}
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-24 my-24 max-w-[106rem]">
@@ -44,7 +45,7 @@ export const ExternalMinaSidor = ({ services }: ExternalMinaSidorProps) => {
             useHoverEffect
             icon={<MonitorSmartphone />}
             color="mono"
-            aria-label={`Öppna ${svc.label} (extern länk)`}
+            aria-label={t('overview:externalServices.openExternal', { label: svc.label })}
             onClick={(e) => {
               e.preventDefault();
               window.open(svc.url, '_blank', 'noopener,noreferrer');

@@ -4,6 +4,7 @@ import { Button, Divider, Icon, Link } from '@sk-web-gui/react';
 import _ from 'lodash';
 import { Info, Pen } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ContactSettingsFormLogic from './components/contact-settings-form-logic.component';
 import { ClientContactSetting } from '@interfaces/contactsettings';
 import { useApi, useApiService } from '@services/api-service';
@@ -22,6 +23,7 @@ const getAddress = (address) => {
 };
 
 export const ContactDetails = () => {
+  const { t } = useTranslation('profile');
   const queryClient = useApiService((s) => s.queryClient);
   const {
     data: contactsettings,
@@ -60,40 +62,40 @@ export const ContactDetails = () => {
       <div className="flex items-start max-w-fit mb-40 gap-12 ">
         <Icon icon={<Info />} className="shrink-0" />
         <span>
-          Vi hämtar namn och adress från Skatteverket. Stämmer inte uppgifterna kan du ändra dem på{' '}
-          <Link href="https://www.skatteverket.se" external>
-            Skatteverkets hemsida
+          {t('profile:contactDetails.infoText')}{' '}
+          <Link href={t('profile:contactSetting.taxAgencyUrl')} external>
+            {t('profile:contactDetails.skatteverketLink')}
           </Link>
         </span>
       </div>
 
       <ContactSettingsFormLogic onSubmitSuccess={() => setIsEditFalse()} formData={contactsettings}>
         <>
-          <FormBox header="Namn">
-            <div data-cy="form-box-name">{contactsettings?.name ?? EmptyField('Inget namn tillagt')}</div>{' '}
+          <FormBox header={t('profile:contactDetails.name')}>
+            <div data-cy="form-box-name">{contactsettings?.name ?? EmptyField(t('profile:contactDetails.noName'))}</div>{' '}
           </FormBox>
           <Divider className="my-16" />
-          <FormBox header="Adress">
+          <FormBox header={t('profile:contactDetails.address')}>
             <div data-cy="form-box-address">
-              {getAddress(contactsettings?.address) ?? EmptyField('Ingen address tillagd')}
+              {getAddress(contactsettings?.address) ?? EmptyField(t('profile:contactDetails.noAddress'))}
             </div>
           </FormBox>
           <Divider className="my-16" />
 
-          <FormBox name="email" header={isEditEmail ? 'Ändra e-postadress' : 'E-postadress'} isEdit={isEditEmail}>
+          <FormBox name="email" header={isEditEmail ? t('profile:contactDetails.changeEmail') : t('profile:contactDetails.emailAddress')} isEdit={isEditEmail}>
             {isEditEmail ? (
               <div className="flex gap-16 mt-16">
                 <Button variant="secondary" data-cy="cancel-edit-email-button" onClick={() => setIsEditEmail(false)}>
-                  Avbryt
+                  {t('profile:contactDetails.cancel')}
                 </Button>
                 <Button type="submit" data-cy="save-email-button">
-                  Spara
+                  {t('profile:contactDetails.save')}
                 </Button>
               </div>
             ) : (
               <>
                 <div data-cy="form-box-email">
-                  {contactsettings?.email ? contactsettings.email : EmptyField('Ingen e-postaddress tillagd')}
+                  {contactsettings?.email ? contactsettings.email : EmptyField(t('profile:contactDetails.noEmail'))}
                 </div>
                 <Button
                   size="md"
@@ -106,7 +108,7 @@ export const ContactDetails = () => {
                   className="mt-32"
                   data-cy="edit-email-button"
                 >
-                  Ändra e-postadress
+                  {t('profile:contactDetails.changeEmail')}
                 </Button>
               </>
             )}
@@ -115,22 +117,22 @@ export const ContactDetails = () => {
 
           <FormBox
             name="phone"
-            header={isEditPhone ? 'Ändra mobilnummer' : 'Mobilnummer'}
+            header={isEditPhone ? t('profile:contactDetails.changePhone') : t('profile:contactDetails.phoneNumber')}
             isEdit={isEditPhone}
           >
             {isEditPhone ? (
               <div className="flex gap-16 mt-16">
                 <Button variant="secondary" data-cy="cancel-edit-phone-button" onClick={() => setIsEditPhone(false)}>
-                  Avbryt
+                  {t('profile:contactDetails.cancel')}
                 </Button>
                 <Button type="submit" data-cy="save-phone-button">
-                  Spara
+                  {t('profile:contactDetails.save')}
                 </Button>
               </div>
             ) : (
               <>
                 <div data-cy="form-box-phone">
-                  {contactsettings?.phone ? contactsettings.phone : EmptyField('Inget mobilnummer tillagt')}
+                  {contactsettings?.phone ? contactsettings.phone : EmptyField(t('profile:contactDetails.noPhone'))}
                 </div>
                 <Button
                   size="md"
@@ -143,7 +145,7 @@ export const ContactDetails = () => {
                   className="mt-32"
                   data-cy="edit-phone-button"
                 >
-                  Ändra mobilnummer
+                  {t('profile:contactDetails.changePhone')}
                 </Button>
               </>
             )}

@@ -8,6 +8,7 @@ import { isParkingPermit, soonExpiring } from '@services/asset-service';
 import { casesHandler, getCasesInNeedOfData } from '@services/case-service';
 import { Divider, Spinner, useThemeQueries } from '@sk-web-gui/react';
 import { Fragment } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TodoCase } from './todo-case.component';
 import { TodoParkingPermitExpiry } from './todo-parking-permit-expiry.component';
 import styles from './todos.module.scss';
@@ -39,6 +40,8 @@ export interface TodoItem<TTodoType = TodoType> {
 }
 
 export const Todos = () => {
+  const { t } = useTranslation('overview');
+
   const { data: cases, isFetching: casesIsFetching } = useApi<CaseStatusResponse, Error, CasesData>({
     url: '/cases',
     method: 'get',
@@ -66,16 +69,16 @@ export const Todos = () => {
 
   return (
     <section>
-      <h1>Att göra</h1>
-      <p className="text-lead">Här visas ärenden där du har något att hantera.</p>
+      <h1>{t('overview:todo.title')}</h1>
+      <p className="text-lead">{t('overview:todo.description')}</p>
       <div className={styles['todos']}>
         {casesIsFetching || assetsIsFetching ? (
           <div className="flex items-center">
-            <p className="text-secondary">Laddar ärenden</p>
+            <p className="text-secondary">{t('overview:todo.fetching')}</p>
             <Spinner className="ml-10" size={2} />
           </div>
         ) : todoItems.length < 1 ? (
-          <p className="text-secondary">Du har inga ärenden att hantera.</p>
+          <p className="text-secondary">{t('overview:todo.noTodos')}</p>
         ) : (
           <>
             {isMinDesktop && <Divider />}

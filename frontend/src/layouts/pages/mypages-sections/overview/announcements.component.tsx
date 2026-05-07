@@ -4,6 +4,7 @@ import { Announcement } from '@interfaces/announcements';
 import { RepresentingEntity, RepresentingMode } from '@interfaces/app';
 import { useApi } from '@services/api-service';
 import { Image, Link, Spinner } from '@sk-web-gui/react';
+import { useTranslation } from 'react-i18next';
 
 export const announcementsSource: Announcement[] = [
   {
@@ -23,6 +24,8 @@ type AnnouncementsProps = {
 };
 
 export const Announcements = ({ modeOverride }: AnnouncementsProps) => {
+  const { t } = useTranslation('overview');
+
   const { data: representingEntity, isLoading } = useApi<RepresentingEntity>({
     url: '/representing',
     method: 'get',
@@ -42,7 +45,7 @@ export const Announcements = ({ modeOverride }: AnnouncementsProps) => {
 
   return (
     <section className="pt-80">
-      <h3>Nyheter</h3>
+      <h3>{t('overview:announcements.title')}</h3>
       <div className="flex flex-col gap-24 my-24">
         {items.map((announcement) => (
           <div
@@ -55,11 +58,11 @@ export const Announcements = ({ modeOverride }: AnnouncementsProps) => {
               className="rounded-t-cards sm:rounded-r-0 sm:rounded-l-cards object-cover grow w-full md:max-h-[60vw] sm:w-[32rem] sm:max-w-[35vw]"
             />
             <div className="p-24 flex flex-col gap-16">
-              <h2 className="text-h3-md">{announcement.title}</h2>
-              <p>{announcement.text}</p>
+              <h2 className="text-h3-md">{t('overview:welcome.title')}</h2>
+              <p>{t('overview:welcome.description')}</p>
               {announcement.url && (
                 <Link external className="font-bold text-dark underline" href={announcement.url}>
-                  {announcement.urlTitle}
+                  {t('overview:welcome.readMore')}
                 </Link>
               )}
             </div>

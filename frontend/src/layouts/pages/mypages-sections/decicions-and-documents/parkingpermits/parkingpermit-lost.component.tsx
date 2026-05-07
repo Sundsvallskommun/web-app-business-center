@@ -1,5 +1,6 @@
 import { Card } from '@components/cards/card.component';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ParkingPermitLostForm } from './parkingpermit-lost-form.component';
 import { LostPermitInfo } from './parkingpermit-lost-info.component';
 import { LostPermitSuccess } from './parkingpermit-lost-success.component';
@@ -9,6 +10,7 @@ export default function ParkingPermitLost({
 }: {
   setIsEditing: React.Dispatch<React.SetStateAction<null | 'PERMIT_RENEWAL' | 'LOST_PERMIT'>>;
 }) {
+  const { t } = useTranslation('decisions');
   const [formState, setFormState] = useState<'showForm' | 'showInfo' | 'success'>('showInfo');
 
   return (
@@ -17,7 +19,7 @@ export default function ParkingPermitLost({
         {formState === 'showForm' || formState === 'showInfo' ? (
           <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
             <h1 className="text-h2-sm desktop:text-h2-lg mb-0 break-word hyphens-auto">
-              Anmäl borttappat parkeringstillstånd
+              {t('decisions:parkingPermit.lost.title')}
             </h1>
           </div>
         ) : null}

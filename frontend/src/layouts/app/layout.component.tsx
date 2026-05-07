@@ -8,6 +8,7 @@ import 'dayjs/locale/se';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import utc from 'dayjs/plugin/utc';
 import '../../../tailwind.scss';
+import i18nConfig from '../../app/i18nConfig';
 import { LoginGuard } from './login-guard';
 
 dayjs.extend(utc);
@@ -36,7 +37,7 @@ dayjs.updateLocale('se', {
 
 export default function MyAppLayout({ children }) {
   return (
-    <html lang="se">
+    <html lang={i18nConfig.defaultLocale}>
       <body>
         <GuiProvider theme={theme}>
           <ConfirmationDialogContextProvider>

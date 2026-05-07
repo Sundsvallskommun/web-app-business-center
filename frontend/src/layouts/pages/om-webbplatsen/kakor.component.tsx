@@ -3,9 +3,11 @@
 import { Breadcrumb, Button, CookieConsentUtils } from '@sk-web-gui/react';
 import { PagesBreadcrumbsLayout } from '../../../layouts/pages-breadcrumbs-layout.component';
 import NextLink from 'next/link';
-const pageName = 'Kakor (cookies)';
+import { useTranslation } from 'react-i18next';
 
 export default function Kakor() {
+  const { t } = useTranslation(['cookies', 'about']);
+
   const handleCookies = () => {
     CookieConsentUtils.resetConsent();
     location.reload();
@@ -16,89 +18,73 @@ export default function Kakor() {
       breadcrumbs={
         <Breadcrumb className="">
           <Breadcrumb.Item>
-            <NextLink href="/om-webbplatsen">
-              <Breadcrumb.Link variant="body" as="span" href="/om-webbplatsen">
-                Om webbplatsen
+            <NextLink href='/om-webbplatsen'>
+              <Breadcrumb.Link variant="body" as="span" href='/om-webbplatsen'>
+                {t('about:title')}
               </Breadcrumb.Link>
             </NextLink>
           </Breadcrumb.Item>
 
           <Breadcrumb.Item currentPage>
-            <Breadcrumb.Link href="/om-webbplatsen/kakor">{pageName}</Breadcrumb.Link>
+            <Breadcrumb.Link href='/om-webbplatsen/kakor'>{t('cookies:title')}</Breadcrumb.Link>
           </Breadcrumb.Item>
         </Breadcrumb>
       }
     >
       <div className="text-content">
-        <h1>{pageName}</h1>
+        <h1>{t('cookies:title')}</h1>
         <div className="flex flex-col gap-y-40">
-          <div className="text-lead">När du besöker minasidor.sundsvall.se lagras kakor på din dator.</div>
+          <div className="text-lead">{t('cookies:intro')}</div>
           <div>
             <p>
-              En kaka är en textfil som används för att förenkla ditt besök på vår webbplats och göra det möjligt att
-              använda vissa funktioner. Minasidor.sundsvall.se använder inga kakor som sparar personlig information om dig.
+              {t('cookies:whatIsCookie')}
             </p>
             <p>
-              När du besöker minasidor.sundsvall.se lagras kakor på din dator. Sundsvalls kommun använder två olika typer av
-              kakor: Nödvändiga och analytiska kakor.
+              {t('cookies:necessaryCookies')}
             </p>
             <p>
-              Nödvändiga kakor lagras tillfälligt i din dator och förbättrar din användarupplevelse. Dessa kakor kallas
-              för sessionskakor och försvinner när du stänger webbläsaren.
+              {t('cookies:analyticalCookies')}
             </p>
             <p>
-              Analytiska kakor används för att analysera och förstå hur du använder webbplatsen. Dessa kakor sparar vi
-              bara om vi får ditt samtycke. Dessa kakor kan lagras under en längre tid på din dator, en så kallad
-              permanent kaka.
-            </p>
-            <p>
-              Minasidor.sundsvall.se använder funktionalitet från externa webbplatser som i sin tur lagrar kakor när du besöker
-              dessa sidor. Dessa sidor och dess funktionalitet är följande;
+              {t('cookies:externalCookies')}
             </p>
           </div>
           <div>
-            <h2 className="text-h4-md">Våra nödvändiga kakor</h2>
+            <h2 className="text-h4-md">{t('cookies:ourNecessaryCookies')}</h2>
             <p>
-              Namn: SKCookieConsent.
+              {t('cookies:cookieConsent.name')}
               <br />
-              Används av: Minasidor.sundsvall.se.
+              {t('cookies:cookieConsent.usedBy')}
               <br />
-              Typ av kaka: Ett års kaka.
+              {t('cookies:cookieConsent.type')}
               <br />
-              Den här kakan sätts när du accepterar kakor på minasidor.sundsvall.se och används för att hålla reda på att du
-              godkänt kakor.
+              {t('cookies:cookieConsent.description')}
             </p>
             <p>
-              Namn: connect.sid.
+              {t('cookies:sessionCookie.name')}
               <br />
-              Används av: Minasidor.sundsvall.se.
+              {t('cookies:sessionCookie.type')}
               <br />
-              Typ av kaka: Sessionskaka.
-              <br />
-              Används för att hålla reda på användarbehörigheter.
+              {t('cookies:sessionCookie.description')}
             </p>
           </div>
           <div>
-            <h2 className="text-h4-md">Våra analytiska kakor</h2>
+            <h2 className="text-h4-md">{t('cookies:ourAnalyticalCookies')}</h2>
             <p>
-              Namn: _pk_ses.21.8618.
+              {t('cookies:matomo.name')}
               <br />
-              Används av: Minasidor.sundsvall.se.
+              {t('cookies:matomo.type')}
               <br />
-              Typ av kaka: Sessionskaka.
-              <br />
-              Dessa kakor används av minasidor.sundsvall.se för att samla in statistik till statistikverktyget Matomo. Id-kakan
-              används för att spara detaljer om användaren till exempel för att separera olika unika besökare. SES
-              används för att temporärt spara data för en session på webbplatsen.
+              {t('cookies:matomo.description')}
             </p>
           </div>
           <div>
-            <h2 className="text-h4-md">Hantera kakor</h2>
+            <h2 className="text-h4-md">{t('cookies:manageCookies')}</h2>
             <p className="my-16">
-              Du kan ta bort kakor i din webbläsare eller via nedan länk &quot;Hantera kakor (cookies)&quot;
+              {t('cookies:manageCookiesDescription')}
             </p>
             <Button className="mt-16" color="vattjom" onClick={handleCookies}>
-              Hantera kakor (cookies)
+              {t('cookies:manageCookiesLink')}
             </Button>
           </div>
         </div>

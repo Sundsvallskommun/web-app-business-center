@@ -1,5 +1,4 @@
 import { BusinessEngagement, BusinessInformation, OrganisationInfo } from '../interfaces/organisation-info';
-import { useEffect, useState } from 'react';
 import { useApi } from '@services/api-service';
 
 export interface OrganisationInfoResponse {
@@ -23,38 +22,14 @@ export const emptyOrganisationInfo: OrganisationInfo = {
   },
 };
 
-interface BusinessToRepresent extends BusinessEngagement {
-  isRepresentative: boolean;
-}
-
-const combineAllBusinessToRepresent = (
-  businessEngagements?: BusinessEngagement[],
-  businessRepresentatives?: BusinessEngagement[]
-) =>
-  (businessEngagements?.map((x) => ({ ...x, isRepresentative: false })) ?? []).concat(
-    businessRepresentatives?.map((x) => ({ ...x, isRepresentative: true })) ?? []
-  );
-
 export const useCombinedBusinessEngagements = () => {
   const { data: businessEngagements, isLoading: businessEngagementsIsLoading } = useApi<BusinessEngagement[]>({
     url: '/businessengagements',
     method: 'get',
   });
-  // MyRepresentatives api currently disabled
-  // const { data: businessRepresentatives, isLoading: businessRepresentativesIsLoading } = useApi<Engagement[]>({
-  //   url: '/myrepresentatives',
-  //   method: 'get',
-  // });
 
-  const [engagements, setEngagements] = useState<BusinessToRepresent[]>(
-    combineAllBusinessToRepresent(businessEngagements)
-  );
-
-  useEffect(() => {
-    setEngagements(combineAllBusinessToRepresent(businessEngagements));
-  }, [businessEngagements]);
   return {
-    engagements: engagements,
+    engagements: businessEngagements?.map((x) => ({ ...x, isRepresentative: false })) ?? [],
     engagementsIsLoading: businessEngagementsIsLoading,
   };
 };

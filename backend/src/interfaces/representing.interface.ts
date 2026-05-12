@@ -9,6 +9,8 @@ export interface RepresentingBusinessEntity {
   partyId: string;
   organizationName: string;
   organizationNumber: string;
+  isAuthorizedSignatory?: boolean;
+  whitelisted?: boolean;
   information: ClientBusinessInformation;
 }
 export type RepresentingBusinessEntityClient = Omit<RepresentingBusinessEntity, 'partyId'>;

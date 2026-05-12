@@ -2,15 +2,21 @@ import { useState, useRef, useEffect } from 'react';
 
 interface CountdownTimerProps {
   timeout: number; // timeout in milliseconds
+  onChangeTime?: (time: number) => void;
+  className?: string;
 }
 
-export const CountdownTimer: React.FC<CountdownTimerProps> = ({ timeout }) => {
+export const CountdownTimer: React.FC<CountdownTimerProps> = ({ timeout, onChangeTime, className }) => {
   const [timeLeft, setTimeLeft] = useState<number>(timeout);
   const timerIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const tick = () => {
-      setTimeLeft((prevTime) => prevTime - 1000);
+      setTimeLeft((prevTime) => {
+        const newTime = prevTime - 1000;
+        onChangeTime?.(newTime);
+        return newTime;
+      });
     };
 
     timerIdRef.current = setInterval(tick, 1000);
@@ -20,7 +26,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ timeout }) => {
         clearInterval(timerIdRef.current);
       }
     };
-  }, []);
+  }, [onChangeTime]);
 
   useEffect(() => {
     if (timeLeft <= 0 && timerIdRef.current) {
@@ -37,7 +43,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ timeout }) => {
     return `${minutes}:${seconds}`;
   };
 
-  return <span>{formatTime(timeLeft)}</span>;
+  return <span className={className}>{formatTime(timeLeft)}</span>;
 };
 
 export default CountdownTimer;

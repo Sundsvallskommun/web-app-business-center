@@ -5,6 +5,76 @@
     "description": "Här kan du uppdatera dina kontaktuppgifter.",
     "taxAgencyUrl": "https://www.skatteverket.se"
   },
+  "cancel": "Avbryt",
+  "personNumber": "Personnummer",
+  "personNumberLayout": "ÅÅÅÅMMDDXXXX",
+  "validDuration": "Giltighetstid",
+  "validDurationInformation": "En fullmakt kan gälla i max 3 år.",
+  "signWithBankId": "Signera med BankID",
+  "autoclose": "Den här rutan kommer stänga automatiskt om",
+  "mandates": {
+    "title": "Fullmakter",
+    "description": "Hantera dina fullmakter för Mina sidor.",
+    "information": "Du kan ge en person behörighet till dina avtal och dokument. Kom ihåg att du själv måste ta bort behörigheten om personen inte längre ska kunna se eller göra ändringar i avtalen.",
+    "bullets": {
+      "1": "Med en fullmakt kan ombudet hantera dina ärenden och ta del av dina dokument på Mina sidor, men inte ge ut fullmakt till någon annan.",
+      "2": "Personen måste ha ett svenskt personnummer.",
+      "3": "Du ansvarar själv för att ta bort behörigheten när den inte längre behövs.",
+      "4": "Sundsvalls kommun ansvarar inte för eventuell skada som ditt ombud orsakar."
+    },
+    "create_new": "Skapa ny fullmakt",
+    "create_information": "Skapa en ny fullmakt för en person som du vill ska representera ditt företag. Fullmakten gäller endast på Sundsvalls kommuns Mina sidor.",
+    "properties": {
+      "grantee": "Fullmaktshavare",
+      "activeFrom": "Gäller från och med",
+      "inactiveAfter": "Gäller till och med",
+      "agree": "Jag har läst och godkänner villkoren",
+      "status": {
+        "ACTIVE": "Aktiv",
+        "EXPIRED": "Löpt ut",
+        "DELETED": "Borttagen",
+        "INACTIVE": "Inaktiv"
+      }
+    },
+    "success": {
+      "save": "Fullmakt signerad och skapad!",
+      "delete": "Fullmakten togs bort"
+    },
+    "errors": {
+      "409": "En fullmakt är redan utställd på den personen",
+      "500": "Ett okänt fel uppstod. Försök igen.",
+      "save": "Kunde inte skapa fullmakt",
+      "delete": "Kunde inte ta bort fullmakt",
+      "grantee": "Fyll i en fullmaktshavare.",
+      "activeFrom": "Ange ett startdatum.",
+      "inactiveAfter": {
+        "tooBig": "Fullmakten får ej gälla längre än 3 år",
+        "tooSmall": "Fullmakten måste sluta gälla senare än startdatum"
+      },
+      "agree": "Godkänn villkoren."
+    },
+    "agreement": {
+      "bullets": {
+        "1": "Med en fullmakt kan ombudet hantera dina ärenden och ta del av dina dokument på Sundsvalls kommuns Mina sidor.",
+        "2": "Du ansvarar själv för att ta bort behörigheten när den inte längre behövs.",
+        "3": "Sundsvalls kommun ansvarar inte för eventuell skada som ditt ombud orsakar."
+      },
+      "bankid": {
+        "title": "Signera fullmakt",
+        "information": "Jag godkänner härmed följande fullmakt till *Mina sidor* för *Sundsvalls kommun*.\n\n| | |\n|-|-|\n| *Företag*: | {{org}} |\n| *Fullmaktstagare:* | {{name}} |\n| *Startdatum:* | {{startdate}} |\n| *Slutdatum:* | {{enddate}} |\n"
+      }
+    },
+    "signedBy": "Signerad av {{name}} {{date}}",
+    "validUntil": "Giltighetstid",
+    "activeMandates": "Aktuella fullmakter",
+    "activeMandatesDescription": "Här ser du företagets aktuella fullmakter. Du kan när som ta bort fullmakten.",
+    "inactiveMandates": "Avslutade fullmakter",
+    "inactiveMandatesDescription": "Här ser du fullmakter som företaget har haft.",
+    "deleteMandate": "Ta bort fullmakt",
+    "deleteMandateFor": "Ta bort fullmakt för {{name}}",
+    "deleteMandateInfo": "Om du tar bort fullmakten har {{name}} inte längre behörighet att företräda företaget på Mina sidor.",
+    "noMandates": "Inga fullmakter funna"
+  },
   "contactDetails": {
     "infoText": "Vi hämtar namn och adress från Skatteverket. Stämmer inte uppgifterna kan du ändra dem på",
     "skatteverketLink": "Skatteverkets hemsida",

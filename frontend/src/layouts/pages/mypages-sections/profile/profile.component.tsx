@@ -2,11 +2,14 @@
 
 import { Disclosure, Divider } from '@sk-web-gui/react';
 import { useTranslation } from 'react-i18next';
+import { useAppContext } from '@contexts/app.context';
 import { ContactDetails } from './profile-contact-details.component';
 import { ContactSettings } from './profile-contact-settings.component';
+import { Mandates } from './components/mandates/mandates.component';
 
 export const Profile = () => {
   const { t } = useTranslation(['profile', 'notifications']);
+  const { isRepresentingModeBusiness } = useAppContext();
 
   return (
     <div className="flex flex-col gap-20 md:gap-40">
@@ -51,6 +54,8 @@ export const Profile = () => {
           <ContactSettings />
         </Disclosure.Content>
       </Disclosure>
+
+      {isRepresentingModeBusiness && <Mandates />}
     </div>
   );
 };

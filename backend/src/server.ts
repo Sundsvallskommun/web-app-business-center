@@ -11,6 +11,9 @@ import { ContactSettingsController } from './controllers/contact-settings.contro
 import { HealthController } from './controllers/health.controller';
 import { InvoicesController } from './controllers/invoices.controller';
 import { LegalEntityController } from './controllers/legal-entity.controller';
+import { MandateController } from './controllers/mandate.controller';
+import { SignController } from './controllers/sign.controller';
+import { CitizenController } from './controllers/citizen.controller';
 import { DecisionsController } from './controllers/decisions.controller';
 
 validateEnv();
@@ -28,6 +31,9 @@ const app = new App([
   InvoicesController,
   HealthController,
   ContactSettingsController,
+  SignController,
+  MandateController,
+  CitizenController,
 ]);
 
 app.listen();

@@ -1,4 +1,4 @@
-import { Engagement } from '@/controllers/legal-entity.controller';
+import { Engagement } from '@/services/legal-entity.service';
 import { User } from '@/interfaces/users.interface';
 import { RepresentingEntity } from '../interfaces/representing.interface';
 import { CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';

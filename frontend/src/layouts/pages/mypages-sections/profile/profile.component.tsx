@@ -6,6 +6,7 @@ import { useAppContext } from '@contexts/app.context';
 import { ContactDetails } from './profile-contact-details.component';
 import { ContactSettings } from './profile-contact-settings.component';
 import { Mandates } from './components/mandates/mandates.component';
+import { useMandates } from '@services/featureflag-service';
 
 export const Profile = () => {
   const { t } = useTranslation(['profile', 'notifications']);
@@ -42,9 +43,7 @@ export const Profile = () => {
           <>
             <div className="flex flex-col">
               <h4 className="text-h4-md">{t('notifications:title')}</h4>
-              <p className="sm:text-base font-normal mb-0 text-small">
-                {t('notifications:description')}
-              </p>
+              <p className="sm:text-base font-normal mb-0 text-small">{t('notifications:description')}</p>
             </div>
             <Disclosure.Button />
           </>
@@ -55,7 +54,7 @@ export const Profile = () => {
         </Disclosure.Content>
       </Disclosure>
 
-      {isRepresentingModeBusiness && <Mandates />}
+      {useMandates && isRepresentingModeBusiness && <Mandates />}
     </div>
   );
 };

@@ -3,9 +3,9 @@ import { Button, Disclosure, Divider, Icon, List } from '@sk-web-gui/react';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RepresentingEntity } from '@interfaces/mandates';
 import { CreateMandateModal } from './components/create-mandate-modal/create-mandate-modal.component';
 import { ListMandates } from './components/list-mandates/list-mandates.component';
+import { RepresentingEntity } from 'src/data-contracts/backend/data-contracts';
 
 export const Mandates: React.FC = () => {
   const { data: representingEntity } = useApi<RepresentingEntity>({ url: '/representing', method: 'get' });

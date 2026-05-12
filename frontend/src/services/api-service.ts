@@ -37,7 +37,7 @@ const defaultOptions = {
 const get = <T>(url: string, options?: { [key: string]: unknown }) =>
   axios.get<T>(apiURL(url), { ...defaultOptions, ...options });
 
-const post = <T>(url: string, data: unknown = undefined, options?: { [key: string]: unknown }) => {
+const post = <T, D = unknown>(url: string, data?: D, options?: { [key: string]: unknown }) => {
   return axios.post<T>(apiURL(url), data, { ...defaultOptions, ...options });
 };
 
@@ -45,11 +45,11 @@ const remove = <T>(url: string, options?: { [key: string]: unknown }) => {
   return axios.delete<T>(apiURL(url), { ...defaultOptions, ...options });
 };
 
-const patch = <T>(url: string, data: unknown = undefined, options?: { [key: string]: unknown }) => {
+const patch = <T, D = unknown>(url: string, data?: D, options?: { [key: string]: unknown }) => {
   return axios.patch<T>(apiURL(url), data, { ...defaultOptions, ...options });
 };
 
-const put = <T>(url: string, data: unknown = undefined, options?: { [key: string]: unknown }) => {
+const put = <T, D = unknown>(url: string, data?: D, options?: { [key: string]: unknown }) => {
   return axios.put<T>(apiURL(url), data, { ...defaultOptions, ...options });
 };
 
@@ -60,11 +60,16 @@ export const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false, // default: true
       staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: (failureCount, error: AxiosError) => {
-        console.log(`Response Code: ${error.response?.status} failureCount: ${failureCount}`);
-        const shouldRetry = error.response?.status === 500 && failureCount < 3;
+      retry: (failureCount, error: Error) => {
+        let shouldRetry = false;
+        if (axios.isAxiosError(error)) {
+          // Retry on aborted requests (e.g. navigation interrupted the request)
+          shouldRetry =
+            (error.code === 'ECONNABORTED' && failureCount < 2) ||
+            (error.response?.status === 500 && failureCount < 3) ||
+            error.message === 'Network Error';
+        }
         if (shouldRetry) console.log('Retrying ....!');
-        // retry on 500 errors for max 3 times
         return shouldRetry;
       },
     },
@@ -135,25 +140,39 @@ type UseApiProps<
 > = TMethod extends 'get'
   ? UseApiQueryProps<TQueryFnData, TError, TData, TQueryKey, TContext>
   : UseApiMutationProps<TQueryFnData, TError, TData, TQueryKey, TContext>;
+interface Context {
+  queryKey: QueryKey;
+  signal: AbortSignal;
+  meta: Record<string, unknown> | undefined;
+  pageParam?: unknown;
+  direction?: unknown;
+}
 
-export const defaultApiCall: <TQueryFnData = unknown>(config: {
+interface DefaultApiCallConfig {
   url: string;
   method?: Method;
   body?: unknown;
   axiosParameters?: AxiosRequestConfig;
-  context?: {
-    queryKey: QueryKey;
-    signal: AbortSignal;
-    meta: Record<string, unknown> | undefined;
-    pageParam?: unknown;
-    direction?: unknown;
-  };
-}) => Promise<AxiosResponse<ApiResponse<TQueryFnData>>> = <TQueryFnData>(config) => {
-  return apiService[config.method ?? 'get']<TQueryFnData>(config.url, config.body, {
-    signal: config.context?.signal,
-    ...config.axiosParameters,
-    params: { pageParam: config.context?.pageParam, meta: config.context?.meta, ...config.axiosParameters?.params },
-  });
+  context?: Context;
+}
+type DefaultApiCall = <TQueryFnData = unknown>(
+  config: DefaultApiCallConfig
+) => Promise<AxiosResponse<ApiResponse<TQueryFnData>>>;
+
+export const defaultApiCall: DefaultApiCall = <TQueryFnData>(config: DefaultApiCallConfig) => {
+  if (config.method === 'post' || config.method === 'put' || config.method === 'patch') {
+    return apiService[config.method]<TQueryFnData>(config.url, config?.body, {
+      signal: config.context?.signal,
+      ...config.axiosParameters,
+      params: { pageParam: config.context?.pageParam, meta: config.context?.meta, ...config.axiosParameters?.params },
+    });
+  } else {
+    return apiService[config.method ?? 'get']<TQueryFnData>(config.url, {
+      signal: config.context?.signal,
+      ...config.axiosParameters,
+      params: { pageParam: config.context?.pageParam, meta: config.context?.meta, ...config.axiosParameters?.params },
+    });
+  }
 };
 
 type UseApiResult<
@@ -202,7 +221,8 @@ export function useApi<
     url,
     method,
     axiosParameters,
-    dataHandler = (data) => data,
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dataHandler = (data: any) => data,
     body,
     queryKey = [url] as TQueryKey,
     queryOptions,
@@ -211,7 +231,7 @@ export function useApi<
   const _store_queryClient = useApiService((s) => s.queryClient);
   const _queryClient = queryClient ?? _store_queryClient;
 
-  const defaultQueryCall = async (context) =>
+  const defaultQueryCall = async (context: Context) =>
     defaultApiCall<TQueryFnData>({ url, method, body, axiosParameters, context }).then((res) =>
       dataHandler(res.data.data)
     );
@@ -222,19 +242,21 @@ export function useApi<
         dataHandler(res.data.data)
       );
     } catch (error) {
-      handleError(error);
+      handleError(error as AxiosError);
       return { error };
     }
   };
 
   if (method === 'get') {
+    const enabled = queryOptions?.enabled ?? true;
     // eslint-disable-next-line react-hooks/rules-of-hooks
     return useQuery(
       {
         queryKey,
+        enabled,
         queryFn: defaultQueryCall,
         throwOnError: (error) => {
-          handleError(error);
+          handleError(error as AxiosError);
           return false;
         },
         ...queryOptions,
@@ -252,10 +274,11 @@ export function useApi<
           return { newBody };
         },
         onSuccess: (result) => {
-          _queryClient.setQueryData<TQueryFnData & { error?: DefaultError }>(queryKey, result as TQueryFnData & { error?: DefaultError });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          _queryClient.setQueryData<TQueryFnData & { error?: DefaultError }>(queryKey, result as any);
         },
         throwOnError: (error) => {
-          handleError(error);
+          handleError(error as AxiosError);
           return false;
         },
         ...mutationOptions,

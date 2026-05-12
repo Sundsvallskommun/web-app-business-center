@@ -2,7 +2,7 @@ import { DatePicker, FormControl, FormErrorMessage, FormLabel, Icon } from '@sk-
 import { Info } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { SignMandateDetails } from '@interfaces/mandates';
+import { SignMandateDetails } from 'src/data-contracts/backend/data-contracts';
 
 export const CreateMandateFormDates: React.FC = () => {
   const { t } = useTranslation();

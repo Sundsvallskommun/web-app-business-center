@@ -6,10 +6,12 @@ import authMiddleware from '@middlewares/auth.middleware';
 import { validationMiddleware } from '@middlewares/validation.middleware';
 import { getIsWhitelisted } from '@/services/mandate.service';
 import { logger } from '@/utils/logger';
-import { Body, Controller, Get, Post, Req, UseBefore } from 'routing-controllers';
-import { OpenAPI } from 'routing-controllers-openapi';
+import { Response } from 'express';
+import { Body, Controller, Get, Post, Req, Res, UseBefore } from 'routing-controllers';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { RepresentingBusinessEntity, RepresentingEntity, RepresentingEntityClient, RepresentingMode } from '../interfaces/representing.interface';
 import { Engagement, LegalEntityController } from './legal-entity.controller';
+import { ClientRepresentingApiResponse } from '@/responses/representing.response';
 
 interface ResponseData {
   data: any;
@@ -107,9 +109,13 @@ export class RepresentingController {
 
   @Get('/representing')
   @OpenAPI({ summary: 'Return which entity a logged in user represents' })
+  @ResponseSchema(ClientRepresentingApiResponse)
   @UseBefore(authMiddleware)
-  async getBussinesEngagments(@Req() req: RequestWithUser): Promise<ResponseData> {
-    const { representing } = req?.session;
+  async getBussinesEngagments(
+    @Req() req: RequestWithUser,
+    @Res() res: Response<ClientRepresentingApiResponse>,
+  ): Promise<Response<ClientRepresentingApiResponse>> {
+    const representing = req.session?.representing ?? undefined;
 
     if (!representing) {
       throw new HttpException(403, 'Forbidden');
@@ -123,7 +129,7 @@ export class RepresentingController {
       throw new HttpException(400, 'Representing not set');
     }
 
-    return { data: this.getRepresentingToSend(req.session.representing), message: 'success' };
+    return res.send({ data: this.getRepresentingToSend(req.session.representing), message: 'success' });
   }
 
   @Post('/representing')

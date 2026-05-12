@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { SignMandateDetails } from '@interfaces/mandates';
+import { SignMandateDetails } from 'src/data-contracts/backend/data-contracts';
 import * as yup from 'yup';
 
 export const mandateSchema = yup

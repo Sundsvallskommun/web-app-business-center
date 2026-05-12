@@ -4,7 +4,7 @@ import { CheckCircle2, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { SignMandateDetails } from '@interfaces/mandates';
+import { SignMandateDetails } from 'src/data-contracts/backend/data-contracts';
 
 export const CreateMandateFormGrantee: React.FC = () => {
   const [personnumber, setPersonnumber] = useState<string>('');

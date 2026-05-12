@@ -1,4 +1,4 @@
-import { MandatePopulated } from '@interfaces/mandates';
+import { MandatePopulated } from 'src/data-contracts/backend/data-contracts';
 import { apiService, useApi } from '@services/api-service';
 import { Button, Icon, Label, useConfirm, useSnackbar } from '@sk-web-gui/react';
 import dayjs from 'dayjs';

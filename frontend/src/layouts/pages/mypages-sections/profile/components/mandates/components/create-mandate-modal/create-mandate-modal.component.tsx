@@ -17,7 +17,7 @@ import {
   SignCollect,
   SignMandateDetails,
   SignMandateDto,
-} from '@interfaces/mandates';
+} from 'src/data-contracts/backend/data-contracts';
 import { SignApiResponse } from '@interfaces/bankid';
 import { CreateMandateFormAgreement } from './components/create-mandate-form-agreement.component';
 import { CreateMandateFormDates } from './components/create-mandate-form-dates.component';

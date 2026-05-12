@@ -1,4 +1,4 @@
-import { MandatePopulated } from '@interfaces/mandates';
+import { MandatePopulated } from 'src/data-contracts/backend/data-contracts';
 import { MandateListItem } from './mandate-list-item.component';
 import { useTranslation } from 'react-i18next';
 

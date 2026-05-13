@@ -2,3 +2,7 @@ node_modules
 .next
 .env
 .DS_Store
+.claude
+.plans
+.playwright-mcp
+screenshots

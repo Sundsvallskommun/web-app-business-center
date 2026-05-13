@@ -34,14 +34,14 @@ export function Layout({ title, children }: { title: string; children: React.Rea
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></meta>
       </Head>
 
-      <NextLink href="#content" legacyBehavior passHref>
-        <a
-          onClick={setFocusToMain}
-          accessKey="s"
-          className="sr-only focus:not-sr-only bg-primary-light border-2 border-black p-4 text-black inline-block focus:absolute focus:top-0 focus:left-0 focus:right-0 focus:m-auto focus:w-80 text-center"
-        >
-          {t('layout:goToContent')}
-        </a>
+      <NextLink
+        href="#content"
+        passHref
+        onClick={setFocusToMain}
+        accessKey="s"
+        className="sr-only focus:not-sr-only bg-primary-light border-2 border-black p-4 text-black inline-block focus:absolute focus:top-0 focus:left-0 focus:right-0 focus:m-auto focus:w-80 text-center"
+      >
+        {t('layout:goToContent')}
       </NextLink>
 
       <AlertBannerWrapper />
@@ -102,18 +102,18 @@ export function Layout({ title, children }: { title: string; children: React.Rea
                   <label>{t('layout:aboutContent')}</label>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'/om-webbplatsen'}>
+                  <NextLink passHref href={'/om-webbplatsen'}>
                     <Link variant="tertiary">{t('layout:aboutWebsite')}</Link>
                   </NextLink>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref legacyBehavior href={'/om-webbplatsen/kakor'}>
+                  <NextLink passHref href={'/om-webbplatsen/kakor'}>
                     <Link variant="tertiary">{t('layout:cookies')}</Link>
                   </NextLink>
                 </Footer.ListItem>
                 <Footer.ListItem>
                   {/* Uncomment when tillganglighet.component.tsx is updated with new information */}
-                  {/* <NextLink passHref legacyBehavior href={'/om-webbplatsen/tillganglighet'}>
+                  {/* <NextLink passHref href={'/om-webbplatsen/tillganglighet'}>
                     <Link variant="tertiary">{t('layout:accessibility')}</Link>
                   </NextLink> */}
                   <Link
@@ -127,7 +127,6 @@ export function Layout({ title, children }: { title: string; children: React.Rea
                 <Footer.ListItem>
                   <NextLink
                     passHref
-                    legacyBehavior
                     href={
                       'https://sundsvall.se/kommun-och-politik/overklaga-beslut-rattssakerhet/behandling-av-personuppgifter'
                     }
@@ -148,7 +147,7 @@ export function Layout({ title, children }: { title: string; children: React.Rea
         body={
           <p>
             {t('layout:cookieBanner.description')}{' '}
-            <NextLink href={'/om-webbplatsen/kakor'} legacyBehavior passHref>
+            <NextLink href={'/om-webbplatsen/kakor'} passHref>
               <Link>{t('layout:cookieBanner.readMore')}</Link>
             </NextLink>
           </p>

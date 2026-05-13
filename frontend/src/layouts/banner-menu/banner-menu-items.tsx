@@ -1,3 +1,4 @@
+import { useThemeQueries } from '@sk-web-gui/react';
 import NextLink from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../contexts/app.context';
@@ -7,7 +8,9 @@ export const useBannerMenuItems = () => {
   const { representingMode } = useAppContext();
   const { t } = useTranslation('common');
   const myPagesRoute = getRepresentingModeRoute(representingMode);
-  return [
+  const { isMinDesktop } = useThemeQueries();
+
+  const bannerItems = [
     <NextLink
       key={`banner-menu-item-0`}
       className="w-full flex items-center justify-center"
@@ -36,6 +39,10 @@ export const useBannerMenuItems = () => {
     >
       {t('common:invoices')}
     </NextLink>,
+  ];
+
+  const mobileMenuItems = [
+    ...bannerItems,
     <NextLink
       key={`banner-menu-item-4`}
       className="w-full flex items-center justify-center"
@@ -44,4 +51,6 @@ export const useBannerMenuItems = () => {
       {t('common:profile')}
     </NextLink>,
   ];
+
+  return isMinDesktop ? bannerItems : mobileMenuItems;
 };

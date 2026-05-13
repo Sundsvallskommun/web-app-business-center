@@ -9,7 +9,6 @@
   "selectOrganizationToRepresent": "Välj organisationen du vill företräda",
   "switchOrganization": "Byt organisation",
   "switchOrganizationAriaLabel": "Byt organisation, nuvarande: {{current}}",
-  "switchBusiness": "Byt företag",
   "isRepresentative": "(ombud)",
   "unknown": "Okänd",
   "address": "Adress",

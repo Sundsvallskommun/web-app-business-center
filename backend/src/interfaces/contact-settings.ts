@@ -1,9 +1,14 @@
+import {
+  ContactSetting as IContactSetting,
+  ContactChannel as IContactChannel,
+  ContactMethod as IContactMethod,
+} from '@/data-contracts/contactsettings/data-contracts';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 
-export class ContactSettingChannel {
+export class ContactSettingChannel implements IContactChannel {
   @IsString()
-  contactMethod: string;
+  contactMethod: IContactMethod;
   @IsString()
   destination: string;
   @IsOptional()
@@ -26,7 +31,7 @@ export class Meta {
   totalPages: number;
 }
 
-export class ContactSetting {
+export class ContactSetting implements IContactSetting {
   @IsString()
   id: string;
   @IsString()
@@ -39,6 +44,12 @@ export class ContactSetting {
   created: string;
   @IsString()
   modified: string;
+  @IsBoolean()
+  virtual: boolean;
+  @IsString()
+  alias: string;
+  @IsString()
+  municipalityId: string;
 }
 
 export class UpdateContactSettingsDto {
@@ -52,10 +63,17 @@ export class UpdateContactSettingsDto {
 
 export interface UpdateContactSettings {
   alias: string;
+  virtual?: boolean;
   contactChannels: ContactSettingChannel[];
 }
 
 export interface NewContactSettings extends UpdateContactSettings {
   partyId: string;
   createdById: string;
+}
+
+export interface ContactSettingAddress {
+  street?: string;
+  postcode?: string;
+  city?: string;
 }

@@ -1,8 +1,7 @@
 import { getApiBase } from '@/config/api-config';
-import { RequestWithUser } from '@/interfaces/auth.interface';
 import ApiService from '@/services/api.service';
 import { logger } from '@/utils/logger';
-import { Controller, Get, Req } from 'routing-controllers';
+import { Controller, Get } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
 @Controller()
@@ -12,12 +11,16 @@ export class HealthController {
 
   @Get('/health/up')
   @OpenAPI({ summary: 'Return health check' })
-  async up(@Req() req: RequestWithUser) {
+  async up() {
     const url = `${this.apiBase}/simulations/response?status=200%20OK`;
     const data = {
       status: 'OK',
     };
-    const res = await this.apiService.post<{ status: string }, typeof data>({ url, data }, req.user).catch(e => {
+    const dummyUser = {
+      username: '',
+      partyId: '',
+    };
+    const res = await this.apiService.post<{ status: string }, typeof data>({ url, data }, dummyUser).catch(e => {
       logger.error('Error when doing health check:', e);
       return e;
     });

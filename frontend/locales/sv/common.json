@@ -51,5 +51,11 @@
   "download": "Ladda ner",
   "goTo": "Gå till",
   "ok": "Okej",
-  "close": "Stäng"
+  "close": "Stäng",
+  "minutes_one": "{{count}} minut",
+  "minutes_other": "{{count}} minuter",
+  "seconds_one": "{{count}} sekund",
+  "seconds_other": "{{count}} sekunder",
+  "left": "kvar",
+  "citizenError": "Kunde inte hämta personuppgifter"
 }

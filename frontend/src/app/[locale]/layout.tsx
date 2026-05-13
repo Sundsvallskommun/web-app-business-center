@@ -7,6 +7,7 @@ import { ReactNode } from 'react';
 const namespaces = [
   'about',
   'accessibility',
+  'bankid',
   'cases',
   'common',
   'confirmation',

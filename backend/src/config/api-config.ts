@@ -48,6 +48,10 @@ export const APIS = [
     name: 'simulatorserver',
     version: '2.0',
   },
+  {
+    name: 'myrepresentatives',
+    version: '4.4',
+  },
 ] as const;
 
 export const getApiBase = (name: string) => {

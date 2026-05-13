@@ -13,6 +13,7 @@ import { OpenAPI } from 'routing-controllers-openapi';
 export interface Engagement {
   organizationName?: string;
   organizationNumber?: string;
+  isAuthorizedSignatory?: boolean;
 }
 
 interface InformationResponse {
@@ -53,6 +54,7 @@ export class LegalEntityController {
       .map(e => ({
         organizationName: e?.name,
         organizationNumber: e?.organizationNumber,
+        isAuthorizedSignatory: e?.isAuthorizedSignatory ?? false,
       }));
 
     // NOTE: set representing to session so we can use it to lookup later

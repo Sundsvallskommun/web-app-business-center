@@ -430,7 +430,10 @@ class App {
         version: '1.0.0',
       },
     });
-
+    this.app.use(`${BASE_URL_PREFIX}/swagger.json`, (_req, res, next) => {
+      res.json(spec);
+      next();
+    });
     this.app.use(`${BASE_URL_PREFIX}/api-docs`, swaggerUi.serve, swaggerUi.setup(spec));
   }
 

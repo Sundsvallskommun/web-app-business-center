@@ -23,27 +23,37 @@ export interface VagvalStep {
 }
 
 /**
- * Steg 1 — uppgifter om sökande.
- *
- * Frontend lagrar fältvärden som de skrivs in. Tvåfaldig validering:
- * react-hook-form per-fält i UI:t (e-post, personnummer-mönster, krav)
- * och class-validator på backend (samma regler — backend är källan).
+ * Faktisk vistelseadress — strukturerad så att handläggaren kan
+ * behandla den som en riktig adress (matchning mot register, utskick)
+ * istället för fri text.
  */
-export interface IdentitetStep {
-  fornamn: string;
-  efternamn: string;
-  /** Format YYYYMMDD-XXXX. Lagras med bindestreck. */
-  personnummer: string;
-  /** Frivilligt — c/o-adress. */
-  coAdress: string;
+export interface AlternativVistelseadress {
   gatuadress: string;
-  /** Format NNN NN. Lagras med mellanslag. */
+  coAdress: string;
+  /** Format NNN NN. */
   postnummer: string;
   postort: string;
+}
+
+/**
+ * Steg 1 — Identitet och vistelse.
+ *
+ * Namn, personnummer och folkbokföringsadress lagras INTE i ansökan —
+ * de hämtas från Citizen via /economic-aid/applicant-profile och visas
+ * skrivskyddat i UI:t. Det enda sökanden bidrar med här är att bekräfta
+ * sin vistelseadress.
+ *
+ * Kontakt-/tolk-/3-månadersfälten ligger temporärt i steg 1 tills de
+ * får ett eget kontakt-steg.
+ */
+export interface IdentitetStep {
+  /** Stämmer folkbokföringsadressen med faktisk vistelseadress? */
+  vistelseadressStammer: boolean | null;
+  /** Ifylls bara när vistelseadressStammer = false. */
+  alternativVistelseadress: AlternativVistelseadress;
   epost: string;
-  /** Frivilligt — krävs bara om kontaktViaSms = true. */
+  /** Krävs bara om kontaktViaSms = true. */
   mobiltelefon: string;
-  /** Tri-state under utfyllnad; måste vara satt vid Nästa. */
   kontaktViaSms: boolean | null;
   /** Senaste 3 mån — styr automatisk koppling till tidigare ärende. */
   ansoktSenaste3Manader: boolean | null;
@@ -52,16 +62,149 @@ export interface IdentitetStep {
   tolkSprak: string;
 }
 
-// Steg 2–8 är inte spec'ade än. Typas som tomma "Record<string, never>"
-// för att formuläret ska kompilera incrementellt — när ett steg
-// implementeras ersätts dess type med en riktig interface.
+/** Profil som hämtas från Citizen och visas skrivskyddat i steg 1. */
+export interface ApplicantAddress {
+  gatuadress: string;
+  coAdress: string;
+  postnummer: string;
+  postort: string;
+  addressType: string | null;
+}
 
-/** Steg 2 — hushåll. */
-export type HushallStep = Record<string, never>;
-/** Steg 3 — boende. */
-export type BoendeStep = Record<string, never>;
-/** Steg 4 — sysselsättning. */
-export type SysselsattningStep = Record<string, never>;
+export interface ApplicantProfile {
+  fornamn: string;
+  efternamn: string;
+  personnummer: string;
+  folkbokforingsadress: ApplicantAddress | null;
+  andraAdresser: ApplicantAddress[];
+  /** Saknas i Citizen-contractet idag — visas inte när null. */
+  medborgarskap: string | null;
+  uppehallstillstand: string | null;
+}
+
+// Steg 4–8 (och delar därefter) är inte spec'ade än. Otypade steg
+// förblir "Record<string, never>" tills de implementeras.
+
+/**
+ * Civilstånd. Vi använder kortformer som värden — texten i UI:t
+ * (t.ex. "Gift eller registrerad partner") är bara en etikett.
+ */
+export const CIVILSTAND_VALUES = ['gift', 'sambo', 'ensamstaende'] as const;
+export type Civilstand = (typeof CIVILSTAND_VALUES)[number];
+
+/**
+ * Medsökande — make/maka/sambo som ansöker tillsammans med sökanden.
+ * Visas bara när civilstand = 'gift' eller 'sambo'. Personnummer
+ * anges som YYYYMMDD-XXXX (samma format som sökandens i Citizen).
+ */
+export interface Medsokande {
+  fornamn: string;
+  efternamn: string;
+  /** Format YYYYMMDD-XXXX. */
+  personnummer: string;
+  epost: string;
+  mobiltelefon: string;
+  behoverTolk: boolean | null;
+  /** Krävs när behoverTolk = true. */
+  tolkSprak: string;
+}
+
+export const BOR_I_HEMMET_VALUES = ['heltid', 'deltid'] as const;
+export type BorIHemmet = (typeof BOR_I_HEMMET_VALUES)[number];
+
+/**
+ * Barn under 21 år. Sökanden anger uppgifterna manuellt — vi gör
+ * INTE Citizen-uppslagning på andra personnummer än sökandens egna,
+ * eftersom det här är en extern medborgar-app.
+ */
+export interface Barn {
+  fornamn: string;
+  efternamn: string;
+  /** Format YYYYMMDD-XXXX. */
+  personnummer: string;
+  borIHemmet: BorIHemmet | null;
+}
+
+/**
+ * Steg 2 — Hushåll.
+ *
+ * Endast sökandens egna uppgifter får slås upp mot Citizen. Medsökande
+ * och barn matas därför in manuellt. V1 frågar civilstånd, om barn
+ * finns (+ lista över barnen), ev. förändring sedan senaste ansökan,
+ * samt medsökande.
+ */
+export interface HushallStep {
+  civilstand: Civilstand | null;
+  /** Barn under 21 år som bor helt eller delvis i hemmet. */
+  harBarnUnder21: boolean | null;
+  /** Ifylls när harBarnUnder21 = true. */
+  barn: Barn[];
+  /** Visas bara vid återansökan + harBarnUnder21 = true. */
+  forandringBarnSedanSenasteAnsokan: boolean | null;
+  /** Krävs när forandringBarnSedanSenasteAnsokan = true. Max 500 tecken. */
+  forandringBeskrivning: string;
+  /** Ifylls bara när civilstand = 'gift' eller 'sambo'. */
+  medsokande: Medsokande;
+}
+export const BOENDEFORM_VALUES = [
+  'hyreslagenhet',
+  'bostadsratt',
+  'villa',
+  'andrahand',
+  'inneboende',
+  'annat',
+] as const;
+export type Boendeform = (typeof BOENDEFORM_VALUES)[number];
+
+export const ANTAL_RUM_VALUES = [
+  '1_rok',
+  '1_rk',
+  '2_rk',
+  '3_rk',
+  '4_rk',
+  '5_rk',
+  '6plus_rk',
+] as const;
+export type AntalRum = (typeof ANTAL_RUM_VALUES)[number];
+
+/**
+ * Steg 3 — Boende. Kostnaderna anges i hela kronor (sträng av siffror)
+ * för att matcha övriga fritextinput; tom sträng = ej besvarat.
+ * Filuppladdning av hyresavi/fakturor läggs till i kommande iteration.
+ */
+export interface BoendeStep {
+  boendeform: Boendeform | null;
+  manadskostnad: string;
+  antalRum: AntalRum | null;
+  garagePplatsIngar: boolean | null;
+  hushallsel: string;
+  hemforsakring: string;
+}
+
+export const SYSSELSATTNING_VALUES = [
+  'arbetssokande',
+  'anstalld',
+  'sjukskriven',
+  'foraldraledig',
+  'studerar',
+  'annat',
+] as const;
+export type Sysselsattning = (typeof SYSSELSATTNING_VALUES)[number];
+
+/**
+ * Steg 4 — Sysselsättning. studerar och sjukskriven är separata Ja/Nej-
+ * signaler oavsett huvudsysselsättning, eftersom de styr CSN- respektive
+ * FK-kontroller hos handläggare. registreradHosAf är bara aktuell när
+ * huvudsysselsättning är arbetssökande. Filuppladdning av AF-intyg och
+ * läkarintyg läggs till i kommande iteration.
+ */
+export interface SysselsattningStep {
+  nuvarandeSysselsattning: Sysselsattning | null;
+  registreradHosAf: boolean | null;
+  studerar: boolean | null;
+  larosateSkolform: string;
+  sjukskriven: boolean | null;
+}
 /** Steg 5 — inkomster. */
 export type InkomsterStep = Record<string, never>;
 /** Steg 6 — övriga utgifter. */
@@ -99,13 +242,13 @@ export const emptyEconomicAidApplication = (): EconomicAidApplicationV1 => ({
   schemaVersion: ECONOMIC_AID_SCHEMA_VERSION,
   vagval: { kind: null },
   identitet: {
-    fornamn: '',
-    efternamn: '',
-    personnummer: '',
-    coAdress: '',
-    gatuadress: '',
-    postnummer: '',
-    postort: '',
+    vistelseadressStammer: null,
+    alternativVistelseadress: {
+      gatuadress: '',
+      coAdress: '',
+      postnummer: '',
+      postort: '',
+    },
     epost: '',
     mobiltelefon: '',
     kontaktViaSms: null,
@@ -113,9 +256,37 @@ export const emptyEconomicAidApplication = (): EconomicAidApplicationV1 => ({
     behoverTolk: null,
     tolkSprak: '',
   },
-  hushall: {},
-  boende: {},
-  sysselsattning: {},
+  hushall: {
+    civilstand: null,
+    harBarnUnder21: null,
+    barn: [],
+    forandringBarnSedanSenasteAnsokan: null,
+    forandringBeskrivning: '',
+    medsokande: {
+      fornamn: '',
+      efternamn: '',
+      personnummer: '',
+      epost: '',
+      mobiltelefon: '',
+      behoverTolk: null,
+      tolkSprak: '',
+    },
+  },
+  boende: {
+    boendeform: null,
+    manadskostnad: '',
+    antalRum: null,
+    garagePplatsIngar: null,
+    hushallsel: '',
+    hemforsakring: '',
+  },
+  sysselsattning: {
+    nuvarandeSysselsattning: null,
+    registreradHosAf: null,
+    studerar: null,
+    larosateSkolform: '',
+    sjukskriven: null,
+  },
   inkomster: {},
   utgifter: {},
   situation: {},

@@ -45,15 +45,27 @@ export interface LanguageOption {
  * Koder som inte kan översättas (t.ex. äldre browsers utan ICU-data)
  * filtreras bort — Intl.DisplayNames returnerar då koden själv som
  * "namn", vilket inte hjälper användaren.
+ *
+ * Flera ISO-koder kan mappa till samma lokaliserade namn (t.ex. `ak`
+ * och `tw` → "akan" på svenska eftersom svenska CLDR-data slår ihop
+ * akan-dialekter). I UI:t bryr sig sökanden bara om språknamnet, så
+ * vi deduplicerar på namn — första koden i listan vinner.
  */
 export const getLanguageOptions = (locale: string = 'sv'): LanguageOption[] => {
   const displayNames = new Intl.DisplayNames([locale], { type: 'language' });
   const collator = new Intl.Collator(locale);
+  const seen = new Set<string>();
 
   return ISO_639_1_CODES.map((code) => {
     const raw = displayNames.of(code) ?? code;
     return { code, name: raw.charAt(0).toLocaleUpperCase(locale) + raw.slice(1) };
   })
     .filter((option) => option.name.toLowerCase() !== option.code)
+    .filter((option) => {
+      const key = option.name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
     .sort((a, b) => collator.compare(a.name, b.name));
 };

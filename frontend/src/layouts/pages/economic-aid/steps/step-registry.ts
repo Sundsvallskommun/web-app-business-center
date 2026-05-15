@@ -1,7 +1,10 @@
 import { EconomicAidStepKey } from '@interfaces/economic-aid';
+import { StepBoende } from './step-boende.component';
+import { StepHushall } from './step-hushall.component';
 import { StepIdentitet } from './step-identitet.component';
 import { StepPlaceholder } from './step-placeholder.component';
 import { StepSamtycke } from './step-samtycke.component';
+import { StepSysselsattning } from './step-sysselsattning.component';
 import { StepVagval } from './step-vagval.component';
 
 /**
@@ -26,9 +29,9 @@ export interface StepProps {
 export const STEP_COMPONENTS: Record<EconomicAidStepKey, React.ComponentType<StepProps>> = {
   vagval: StepVagval,
   identitet: StepIdentitet,
-  hushall: StepPlaceholder,
-  boende: StepPlaceholder,
-  sysselsattning: StepPlaceholder,
+  hushall: StepHushall,
+  boende: StepBoende,
+  sysselsattning: StepSysselsattning,
   inkomster: StepPlaceholder,
   utgifter: StepPlaceholder,
   situation: StepPlaceholder,

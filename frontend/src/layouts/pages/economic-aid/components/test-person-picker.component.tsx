@@ -1,11 +1,12 @@
 /**
  * DEV ONLY — testpersonväljare för ansökan om ekonomiskt bistånd.
  *
- * Fyller i hela formuläret med en mockad persona så att alla steg går att
- * gå igenom utan att skriva in 20 fält manuellt varje gång. Tas bort när
- * riktig SSBTEK-prefill är på plats. Hela komponenten är fristående —
- * radera filen och importen i economic-aid-application.component.tsx för
- * att städa bort.
+ * Fyller i de fält i formuläret som sökanden själv anger (kontakt, tolk
+ * m.m.) så att alla steg går att gå igenom utan att skriva in varje
+ * fält manuellt. Identitet/folkbokföring kommer från Citizen-API:t och
+ * fylls inte i här. Tas bort när riktig SSBTEK-prefill är på plats —
+ * radera filen och importen i economic-aid-application.component.tsx
+ * för att städa bort.
  */
 import {
   ECONOMIC_AID_SCHEMA_VERSION,
@@ -23,12 +24,14 @@ interface TestPerson {
 }
 
 const buildPersona = (
+  id: string,
   label: string,
   description: string,
   identitet: EconomicAidApplicationV1['identitet'],
+  hushall: EconomicAidApplicationV1['hushall'],
   kind: EconomicAidApplicationV1['vagval']['kind'],
 ): TestPerson => ({
-  id: identitet.personnummer,
+  id,
   label,
   description,
   data: {
@@ -36,24 +39,30 @@ const buildPersona = (
     schemaVersion: ECONOMIC_AID_SCHEMA_VERSION,
     vagval: { kind },
     identitet,
+    hushall,
   },
 });
 
-// Personnummer och telefonnummer är hämtade ur officiellt reserverade
-// testserier (Skatteverket / PTS):
+const emptyMedsokande = (): EconomicAidApplicationV1['hushall']['medsokande'] => ({
+  fornamn: '',
+  efternamn: '',
+  personnummer: '',
+  epost: '',
+  mobiltelefon: '',
+  behoverTolk: null,
+  tolkSprak: '',
+});
+
+// Telefonnummer är hämtade ur officiellt reserverade testserier (PTS).
 // Inga riktiga uppgifter får läggas in i denna fil.
 const TEST_PERSONS: TestPerson[] = [
   buildPersona(
+    'anna',
     'Anna Andersson',
     'Ny ansökan, ensamstående, kontakt via SMS',
     {
-      fornamn: 'Anna',
-      efternamn: 'Andersson',
-      personnummer: '20260101-2384',
-      coAdress: '',
-      gatuadress: 'Storgatan 12',
-      postnummer: '852 30',
-      postort: 'Sundsvall',
+      vistelseadressStammer: true,
+      alternativVistelseadress: { gatuadress: '', coAdress: '', postnummer: '', postort: '' },
       epost: 'anna.andersson@example.se',
       mobiltelefon: '070-174 06 05',
       kontaktViaSms: true,
@@ -61,19 +70,23 @@ const TEST_PERSONS: TestPerson[] = [
       behoverTolk: false,
       tolkSprak: '',
     },
+    {
+      civilstand: 'ensamstaende',
+      harBarnUnder21: false,
+      barn: [],
+      forandringBarnSedanSenasteAnsokan: null,
+      forandringBeskrivning: '',
+      medsokande: emptyMedsokande(),
+    },
     'NEW',
   ),
   buildPersona(
+    'erik',
     'Erik Eriksson',
-    'Återansökan, sökt senaste 3 mån, ingen SMS-kontakt',
+    'Återansökan, gift, barn (oförändrat sedan senast)',
     {
-      fornamn: 'Erik',
-      efternamn: 'Eriksson',
-      personnummer: '20260102-2383',
-      coAdress: '',
-      gatuadress: 'Norrmalmsgatan 5B',
-      postnummer: '852 31',
-      postort: 'Sundsvall',
+      vistelseadressStammer: true,
+      alternativVistelseadress: { gatuadress: '', coAdress: '', postnummer: '', postort: '' },
       epost: 'erik.eriksson@example.se',
       mobiltelefon: '070-174 06 35',
       kontaktViaSms: false,
@@ -81,19 +94,44 @@ const TEST_PERSONS: TestPerson[] = [
       behoverTolk: false,
       tolkSprak: '',
     },
+    {
+      civilstand: 'gift',
+      harBarnUnder21: true,
+      barn: [
+        {
+          fornamn: 'Elin',
+          efternamn: 'Eriksson',
+          personnummer: '20140315-1234',
+          borIHemmet: 'heltid',
+        },
+        {
+          fornamn: 'Emil',
+          efternamn: 'Eriksson',
+          personnummer: '20170622-5678',
+          borIHemmet: 'heltid',
+        },
+      ],
+      forandringBarnSedanSenasteAnsokan: false,
+      forandringBeskrivning: '',
+      medsokande: {
+        fornamn: 'Eva',
+        efternamn: 'Eriksson',
+        personnummer: '20260201-2389',
+        epost: 'eva.eriksson@example.se',
+        mobiltelefon: '070-174 06 36',
+        behoverTolk: false,
+        tolkSprak: '',
+      },
+    },
     'RETURNING',
   ),
   buildPersona(
+    'maria',
     'Maria Karlsson',
-    'Ny ansökan, c/o-adress, behöver tolk (arabiska)',
+    'Ny ansökan, sambo, behöver tolk (arabiska)',
     {
-      fornamn: 'Maria',
-      efternamn: 'Karlsson',
-      personnummer: '20260103-2382',
-      coAdress: 'c/o Lindberg',
-      gatuadress: 'Bergsgatan 3',
-      postnummer: '854 60',
-      postort: 'Sundsvall',
+      vistelseadressStammer: true,
+      alternativVistelseadress: { gatuadress: '', coAdress: '', postnummer: '', postort: '' },
       epost: 'maria.karlsson@example.se',
       mobiltelefon: '070-174 06 47',
       kontaktViaSms: true,
@@ -101,19 +139,36 @@ const TEST_PERSONS: TestPerson[] = [
       behoverTolk: true,
       tolkSprak: 'Arabiska',
     },
+    {
+      civilstand: 'sambo',
+      harBarnUnder21: false,
+      barn: [],
+      forandringBarnSedanSenasteAnsokan: null,
+      forandringBeskrivning: '',
+      medsokande: {
+        fornamn: 'Linus',
+        efternamn: 'Karlsson',
+        personnummer: '20260202-2388',
+        epost: '',
+        mobiltelefon: '',
+        behoverTolk: false,
+        tolkSprak: '',
+      },
+    },
     'NEW',
   ),
   buildPersona(
+    'fatima',
     'Fatima Hassan',
-    'Återansökan, behöver tolk (somaliska), familj',
+    'Återansökan, gift, förändring i barnens situation',
     {
-      fornamn: 'Fatima',
-      efternamn: 'Hassan',
-      personnummer: '20260104-2381',
-      coAdress: '',
-      gatuadress: 'Skönsbergsvägen 14',
-      postnummer: '856 41',
-      postort: 'Sundsvall',
+      vistelseadressStammer: false,
+      alternativVistelseadress: {
+        gatuadress: 'Skönsbergsvägen 14',
+        coAdress: '',
+        postnummer: '856 41',
+        postort: 'Sundsvall',
+      },
       epost: 'fatima.hassan@example.se',
       mobiltelefon: '070-174 06 73',
       kontaktViaSms: true,
@@ -121,25 +176,52 @@ const TEST_PERSONS: TestPerson[] = [
       behoverTolk: true,
       tolkSprak: 'Somaliska',
     },
+    {
+      civilstand: 'gift',
+      harBarnUnder21: true,
+      barn: [
+        {
+          fornamn: 'Layla',
+          efternamn: 'Hassan',
+          personnummer: '20120804-3456',
+          borIHemmet: 'deltid',
+        },
+      ],
+      forandringBarnSedanSenasteAnsokan: true,
+      forandringBeskrivning: 'Äldsta barnet har flyttat till eget boende sedan förra ansökan.',
+      medsokande: {
+        fornamn: 'Mohamed',
+        efternamn: 'Hassan',
+        personnummer: '20260203-2387',
+        epost: 'mohamed.hassan@example.se',
+        mobiltelefon: '070-174 06 74',
+        behoverTolk: true,
+        tolkSprak: 'Somaliska',
+      },
+    },
     'RETURNING',
   ),
   buildPersona(
+    'bengt',
     'Bengt Bengtsson',
-    'Ny ansökan, äldre sökande, ingen SMS-kontakt',
+    'Ny ansökan, ensamstående, äldre sökande',
     {
-      fornamn: 'Bengt',
-      efternamn: 'Bengtsson',
-      personnummer: '20260105-2380',
-      coAdress: '',
-      gatuadress: 'Trädgårdsgatan 8',
-      postnummer: '852 32',
-      postort: 'Sundsvall',
+      vistelseadressStammer: true,
+      alternativVistelseadress: { gatuadress: '', coAdress: '', postnummer: '', postort: '' },
       epost: 'bengt.bengtsson@example.se',
       mobiltelefon: '',
       kontaktViaSms: false,
       ansoktSenaste3Manader: false,
       behoverTolk: false,
       tolkSprak: '',
+    },
+    {
+      civilstand: 'ensamstaende',
+      harBarnUnder21: false,
+      barn: [],
+      forandringBarnSedanSenasteAnsokan: null,
+      forandringBeskrivning: '',
+      medsokande: emptyMedsokande(),
     },
     'NEW',
   ),

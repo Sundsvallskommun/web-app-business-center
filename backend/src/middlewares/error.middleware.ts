@@ -2,8 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 import { HttpException } from '@exceptions/HttpException';
 import { logger } from '@utils/logger';
 
-const stripCrlf = (value: string) => value.replace(/[\r\n]+/g, ' ');
-
 const errorMiddleware = (error: HttpException, req: Request, res: Response, next: NextFunction) => {
   try {
     const status: number = error.status || 500;
@@ -11,10 +9,12 @@ const errorMiddleware = (error: HttpException, req: Request, res: Response, next
     const errors: string =
       error.errors?.length > 0 ? JSON.stringify(error.errors.map(error => ({ property: error.property, constraints: error.constraints }))) : '';
 
-    const method = stripCrlf(req.method);
-    const path = stripCrlf(req.path);
-    console.error(`[${method}] ${path} >> StatusCode:: ${status}, Message:: ${message}, Errors:: ${errors}`);
-    logger.error(`[${method}] ${path} >> StatusCode:: ${status}, Message:: ${message}, Errors:: ${errors}`);
+    const method = req.method.replace(/\n|\r/g, '');
+    const path = req.path.replace(/\n|\r/g, '');
+    const safeMessage = message.replace(/\n|\r/g, '');
+    const safeErrors = errors.replace(/\n|\r/g, '');
+    console.error(`[${method}] ${path} >> StatusCode:: ${status}, Message:: ${safeMessage}, Errors:: ${safeErrors}`);
+    logger.error(`[${method}] ${path} >> StatusCode:: ${status}, Message:: ${safeMessage}, Errors:: ${safeErrors}`);
     res.status(status).json({ message });
   } catch (error) {
     next(error);

@@ -6,7 +6,7 @@ import { HttpException } from '@/exceptions/HttpException';
 import { User } from '@interfaces/users.interface';
 import ApiService from './api.service';
 import { logger } from '@/utils/logger';
-import { Mandates } from '@/data-contracts/myrepresentatives/data-contracts';
+import { GrantorDetails, MandateDetails, Mandates } from '@/data-contracts/myrepresentatives/data-contracts';
 
 export interface Engagement {
   organizationName?: string;
@@ -78,62 +78,68 @@ export const getBusinessEngagements = async (user: User): Promise<PersonEngageme
   if (!user.personNumber) {
     throw new Error('Bad Request: personalNumber is required');
   }
-  const apiBase = getApiBase('legalentity');
-  const apiService = new ApiService();
   const url = `${apiBase}/${MUNICIPALITY_ID}/engagements/person/${user.personNumber}`;
 
-  let res: { data: PersonEngagement[] };
-
+  let personEngagements: PersonEngagement[] = [];
   try {
-    res = await apiService.get<PersonEngagement[]>({ url }, user);
+    const res = await apiService.get<PersonEngagement[]>({ url }, user);
+    personEngagements = res.data ?? [];
   } catch (error) {
     logger.error('Could not get engagements', error);
-    res = { data: [] };
   }
 
+  let mandateEngagements: PersonEngagement[] = [];
   try {
-    await addEngagementFromMandate(user, apiService, apiBase, res);
+    mandateEngagements = await getEngagementsFromMandates(user);
   } catch (error) {
     logger.error('Could not add engagements from mandate', error);
   }
 
-  return res.data ?? [];
+  return dedupeByOrganizationNumber([...personEngagements, ...mandateEngagements]);
 };
 
-const addEngagementFromMandate = async (
-  user: User,
-  apiService: ApiService,
-  apiBase: string,
-  res: {
-    data: PersonEngagement[];
-  },
-) => {
-  const mandateApiUrl = `${getApiBase('myrepresentatives')}/${MUNICIPALITY_ID}/${NAMESPACE}/mandates`;
-  const mandateParams = {
-    granteePartyId: user.partyId,
-  };
-  try {
-    const mandateRes = await apiService.get<Mandates>({ url: mandateApiUrl, params: mandateParams }, user);
-
-    if (mandateRes?.data?.mandateDetailsList && mandateRes.data.mandateDetailsList.length > 0) {
-      await Promise.all(
-        mandateRes.data.mandateDetailsList.map(async m => {
-          if (!m.grantorDetails) return;
-          const url = `${apiBase}/${MUNICIPALITY_ID}/${m.grantorDetails.grantorPartyId}`;
-          const companyByGrantor = await apiService.get<LegalEntity2>({ url }, user);
-
-          const engagement: PersonEngagement = {
-            organizationNumber: companyByGrantor.data?.organizationNumber ?? '',
-            name: companyByGrantor.data?.name ?? '',
-            isAuthorizedSignatory: false,
-            isSoleTrader: null,
-          };
-          res.data.push(engagement);
-        }),
-      );
-    }
-  } catch (error) {
-    logger.error('Error getting engagement: ', error);
-    throw new HttpException(500, 'Error getting engagement');
+const getEngagementsFromMandates = async (user: User): Promise<PersonEngagement[]> => {
+  if (!user.partyId) {
+    return [];
   }
+
+  const mandateApiUrl = `${getApiBase('myrepresentatives')}/${MUNICIPALITY_ID}/${NAMESPACE}/mandates`;
+  const mandateRes = await apiService.get<Mandates>({ url: mandateApiUrl, params: { granteePartyId: user.partyId } }, user);
+
+  const mandates = (mandateRes?.data?.mandateDetailsList ?? []).filter((m): m is MandateDetails & { grantorDetails: GrantorDetails } =>
+    Boolean(m.grantorDetails),
+  );
+  if (mandates.length === 0) {
+    return [];
+  }
+
+  const results = await Promise.allSettled(
+    mandates.map(async m => {
+      const url = `${apiBase}/${MUNICIPALITY_ID}/${m.grantorDetails.grantorPartyId}`;
+      const companyByGrantor = await apiService.get<LegalEntity2>({ url }, user);
+      const engagement: PersonEngagement = {
+        organizationNumber: companyByGrantor.data?.organizationNumber ?? '',
+        name: companyByGrantor.data?.name ?? '',
+        isAuthorizedSignatory: false,
+        isSoleTrader: null,
+      };
+      return engagement;
+    }),
+  );
+
+  return results.filter((r): r is PromiseFulfilledResult<PersonEngagement> => r.status === 'fulfilled').map(r => r.value);
+};
+
+const dedupeByOrganizationNumber = (engagements: PersonEngagement[]): PersonEngagement[] => {
+  const seen = new Set<string>();
+  return engagements.filter(e => {
+    if (!e.organizationNumber) {
+      return true;
+    }
+    if (seen.has(e.organizationNumber)) {
+      return false;
+    }
+    seen.add(e.organizationNumber);
+    return true;
+  });
 };

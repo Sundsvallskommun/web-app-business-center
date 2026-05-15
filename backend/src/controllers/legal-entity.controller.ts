@@ -38,11 +38,14 @@ export class LegalEntityController {
         if (!personEngagements || personEngagements.length <= 0) {
           throw new HttpException(404, 'Not Found');
         }
-        engagements = mapEngagements(personEngagements) ?? [];
+        engagements = mapEngagements(personEngagements);
       }
 
       return { data: engagements, message: 'success' };
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       logger.error('Error getting business engagements', error);
       throw new HttpException(500, 'Internal server error');
     }

@@ -11,6 +11,8 @@ jest.mock('@/services/api.service', () => {
 
 jest.mock('@/config', () => ({
   MUNICIPALITY_ID: '2281',
+  NAMESPACE: 'test-namespace',
+  LOG_DIR: '../data/logs',
 }));
 
 jest.mock('@/config/api-config', () => ({

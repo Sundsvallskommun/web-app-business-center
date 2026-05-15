@@ -1,10 +1,12 @@
-import { MUNICIPALITY_ID } from '@/config';
+import { MUNICIPALITY_ID, NAMESPACE } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { LegalEntity2, PersonEngagement } from '@/data-contracts/legalentity/data-contracts';
 import { ClientBusinessInformation } from '@/interfaces/business-engagement';
 import { HttpException } from '@/exceptions/HttpException';
 import { User } from '@interfaces/users.interface';
 import ApiService from './api.service';
+import { logger } from '@/utils/logger';
+import { Mandates } from '@/data-contracts/myrepresentatives/data-contracts';
 
 export interface Engagement {
   organizationName?: string;
@@ -66,8 +68,72 @@ export const mapEngagements = (engagements: PersonEngagement[]): Engagement[] =>
   return engagements
     .filter(e => e?.name && e?.organizationNumber)
     .map(e => ({
-      organizationName: e?.name,
-      organizationNumber: e?.organizationNumber,
+      organizationName: e?.name ?? '',
+      organizationNumber: e?.organizationNumber ?? '',
       isAuthorizedSignatory: e?.isAuthorizedSignatory ?? false,
     }));
+};
+
+export const getBusinessEngagements = async (user: User): Promise<PersonEngagement[]> => {
+  if (!user.personNumber) {
+    throw new Error('Bad Request: personalNumber is required');
+  }
+  const apiBase = getApiBase('legalentity');
+  const apiService = new ApiService();
+  const url = `${apiBase}/${MUNICIPALITY_ID}/engagements/person/${user.personNumber}`;
+
+  let res: { data: PersonEngagement[] };
+
+  try {
+    res = await apiService.get<PersonEngagement[]>({ url }, user);
+  } catch (error) {
+    logger.error('Could not get engagements', error);
+    res = { data: [] };
+  }
+
+  try {
+    await addEngagementFromMandate(user, apiService, apiBase, res);
+  } catch (error) {
+    logger.error('Could not add engagements from mandate', error);
+  }
+
+  return res.data ?? [];
+};
+
+const addEngagementFromMandate = async (
+  user: User,
+  apiService: ApiService,
+  apiBase: string,
+  res: {
+    data: PersonEngagement[];
+  },
+) => {
+  const mandateApiUrl = `${getApiBase('myrepresentatives')}/${MUNICIPALITY_ID}/${NAMESPACE}/mandates`;
+  const mandateParams = {
+    granteePartyId: user.partyId,
+  };
+  try {
+    const mandateRes = await apiService.get<Mandates>({ url: mandateApiUrl, params: mandateParams }, user);
+
+    if (mandateRes?.data?.mandateDetailsList && mandateRes.data.mandateDetailsList.length > 0) {
+      await Promise.all(
+        mandateRes.data.mandateDetailsList.map(async m => {
+          if (!m.grantorDetails) return;
+          const url = `${apiBase}/${MUNICIPALITY_ID}/${m.grantorDetails.grantorPartyId}`;
+          const companyByGrantor = await apiService.get<LegalEntity2>({ url }, user);
+
+          const engagement: PersonEngagement = {
+            organizationNumber: companyByGrantor.data?.organizationNumber ?? '',
+            name: companyByGrantor.data?.name ?? '',
+            isAuthorizedSignatory: false,
+            isSoleTrader: null,
+          };
+          res.data.push(engagement);
+        }),
+      );
+    }
+  } catch (error) {
+    logger.error('Error getting engagement: ', error);
+    throw new HttpException(500, 'Error getting engagement');
+  }
 };

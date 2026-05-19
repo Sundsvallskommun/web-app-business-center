@@ -4,6 +4,7 @@ import { useAppContext } from '@contexts/app.context';
 import { Asset } from '@data-contracts/partyassets/data-contracts';
 import { PagesBreadcrumbsLayout } from '@layouts/pages-breadcrumbs-layout.component';
 import { useApi } from '@services/api-service';
+import { isAllowedAsset } from '@services/asset-service';
 import { Breadcrumb } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { AxiosError } from 'axios';
@@ -28,6 +29,10 @@ export default function AssetLayout(props: { assetId: string; children: React.Re
   const { representingMode } = useAppContext();
 
   if (assetError?.status === 404) {
+    redirect(`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument`);
+  }
+
+  if (assetData && !isAllowedAsset(assetData)) {
     redirect(`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument`);
   }
 

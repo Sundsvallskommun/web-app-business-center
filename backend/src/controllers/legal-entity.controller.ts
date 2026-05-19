@@ -1,15 +1,12 @@
-import { MUNICIPALITY_ID } from '@/config';
-import { getApiBase } from '@/config/api-config';
-import { PersonEngagement } from '@/data-contracts/legalentity/data-contracts';
 import { ClientBusinessInformation } from '@/interfaces/business-engagement';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
-import { Engagement, getBusinessInformation, mapEngagements } from '@/services/legal-entity.service';
-import ApiService from '@/services/api.service';
+import { Engagement, getBusinessEngagements, getBusinessInformation, mapEngagements } from '@/services/legal-entity.service';
 import authMiddleware from '@middlewares/auth.middleware';
 import { Controller, Get, QueryParam, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
+import { logger } from '@/utils/logger';
 
 interface InformationResponse {
   information: ClientBusinessInformation;
@@ -17,9 +14,6 @@ interface InformationResponse {
 
 @Controller()
 export class LegalEntityController {
-  private apiService = new ApiService();
-  private apiBase = getApiBase('legalentity');
-
   @Get('/businessengagements')
   @OpenAPI({ summary: 'Return a list of business engagements for current logged in user' })
   @UseBefore(authMiddleware)
@@ -36,20 +30,25 @@ export class LegalEntityController {
       req.destroy();
     });
 
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/engagements/person/${personNumber}`;
+    try {
+      let engagements = req.session.representingBusinessChoices;
 
-    const res = await this.apiService.get<PersonEngagement[]>({ url }, req.user);
+      if (!engagements || engagements.length <= 0) {
+        const personEngagements = await getBusinessEngagements(req.user);
+        if (!personEngagements || personEngagements.length <= 0) {
+          throw new HttpException(404, 'Not Found');
+        }
+        engagements = mapEngagements(personEngagements);
+      }
 
-    if (!res.data) {
-      throw new HttpException(404, 'Not Found');
+      return { data: engagements, message: 'success' };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      logger.error('Error getting business engagements', error);
+      throw new HttpException(500, 'Internal server error');
     }
-
-    const engagements = mapEngagements(res.data);
-
-    // NOTE: set representing to session so we can use it to lookup later
-    req.session.representingBusinessChoices = engagements ?? [];
-
-    return { data: engagements, message: 'success' };
   }
 
   @Get('/businessinformation')

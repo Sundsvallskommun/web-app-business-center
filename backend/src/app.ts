@@ -53,6 +53,7 @@ import { RepresentingMode } from './interfaces/representing.interface';
 import { User } from './interfaces/users.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
 import { isValidUrl } from './utils/util';
+import { getBusinessEngagements, mapEngagements } from './services/legal-entity.service';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -359,7 +360,7 @@ class App {
         failureRedirect = successRedirect;
       }
 
-      passport.authenticate('saml', (err, user) => {
+      passport.authenticate('saml', async (err, user) => {
         if (err) {
           const queries = new URLSearchParams(failureRedirect.searchParams);
           if (err?.name) {
@@ -375,15 +376,27 @@ class App {
           failureRedirect.search = failMessage.toString();
           res.redirect(failureRedirect.toString());
         } else {
-          req.login(user, loginErr => {
-            if (loginErr) {
-              const failMessage = new URLSearchParams(failureRedirect.searchParams);
-              failMessage.append('failMessage', 'SAML_UNKNOWN_ERROR');
-              failureRedirect.search = failMessage.toString();
-              res.redirect(failureRedirect.toString());
-            }
-            return res.redirect(successRedirect?.toString());
+          const loginError = await new Promise<Error | null>(resolve => {
+            req.login(user, loginErr => {
+              resolve(loginErr || null);
+            });
           });
+
+          if (loginError) {
+            const failMessage = new URLSearchParams(failureRedirect.searchParams);
+            failMessage.append('failMessage', 'SAML_UNKNOWN_ERROR');
+            failureRedirect.search = failMessage.toString();
+            return res.redirect(failureRedirect.toString());
+          }
+
+          try {
+            const engagements = await getBusinessEngagements(user);
+            req.session.representingBusinessChoices = mapEngagements(engagements);
+          } catch (err) {
+            logger.error('Error fetching business engagements:', err);
+          }
+
+          return res.redirect(successRedirect?.toString());
         }
       })(req, res, next);
     });

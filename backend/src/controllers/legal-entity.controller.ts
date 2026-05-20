@@ -4,7 +4,7 @@ import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
 import { Engagement, getBusinessEngagements, getBusinessInformation, mapEngagements } from '@/services/legal-entity.service';
 import authMiddleware from '@middlewares/auth.middleware';
-import { Controller, Get, QueryParam, Req, UseBefore } from 'routing-controllers';
+import { Controller, Get, HttpError, QueryParam, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { logger } from '@/utils/logger';
 
@@ -36,15 +36,15 @@ export class LegalEntityController {
       if (!engagements || engagements.length <= 0) {
         const personEngagements = await getBusinessEngagements(req.user);
         if (!personEngagements || personEngagements.length <= 0) {
-          throw new HttpException(404, 'Not Found');
+          throw new HttpError(404, 'Not found');
         }
         engagements = mapEngagements(personEngagements);
       }
 
       return { data: engagements, message: 'success' };
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
+      if (error instanceof HttpError && error.httpCode === 404) {
+        throw new HttpException(404, 'Not found');
       }
       logger.error('Error getting business engagements', error);
       throw new HttpException(500, 'Internal server error');

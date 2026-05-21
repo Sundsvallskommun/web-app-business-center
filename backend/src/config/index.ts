@@ -9,6 +9,11 @@ export const CREDENTIALS = process.env.CREDENTIALS === 'true';
 export const SWAGGER_ENABLED = process.env.SWAGGER_ENABLED === 'true';
 export const SESSION_MEMORY = process.env.SESSION_MEMORY === 'true';
 
+// Feature flags (mirror the frontend NEXT_PUBLIC_* flags; enforce data server-side)
+export const USE_DECISIONS = process.env.USE_DECISIONS === 'true';
+export const USE_PARKING_PERMITS = process.env.USE_PARKING_PERMITS === 'true';
+export const USE_FT_ERRAND_ASSETS = process.env.USE_FT_ERRAND_ASSETS === 'true';
+
 export const {
   NODE_ENV,
   PORT,

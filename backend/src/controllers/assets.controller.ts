@@ -1,4 +1,4 @@
-import { MUNICIPALITY_ID } from '@/config';
+import { MUNICIPALITY_ID, USE_FT_ERRAND_ASSETS, USE_PARKING_PERMITS } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { AddressAddressCategoryEnum, Attachment, Errand, Stakeholder, StakeholderTypeEnum } from '@/data-contracts/case-data/data-contracts';
 import { CitizenExtended } from '@/data-contracts/citizen/data-contracts';
@@ -14,6 +14,12 @@ import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
 import { apiURL } from '@/utils/util';
 import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
+
+// Mirrors the frontend AssetType allowlist; keep values in sync with asset-service.ts
+const ASSET_TYPE = {
+  PARKING_PERMIT: 'PERMIT',
+  FT_ERRAND: 'FTErrandAssets',
+} as const;
 
 interface AttachmentOptions {
   category: string;
@@ -122,6 +128,19 @@ export class AssetsController {
     return { data: { success: true }, message: 'ok' };
   }
 
+  // Strict allowlist of asset types, derived from feature flags. Types not
+  // present here (e.g. LICENSE) are never returned over the network.
+  private getAllowedAssetTypes = (): string[] => {
+    const allowed: string[] = [];
+    if (USE_PARKING_PERMITS) allowed.push(ASSET_TYPE.PARKING_PERMIT);
+    if (USE_FT_ERRAND_ASSETS) allowed.push(ASSET_TYPE.FT_ERRAND);
+    return allowed;
+  };
+
+  private isAllowedAsset = (asset: Asset): boolean => {
+    return !!asset?.type && this.getAllowedAssetTypes().includes(asset.type);
+  };
+
   private toClientAsset = (asset: Asset): Asset => {
     delete asset.partyId;
     delete asset.id;
@@ -132,7 +151,10 @@ export class AssetsController {
   };
 
   private toClientAssets = (assets: Asset[]): Asset[] => {
-    return assets.map(this.toClientAsset).filter(asset => asset.status === Status.ACTIVE);
+    return assets
+      .filter(this.isAllowedAsset)
+      .map(this.toClientAsset)
+      .filter(asset => asset.status === Status.ACTIVE);
   };
 
   @Get('/assets')
@@ -199,6 +221,10 @@ export class AssetsController {
       }
 
       if (res.data.length === 0) {
+        throw new HttpException(404, 'Asset not found');
+      }
+
+      if (!this.isAllowedAsset(res.data[0])) {
         throw new HttpException(404, 'Asset not found');
       }
 

@@ -129,7 +129,7 @@ export class AssetsController {
   // Whitelist of asset types from env (WHITELIST_ASSET_TYPES). Types not listed
   // (e.g. LICENSE) are never returned over the network.
   private isAllowedAsset = (asset: Asset): boolean => {
-    return !!asset?.type && WHITELIST_ASSET_TYPES.includes(asset.type);
+    return !!asset?.type && WHITELIST_ASSET_TYPES.has(asset.type);
   };
 
   // Statuses tied to ongoing or superseded cases. DRAFT belongs to active
@@ -232,7 +232,9 @@ export class AssetsController {
       }
 
       const assets = this.toVisibleAssets(res.data);
-      const data = await Promise.all(assets.map(async asset => ({ ...this.toClientAsset(asset), service: await this.toServiceDetails(asset, req.user) })));
+      const data = await Promise.all(
+        assets.map(async asset => ({ ...this.toClientAsset(asset), service: await this.toServiceDetails(asset, req.user) })),
+      );
 
       return { data, message: 'success' };
     } catch (error) {

@@ -34,11 +34,15 @@ import { formatOrgNr } from '../utils/util';
 
 const USE_CASES_CACHE = false;
 
-const allowedNamespaces: string[] = [CaseDataNamespace.SBK_MEX, CaseDataNamespace.SBK_PARKING_PERMIT, CaseDataNamespace.CONTACTSUNDSVALL];
-const namespaceIsallowed = (c: CaseStatusResponse) => allowedNamespaces.includes(c.namespace);
+const allowedNamespaces: ReadonlySet<string> = new Set([
+  CaseDataNamespace.SBK_MEX,
+  CaseDataNamespace.SBK_PARKING_PERMIT,
+  CaseDataNamespace.CONTACTSUNDSVALL,
+]);
+const namespaceIsallowed = (c: CaseStatusResponse) => allowedNamespaces.has(c.namespace);
 
-const allowedSystems: string[] = ['OPEN_E_PLATFORM', 'BYGGR'];
-const systemIsAllowed = (c: CaseStatusResponse) => allowedSystems.includes(c.system);
+const allowedSystems: ReadonlySet<string> = new Set(['OPEN_E_PLATFORM', 'BYGGR']);
+const systemIsAllowed = (c: CaseStatusResponse) => allowedSystems.has(c.system);
 
 const caseIsallowed = (c: CaseStatusResponse) => namespaceIsallowed(c) || (typeof c.namespace === 'undefined' && systemIsAllowed(c));
 

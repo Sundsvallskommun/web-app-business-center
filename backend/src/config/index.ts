@@ -14,10 +14,12 @@ export const USE_DECISIONS = process.env.USE_DECISIONS === 'true';
 
 // Whitelist of partyassets `type` values that may be returned to the client.
 // Comma-separated env list; the backend is the single authority for this filter.
-export const WHITELIST_ASSET_TYPES: string[] = (process.env.WHITELIST_ASSET_TYPES ?? '')
-  .split(',')
-  .map(type => type.trim())
-  .filter(Boolean);
+export const WHITELIST_ASSET_TYPES: ReadonlySet<string> = new Set(
+  (process.env.WHITELIST_ASSET_TYPES ?? '')
+    .split(',')
+    .map(type => type.trim())
+    .filter(Boolean),
+);
 
 export const {
   NODE_ENV,

@@ -4,21 +4,21 @@
 
 Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumerera på dessa.
 
-| API                 | Version  |
-| ------------------- | ------:  |
-| CaseData            |    11.13 |
-| SupportManagement   |    12.4  |
-| PartyAssets         |     3.0  |
-| WebMessageCollector |     5.1  |
-| CaseStatus          |     4.2  |
-| ContactSettings     |     2.0  |
-| Citizen             |     3.0  |
-| Employee            |     2.0  |
-| Messaging           |     7.3  |
-| Invoices            |     8.0  |
-| SimulatorServer     |     2.0  |
-| MyRepresentatives   |     4.4  |
-| LegalEntity         |     2.0  |
+| API                 | Version |
+| ------------------- | ------: |
+| CaseData            |    12.3 |
+| SupportManagement   |    12.4 |
+| PartyAssets         |     3.0 |
+| WebMessageCollector |     5.1 |
+| CaseStatus          |     4.2 |
+| ContactSettings     |     2.0 |
+| Citizen             |     3.0 |
+| Employee            |     2.0 |
+| Messaging           |     7.3 |
+| Invoices            |     8.0 |
+| SimulatorServer     |     2.0 |
+| MyRepresentatives   |     4.4 |
+| LegalEntity         |     2.0 |
 
 ## Utveckling
 

@@ -2,7 +2,9 @@ import { MUNICIPALITY_ID, WHITELIST_ASSET_TYPES } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { AddressAddressCategoryEnum, Attachment, Errand, Stakeholder, StakeholderTypeEnum } from '@/data-contracts/case-data/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
+import { AssetWithService, ServiceDetails } from '@/interfaces/asset.interface';
 import { AttachmentCategory, CaseDataNamespace, ParkingPermitCaseType, StakeholderRole } from '@/interfaces/casedata.interface';
+import { enumTitles, getRjsfSchema } from '@/services/jsonschema.service';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
@@ -146,22 +148,69 @@ export class AssetsController {
     return !!asset?.id;
   };
 
-  // Strip the citizen's partyId before returning to the client, without
-  // mutating the upstream API object. The id is kept as the client identifier.
+  // Strip sensitive/internal upstream fields before returning to the client,
+  // without mutating the upstream API object. The id is kept as the client
+  // identifier; jsonParameters are exposed as mapped service details instead.
   private toClientAsset = (asset: Asset): Asset => {
     const clientAsset = { ...asset };
     delete clientAsset.partyId;
+    delete clientAsset.jsonParameters;
     return clientAsset;
   };
 
-  private toClientAssets = (assets: Asset[]): Asset[] => {
-    return assets.filter(this.isAllowedAsset).filter(this.isVisibleStatus).filter(this.isAddressable).map(this.toClientAsset);
+  private toVisibleAssets = (assets: Asset[]): Asset[] => {
+    return assets.filter(this.isAllowedAsset).filter(this.isVisibleStatus).filter(this.isAddressable);
+  };
+
+  // Form-data values may be stored as a single id, plain id arrays, or
+  // {key,value} arrays. Normalize them before resolving enum titles.
+  private normalizeArray = (values: unknown): string[] => {
+    const rawValues = Array.isArray(values) ? values : typeof values === 'string' ? [values] : [];
+
+    return rawValues
+      .map(value => {
+        if (typeof value === 'string') return value;
+        if (value && typeof value === 'object') {
+          const entry = value as { value?: unknown; key?: unknown };
+          return typeof entry.value === 'string' ? entry.value : typeof entry.key === 'string' ? entry.key : undefined;
+        }
+        return undefined;
+      })
+      .filter((value): value is string => Boolean(value));
+  };
+
+  // Resolve the human-readable service detail for assets that carry form data
+  // (e.g. paratransit) in their first json parameter. The stored values are
+  // enum ids; titles come from the asset's RJSF schema. Returns undefined when
+  // the asset has no such data.
+  private toServiceDetails = async (asset: Asset, user: User): Promise<ServiceDetails | undefined> => {
+    const param = asset.jsonParameters?.[0];
+    if (!param?.value) return undefined;
+
+    let formData: Record<string, unknown> | null;
+    try {
+      formData = typeof param.value === 'string' ? JSON.parse(param.value) : (param.value as Record<string, unknown>);
+    } catch {
+      return undefined;
+    }
+    if (!formData) return undefined;
+
+    const schema = param.schemaId ? await getRjsfSchema(param.schemaId, user) : null;
+
+    return {
+      restyp: enumTitles(schema, 'type', this.normalizeArray(formData.type)),
+      transportMode: enumTitles(schema, 'transportMode', this.normalizeArray(formData.transportMode)),
+      aids: enumTitles(schema, 'mobilityAids', this.normalizeArray(formData.mobilityAids)),
+      addon: enumTitles(schema, 'additionalAids', this.normalizeArray(formData.additionalAids)),
+      comment: typeof formData.notes === 'string' ? formData.notes : '',
+      isWinterService: formData.isWinterService === 'ja' || formData.isWinterService === true || formData.validityType === 'vinterfardtjanst',
+    };
   };
 
   @Get('/assets')
   @OpenAPI({ summary: 'Return a list of assets for current representing entity' })
   @UseBefore(authMiddleware)
-  async getAssets(@Req() req: RequestWithUser): Promise<ApiResponse<Asset[]>> {
+  async getAssets(@Req() req: RequestWithUser): Promise<ApiResponse<AssetWithService[]>> {
     const { representing } = req.session ?? {};
 
     const controller = new AbortController();
@@ -182,7 +231,10 @@ export class AssetsController {
         throw new HttpException(500, 'No data from API');
       }
 
-      return { data: this.toClientAssets(res.data), message: 'success' };
+      const assets = this.toVisibleAssets(res.data);
+      const data = await Promise.all(assets.map(async asset => ({ ...this.toClientAsset(asset), service: await this.toServiceDetails(asset, req.user) })));
+
+      return { data, message: 'success' };
     } catch (error) {
       if (error.status === 404) {
         return { data: [], message: '404 from api, Assumed empty array' };
@@ -195,7 +247,7 @@ export class AssetsController {
   @Get('/assets/:id')
   @OpenAPI({ summary: 'Return a asset' })
   @UseBefore(authMiddleware)
-  async getAsset(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ApiResponse<Asset>> {
+  async getAsset(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ApiResponse<AssetWithService>> {
     const { representing } = req.session ?? {};
 
     const controller = new AbortController();
@@ -228,7 +280,9 @@ export class AssetsController {
         throw new HttpException(404, 'Asset not found');
       }
 
-      return { data: this.toClientAsset(asset), message: 'success' };
+      const service = await this.toServiceDetails(asset, req.user);
+
+      return { data: { ...this.toClientAsset(asset), service }, message: 'success' };
     } catch (error) {
       console.error(error);
       if (error.status === 404) {

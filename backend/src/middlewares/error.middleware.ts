@@ -9,8 +9,11 @@ const errorMiddleware = (error: HttpException, req: Request, res: Response, next
     const errors: string =
       error.errors?.length > 0 ? JSON.stringify(error.errors.map(error => ({ property: error.property, constraints: error.constraints }))) : '';
 
-    console.error(`[${req.method}] ${req.path} >> StatusCode:: ${status}, Message:: ${message}, Errors:: ${errors}`);
-    logger.error(`[${req.method}] ${req.path} >> StatusCode:: ${status}, Message:: ${message}, Errors:: ${errors}`);
+    // Strip CR/LF from user-controlled values to prevent log injection
+    const strip = (value: string) => value.replace(/[\r\n]/g, '');
+    const logLine = `[${strip(req.method)}] ${strip(req.path)} >> StatusCode:: ${status}, Message:: ${strip(message)}, Errors:: ${strip(errors)}`;
+    console.error(logLine);
+    logger.error(logLine);
     res.status(status).json({ message });
   } catch (error) {
     next(error);

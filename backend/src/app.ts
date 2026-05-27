@@ -215,7 +215,9 @@ class App {
         saveUninitialized: false,
         store: sessionStore,
         cookie: {
+          httpOnly: true,
           sameSite: 'lax',
+          secure: this.env === 'production',
         },
       }),
     );
@@ -226,6 +228,7 @@ class App {
 
     this.app.get(
       `${BASE_URL_PREFIX}/saml/login`,
+      samlLimiter,
       (req, res, next) => {
         if (req.session.returnTo) {
           req.query.RelayState = req.session.returnTo;
@@ -254,6 +257,7 @@ class App {
 
     this.app.get(
       `${BASE_URL_PREFIX}/saml/logout`,
+      samlLimiter,
       (req, res, next) => {
         logger.info(
           `Logout request received: ${JSON.stringify(

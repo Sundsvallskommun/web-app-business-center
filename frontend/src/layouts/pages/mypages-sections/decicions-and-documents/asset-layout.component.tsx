@@ -18,10 +18,10 @@ export const AssetsContext = createContext<{
   null
 );
 
-export default function AssetLayout(props: { assetId: string; children: React.ReactNode }) {
-  const { assetId, children } = props;
+export default function AssetLayout(props: { id: string; children: React.ReactNode }) {
+  const { id, children } = props;
   const { data: assetData, error: assetError } = useApi<Asset, AxiosError>({
-    url: `/assets/${assetId}`,
+    url: `/assets/${id}`,
     method: 'get',
   });
 

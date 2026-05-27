@@ -139,18 +139,18 @@ export class AssetsController {
     return !!asset?.status && !AssetsController.HIDDEN_STATUSES.has(asset.status);
   };
 
-  // The external assetId is the only client-facing identifier (the internal id
-  // is stripped below), so an asset without one cannot be opened in detail.
-  // Skip it rather than list a card that links to /assets/undefined.
+  // Assets are addressed by their id (the only universal identifier — the
+  // external assetId exists for externally generated assets like parking
+  // permits, but not for e.g. paratransit). Skip any asset without one.
   private isAddressable = (asset: Asset): boolean => {
-    return !!asset?.assetId;
+    return !!asset?.id;
   };
 
-  // Strip server-only fields without mutating the upstream API objects.
+  // Strip the citizen's partyId before returning to the client, without
+  // mutating the upstream API object. The id is kept as the client identifier.
   private toClientAsset = (asset: Asset): Asset => {
     const clientAsset = { ...asset };
     delete clientAsset.partyId;
-    delete clientAsset.id;
     return clientAsset;
   };
 
@@ -192,10 +192,10 @@ export class AssetsController {
     }
   }
 
-  @Get('/assets/:assetId')
+  @Get('/assets/:id')
   @OpenAPI({ summary: 'Return a asset' })
   @UseBefore(authMiddleware)
-  async getAsset(@Req() req: RequestWithUser, @Param('assetId') assetId: string): Promise<ApiResponse<Asset>> {
+  async getAsset(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ApiResponse<Asset>> {
     const { representing } = req.session ?? {};
 
     const controller = new AbortController();
@@ -205,14 +205,15 @@ export class AssetsController {
       req.destroy();
     });
 
-    if (!assetId) {
+    if (!id) {
       throw new HttpException(400, 'Bad Request');
     }
 
     try {
+      // The partyassets search filters by assetId, not the internal id, so fetch
+      // the representing party's assets and match on id here.
       const params = {
         partyId: getRepresentingPartyId(representing),
-        assetId,
       };
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/assets`;
       const res = await this.apiService.get<Asset[]>({ url, signal, params }, req.user);
@@ -221,15 +222,13 @@ export class AssetsController {
         throw new HttpException(500, 'No data from API');
       }
 
-      if (res.data.length === 0) {
+      const asset = res.data.find(a => a.id === id);
+
+      if (!asset || !this.isAllowedAsset(asset) || !this.isVisibleStatus(asset)) {
         throw new HttpException(404, 'Asset not found');
       }
 
-      if (!this.isAllowedAsset(res.data[0]) || !this.isVisibleStatus(res.data[0])) {
-        throw new HttpException(404, 'Asset not found');
-      }
-
-      return { data: this.toClientAsset(res.data[0]), message: 'success' };
+      return { data: this.toClientAsset(asset), message: 'success' };
     } catch (error) {
       console.error(error);
       if (error.status === 404) {

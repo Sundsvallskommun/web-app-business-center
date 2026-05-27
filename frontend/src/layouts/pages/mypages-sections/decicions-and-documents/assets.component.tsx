@@ -20,8 +20,8 @@ const AssetCard: React.FC<{ item: Asset }> = ({ item }) => {
 
   return (
     <NextLink
-      href={`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument/${item.assetId}`}
-      aria-label={`Visa ${item.assetId}`}
+      href={`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument/${item.id}`}
+      aria-label={`Visa ${item.description}`}
       className={`list-item-card-link`}
     >
       <div className={`list-item-card`}>

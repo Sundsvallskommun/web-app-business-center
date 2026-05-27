@@ -139,6 +139,13 @@ export class AssetsController {
     return !!asset?.status && !AssetsController.HIDDEN_STATUSES.has(asset.status);
   };
 
+  // The external assetId is the only client-facing identifier (the internal id
+  // is stripped below), so an asset without one cannot be opened in detail.
+  // Skip it rather than list a card that links to /assets/undefined.
+  private isAddressable = (asset: Asset): boolean => {
+    return !!asset?.assetId;
+  };
+
   // Strip server-only fields without mutating the upstream API objects.
   private toClientAsset = (asset: Asset): Asset => {
     const clientAsset = { ...asset };
@@ -148,7 +155,7 @@ export class AssetsController {
   };
 
   private toClientAssets = (assets: Asset[]): Asset[] => {
-    return assets.filter(this.isAllowedAsset).filter(this.isVisibleStatus).map(this.toClientAsset);
+    return assets.filter(this.isAllowedAsset).filter(this.isVisibleStatus).filter(this.isAddressable).map(this.toClientAsset);
   };
 
   @Get('/assets')

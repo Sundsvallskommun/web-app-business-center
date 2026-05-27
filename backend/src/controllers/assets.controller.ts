@@ -1,8 +1,8 @@
-import { MUNICIPALITY_ID, USE_FT_ERRAND_ASSETS, USE_PARKING_PERMITS } from '@/config';
+import { MUNICIPALITY_ID, WHITELIST_ASSET_TYPES } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { AddressAddressCategoryEnum, Attachment, Errand, Stakeholder, StakeholderTypeEnum } from '@/data-contracts/case-data/data-contracts';
-import { CitizenExtended } from '@/data-contracts/citizen/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
+import { AttachmentCategory, CaseDataNamespace, ParkingPermitCaseType, StakeholderRole } from '@/interfaces/casedata.interface';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
@@ -16,14 +16,8 @@ import { apiURL } from '@/utils/util';
 import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
-// Mirrors the frontend AssetType allowlist; keep values in sync with asset-service.ts
-const ASSET_TYPE = {
-  PARKING_PERMIT: 'PERMIT',
-  FT_ERRAND: 'FTErrandAssets',
-} as const;
-
 interface AttachmentOptions {
-  category: string;
+  category: AttachmentCategory;
   note: string;
 }
 
@@ -35,7 +29,7 @@ interface ParkingPermitRenewalBody {
 }
 
 interface CreateErrandOptions {
-  caseType: string;
+  caseType: ParkingPermitCaseType;
   extraParameters?: Errand['extraParameters'];
   files?: Express.Multer.File[];
   attachmentOptions?: AttachmentOptions;
@@ -50,7 +44,7 @@ export class AssetsController {
 
   private async uploadAttachments(errandId: number, files: Express.Multer.File[], options: AttachmentOptions, user: User): Promise<void> {
     const baseURL = apiURL(this.casedataApiBase);
-    const attachmentUrl = `${MUNICIPALITY_ID}/SBK_PARKING_PERMIT/errands/${errandId}/attachments`;
+    const attachmentUrl = `${MUNICIPALITY_ID}/${CaseDataNamespace.SBK_PARKING_PERMIT}/errands/${errandId}/attachments`;
 
     await Promise.all(
       files.map(file => {
@@ -84,7 +78,7 @@ export class AssetsController {
       firstName: citizen.givenname ?? '',
       lastName: citizen.lastname ?? '',
       type: StakeholderTypeEnum.PERSON,
-      roles: ['APPLICANT'],
+      roles: [StakeholderRole.APPLICANT],
       personId: partyId,
       addresses: [
         {
@@ -120,7 +114,7 @@ export class AssetsController {
     };
 
     const baseURL = apiURL(this.casedataApiBase);
-    const url = `${MUNICIPALITY_ID}/SBK_PARKING_PERMIT/errands`;
+    const url = `${MUNICIPALITY_ID}/${CaseDataNamespace.SBK_PARKING_PERMIT}/errands`;
     const errandRes = await this.apiService.post<Errand, Errand>({ url, baseURL, data }, req.user);
 
     if (options.files?.length > 0 && errandRes.data?.id && options.attachmentOptions) {
@@ -130,33 +124,31 @@ export class AssetsController {
     return { data: { success: true }, message: 'ok' };
   }
 
-  // Strict allowlist of asset types, derived from feature flags. Types not
-  // present here (e.g. LICENSE) are never returned over the network.
-  private getAllowedAssetTypes = (): string[] => {
-    const allowed: string[] = [];
-    if (USE_PARKING_PERMITS) allowed.push(ASSET_TYPE.PARKING_PERMIT);
-    if (USE_FT_ERRAND_ASSETS) allowed.push(ASSET_TYPE.FT_ERRAND);
-    return allowed;
-  };
-
+  // Whitelist of asset types from env (WHITELIST_ASSET_TYPES). Types not listed
+  // (e.g. LICENSE) are never returned over the network.
   private isAllowedAsset = (asset: Asset): boolean => {
-    return !!asset?.type && this.getAllowedAssetTypes().includes(asset.type);
+    return !!asset?.type && WHITELIST_ASSET_TYPES.includes(asset.type);
   };
 
+  // Statuses tied to ongoing or superseded cases. DRAFT belongs to active
+  // errands and REPLACED has been superseded by a newer asset, so neither is
+  // shown to citizens. ACTIVE/EXPIRED/BLOCKED/TEMPORARY are all returned.
+  private static readonly HIDDEN_STATUSES: ReadonlySet<Status> = new Set([Status.DRAFT, Status.REPLACED]);
+
+  private isVisibleStatus = (asset: Asset): boolean => {
+    return !!asset?.status && !AssetsController.HIDDEN_STATUSES.has(asset.status);
+  };
+
+  // Strip server-only fields without mutating the upstream API objects.
   private toClientAsset = (asset: Asset): Asset => {
-    delete asset.partyId;
-    delete asset.id;
-    if (asset.status !== Status.ACTIVE) {
-      throw new HttpException(404, 'Not found');
-    }
-    return asset;
+    const clientAsset = { ...asset };
+    delete clientAsset.partyId;
+    delete clientAsset.id;
+    return clientAsset;
   };
 
   private toClientAssets = (assets: Asset[]): Asset[] => {
-    return assets
-      .filter(this.isAllowedAsset)
-      .map(this.toClientAsset)
-      .filter(asset => asset.status === Status.ACTIVE);
+    return assets.filter(this.isAllowedAsset).filter(this.isVisibleStatus).map(this.toClientAsset);
   };
 
   @Get('/assets')
@@ -226,7 +218,7 @@ export class AssetsController {
         throw new HttpException(404, 'Asset not found');
       }
 
-      if (!this.isAllowedAsset(res.data[0])) {
+      if (!this.isAllowedAsset(res.data[0]) || !this.isVisibleStatus(res.data[0])) {
         throw new HttpException(404, 'Asset not found');
       }
 
@@ -270,11 +262,11 @@ export class AssetsController {
     }
 
     return this.createParkingPermitErrand(req, {
-      caseType: 'PARKING_PERMIT_RENEWAL',
+      caseType: ParkingPermitCaseType.RENEWAL,
       extraParameters: extraParameters.length > 0 ? extraParameters : undefined,
       files,
       attachmentOptions: {
-        category: 'MEDICAL_CONFIRMATION',
+        category: AttachmentCategory.MEDICAL_CONFIRMATION,
         note: 'Läkarintyg för parkeringstillstånd',
       },
     });
@@ -289,7 +281,7 @@ export class AssetsController {
     @UploadedFiles('files', { options: fileUploadOptions, required: false }) files: Express.Multer.File[],
   ): Promise<ApiResponse<{ success: boolean }>> {
     return this.createParkingPermitErrand(req, {
-      caseType: 'LOST_PARKING_PERMIT',
+      caseType: ParkingPermitCaseType.LOST,
       extraParameters: [
         {
           key: 'application.lostPermit.policeReportNumber',
@@ -298,7 +290,7 @@ export class AssetsController {
       ],
       files,
       attachmentOptions: {
-        category: 'POLICE_REPORT',
+        category: AttachmentCategory.POLICE_REPORT,
         note: 'Polisanmälan för borttappat parkeringstillstånd',
       },
     });

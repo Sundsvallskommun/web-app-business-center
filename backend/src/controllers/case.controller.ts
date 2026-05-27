@@ -27,13 +27,14 @@ import authMiddleware from '@middlewares/auth.middleware';
 import dayjs from 'dayjs';
 import { Body, Controller, Get, Param, Post, Put, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
+import { CaseDataNamespace } from '@/interfaces/casedata.interface';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
 
 const USE_CASES_CACHE = false;
 
-const allowedNamespaces: string[] = ['SBK_MEX', 'SBK_PARKING_PERMIT', 'CONTACTSUNDSVALL'];
+const allowedNamespaces: string[] = [CaseDataNamespace.SBK_MEX, CaseDataNamespace.SBK_PARKING_PERMIT, CaseDataNamespace.CONTACTSUNDSVALL];
 const namespaceIsallowed = (c: CaseStatusResponse) => allowedNamespaces.includes(c.namespace);
 
 const allowedSystems: string[] = ['OPEN_E_PLATFORM', 'BYGGR'];

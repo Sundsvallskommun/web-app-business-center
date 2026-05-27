@@ -22,7 +22,7 @@ export const APIS = [
   },
   {
     name: 'partyassets',
-    version: '4.0',
+    version: '6.4',
   },
   {
     name: 'contactsettings',

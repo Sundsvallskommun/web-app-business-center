@@ -15,9 +15,9 @@
       "active": "Aktiv",
       "blocked": "Blockerad",
       "expired": "Utgången",
+      "temporary": "Tillfällig",
       "unknown": "Okänd"
     },
-    "caseReferenceIds": "Ärendenummer",
     "cardNumber": "Kortnummer",
     "decided": "Beslutad",
     "validityPeriod": "Giltighetstid",

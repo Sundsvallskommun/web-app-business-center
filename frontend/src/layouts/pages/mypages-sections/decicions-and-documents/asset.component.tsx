@@ -1,8 +1,7 @@
 'use client';
 
 import { Card } from '@components/cards/card.component';
-import { Status } from '@data-contracts/partyassets/data-contracts';
-import { isParkingPermit, soonExpiring } from '@services/asset-service';
+import { getAssetStatusProps, isParkingPermit, soonExpiring } from '@services/asset-service';
 import { Button, Divider, Icon, Label } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import { ArrowRight, FileCheck2 } from 'lucide-react';
@@ -13,33 +12,11 @@ import ParkingPermitLost from './parkingpermits/parkingpermit-lost.component';
 import ParkingPermitRenewalAlert from './parkingpermits/parkingpermit-renewal-alert.component';
 import ParkingPermitRenewal from './parkingpermits/parkingpermit-renewal.component';
 
-const getAssetProps = (status: Status | undefined, t: (key: string) => string) => {
-  let color: string;
-  let name: string;
-  switch (status) {
-    case 'ACTIVE':
-      color = 'success';
-      name = t('decisions:asset.status.active');
-      break;
-    case 'BLOCKED':
-      color = 'error';
-      name = t('decisions:asset.status.blocked');
-      break;
-    case 'EXPIRED':
-      color = 'error';
-      name = t('decisions:asset.status.expired');
-      break;
-    default:
-      color = 'primary';
-      name = t('decisions:asset.status.unknown');
-  }
-  return { color, name };
-};
-
 export default function Asset() {
   const { t } = useTranslation('decisions');
   const [isEditing, setisEditing] = useState<null | 'PERMIT_RENEWAL' | 'LOST_PERMIT'>(null);
   const { assetData } = useContext(AssetsContext);
+  const statusProps = getAssetStatusProps(assetData?.status);
   return isEditing === 'PERMIT_RENEWAL' ? (
     <ParkingPermitRenewal setIsEditing={setisEditing} />
   ) : isEditing === 'LOST_PERMIT' ? (
@@ -54,8 +31,8 @@ export default function Asset() {
           <h1 className="text-h2-sm desktop:text-h2-lg mb-0 break-word hyphens-auto">{assetData?.description}</h1>
         </div>
         <span>
-          <Label rounded inverted color={getAssetProps(assetData?.status, t).color}>
-            {getAssetProps(assetData?.status, t).name}
+          <Label rounded inverted color={statusProps.color}>
+            {t(statusProps.tKey)}
           </Label>
         </span>
       </div>
@@ -77,16 +54,6 @@ export default function Asset() {
         </div>
       ) : null}
       <div className="flex flex-col desktop:flex-row gap-24 desktop:gap-80 flex-wrap">
-        {assetData?.caseReferenceIds?.length ? (
-          <div className="flex flex-col items-start gap-4">
-            <div className="font-bold">{t('decisions:asset.caseReferenceIds')}</div>
-            <div>
-              {assetData?.caseReferenceIds?.map((id) => (
-                <div key={id}>{id}</div>
-              ))}
-            </div>
-          </div>
-        ) : null}
         {assetData?.assetId ? (
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">{t('decisions:asset.cardNumber')}</div>

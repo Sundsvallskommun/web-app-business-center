@@ -1,5 +1,5 @@
 import { useApi } from '@services/api-service';
-import { ACCEPTED_UPLOAD_FILETYPES } from '@services/asset-service';
+import { ACCEPTED_UPLOAD_FILETYPES } from '@utils/accepted-file-types';
 import {
   Button,
   Checkbox,

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/server.ts", "src/**/*.{test,spec}.ts"],
+  "project": ["src/**/*.ts"],
+  "ignore": ["src/data-contracts/**"],
+  "ignoreDependencies": ["lint-staged", "tsconfig-paths", "swagger-typescript-api"],
+  "ignoreBinaries": ["pm2"],
+  "rules": {
+    "enumMembers": "off"
+  }
+}

@@ -1,6 +1,9 @@
 // babel
 module.exports = {
   roots: ['<rootDir>/'],
+  // No unit tests currently exist (the stale pages-router suites were removed in the
+  // app-router migration); keep the harness without failing CI until app-router tests are added.
+  passWithNoTests: true,
   // "testTimeout": 15000,
   // Add more setup options before each test is run
   setupFiles: ['<rootDir>/.jest/setEnvVars'],

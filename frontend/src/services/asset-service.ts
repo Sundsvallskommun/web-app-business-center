@@ -26,3 +26,23 @@ export const isParkingPermit = (asset: Asset): boolean => {
 export const soonExpiring = (asset: Asset): boolean => {
   return !!asset?.validTo && dayjs().add(PARKING_PERMIT_EXPIRY_WARNING_MONTHS, 'month').isAfter(dayjs(asset.validTo));
 };
+
+export const formatAssetDate = (date?: string): string | undefined => {
+  if (!date) return undefined;
+
+  const parsedDate = dayjs(date);
+  return parsedDate.isValid() ? parsedDate.format('D MMM YYYY') : undefined;
+};
+
+export const formatAssetValidity = (
+  asset: Pick<Asset, 'issued' | 'validTo'> | undefined,
+  t: (key: string, options?: Record<string, string>) => string
+): string => {
+  const issued = formatAssetDate(asset?.issued);
+  const validTo = formatAssetDate(asset?.validTo);
+
+  if (issued && validTo) return `${issued} – ${validTo}`;
+  if (validTo) return t('decisions:asset.validity.until', { date: validTo });
+  if (issued) return t('decisions:asset.validity.indefiniteFrom', { date: issued });
+  return t('decisions:asset.validity.indefinite');
+};

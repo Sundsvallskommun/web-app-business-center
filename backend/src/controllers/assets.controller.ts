@@ -1,4 +1,4 @@
-import { MUNICIPALITY_ID } from '@/config';
+import { MUNICIPALITY_ID, USE_FT_ERRAND_ASSETS, USE_PARKING_PERMITS } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { AddressAddressCategoryEnum, Attachment, Errand, Stakeholder, StakeholderTypeEnum } from '@/data-contracts/case-data/data-contracts';
 import { CitizenExtended } from '@/data-contracts/citizen/data-contracts';
@@ -9,11 +9,18 @@ import { ApiResponse } from '@/interfaces/service';
 import { User } from '@/interfaces/users.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
+import { getCitizen } from '@/services/citizen.service';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
 import { apiURL } from '@/utils/util';
 import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
+
+// Mirrors the frontend AssetType allowlist; keep values in sync with asset-service.ts
+const ASSET_TYPE = {
+  PARKING_PERMIT: 'PERMIT',
+  FT_ERRAND: 'FTErrandAssets',
+} as const;
 
 interface AttachmentOptions {
   category: string;
@@ -62,19 +69,20 @@ export class AssetsController {
   }
 
   private async getApplicantStakeholder(partyId: string, user: User): Promise<Stakeholder> {
-    const citizenUrl = `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}`;
-    const citizenRes = await this.apiService.get<CitizenExtended>({ url: citizenUrl }, user).catch(() => null);
+    // const citizenUrl = `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}`;
+    // const citizenRes = await this.apiService.get<CitizenExtended>({ url: citizenUrl }, user).catch(() => null);
 
-    if (!citizenRes?.data) {
-      throw new HttpException(500, 'Could not fetch citizen data');
-    }
+    // if (!citizenRes?.data) {
+    //   throw new HttpException(500, 'Could not fetch citizen data');
+    // }
 
-    const citizen = citizenRes.data;
+    // const citizen = citizenRes.data;
+    const citizen = await getCitizen(partyId, { user });
     const address = citizen.addresses?.find(a => a.address);
 
     return {
-      firstName: citizen.givenname,
-      lastName: citizen.lastname,
+      firstName: citizen.givenname ?? '',
+      lastName: citizen.lastname ?? '',
       type: StakeholderTypeEnum.PERSON,
       roles: ['APPLICANT'],
       personId: partyId,
@@ -122,6 +130,19 @@ export class AssetsController {
     return { data: { success: true }, message: 'ok' };
   }
 
+  // Strict allowlist of asset types, derived from feature flags. Types not
+  // present here (e.g. LICENSE) are never returned over the network.
+  private getAllowedAssetTypes = (): string[] => {
+    const allowed: string[] = [];
+    if (USE_PARKING_PERMITS) allowed.push(ASSET_TYPE.PARKING_PERMIT);
+    if (USE_FT_ERRAND_ASSETS) allowed.push(ASSET_TYPE.FT_ERRAND);
+    return allowed;
+  };
+
+  private isAllowedAsset = (asset: Asset): boolean => {
+    return !!asset?.type && this.getAllowedAssetTypes().includes(asset.type);
+  };
+
   private toClientAsset = (asset: Asset): Asset => {
     delete asset.partyId;
     delete asset.id;
@@ -132,7 +153,10 @@ export class AssetsController {
   };
 
   private toClientAssets = (assets: Asset[]): Asset[] => {
-    return assets.map(this.toClientAsset).filter(asset => asset.status === Status.ACTIVE);
+    return assets
+      .filter(this.isAllowedAsset)
+      .map(this.toClientAsset)
+      .filter(asset => asset.status === Status.ACTIVE);
   };
 
   @Get('/assets')
@@ -199,6 +223,10 @@ export class AssetsController {
       }
 
       if (res.data.length === 0) {
+        throw new HttpException(404, 'Asset not found');
+      }
+
+      if (!this.isAllowedAsset(res.data[0])) {
         throw new HttpException(404, 'Asset not found');
       }
 

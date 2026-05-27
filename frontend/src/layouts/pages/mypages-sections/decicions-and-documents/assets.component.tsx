@@ -2,6 +2,7 @@ import { CardList } from '@components/cards/cards.component';
 import { useAppContext } from '@contexts/app.context';
 import { Asset } from '@data-contracts/partyassets/data-contracts';
 import { useApi } from '@services/api-service';
+import { filterAllowedAssets } from '@services/asset-service';
 import { Button, Icon, Spinner } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import dayjs from 'dayjs';
@@ -48,10 +49,12 @@ export const Assets = () => {
     method: 'get',
   });
 
+  const visibleAssets = filterAllowedAssets(assetsData);
+
   return (
     <section>
       <h2 className="text-h3-sm md:text-h3-md xl:text-h3-lg mb-16">Dokument</h2>
-      {!isFetchingAssets && assetsData?.length === 0 ? (
+      {!isFetchingAssets && visibleAssets?.length === 0 ? (
         <p>Du har inga beslut eller dokument ännu.</p>
       ) : (
         isFetchingAssets && (
@@ -61,10 +64,10 @@ export const Assets = () => {
           </div>
         )
       )}
-      {assetsData && assetsData.length > 0 && (
+      {visibleAssets && visibleAssets.length > 0 && (
         <CardList
           aria-label="Dokument"
-          data={assetsData}
+          data={visibleAssets}
           Card={AssetCard}
           amountDisplayed={5}
           showMoreText="Visa fler"

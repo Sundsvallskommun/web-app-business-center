@@ -1,4 +1,4 @@
-import { MUNICIPALITY_ID } from '@/config';
+import { MUNICIPALITY_ID, USE_DECISIONS } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { Decision, DecisionDecisionTypeEnum } from '@/data-contracts/case-data/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
@@ -67,6 +67,10 @@ export class DecisionsController {
   @OpenAPI({ summary: 'Return a list of decisions for current representing entity' })
   @UseBefore(authMiddleware)
   async getDecisions(@Req() req: RequestWithUser): Promise<ApiResponse<ClientDecision[]>> {
+    if (!USE_DECISIONS) {
+      return { data: [], message: 'Decisions feature disabled' };
+    }
+
     const { representing } = req.session ?? {};
 
     if (!representing) {
@@ -82,7 +86,7 @@ export class DecisionsController {
 
     try {
       const partyId = getRepresentingPartyId(representing);
-      const url = `${this.apiBase}/${MUNICIPALITY_ID}/errands/${partyId}/decisions`;
+      const url = `${this.apiBase}/${MUNICIPALITY_ID}/errands/${partyId}/decisions?sort=decisions.decidedAt,desc`;
       const params = {
         page: 0,
         size: 100,

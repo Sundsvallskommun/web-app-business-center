@@ -8,8 +8,8 @@ export const getAssets: (representingMode?: RepresentingMode) => ApiResponse<Ass
 ) => ({
   data: [
     {
+      id: 'asset-id-0',
       assetId: 'assetId-0',
-      caseReferenceIds: ['case-0'],
       description: `Parkeringstillstånd för funktionshindrad-${RepresentingMode[representingMode]}`,
       issued: '2021-01-01',
       origin: 'CASEDATA',

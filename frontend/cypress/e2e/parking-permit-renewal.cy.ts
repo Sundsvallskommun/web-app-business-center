@@ -70,7 +70,7 @@ describe('Parking Permit Renewal', () => {
 
     // Should be back on asset page
     cy.contains('Parkeringstillstånd för funktionshindrad').should('be.visible');
-    cy.contains('Ärendenummer').should('be.visible');
+    cy.contains('Kortnummer').should('be.visible');
   });
 
   it('should display renewal form with all fields', () => {
@@ -273,7 +273,7 @@ describe('Parking Permit Renewal', () => {
 
     // Should be back on asset page
     cy.contains('Parkeringstillstånd för funktionshindrad').should('be.visible');
-    cy.contains('Ärendenummer').should('be.visible');
+    cy.contains('Kortnummer').should('be.visible');
   });
 
   it('should validate required fields before submission', () => {

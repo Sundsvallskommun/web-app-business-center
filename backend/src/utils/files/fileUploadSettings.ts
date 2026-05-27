@@ -2,7 +2,7 @@ import path from 'path';
 
 export const fileUploadSettings = {
   UPLOAD_FOLDER: 'uploads',
-  fileNameFormat: fileName => {
+  fileNameFormat: (fileName: string) => {
     const fN = Date.now() + '-' + Math.round(Math.random() * 1e9);
     return fN + path.extname(fileName);
   },

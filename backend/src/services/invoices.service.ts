@@ -34,10 +34,8 @@ export const fetchInvoices = async (partyId: string, user: User): Promise<Invoic
     }
 
     return res.data;
-  } catch (error) {
-    if (error.status === 404) {
-      return emptyInvoice;
-    }
+  } catch {
+    // Any failure (including 404) falls back to an empty invoice list
     return emptyInvoice;
   }
 };

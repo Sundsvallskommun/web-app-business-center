@@ -15,7 +15,7 @@ import { IsString, Length } from 'class-validator';
 class CitizenLookupDto {
   @IsString()
   @Length(12, 12)
-  personnumber: string;
+  personnumber!: string;
 }
 
 @Controller()
@@ -44,7 +44,11 @@ export class CitizenController {
       const citizen = await this.apiService.get<CitizenExtended>({ url }, user);
       return res.send({
         message: 'success',
-        data: { personId: citizen.data.personId, givenname: citizen.data.givenname, lastname: citizen.data.lastname },
+        data: {
+          personId: citizen.data.personId ?? '',
+          givenname: citizen.data.givenname ?? '',
+          lastname: citizen.data.lastname ?? '',
+        },
       });
     } catch (error) {
       logger.error('Error getting citizen', error);

@@ -11,9 +11,9 @@ interface UserData {
   userSettings: any;
 }
 
-export class PatchUserSettingsDto {
+class PatchUserSettingsDto {
   @IsIn(['untilRemoved', 'oneMonth', 'twoWeeks'])
-  feedbackLifespan: string;
+  feedbackLifespan!: string;
 }
 
 @Controller()
@@ -44,11 +44,10 @@ export class UserController {
       });
     }
 
-    userSettings && delete userSettings.id;
-    userSettings && delete userSettings.userId;
+    const { id: _id, userId: _userId, ...userSettingsToSend } = userSettings;
 
     const userData: UserData = {
-      userSettings,
+      userSettings: userSettingsToSend,
       name: name,
     };
 
@@ -62,14 +61,11 @@ export class UserController {
   async patchSettings(@Req() req: RequestWithUser, @Body() userData: PatchUserSettingsDto): Promise<void> {
     const { partyId } = req.user;
 
-    const newSettings = await prisma.userSettings.update({
+    await prisma.userSettings.update({
       where: {
         userId: partyId,
       },
       data: userData,
     });
-
-    newSettings && delete newSettings.id;
-    newSettings && delete newSettings.userId;
   }
 }

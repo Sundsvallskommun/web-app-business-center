@@ -6,11 +6,11 @@ import { logger } from '@/utils/logger';
 import { HttpException } from '@exceptions/HttpException';
 import { NextFunction, Response } from 'express';
 
-const mandateMiddleware = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+const mandateMiddleware = async (req: RequestWithUser, _res: Response, next: NextFunction) => {
   const body: CreateMandateDto = req.body;
   try {
     const cacheHandler = handleSignCache(req);
-    const { grantorId } = cacheHandler.get<SignMandateCache>('mandates', body.transactionId);
+    const grantorId = cacheHandler.get<SignMandateCache>('mandates', body.transactionId)?.grantorId;
     if (req.session.representing?.BUSINESS?.partyId === grantorId && req.session.representing?.BUSINESS?.isAuthorizedSignatory) {
       next();
     } else {

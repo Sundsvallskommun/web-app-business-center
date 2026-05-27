@@ -1,40 +1,15 @@
-import {
-  CreateMandate,
-  GranteeDetails,
-  GrantorDetails,
-  SigningInfo as SigningInfoType,
-} from '@/data-contracts/myrepresentatives/data-contracts';
 import { SignMandate } from '@/interfaces/mandates.interface';
-import { Grantee, Grantor, SigningInfo } from '@/responses/mandates.response';
-import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsDateString, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class SignMandateDetails implements SignMandate {
   @IsString()
-  granteeId: string;
+  granteeId!: string;
   @IsDateString()
-  activeFrom: string;
+  activeFrom!: string;
   @IsDateString()
   @IsOptional()
   inactiveAfter?: string;
 }
-export class MandateDto implements CreateMandate {
-  @ValidateNested()
-  @Type(() => Grantor)
-  grantorDetails: GrantorDetails;
-  @ValidateNested()
-  @Type(() => Grantee)
-  granteeDetails: GranteeDetails;
-  @IsDateString()
-  activeFrom: string;
-  @IsDateString()
-  @IsOptional()
-  inactiveAfter?: string;
-  @ValidateNested()
-  @Type(() => SigningInfo)
-  signingInfo: SigningInfoType;
-}
-
 export class MandatePaginationDto {
   @IsInt()
   @IsOptional()
@@ -46,5 +21,5 @@ export class MandatePaginationDto {
 
 export class CreateMandateDto {
   @IsString()
-  transactionId: string;
+  transactionId!: string;
 }

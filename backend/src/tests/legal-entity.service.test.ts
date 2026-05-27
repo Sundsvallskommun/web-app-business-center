@@ -1,4 +1,3 @@
-import { HttpException } from '@exceptions/HttpException';
 import { LegalEntity2, PersonEngagement } from '@/data-contracts/legalentity/data-contracts';
 
 const mockGet = jest.fn();
@@ -42,10 +41,7 @@ describe('legal-entity.service', () => {
       const result = await getGuid('5591628136', mockUser);
 
       expect(result).toBe('abc-123-guid');
-      expect(mockGet).toHaveBeenCalledWith(
-        { url: '/api/legalentity/2281/5591628136/guid' },
-        mockUser,
-      );
+      expect(mockGet).toHaveBeenCalledWith({ url: '/api/legalentity/2281/5591628136/guid' }, mockUser);
     });
 
     it('should throw 404 when API returns no data', async () => {
@@ -76,10 +72,7 @@ describe('legal-entity.service', () => {
       const result = await getLegalEntity('abc-123-guid', mockUser);
 
       expect(result).toEqual(mockLegalEntity);
-      expect(mockGet).toHaveBeenCalledWith(
-        { url: '/api/legalentity/2281/abc-123-guid' },
-        mockUser,
-      );
+      expect(mockGet).toHaveBeenCalledWith({ url: '/api/legalentity/2281/abc-123-guid' }, mockUser);
     });
 
     it('should throw 404 when API returns no data', async () => {
@@ -188,10 +181,7 @@ describe('legal-entity.service', () => {
     });
 
     it('should filter out engagements without name', () => {
-      const input: Partial<PersonEngagement>[] = [
-        { name: 'Company A', organizationNumber: '1234567890' },
-        { organizationNumber: '0987654321' },
-      ];
+      const input: Partial<PersonEngagement>[] = [{ name: 'Company A', organizationNumber: '1234567890' }, { organizationNumber: '0987654321' }];
 
       const result = mapEngagements(input as PersonEngagement[]);
 
@@ -200,10 +190,7 @@ describe('legal-entity.service', () => {
     });
 
     it('should filter out engagements without organizationNumber', () => {
-      const input: Partial<PersonEngagement>[] = [
-        { name: 'Company A', organizationNumber: '1234567890' },
-        { name: 'Company B' },
-      ];
+      const input: Partial<PersonEngagement>[] = [{ name: 'Company A', organizationNumber: '1234567890' }, { name: 'Company B' }];
 
       const result = mapEngagements(input as PersonEngagement[]);
 
@@ -211,9 +198,7 @@ describe('legal-entity.service', () => {
     });
 
     it('should default isAuthorizedSignatory to false', () => {
-      const input: Partial<PersonEngagement>[] = [
-        { name: 'Company A', organizationNumber: '1234567890' },
-      ];
+      const input: Partial<PersonEngagement>[] = [{ name: 'Company A', organizationNumber: '1234567890' }];
 
       const result = mapEngagements(input as PersonEngagement[]);
 
@@ -285,9 +270,7 @@ describe('legal-entity.service', () => {
 
       const result = await getBusinessEngagements(mockUser);
 
-      expect(result).toEqual([
-        { organizationNumber: '999', name: 'Granted Co', isAuthorizedSignatory: false, isSoleTrader: null },
-      ]);
+      expect(result).toEqual([{ organizationNumber: '999', name: 'Granted Co', isAuthorizedSignatory: false, isSoleTrader: null }]);
     });
 
     it('should return an empty array when both engagements and mandates fail', async () => {
@@ -321,9 +304,7 @@ describe('legal-entity.service', () => {
 
       const result = await getBusinessEngagements(mockUser);
 
-      expect(result).toEqual([
-        { organizationNumber: '222', name: 'Granted Co', isAuthorizedSignatory: false, isSoleTrader: null },
-      ]);
+      expect(result).toEqual([{ organizationNumber: '222', name: 'Granted Co', isAuthorizedSignatory: false, isSoleTrader: null }]);
     });
 
     it('should deduplicate by organizationNumber, keeping the direct engagement', async () => {
@@ -349,10 +330,7 @@ describe('legal-entity.service', () => {
 
       expect(result).toEqual([personEngagement]);
       expect(mockGet).toHaveBeenCalledTimes(1);
-      expect(mockGet).toHaveBeenCalledWith(
-        { url: '/api/legalentity/2281/engagements/person/199001011234' },
-        expect.anything(),
-      );
+      expect(mockGet).toHaveBeenCalledWith({ url: '/api/legalentity/2281/engagements/person/199001011234' }, expect.anything());
     });
   });
 });

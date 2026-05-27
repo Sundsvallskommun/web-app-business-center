@@ -3,21 +3,21 @@ import { validate, ValidationError } from 'class-validator';
 import { RequestHandler } from 'express';
 import { HttpException } from '@exceptions/HttpException';
 
-const getAllNestedErrors = (error: ValidationError) => {
+const getAllNestedErrors = (error: ValidationError): string => {
   if (error.constraints) {
-    return Object.values(error.constraints);
+    return Object.values(error.constraints).join(',');
   }
-  return error.children.map(getAllNestedErrors).join(',');
+  return (error.children ?? []).map(getAllNestedErrors).join(',');
 };
 
 export const validationMiddleware = (
   type: any,
-  value: string | 'body' | 'query' | 'params' = 'body',
+  value: 'body' | 'query' | 'params' = 'body',
   skipMissingProperties = false,
   whitelist = true,
   forbidNonWhitelisted = true,
 ): RequestHandler => {
-  return (req, res, next) => {
+  return (req, _res, next) => {
     const obj = plainToInstance(type, req[value]);
     validate(obj, { skipMissingProperties, whitelist, forbidNonWhitelisted }).then((errors: ValidationError[]) => {
       if (errors.length > 0) {

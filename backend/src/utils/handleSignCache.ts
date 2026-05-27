@@ -13,11 +13,11 @@ export const handleSignCache = (req: RequestWithUser) => {
     return data as T;
   };
   const remove = (type: SignCacheType, transactionId: string) => {
+    // signs is initialized above, so the bucket always exists; mutate it in place
     const old = req.session.signs[type];
     if (old?.[transactionId]) {
-      delete old?.[transactionId];
+      delete old[transactionId];
     }
-    req.session.signs[type] = old ?? {};
   };
 
   return { set, get, remove };

@@ -4,7 +4,7 @@ import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class CaseMessageDto implements CaseMessage {
   @IsString()
-  message: string;
+  message!: string;
 
   @IsArray()
   @IsOptional()

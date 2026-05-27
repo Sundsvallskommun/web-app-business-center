@@ -1,7 +1,6 @@
 import { MUNICIPALITY_ID, USE_FT_ERRAND_ASSETS, USE_PARKING_PERMITS } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { AddressAddressCategoryEnum, Attachment, Errand, Stakeholder, StakeholderTypeEnum } from '@/data-contracts/case-data/data-contracts';
-import { CitizenExtended } from '@/data-contracts/citizen/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
@@ -46,7 +45,6 @@ export class AssetsController {
   private apiService = new ApiService();
   private apiBase = getApiBase('partyassets');
   private casedataApiBase = getApiBase('case-data');
-  private citizenApiBase = getApiBase('citizen');
 
   private async uploadAttachments(errandId: number, files: Express.Multer.File[], options: AttachmentOptions, user: User): Promise<void> {
     const baseURL = apiURL(this.casedataApiBase);
@@ -123,7 +121,7 @@ export class AssetsController {
     const url = `${MUNICIPALITY_ID}/SBK_PARKING_PERMIT/errands`;
     const errandRes = await this.apiService.post<Errand, Errand>({ url, baseURL, data }, req.user);
 
-    if (options.files?.length > 0 && errandRes.data?.id && options.attachmentOptions) {
+    if (options.files && options.files.length > 0 && errandRes.data?.id && options.attachmentOptions) {
       await this.uploadAttachments(errandRes.data.id, options.files, options.attachmentOptions, req.user);
     }
 
@@ -165,6 +163,10 @@ export class AssetsController {
   async getAssets(@Req() req: RequestWithUser): Promise<ApiResponse<Asset[]>> {
     const { representing } = req.session ?? {};
 
+    if (!representing) {
+      throw new HttpException(400, 'Bad Request');
+    }
+
     const controller = new AbortController();
     const { signal } = controller;
     req.on('aborted', () => {
@@ -185,7 +187,7 @@ export class AssetsController {
 
       return { data: this.toClientAssets(res.data), message: 'success' };
     } catch (error) {
-      if (error.status === 404) {
+      if (error instanceof HttpException && error.status === 404) {
         return { data: [], message: '404 from api, Assumed empty array' };
       } else {
         throw new HttpException(500, 'Something went wrong');
@@ -198,6 +200,10 @@ export class AssetsController {
   @UseBefore(authMiddleware)
   async getAsset(@Req() req: RequestWithUser, @Param('assetId') assetId: string): Promise<ApiResponse<Asset>> {
     const { representing } = req.session ?? {};
+
+    if (!representing) {
+      throw new HttpException(400, 'Bad Request');
+    }
 
     const controller = new AbortController();
     const { signal } = controller;
@@ -233,7 +239,7 @@ export class AssetsController {
       return { data: this.toClientAsset(res.data[0]), message: 'success' };
     } catch (error) {
       console.error(error);
-      if (error.status === 404) {
+      if (error instanceof HttpException && error.status === 404) {
         throw new HttpException(404, 'Asset not found');
       }
       throw new HttpException(500, 'Something went wrong');

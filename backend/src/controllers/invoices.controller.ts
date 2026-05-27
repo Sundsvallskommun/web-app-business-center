@@ -20,7 +20,10 @@ export class InvoicesController {
   @OpenAPI({ summary: 'Return a list of invoices for current represented organization' })
   @UseBefore(authMiddleware)
   async getInvoices(@Req() req: RequestWithUser) {
-    const { representing } = req?.session;
+    const { representing } = req.session;
+    if (!representing) {
+      throw new HttpException(400, 'Bad Request');
+    }
     const partyId = getRepresentingPartyId(representing);
 
     if (!partyId) {

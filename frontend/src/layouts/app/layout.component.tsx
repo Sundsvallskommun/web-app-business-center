@@ -33,9 +33,9 @@ dayjs.updateLocale('se', {
   weekdaysMin: ['S', 'M', 'T', 'O', 'T', 'F', 'L'],
 });
 
- const theme = {...defaultTheme, screens: {...defaultTheme.screens, 'desktop-min': '1024px'}};
+const theme = { ...defaultTheme, screens: { ...defaultTheme.screens, 'desktop-min': '1024px' } };
 
-export default function MyAppLayout({ children }) {
+export default function MyAppLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang={i18nConfig.defaultLocale}>
       <body>

@@ -6,7 +6,7 @@ interface CountdownTimerProps {
   className?: string;
 }
 
-export const CountdownTimer: React.FC<CountdownTimerProps> = ({ timeout, onChangeTime, className }) => {
+const CountdownTimer: React.FC<CountdownTimerProps> = ({ timeout, onChangeTime, className }) => {
   const [timeLeft, setTimeLeft] = useState<number>(timeout);
   const timerIdRef = useRef<NodeJS.Timeout | null>(null);
 

@@ -3,7 +3,11 @@ import { Info } from 'lucide-react';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-export const ConnectForm = ({ children }) => {
+export const ConnectForm = ({
+  children,
+}: {
+  children: (methods: ReturnType<typeof useFormContext>) => React.ReactElement;
+}) => {
   const methods = useFormContext();
 
   return children({ ...methods });

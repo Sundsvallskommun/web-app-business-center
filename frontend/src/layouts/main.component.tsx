@@ -1,4 +1,4 @@
-export default function Main({ children }) {
+export default function Main({ children }: { children: React.ReactNode }) {
   return (
     <div className="container">
       <main id="content" tabIndex={-1}>

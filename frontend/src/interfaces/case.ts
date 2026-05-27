@@ -3,7 +3,11 @@ import { statusCodes } from './status-codes';
 import { AttachmentResponse, MessageResponseDirectionEnum } from '@data-contracts/case-data/data-contracts';
 
 export interface ICaseStatusResponse extends Omit<CaseStatusResponse, 'status'> {
-  status: { code: statusCodes; color: 'neutral' | 'info' | 'warning' | 'error'; label: string };
+  status: {
+    code: statusCodes;
+    color: 'neutral' | 'info' | 'warning' | 'error' | 'success' | 'tertiary';
+    label: string;
+  };
 }
 
 export interface CasesData {

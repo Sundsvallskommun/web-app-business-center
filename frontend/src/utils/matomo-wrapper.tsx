@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Fragment, useEffect, useState } from 'react';
 import { appURL } from './app-url';
 
-export function MatomoWrapper({ children }) {
+export function MatomoWrapper({ children }: { children: React.ReactNode }) {
   const localstorageKey = 'matomoIsActive';
   const { value: matomo } = useLocalStorageValue(localstorageKey, {
     defaultValue: false,

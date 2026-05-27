@@ -19,7 +19,7 @@ import { ArrowRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-export const MAX_FILE_SIZE_MB = 50;
+const MAX_FILE_SIZE_MB = 50;
 
 interface PermitRenewalFormModel {
   description: string;
@@ -120,9 +120,7 @@ export const ParkingPermitRenewalForm = ({
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-56">
       <div className="flex flex-col">
-        <FormLabel className="mb-12">
-          {t('decisions:parkingPermit.renewal.form.circumstancesChanged')}
-        </FormLabel>
+        <FormLabel className="mb-12">{t('decisions:parkingPermit.renewal.form.circumstancesChanged')}</FormLabel>
         <RadioButton.Group inline>
           <RadioButton
             data-cy={`circumstances-changed-true`}
@@ -160,7 +158,12 @@ export const ParkingPermitRenewalForm = ({
         <>
           <FormControl className="w-full desktop:w-3/4">
             <FormLabel htmlFor="description">{t('decisions:parkingPermit.renewal.form.describeChanges')}</FormLabel>
-            <Input {...form.register('description', { required: t('decisions:parkingPermit.renewal.form.descriptionRequired') })} placeholder="" />
+            <Input
+              {...form.register('description', {
+                required: t('decisions:parkingPermit.renewal.form.descriptionRequired'),
+              })}
+              placeholder=""
+            />
             {form.formState.errors.description && (
               <FormErrorMessage className="text-error">{form.formState.errors.description.message}</FormErrorMessage>
             )}
@@ -205,7 +208,9 @@ export const ParkingPermitRenewalForm = ({
                 index={i}
                 file={file}
                 categoryProps={{
-                  categories: { MEDICAL_CONFIRMATION: t('decisions:parkingPermit.renewal.form.medicalCertificateCategory') },
+                  categories: {
+                    MEDICAL_CONFIRMATION: t('decisions:parkingPermit.renewal.form.medicalCertificateCategory'),
+                  },
                 }}
                 actionsProps={{
                   showRemove: true,

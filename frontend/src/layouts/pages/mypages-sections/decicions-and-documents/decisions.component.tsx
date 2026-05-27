@@ -6,20 +6,12 @@ import { Button, Icon, Spinner, useThemeQueries } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import sv from 'dayjs/locale/sv';
 import { Download, File } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import Link from 'next/link';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useAppContext } from '@contexts/app.context';
 
 dayjs.locale(sv);
-
-const formatFileSize = (base64: string): string => {
-  const bytes = (base64.length * 3) / 4;
-  if (bytes >= 1024 * 1024) {
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-  return `${Math.round(bytes / 1024)} KB`;
-};
 
 const DecisionCard: React.FC<{ item: ClientDecision }> = ({ item }) => {
   const attachment = item.attachments?.[0];

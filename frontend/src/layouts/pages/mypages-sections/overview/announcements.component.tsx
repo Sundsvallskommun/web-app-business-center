@@ -6,7 +6,7 @@ import { useApi } from '@services/api-service';
 import { Image, Link, Spinner } from '@sk-web-gui/react';
 import { useTranslation } from 'react-i18next';
 
-export const announcementsSource: Announcement[] = [
+const announcementsSource: Announcement[] = [
   {
     id: 0,
     title: 'Välkommen till nya Mina sidor',

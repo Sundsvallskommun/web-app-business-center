@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { apiService, ApiResponse } from './api-service';
+import { apiService } from './api-service';
 import { useSnackbar } from '@sk-web-gui/react';
 import { useTranslation } from 'react-i18next';
 
-export interface Citizen {
+interface Citizen {
   personId: string;
   givenname: string;
   lastname: string;

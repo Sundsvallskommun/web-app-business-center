@@ -19,7 +19,7 @@ export const CaseContext = createContext<{ caseData?: ICaseStatusResponse; caseM
   null
 );
 
-export default function CaseLayout(props: { caseId: number; children: React.ReactNode }) {
+export default function CaseLayout(props: { caseId: string; children: React.ReactNode }) {
   const { caseId, children } = props;
   const { data: caseData, error: caseError } = useApi<CaseStatusResponse, AxiosError, ICaseStatusResponse>({
     url: `/cases/${caseId}`,

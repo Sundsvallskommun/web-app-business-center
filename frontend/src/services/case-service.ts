@@ -18,17 +18,18 @@ export const ongoingCasesLabels = [
 
 // getCaseStatus i confluence
 export const statusMapCases = {
-  Inskickat: { code: statusCodes.Ongoing, color: 'tertiary' },
-  'Handläggning pågår': { code: statusCodes.Ongoing, color: 'info' },
-  'Komplettering behövs': { code: statusCodes.Ongoing, color: 'warning' },
-  Kompletterad: { code: statusCodes.Ongoing, color: 'info' },
-  Avslutat: { code: statusCodes.Approved, color: 'success' },
+  Inskickat: { code: statusCodes.Ongoing, color: 'tertiary' as const },
+  'Handläggning pågår': { code: statusCodes.Ongoing, color: 'info' as const },
+  'Komplettering behövs': { code: statusCodes.Ongoing, color: 'warning' as const },
+  Kompletterad: { code: statusCodes.Ongoing, color: 'info' as const },
+  Avslutat: { code: statusCodes.Approved, color: 'success' as const },
 };
 
-export const mapStatus = (s: string) => {
+const mapStatus = (s: string) => {
+  const key = s as keyof typeof statusMapCases;
   return Object.keys(statusMapCases).includes(s)
-    ? { code: statusMapCases[s].code, color: statusMapCases[s].color, label: s }
-    : { code: statusCodes.Ongoing, color: 'info', label: s };
+    ? { code: statusMapCases[key].code, color: statusMapCases[key].color, label: s }
+    : { code: statusCodes.Ongoing, color: 'info' as const, label: s };
 };
 
 export const handleCase = (n: CaseStatusResponse): ICaseStatusResponse => ({
@@ -36,9 +37,9 @@ export const handleCase = (n: CaseStatusResponse): ICaseStatusResponse => ({
   status: mapStatus(n.externalStatus || ''),
 });
 
-export const handleCaseResponse: (data: CaseStatusResponse[]) => ICaseStatusResponse[] = (data) => data.map(handleCase);
+const handleCaseResponse: (data: CaseStatusResponse[]) => ICaseStatusResponse[] = (data) => data.map(handleCase);
 
-export const casesHandler = (data) => ({
+export const casesHandler = (data: CaseStatusResponse[]) => ({
   cases: handleCaseResponse(data),
   labels: [],
 });
@@ -48,7 +49,7 @@ const getRelevantDate = (c: ICaseStatusResponse): number | null => {
   return d ? Date.parse(d) : null;
 };
 
-export const sortCasesByDate = (a: ICaseStatusResponse, b: ICaseStatusResponse): number => {
+const sortCasesByDate = (a: ICaseStatusResponse, b: ICaseStatusResponse): number => {
   const ta = getRelevantDate(a);
   const tb = getRelevantDate(b);
 

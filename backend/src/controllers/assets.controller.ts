@@ -9,6 +9,7 @@ import { ApiResponse } from '@/interfaces/service';
 import { User } from '@/interfaces/users.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
+import { getCitizen } from '@/services/citizen.service';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
 import { apiURL } from '@/utils/util';
@@ -68,19 +69,20 @@ export class AssetsController {
   }
 
   private async getApplicantStakeholder(partyId: string, user: User): Promise<Stakeholder> {
-    const citizenUrl = `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}`;
-    const citizenRes = await this.apiService.get<CitizenExtended>({ url: citizenUrl }, user).catch(() => null);
+    // const citizenUrl = `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}`;
+    // const citizenRes = await this.apiService.get<CitizenExtended>({ url: citizenUrl }, user).catch(() => null);
 
-    if (!citizenRes?.data) {
-      throw new HttpException(500, 'Could not fetch citizen data');
-    }
+    // if (!citizenRes?.data) {
+    //   throw new HttpException(500, 'Could not fetch citizen data');
+    // }
 
-    const citizen = citizenRes.data;
+    // const citizen = citizenRes.data;
+    const citizen = await getCitizen(partyId, { user });
     const address = citizen.addresses?.find(a => a.address);
 
     return {
-      firstName: citizen.givenname,
-      lastName: citizen.lastname,
+      firstName: citizen.givenname ?? '',
+      lastName: citizen.lastname ?? '',
       type: StakeholderTypeEnum.PERSON,
       roles: ['APPLICANT'],
       personId: partyId,

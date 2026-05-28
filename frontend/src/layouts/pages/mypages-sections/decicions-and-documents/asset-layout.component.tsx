@@ -1,10 +1,9 @@
 'use client';
 
 import { useAppContext } from '@contexts/app.context';
-import { Asset } from '@data-contracts/partyassets/data-contracts';
+import { AssetWithService } from '@interfaces/asset';
 import { PagesBreadcrumbsLayout } from '@layouts/pages-breadcrumbs-layout.component';
 import { useApi } from '@services/api-service';
-import { isAllowedAsset } from '@services/asset-service';
 import { Breadcrumb } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { AxiosError } from 'axios';
@@ -13,26 +12,23 @@ import { redirect } from 'next/navigation';
 import { createContext } from 'react';
 
 export const AssetsContext = createContext<{
-  assetData?: Asset;
+  assetData?: AssetWithService;
 }>(
   /** @ts-expect-error is set on mount */
   null
 );
 
-export default function AssetLayout(props: { assetId: string; children: React.ReactNode }) {
-  const { assetId, children } = props;
-  const { data: assetData, error: assetError } = useApi<Asset, AxiosError>({
-    url: `/assets/${assetId}`,
+export default function AssetLayout(props: { id: string; children: React.ReactNode }) {
+  const { id, children } = props;
+  const { data: assetData, error: assetError } = useApi<AssetWithService, AxiosError>({
+    url: `/assets/${id}`,
     method: 'get',
   });
 
   const { representingMode } = useAppContext();
+  const title = assetData?.service?.restyp?.length ? assetData.service.restyp.join(', ') : assetData?.description;
 
   if (assetError?.status === 404) {
-    redirect(`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument`);
-  }
-
-  if (assetData && !isAllowedAsset(assetData)) {
     redirect(`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument`);
   }
 
@@ -49,7 +45,7 @@ export default function AssetLayout(props: { assetId: string; children: React.Re
           </Breadcrumb.Item>
 
           <Breadcrumb.Item currentPage>
-            <Breadcrumb.Link href="#">{assetData?.description}</Breadcrumb.Link>
+            <Breadcrumb.Link href="#">{title}</Breadcrumb.Link>
           </Breadcrumb.Item>
         </Breadcrumb>
       }

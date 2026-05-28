@@ -18,11 +18,15 @@ export const APIS = [
   },
   {
     name: 'casestatus',
-    version: '4.2',
+    version: '4.3',
   },
   {
     name: 'partyassets',
-    version: '4.0',
+    version: '6.4',
+  },
+  {
+    name: 'jsonschema',
+    version: '1.0',
   },
   {
     name: 'contactsettings',

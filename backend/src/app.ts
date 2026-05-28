@@ -215,9 +215,9 @@ class App {
         saveUninitialized: false,
         store: sessionStore,
         cookie: {
-          httpOnly: true,
+          httpOnly: this.env === 'production' && process.env.ENVIRONMENT !== 'TEST',
           sameSite: 'lax',
-          secure: this.env === 'production',
+          secure: this.env === 'production' && process.env.ENVIRONMENT !== 'TEST',
         },
       }),
     );

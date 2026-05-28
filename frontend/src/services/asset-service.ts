@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 const PARKING_PERMIT_EXPIRY_WARNING_MONTHS = 3;
 
-export const AssetType = {
+const AssetType = {
   PARKING_PERMIT: 'PERMIT',
   FT_ERRAND: 'FTErrandAssets',
 } as const;
@@ -17,7 +17,7 @@ export const isParkingPermit = (asset: Asset): boolean => {
  * Strict allowlist of asset types that may be shown, derived from enabled
  * feature flags. Types not present here (e.g. LICENSE) are never listed.
  */
-export const getAllowedAssetTypes = (): string[] => {
+const getAllowedAssetTypes = (): string[] => {
   const allowed: string[] = [];
   if (useParkingPermits) allowed.push(AssetType.PARKING_PERMIT);
   if (useFtErrandAssets) allowed.push(AssetType.FT_ERRAND);
@@ -37,7 +37,7 @@ export const soonExpiring = (asset: Asset): boolean => {
   return !!asset?.validTo && dayjs().add(PARKING_PERMIT_EXPIRY_WARNING_MONTHS, 'month').isAfter(dayjs(asset.validTo));
 };
 
-export const documentMimeTypes = [
+const documentMimeTypes = [
   'video/quicktime',
   'video/mp4',
   'video/mpeg',

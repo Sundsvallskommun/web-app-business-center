@@ -5,7 +5,7 @@ const isNull = (value: any) => {
 };
 
 @ValidatorConstraint()
-export class IsNull implements ValidatorConstraintInterface {
+class IsNull implements ValidatorConstraintInterface {
   validate(value: any) {
     return isNull(value);
   }

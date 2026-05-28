@@ -11,7 +11,7 @@ export function Layout({ title, children }: { title: string; children: React.Rea
   const { set: setMatomo } = useLocalStorageValue('matomoIsActive');
   const { t } = useTranslation(['layout', 'common']);
 
-  const cookieConsentHandler = (cookies) => {
+  const cookieConsentHandler = (cookies: { cookieName: string }[]) => {
     if (cookies.some((opt) => opt.cookieName === 'stats')) {
       setMatomo(true);
     }

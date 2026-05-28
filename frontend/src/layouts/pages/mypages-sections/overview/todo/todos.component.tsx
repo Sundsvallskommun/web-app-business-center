@@ -14,14 +14,14 @@ import { TodoCase } from './todo-case.component';
 import { TodoParkingPermitExpiry } from './todo-parking-permit-expiry.component';
 import styles from './todos.module.scss';
 
-export enum TodoType {
+enum TodoType {
   CONTRACT,
   MESSAGE,
   CASE,
   PARKING_PERMIT_EXPIRY,
 }
 
-export function dataToTodo<TTodoType = TodoType>(
+function dataToTodo<TTodoType = TodoType>(
   data: TodoItem<TTodoType>['data'],
   type: TodoItem<TTodoType>['type']
 ): TodoItem<TTodoType> {
@@ -31,7 +31,7 @@ export function dataToTodo<TTodoType = TodoType>(
   };
 }
 
-export interface TodoItem<TTodoType = TodoType> {
+interface TodoItem<TTodoType = TodoType> {
   type: TTodoType;
   data: TTodoType extends TodoType.CASE
     ? ICaseStatusResponse
@@ -43,7 +43,7 @@ export interface TodoItem<TTodoType = TodoType> {
 export const Todos = () => {
   const { t } = useTranslation('overview');
 
-  const { data: cases, isFetching: casesIsFetching } = useApi<CaseStatusResponse, Error, CasesData>({
+  const { data: cases, isFetching: casesIsFetching } = useApi<CaseStatusResponse[], Error, CasesData>({
     url: '/cases',
     method: 'get',
     dataHandler: casesHandler,

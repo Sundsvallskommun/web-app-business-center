@@ -9,7 +9,13 @@ import { logger } from '@/utils/logger';
 import { Response } from 'express';
 import { Body, Controller, Get, Post, Req, Res, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
-import { RepresentingBusinessEntity, RepresentingEntity, RepresentingEntityClient, RepresentingMode } from '../interfaces/representing.interface';
+import {
+  RepresentingBusinessEntity,
+  RepresentingEntity,
+  RepresentingEntityClient,
+  RepresentingMode,
+  RepresentingPrivateEntity,
+} from '../interfaces/representing.interface';
 import { ClientRepresentingApiResponse } from '@/responses/representing.response';
 
 interface ResponseData {
@@ -37,19 +43,25 @@ export class RepresentingController {
     return selected;
   };
 
-  fixGuid = guid => guid?.replace(/[^a-zA-Z0-9-]/g, '');
+  fixGuid = (guid: string | undefined) => guid?.replace(/[^a-zA-Z0-9-]/g, '');
 
-  getDefaultPRIVATE = (req: RequestWithUser) => ({
-    partyId: this.fixGuid(req.user.partyId),
+  getDefaultPRIVATE = (req: RequestWithUser): RepresentingPrivateEntity => ({
+    partyId: this.fixGuid(req.user.partyId) ?? '',
     personNumber: req.user.personNumber,
     name: req.user.name,
   });
 
   getDefaultBUSINESS = async (req: RequestWithUser): Promise<RepresentingBusinessEntity> => {
-    const { representingBusinessChoices } = req?.session;
+    const { representingBusinessChoices } = req.session;
+    if (!representingBusinessChoices) {
+      throw new HttpException(400, 'Bad Request - No choices');
+    }
     const selected = this.getSelected<Engagement, 'organizationNumber'>(representingBusinessChoices, req.body, 'organizationNumber');
+    if (!selected.organizationNumber) {
+      throw new HttpException(400, 'Bad Request - Missing organization number');
+    }
     const guid = await getGuid(selected.organizationNumber, req.user);
-    const partyId = this.fixGuid(guid);
+    const partyId = this.fixGuid(guid) ?? '';
     const businessInformation = await getBusinessInformationByGuid(guid, req.user);
 
     let whitelisted = false;
@@ -61,7 +73,7 @@ export class RepresentingController {
 
     return {
       partyId,
-      organizationName: selected.organizationName,
+      organizationName: selected.organizationName ?? '',
       organizationNumber: selected.organizationNumber,
       isAuthorizedSignatory: selected.isAuthorizedSignatory ?? false,
       whitelisted,
@@ -102,14 +114,14 @@ export class RepresentingController {
     }
 
     if (!representing.PRIVATE) {
-      req.session.representing.PRIVATE = this.getDefaultPRIVATE(req);
+      representing.PRIVATE = this.getDefaultPRIVATE(req);
     }
 
     if (representing.mode === RepresentingMode.BUSINESS && !representing.BUSINESS) {
       throw new HttpException(400, 'Representing not set');
     }
 
-    return res.send({ data: this.getRepresentingToSend(req.session.representing), message: 'success' });
+    return res.send({ data: this.getRepresentingToSend(representing), message: 'success' });
   }
 
   @Post('/representing')
@@ -117,8 +129,11 @@ export class RepresentingController {
   @OpenAPI({ summary: 'Sets which entity a logged in user represents' })
   @UseBefore(authMiddleware)
   async postBusinessEngagements(@Body() selectedRepresenting: RepresentsDto, @Req() req: RequestWithUser): Promise<ResponseData> {
-    const { representing } = req?.session;
-    let newRepresenting = representing;
+    const { representing } = req.session;
+    if (!representing) {
+      throw new HttpException(403, 'Forbidden');
+    }
+    let newRepresenting: RepresentingEntity = representing;
 
     if (selectedRepresenting.organizationNumber !== undefined) {
       const data: RepresentingEntity = {

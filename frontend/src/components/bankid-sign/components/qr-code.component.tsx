@@ -25,7 +25,7 @@ export const QRCode: React.FC<QRCodeProps> = ({ qrCode }) => {
 
   useEffect(() => {
     QRLib.toDataURL(qrCode, qrCodeOptions)
-      .then((url) => {
+      .then((url: string) => {
         setImage(url);
       })
       .catch(() => {

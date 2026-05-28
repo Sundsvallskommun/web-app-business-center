@@ -51,7 +51,7 @@ export const CreateMandateModal: React.FC<CreateMandateModalProps> = ({ open, on
     SignMandateDetails & { agree: boolean; name: string }
   >({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: yupResolver(mandateSchema) as any,
+    resolver: yupResolver(mandateSchema as any),
     defaultValues: {
       activeFrom: dayjs().format('YYYY-MM-DD'),
       inactiveAfter: dayjs().add(3, 'years').format('YYYY-MM-DD'),

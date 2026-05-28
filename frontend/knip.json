@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/app/i18n.ts", "src/app/i18nConfig.ts", "cypress/**/*.{ts,tsx}", ".jest/**/*.{js,jsx,ts,tsx}"],
+  "project": ["src/**/*.{ts,tsx}", "cypress/**/*.{ts,tsx}"],
+  "ignore": ["src/data-contracts/**"],
+  "ignoreDependencies": ["sharp", "lint-staged", "@testing-library/dom", "@testing-library/react", "@testing-library/user-event", "react-test-renderer"],
+  "rules": {
+    "enumMembers": "off"
+  }
+}

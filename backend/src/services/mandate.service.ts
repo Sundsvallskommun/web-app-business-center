@@ -25,7 +25,7 @@ export const getIsWhitelisted = async (user: User, orgPartyId: string): Promise<
 
   try {
     const mandateRes = await apiService.get<Mandates>({ url: mandateApiUrl, params: mandateParams }, user);
-    return mandateRes?.data?.mandateDetailsList?.some(entry => entry.whitelisted === true);
+    return mandateRes?.data?.mandateDetailsList?.some(entry => entry.whitelisted === true) ?? false;
   } catch (error) {
     logger.error('Error getting engagement: ', error);
     // If the API is not available, default to not whitelisted rather than blocking the login

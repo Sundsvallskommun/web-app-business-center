@@ -16,27 +16,16 @@ export interface ClientDecision {
   }[];
 }
 
-export const decisionOutcomeLabels: Record<string, string> = {
+const decisionOutcomeLabels: Record<string, string> = {
   APPROVAL: 'Bifall',
   REJECTION: 'Avslag',
   DISMISSAL: 'Avvisat',
   CANCELLATION: 'Avskrivning',
 };
 
-export const decisionTypeLabels: Record<string, string> = {
-  RECOMMENDED: 'Rekommendation',
-  PROPOSED: 'Förslag',
-  FINAL: 'Slutligt',
-};
-
 export const getDecisionOutcomeLabel = (outcome?: string): string => {
   if (!outcome) return '';
   return decisionOutcomeLabels[outcome] ?? outcome;
-};
-
-export const getDecisionTypeLabel = (type?: string): string => {
-  if (!type) return '';
-  return decisionTypeLabels[type] ?? type;
 };
 
 export const sortDecisionsByDate = (decisions: ClientDecision[]): ClientDecision[] => {

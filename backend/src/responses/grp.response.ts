@@ -17,9 +17,9 @@ import { IsEnum, IsObject, IsOptional, IsString, ValidateNested } from 'class-va
 
 export class Sign implements Pick<GrpInitiateResponse, 'transactionId' | 'autoStartToken'>, QrCode {
   @IsString()
-  transactionId: string;
+  transactionId!: string;
   @IsString()
-  autoStartToken: string;
+  autoStartToken!: string;
   @IsString()
   @IsOptional()
   qrCode?: string;
@@ -27,52 +27,52 @@ export class Sign implements Pick<GrpInitiateResponse, 'transactionId' | 'autoSt
 
 class SubjectIdentifier implements GrpSubjectIdentifier {
   @IsString()
-  value: string;
+  value!: string;
   @IsEnum(GrpSubjectIdentifierType)
-  type: GrpSubjectIdentifierType;
+  type!: GrpSubjectIdentifierType;
 }
 
 class User implements GrpUserInfo {
   @ValidateNested()
   @Type(() => SubjectIdentifier)
-  subjectIdentifier: GrpSubjectIdentifier;
+  subjectIdentifier!: GrpSubjectIdentifier;
   @IsString()
   @IsOptional()
   displayName?: string;
   @IsString()
-  givenName: string;
+  givenName!: string;
   @IsString()
-  sn: string;
+  sn!: string;
   @IsString()
-  tin: string;
+  tin!: string;
   @IsString()
-  ipAddress: string;
+  ipAddress!: string;
 }
 
-export class Status implements GrpProgressStatus {
+class Status implements GrpProgressStatus {
   @IsEnum(GrpStatus)
-  status: GrpStatus;
+  status!: GrpStatus;
   @IsString()
   @IsNullable()
-  substatus: string | null;
+  substatus!: string | null;
   @IsString()
-  message: string;
+  message!: string;
 }
 
-export class ValidationInfo implements GrpValidationInfo {
+class ValidationInfo implements GrpValidationInfo {
   @IsString()
-  signature: string;
+  signature!: string;
   @IsEnum(GrpValidationSignatureFormat)
-  signatureFormat: GrpValidationSignatureFormat;
+  signatureFormat!: GrpValidationSignatureFormat;
   @IsString()
   @IsOptional()
   ocspResponse?: string;
 }
 
-export class SignCollect implements GrpCollectResponse, QrCode {
+class SignCollect implements GrpCollectResponse, QrCode {
   @ValidateNested()
   @Type(() => Status)
-  progressStatus: GrpProgressStatus;
+  progressStatus!: GrpProgressStatus;
   @IsObject()
   @IsOptional()
   attributes?: Record<string, string>;
@@ -85,7 +85,7 @@ export class SignCollect implements GrpCollectResponse, QrCode {
   @IsOptional()
   validationInfo?: GrpValidationInfo;
   @IsString()
-  transactionId: string;
+  transactionId!: string;
   @IsString()
   @IsOptional()
   qrCode?: string;
@@ -94,15 +94,15 @@ export class SignCollect implements GrpCollectResponse, QrCode {
 export class SignApiResponse implements ApiResponse<Sign> {
   @ValidateNested()
   @Type(() => Sign)
-  data: Sign;
+  data!: Sign;
   @IsString()
-  message: string;
+  message!: string;
 }
 
 export class SignCollectApiResponse implements ApiResponse<SignCollect> {
   @ValidateNested()
   @Type(() => SignCollect)
-  data: SignCollect;
+  data!: SignCollect;
   @IsString()
-  message: string;
+  message!: string;
 }

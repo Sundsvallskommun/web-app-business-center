@@ -5,7 +5,6 @@ import { RequestWithUser } from '@/interfaces/auth.interface';
 import ApiService from '@/services/api.service';
 import { apiURL } from '@/utils/util';
 import authMiddleware from '@middlewares/auth.middleware';
-import _ from 'lodash';
 import { Body, Controller, Delete, Get, HttpCode, OnUndefined, Param, Patch, Post, QueryParam, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { MUNICIPALITY_ID } from '../config';
@@ -34,10 +33,10 @@ export class ContactSettingsController {
     @QueryParam('limit', { required: false }) limit?: number,
     @QueryParam('page', { required: false }) page?: number,
   ): Promise<ResponseData<ClientContactSetting>> {
-    const representing = req.session?.representing ?? undefined;
+    const representing = req.session?.representing;
     const { user } = req;
 
-    if (!getRepresentingPartyId(representing)) {
+    if (!representing || !getRepresentingPartyId(representing)) {
       throw new HttpException(403, 'Forbidden');
     }
 
@@ -48,27 +47,32 @@ export class ContactSettingsController {
       limit: limit ?? 100, // NOTE: 100 is max it seems
     };
 
-    let res: ApiResponse<Array<ContactSetting>>;
+    let res: ApiResponse<Array<ContactSetting>> | undefined;
     try {
       res = await this.apiService.get<Array<ContactSetting>>({ url, params }, req.user);
     } catch (err) {
-      if (err.status !== 404) {
+      if (!(err instanceof HttpException) || err.status !== 404) {
         throw err;
       }
     }
 
-    const mapAdress = (adress: LEAddress): ContactSettingAddress => ({
-      city: adress?.city,
+    // Accepts any address-like shape (LEAddress, business Address, citizen address).
+    // Only LEAddress-style fields are read; absent ones resolve to undefined as before.
+    type MappableAddress = Partial<Pick<LEAddress, 'city' | 'addressArea' | 'adressNumber' | 'postalCode'>>;
+    const mapAdress = (adress: MappableAddress | null | undefined): ContactSettingAddress => ({
+      city: adress?.city ?? undefined,
       street: !adress?.addressArea || !adress?.adressNumber ? undefined : `${adress.addressArea} ${adress.adressNumber}`,
-      postcode: adress?.postalCode,
+      postcode: adress?.postalCode ?? undefined,
     });
 
     try {
-      const clientContactSetting = makeClientContactSetting(res?.data?.[0]);
+      // res may be undefined on a 404; makeClientContactSetting optional-chains its input
+      const clientContactSetting = makeClientContactSetting(res?.data?.[0] as ContactSetting);
 
       switch (representing.mode) {
         case RepresentingMode.BUSINESS:
-          clientContactSetting.name = getBusinessName(representing);
+          // name is declared string but is intentionally nullable at runtime (see makeClientContactSetting)
+          clientContactSetting.name = getBusinessName(representing) as ClientContactSetting['name'];
           clientContactSetting.address = mapAdress(getBusinessAddress(representing));
           break;
         case RepresentingMode.PRIVATE:
@@ -101,11 +105,14 @@ export class ContactSettingsController {
   @OpenAPI({ summary: 'Create contact settings for current logged in user' })
   @UseBefore(authMiddleware, validationMiddleware(ClientContactSetting, 'body'))
   async newContactSettings(@Req() req: RequestWithUser, @Body() userData: ClientContactSetting): Promise<ResponseData<ClientContactSetting>> {
-    const representing = req.session?.representing ?? undefined;
+    const representing = req.session?.representing;
+    if (!representing) {
+      throw new HttpException(403, 'Forbidden');
+    }
     const newContactSettings: NewContactSettings = {
       alias: userData.alias ?? 'default',
       virtual: userData.virtual ?? false,
-      partyId: userData.createdById ? undefined : getRepresentingPartyId(representing),
+      partyId: userData.createdById ? (undefined as unknown as string) : getRepresentingPartyId(representing),
       createdById: userData.createdById ?? req.user.partyId,
       contactChannels: getContactSettingChannels(userData),
     };
@@ -114,11 +121,12 @@ export class ContactSettingsController {
     try {
       const res = await this.apiService.post<ClientContactSetting, NewContactSettings>({ url, baseURL, data: newContactSettings }, req.user);
 
-      const data: ClientContactSetting = _.merge(userData, {
-        id: res.data?.id,
-      });
+      // Preserve lodash merge semantics: only overwrite id when defined
+      if (res.data?.id !== undefined) {
+        userData.id = res.data.id;
+      }
 
-      return { data: data, message: 'created' };
+      return { data: userData, message: 'created' };
     } catch (error) {
       logger.error('Error saving contactsetting', error);
       throw new HttpException(500, 'Internal server error');
@@ -135,17 +143,18 @@ export class ContactSettingsController {
     }
     try {
       const editedContactSettings: UpdateContactSettings = {
-        alias: userData.alias,
+        alias: userData.alias ?? 'default',
         contactChannels: getContactSettingChannels(userData),
       };
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings/${userData.id}`;
       const res = await this.apiService.patch<ClientContactSetting, UpdateContactSettings>({ url, data: editedContactSettings }, req.user);
 
-      const data = _.merge(userData, {
-        id: res.data?.id,
-      });
+      // Preserve lodash merge semantics: only overwrite id when defined
+      if (res.data?.id !== undefined) {
+        userData.id = res.data.id;
+      }
 
-      return { data: data, message: 'updated' };
+      return { data: userData, message: 'updated' };
     } catch (error) {
       logger.error('Error updating contactsetting', error);
       throw new HttpException(500, 'Internal server error');

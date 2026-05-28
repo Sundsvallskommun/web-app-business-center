@@ -95,7 +95,8 @@ export default function ContactSettingsFormLogic({
   });
 
   const context = useForm<Partial<ClientContactSetting>>({
-    resolver: yupResolver(formSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: yupResolver(formSchema as any),
     defaultValues: useMemo(() => formData, [formData]),
     mode: 'onSubmit',
   });

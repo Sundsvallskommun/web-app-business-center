@@ -12,7 +12,7 @@ import FullscreenMainSpinner from '@components/spinner/fullscreen-main-spinner.c
 
 function Page() {
   const { t } = useTranslation('cases');
-  const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseStatusResponse, Error, CasesData>({
+  const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseStatusResponse[], Error, CasesData>({
     url: '/cases',
     method: 'get',
     dataHandler: casesHandler,

@@ -5,18 +5,18 @@ import { GrpUserMessage, GrpUserMessageFormat } from '@/interfaces/grp.interface
 
 export class SignDto implements Omit<GrpUserMessage, 'nonVisible'> {
   @IsString()
-  visible: string;
+  visible!: string;
   @IsEnum(GrpUserMessageFormat)
-  format: GrpUserMessageFormat;
+  format!: GrpUserMessageFormat;
   @IsObject()
   @IsOptional()
   details?: Record<string, unknown>;
 }
 export class SignMandateDto implements Omit<GrpUserMessage, 'nonVisible'> {
   @IsString()
-  visible: string;
+  visible!: string;
   @IsEnum(GrpUserMessageFormat)
-  format: GrpUserMessageFormat;
+  format!: GrpUserMessageFormat;
   @ValidateNested()
   @Type(() => SignMandateDetails)
   mandate?: SignMandateDetails;

@@ -14,7 +14,7 @@ const EmptyField = (text: string) => {
   return <span className="italic">{text}</span>;
 };
 
-const getAddress = (address) => {
+const getAddress = (address: { street?: string; postcode?: string; city?: string } | null | undefined) => {
   if (address) {
     return `${address.street ? `${_.capitalize(address.street)}, ` : ''}${address.postcode} ${_.capitalize(address.city)}`;
   } else {
@@ -72,7 +72,9 @@ export const ContactDetails = () => {
       <ContactSettingsFormLogic onSubmitSuccess={() => setIsEditFalse()} formData={contactsettings}>
         <>
           <FormBox header={t('profile:contactDetails.name')}>
-            <div data-cy="form-box-name">{contactsettings?.name ?? EmptyField(t('profile:contactDetails.noName'))}</div>{' '}
+            <div data-cy="form-box-name">
+              {contactsettings?.name ?? EmptyField(t('profile:contactDetails.noName'))}
+            </div>{' '}
           </FormBox>
           <Divider className="my-16" />
           <FormBox header={t('profile:contactDetails.address')}>
@@ -82,7 +84,11 @@ export const ContactDetails = () => {
           </FormBox>
           <Divider className="my-16" />
 
-          <FormBox name="email" header={isEditEmail ? t('profile:contactDetails.changeEmail') : t('profile:contactDetails.emailAddress')} isEdit={isEditEmail}>
+          <FormBox
+            name="email"
+            header={isEditEmail ? t('profile:contactDetails.changeEmail') : t('profile:contactDetails.emailAddress')}
+            isEdit={isEditEmail}
+          >
             {isEditEmail ? (
               <div className="flex gap-16 mt-16">
                 <Button variant="secondary" data-cy="cancel-edit-email-button" onClick={() => setIsEditEmail(false)}>

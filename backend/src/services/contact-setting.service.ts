@@ -11,13 +11,13 @@ import { getEmailSettingsFromChannels, getPhoneSettingsFromChannels } from '@/co
 export const getContactSettingChannels = (userData: ClientContactSetting) => {
   const emailSettings: ContactSettingChannel = {
     contactMethod: ContactMethod.EMAIL,
-    destination: userData.email,
+    destination: userData.email ?? '',
     disabled: !userData.notifications.email_enabled,
     alias: 'default',
   };
   const phoneSettings: ContactSettingChannel = {
     contactMethod: ContactMethod.SMS,
-    destination: userData.phone,
+    destination: userData.phone ?? '',
     disabled: !userData.notifications.phone_enabled,
     alias: 'default',
   };
@@ -30,7 +30,8 @@ export const makeClientContactSetting = (contactSetting: ContactSetting): Client
 
   const clientContactSetting: ClientContactSetting = {
     id: contactSetting?.id,
-    name: null,
+    // name is declared as User['name'] (string) in the response but is intentionally null here
+    name: null as unknown as ClientContactSetting['name'],
     address: null,
     email: emailSettings.email,
     phone: phoneSettings.phone,
@@ -60,21 +61,6 @@ export const deleteContactSetting = async (contactSettingId: string, req: Reques
   const url = `${apiBase}/${MUNICIPALITY_ID}/settings/${contactSettingId}`;
   await apiService.delete<boolean>({ url }, req.user).catch(error => {
     console.error('Error deleting contact setting:', error);
-    return false;
-  });
-
-  return true;
-};
-
-export const deleteDelegate = async (delegateId: string, req: RequestWithUser): Promise<boolean> => {
-  const apiService = new ApiService();
-  const apiBase = getApiBase('contactsettings');
-  if (!delegateId) {
-    throw new HttpException(400, 'Bad Request');
-  }
-  const url = `${apiBase}/${MUNICIPALITY_ID}/delegates/${delegateId}`;
-  await apiService.delete<boolean>({ url }, req.user).catch(error => {
-    console.error('Error deleting delegate:', error);
     return false;
   });
 

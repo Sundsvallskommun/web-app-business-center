@@ -9,7 +9,7 @@ import { useApi } from '../../../../services/api-service';
 import { useParams } from 'next/navigation';
 import { toRepresentingLabel } from '@utils/to-representing-label';
 
-export default function Layout({ children }) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   const { representingMode, setRepresentingMode, setRepresentingName } = useAppContext();
   const { mode } = useParams();
   const {

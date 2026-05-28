@@ -3,17 +3,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const PAGESIZE = 24;
 
-export const CardList: React.FC<
-  {
-    data: object[];
-    Card: React.FC<{ item: object }>;
+export const CardList = <T extends object>(
+  props: {
+    data: T[];
+    Card: React.FC<{ item: T }>;
     amountDisplayed?: number;
     showAmountString?: boolean;
     showMoreText?: string;
     showLessText?: string;
     persistKey?: string;
   } & React.ComponentPropsWithRef<'ul'>
-> = (props) => {
+): React.ReactElement => {
   const {
     data,
     Card,

@@ -6,8 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import ApiTokenService from './api-token.service';
 
 export class ApiResponse<T> {
-  data: T;
-  message: string;
+  data!: T;
+  message!: string;
 }
 
 const apiTokenService = new ApiTokenService();

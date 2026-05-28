@@ -44,9 +44,9 @@ const base64Encode = (str: string) => {
   return Buffer.from(str, 'utf-8').toString('base64');
 };
 
-export class FeedbackDto {
+class FeedbackDto {
   @IsString()
-  body: string;
+  body!: string;
 }
 
 @Controller()
@@ -59,7 +59,7 @@ export class FeedbackController {
   @OpenAPI({ summary: 'Send feedback to chosen email adresses' })
   @UseBefore(authMiddleware, validationMiddleware(FeedbackDto, 'body'))
   async sendFeedback(@Req() req: RequestWithUser, @Body() userData: FeedbackDto): Promise<any> {
-    const mailAdresses = FEEDBACK_EMAIL.split(',');
+    const mailAdresses = (FEEDBACK_EMAIL ?? '').split(',');
     mailAdresses.forEach(async email => {
       const sendFeedback = {
         sender: {

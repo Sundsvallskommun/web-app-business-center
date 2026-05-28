@@ -1,7 +1,6 @@
 import { Asset, Status } from '@data-contracts/partyassets/data-contracts';
 import { RepresentingMode } from '@interfaces/app';
 import { ApiResponse } from '@services/api-service';
-import { getAssets } from 'cypress/fixtures/getAssets';
 import { getCases } from 'cypress/fixtures/getCases';
 import { setIntercepts } from 'cypress/support/e2e';
 import dayjs from 'dayjs';

@@ -4,7 +4,7 @@ import { InvoicesResponse } from '@/data-contracts/invoices/data-contracts';
 import { User } from '@interfaces/users.interface';
 import ApiService from './api.service';
 
-const apiService = new ApiService();
+const defaultApi = new ApiService();
 const apiBase = getApiBase('invoices');
 
 export const emptyInvoice: InvoicesResponse = {
@@ -18,7 +18,11 @@ export const getInvoiceDateFrom = (): string => {
   return date.toISOString().split('T')[0];
 };
 
-export const fetchInvoices = async (partyId: string, user: User): Promise<InvoicesResponse> => {
+export const fetchInvoices = async (
+  partyId: string,
+  user: User,
+  api: Pick<ApiService, 'get'> = defaultApi,
+): Promise<InvoicesResponse> => {
   const params = {
     partyId,
     organizationNumber: MUNICIPALITY_ORG_NR,
@@ -27,7 +31,7 @@ export const fetchInvoices = async (partyId: string, user: User): Promise<Invoic
 
   try {
     const url = `${apiBase}/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION`;
-    const res = await apiService.get<InvoicesResponse>({ url, params }, user);
+    const res = await api.get<InvoicesResponse>({ url, params }, user);
 
     if (res.data && Array.isArray(res.data?.invoices) && res.data.invoices.length < 1) {
       return emptyInvoice;

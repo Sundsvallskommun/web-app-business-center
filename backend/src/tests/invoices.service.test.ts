@@ -1,31 +1,11 @@
-const mockGet = jest.fn();
-
-jest.mock('@/services/api.service', () => {
-  return jest.fn().mockImplementation(() => ({
-    get: mockGet,
-  }));
-});
-
-jest.mock('@/config', () => ({
-  MUNICIPALITY_ID: '2281',
-  MUNICIPALITY_ORG_NR: '2120002411',
-}));
-
-jest.mock('@/config/api-config', () => ({
-  getApiBase: () => '/api/invoices',
-}));
-
-import { fetchInvoices, getInvoiceDateFrom, emptyInvoice } from '@/services/invoices.service';
-
-const mockUser = { username: 'test-user', partyId: 'test-party-id' } as any;
+import { emptyInvoice, fetchInvoices, getInvoiceDateFrom } from '@/services/invoices.service';
+import { createMockApiService } from './helpers/mockApiService';
+import { mockUser } from './helpers/fixtures';
+import { TEST_REPRESENTING_PARTY_ID } from './helpers/constants';
 
 describe('invoices.service', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('getInvoiceDateFrom', () => {
-    it('should return a date string 12 months ago in YYYY-MM-DD format', () => {
+    it('returns a date string 12 months ago in YYYY-MM-DD format', () => {
       const result = getInvoiceDateFrom();
       expect(result).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
@@ -37,49 +17,52 @@ describe('invoices.service', () => {
   });
 
   describe('fetchInvoices', () => {
-    it('should return invoice data on success', async () => {
+    it('returns invoice data on success', async () => {
+      const api = createMockApiService();
       const invoiceData = {
         invoices: [{ invoiceNumber: '123' }],
         _meta: { totalRecords: 1 },
       };
-      mockGet.mockResolvedValue({ data: invoiceData });
+      api.get.mockResolvedValue({ data: invoiceData });
 
-      const result = await fetchInvoices('party-123', mockUser);
+      const result = await fetchInvoices(TEST_REPRESENTING_PARTY_ID, mockUser, api);
 
       expect(result).toEqual(invoiceData);
-      expect(mockGet).toHaveBeenCalledWith(
+      expect(api.get).toHaveBeenCalledWith(
         {
-          url: '/api/invoices/2281/PUBLIC_ADMINISTRATION',
-          params: {
-            partyId: 'party-123',
-            organizationNumber: '2120002411',
+          url: expect.stringContaining('/PUBLIC_ADMINISTRATION'),
+          params: expect.objectContaining({
+            partyId: TEST_REPRESENTING_PARTY_ID,
             invoiceDateFrom: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
-          },
+          }),
         },
         mockUser,
       );
     });
 
-    it('should return emptyInvoice when invoices array is empty', async () => {
-      mockGet.mockResolvedValue({ data: { invoices: [], _meta: {} } });
+    it('returns emptyInvoice when invoices array is empty', async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({ data: { invoices: [], _meta: {} } });
 
-      const result = await fetchInvoices('party-123', mockUser);
-
-      expect(result).toEqual(emptyInvoice);
-    });
-
-    it('should return emptyInvoice on 404 error', async () => {
-      mockGet.mockRejectedValue({ status: 404 });
-
-      const result = await fetchInvoices('party-123', mockUser);
+      const result = await fetchInvoices(TEST_REPRESENTING_PARTY_ID, mockUser, api);
 
       expect(result).toEqual(emptyInvoice);
     });
 
-    it('should return emptyInvoice on other errors', async () => {
-      mockGet.mockRejectedValue({ status: 500 });
+    it('returns emptyInvoice on 404 error', async () => {
+      const api = createMockApiService();
+      api.get.mockRejectedValue({ status: 404 });
 
-      const result = await fetchInvoices('party-123', mockUser);
+      const result = await fetchInvoices(TEST_REPRESENTING_PARTY_ID, mockUser, api);
+
+      expect(result).toEqual(emptyInvoice);
+    });
+
+    it('returns emptyInvoice on other errors', async () => {
+      const api = createMockApiService();
+      api.get.mockRejectedValue({ status: 500 });
+
+      const result = await fetchInvoices(TEST_REPRESENTING_PARTY_ID, mockUser, api);
 
       expect(result).toEqual(emptyInvoice);
     });

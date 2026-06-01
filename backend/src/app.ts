@@ -216,7 +216,7 @@ class App {
         store: sessionStore,
         cookie: {
           httpOnly: this.env === 'production' && process.env.ENVIRONMENT !== 'TEST',
-          sameSite: 'none',
+          sameSite: process.env.ENVIRONMENT === 'TEST' ? 'lax' : 'none',
           secure: this.env === 'production' && process.env.ENVIRONMENT !== 'TEST',
         },
       }),

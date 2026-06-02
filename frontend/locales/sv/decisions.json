@@ -63,15 +63,44 @@
         "successMessage": "Din ansökan har skickats in!",
         "errorMessage": "Något gick fel när ansökan skulle skickas in. Försök igen senare.",
         "circumstancesChanged": "Har förutsättningarna för din ansökan förändrats gentemot ditt nuvarande parkeringstillstånd?",
-        "describeChanges": "Beskriv kort vad som förändrats",
-        "descriptionRequired": "Ange en beskrivning",
+        "caseMeaningLabel": "Kort sammanfattning av vad din ansökan gäller",
+        "capacityLabel": "Söker du parkeringstillstånd som förare eller passagerare?",
+        "capacity": {
+          "driver": "Förare",
+          "passenger": "Passagerare"
+        },
+        "reasonLabel": "Beskriv anledningen till att du ansöker om parkeringstillstånd",
         "walkingAidsLabel": "Vilket eller vilka hjälpmedel används vid förflyttning?",
         "walkingAids": {
           "rollator": "Rullator",
           "electricWheelchair": "Elrullstol",
           "crutch": "Krycka/kryckor/käpp",
-          "manualWheelchair": "Rullstol (manuell)"
+          "manualWheelchair": "Rullstol (manuell)",
+          "none": "Inget"
         },
+        "walkingAbilityLabel": "Hur är din förmåga att gå?",
+        "walkingAbility": {
+          "wheelchairBound": "Jag är rullstolsburen",
+          "canWalkShort": "Jag kan gå kortare sträckor"
+        },
+        "walkingDistanceBeforeRestLabel": "Hur långt kan du gå innan du behöver vila? (antal meter)",
+        "walkingDistanceMaxLabel": "Hur långt kan du som mest gå, med eller utan hjälpmedel? (antal meter)",
+        "durationLabel": "Hur länge bedömer du att du har behov av parkeringstillstånd?",
+        "durationPlaceholder": "Välj tidsperiod",
+        "duration": {
+          "lessThan6Months": "Mindre än 6 månader",
+          "upTo1Year": "Upp till 1 år",
+          "upTo2Years": "Upp till 2 år",
+          "upTo3Years": "Upp till 3 år",
+          "upTo4Years": "Upp till 4 år",
+          "moreThan4Years": "Mer än 4 år",
+          "permanent": "Tills vidare"
+        },
+        "canBeAloneLabel": "Kan du lämnas ensam en kort stund medan föraren parkerar?",
+        "canBeAloneNoteLabel": "Beskriv varför du inte kan lämnas ensam",
+        "consentContactDoctorLabel": "Jag samtycker till att handläggaren får kontakta min läkare vid behov",
+        "consentTransportationServiceLabel": "Jag samtycker till att handläggaren får ta del av uppgifter om min färdtjänst",
+        "signingAbilityLabel": "Kan du skriva din egen namnteckning?",
         "expiryDateLabel": "När gick ditt nuvarande parkeringstillstånd ut?",
         "expiryDatePlaceholder": "Datum för utgång av parkeringstillståndet",
         "dateRequired": "Ange ett datum",

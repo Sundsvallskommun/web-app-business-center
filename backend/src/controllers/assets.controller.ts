@@ -10,7 +10,15 @@ import { ApiResponse } from '@/interfaces/service';
 import { User } from '@/interfaces/users.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
-import { isAllowedAsset, isVisibleStatus, toClientAsset, toServiceDetails, toVisibleAssets } from '@/services/asset.service';
+import {
+  buildRenewalExtraParameters,
+  isAllowedAsset,
+  isVisibleStatus,
+  ParkingPermitRenewalBody,
+  toClientAsset,
+  toServiceDetails,
+  toVisibleAssets,
+} from '@/services/asset.service';
 import { getCitizen } from '@/services/citizen.service';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
@@ -21,13 +29,6 @@ import { OpenAPI } from 'routing-controllers-openapi';
 interface AttachmentOptions {
   category: AttachmentCategory;
   note: string;
-}
-
-interface ParkingPermitRenewalBody {
-  description?: string;
-  circumstancesChanged?: string;
-  date?: string;
-  walkingAids?: string; // JSON string of string[]
 }
 
 interface CreateErrandOptions {
@@ -217,26 +218,7 @@ export class AssetsController {
     @Body() body: ParkingPermitRenewalBody,
     @UploadedFiles('files', { options: fileUploadOptions, required: false }) files: Express.Multer.File[],
   ): Promise<ApiResponse<{ success: boolean }>> {
-    const extraParameters: Errand['extraParameters'] = [];
-
-    extraParameters.push({
-      key: 'application.reason',
-      values: [body.description ?? ''],
-    });
-
-    if (body.walkingAids) {
-      try {
-        const walkingAidsArray: string[] = JSON.parse(body.walkingAids);
-        if (Array.isArray(walkingAidsArray) && walkingAidsArray.length > 0) {
-          extraParameters.push({
-            key: 'disability.aid',
-            values: walkingAidsArray,
-          });
-        }
-      } catch {
-        // Invalid JSON, skip walkingAids
-      }
-    }
+    const extraParameters = buildRenewalExtraParameters(body);
 
     return this.createParkingPermitErrand(req, {
       caseType: ParkingPermitCaseType.RENEWAL,

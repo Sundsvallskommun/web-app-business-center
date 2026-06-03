@@ -240,7 +240,7 @@ export const testAssetPage = (representingMode: RepresentingMode = representingM
   cy.get('main')
     .contains(/^Giltighetstid$/)
     .next()
-    .should('contain.text', '1 jan 2021 - 31 dec 2025')
+    .should('contain.text', '1 jan 2021 – 31 dec 2025')
     .should('be.visible');
 };
 

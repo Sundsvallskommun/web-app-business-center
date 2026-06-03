@@ -12,6 +12,7 @@ import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
 import { isAllowedAsset, isVisibleStatus, toClientAsset, toServiceDetails, toVisibleAssets } from '@/services/asset.service';
 import { getCitizen } from '@/services/citizen.service';
+import { buildMyPagesErrand } from '@/utils/casedata-errand-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
 import { apiURL } from '@/utils/util';
@@ -106,14 +107,14 @@ export class AssetsController {
 
     const stakeholder = await this.getApplicantStakeholder(representing.PRIVATE.partyId, req.user);
 
-    const data: Errand = {
+    const data = buildMyPagesErrand({
       caseType: options.caseType,
       status: {
         statusType: 'Ärende inkommit',
       },
       stakeholders: [stakeholder],
       extraParameters: options.extraParameters,
-    };
+    });
 
     const baseURL = apiURL(this.casedataApiBase);
     const url = `${MUNICIPALITY_ID}/${CaseDataNamespace.SBK_PARKING_PERMIT}/errands`;

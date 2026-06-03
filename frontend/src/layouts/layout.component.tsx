@@ -102,14 +102,14 @@ export function Layout({ title, children }: { title: string; children: React.Rea
                   <label>{t('layout:aboutContent')}</label>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref href={'/om-webbplatsen'}>
-                    <Link variant="tertiary">{t('layout:aboutWebsite')}</Link>
-                  </NextLink>
+                  <Link as={NextLink} href={'/om-webbplatsen'} variant="tertiary">
+                    {t('layout:aboutWebsite')}
+                  </Link>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink passHref href={'/om-webbplatsen/kakor'}>
-                    <Link variant="tertiary">{t('layout:cookies')}</Link>
-                  </NextLink>
+                  <Link as={NextLink} href={'/om-webbplatsen/kakor'} variant="tertiary">
+                    {t('layout:cookies')}
+                  </Link>
                 </Footer.ListItem>
                 <Footer.ListItem>
                   {/* Uncomment when tillganglighet.component.tsx is updated with new information */}
@@ -125,16 +125,15 @@ export function Layout({ title, children }: { title: string; children: React.Rea
                   </Link>
                 </Footer.ListItem>
                 <Footer.ListItem>
-                  <NextLink
-                    passHref
+                  <Link
+                    variant="tertiary"
+                    external
                     href={
                       'https://sundsvall.se/kommun-och-politik/overklaga-beslut-rattssakerhet/behandling-av-personuppgifter'
                     }
                   >
-                    <Link variant="tertiary" external>
-                      {t('layout:personalData')}
-                    </Link>
-                  </NextLink>
+                    {t('layout:personalData')}
+                  </Link>
                 </Footer.ListItem>
               </Footer.List>
             </Footer.ListWrapper>
@@ -147,9 +146,9 @@ export function Layout({ title, children }: { title: string; children: React.Rea
         body={
           <p>
             {t('layout:cookieBanner.description')}{' '}
-            <NextLink href={'/om-webbplatsen/kakor'} passHref>
-              <Link>{t('layout:cookieBanner.readMore')}</Link>
-            </NextLink>
+            <Link as={NextLink} href={'/om-webbplatsen/kakor'}>
+              {t('layout:cookieBanner.readMore')}
+            </Link>
           </p>
         }
         cookies={[

@@ -15,13 +15,28 @@
       "active": "Aktiv",
       "blocked": "Blockerad",
       "expired": "Utgången",
+      "temporary": "Tillfällig",
       "unknown": "Okänd"
     },
-    "caseReferenceIds": "Ärendenummer",
     "cardNumber": "Kortnummer",
     "decided": "Beslutad",
     "validityPeriod": "Giltighetstid",
-    "reportLostPermit": "Anmäl borttappat tillstånd"
+    "reportLostPermit": "Anmäl borttappat tillstånd",
+    "validity": {
+      "indefinite": "Tillsvidare",
+      "indefiniteFrom": "Tillsvidare (fr.o.m. {{date}})",
+      "until": "T.o.m. {{date}}"
+    },
+    "service": {
+      "winterService": "Vinterfärdtjänst",
+      "transportMode": "Färdsätt",
+      "transportModeEmpty": "Inget valt färdsätt",
+      "aids": "Hjälpmedel",
+      "aidsEmpty": "Inga valda hjälpmedel",
+      "addon": "Tillägg",
+      "addonEmpty": "Inga valda tillägg",
+      "comment": "Kommentar"
+    }
   },
   "parkingPermit": {
     "renewal": {

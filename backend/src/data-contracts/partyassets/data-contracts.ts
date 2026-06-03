@@ -13,9 +13,11 @@
 /** Status model */
 export enum Status {
   ACTIVE = "ACTIVE",
+  DRAFT = "DRAFT",
   EXPIRED = "EXPIRED",
   BLOCKED = "BLOCKED",
   TEMPORARY = "TEMPORARY",
+  REPLACED = "REPLACED",
 }
 
 export interface Problem {
@@ -23,97 +25,35 @@ export interface Problem {
   instance?: string;
   /** @format uri */
   type?: string;
-  parameters?: Record<string, any>;
-  status?: StatusType;
   title?: string;
   detail?: string;
-}
-
-export interface StatusType {
   /** @format int32 */
-  statusCode?: number;
-  reasonPhrase?: string;
+  status?: number;
 }
 
 export interface ConstraintViolationProblem {
-  cause?: ThrowableProblem;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
   /** @format uri */
   type?: string;
-  status?: StatusType;
+  /** @format int32 */
+  status?: number;
   violations?: Violation[];
   title?: string;
-  message?: string;
   /** @format uri */
   instance?: string;
-  parameters?: Record<string, any>;
   detail?: string;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
+  causeAsProblem?: ThrowableProblem;
 }
 
 export interface ThrowableProblem {
-  cause?: any;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
-  message?: string;
-  /** @format uri */
-  instance?: string;
   /** @format uri */
   type?: string;
-  parameters?: Record<string, any>;
-  status?: StatusType;
   title?: string;
+  /** @format int32 */
+  status?: number;
   detail?: string;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
+  /** @format uri */
+  instance?: string;
+  causeAsProblem?: any;
 }
 
 export interface Violation {
@@ -122,17 +62,12 @@ export interface Violation {
 }
 
 export interface AssetCreateRequest {
-  /**
-   * Asset id
-   * @minLength 1
-   */
-  assetId: string;
+  /** External asset id (e.g. PRH-123456789) used as an identifier by external systems */
+  assetId?: string;
   /** Source of origin for the asset */
   origin?: string;
   /** PartyId */
   partyId: string;
-  /** Case reference ids */
-  caseReferenceIds?: string[];
   /**
    * Asset type
    * @minLength 1
@@ -178,16 +113,54 @@ export interface AssetJsonParameter {
   schemaId: string;
 }
 
-export type JsonNode = any;
+export interface JsonNode {
+  empty?: boolean;
+  array?: boolean;
+  null?: boolean;
+  object?: boolean;
+  float?: boolean;
+  valueNode?: boolean;
+  container?: boolean;
+  missingNode?: boolean;
+  nodeType?: JsonNodeNodeTypeEnum;
+  integralNumber?: boolean;
+  pojo?: boolean;
+  floatingPointNumber?: boolean;
+  short?: boolean;
+  int?: boolean;
+  long?: boolean;
+  double?: boolean;
+  bigDecimal?: boolean;
+  bigInteger?: boolean;
+  /** @deprecated */
+  textual?: boolean;
+  binary?: boolean;
+  number?: boolean;
+  string?: boolean;
+  boolean?: boolean;
+  embeddedValue?: boolean;
+}
 
 export interface AssetUpdateRequest {
-  /** Case reference ids */
-  caseReferenceIds?: string[];
+  /** Asset status */
+  status?: Status;
+  /** Status reason */
+  statusReason?: string;
+}
+
+export interface DraftAssetUpdateRequest {
+  /**
+   * Issued date
+   * @format date
+   */
+  issued?: string;
   /**
    * Valid to date
    * @format date
    */
   validTo?: string;
+  /** If true, validTo will be cleared (asset becomes indefinite). Takes precedence over validTo when both are supplied. */
+  indefinitely?: boolean;
   /** Asset status */
   status?: Status;
   /** Status reason */
@@ -201,14 +174,12 @@ export interface AssetUpdateRequest {
 export interface Asset {
   /** Unique id of asset */
   id?: string;
-  /** External asset id */
+  /** External asset id (e.g. PRH-123456789) used as an identifier by external systems */
   assetId?: string;
   /** Source of origin for the asset */
   origin?: string;
   /** PartyId */
   partyId?: string;
-  /** Case reference ids */
-  caseReferenceIds?: string[];
   /** Asset type */
   type?: string;
   /**
@@ -231,4 +202,18 @@ export interface Asset {
   additionalParameters?: Record<string, string>;
   /** JSON parameters */
   jsonParameters?: AssetJsonParameter[];
+  /** Id of the asset this asset replaces */
+  replacesId?: string;
+}
+
+export enum JsonNodeNodeTypeEnum {
+  ARRAY = "ARRAY",
+  BINARY = "BINARY",
+  BOOLEAN = "BOOLEAN",
+  MISSING = "MISSING",
+  NULL = "NULL",
+  NUMBER = "NUMBER",
+  OBJECT = "OBJECT",
+  POJO = "POJO",
+  STRING = "STRING",
 }

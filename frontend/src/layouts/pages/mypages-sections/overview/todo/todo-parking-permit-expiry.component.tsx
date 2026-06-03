@@ -32,7 +32,7 @@ export const TodoParkingPermitExpiry = ({ asset }: TodoParkingPermitExpiryProps)
         </div>
       </div>
       <div className={styles['todo-action']}>
-        <NextLink href={`beslut-och-dokument/${asset.assetId}`}>
+        <NextLink href={`beslut-och-dokument/${asset.id}`}>
           <Button
             className={styles['todo-action-button']}
             color="vattjom"

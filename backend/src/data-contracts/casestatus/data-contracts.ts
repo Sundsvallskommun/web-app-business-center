@@ -11,101 +11,39 @@
  */
 
 export interface Problem {
-  title?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
   /** @format uri */
   type?: string;
-  parameters?: Record<string, object>;
-  status?: StatusType;
-}
-
-export interface StatusType {
+  title?: string;
+  detail?: string;
   /** @format int32 */
-  statusCode?: number;
-  reasonPhrase?: string;
+  status?: number;
 }
 
 export interface ConstraintViolationProblem {
-  cause?: ThrowableProblem;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
   /** @format uri */
   type?: string;
-  status?: StatusType;
+  /** @format int32 */
+  status?: number;
   violations?: Violation[];
   title?: string;
-  message?: string;
-  detail?: string;
   /** @format uri */
   instance?: string;
-  parameters?: Record<string, object>;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
+  detail?: string;
+  causeAsProblem?: ThrowableProblem;
 }
 
 export interface ThrowableProblem {
-  cause?: ThrowableProblem;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
-  message?: string;
+  /** @format uri */
+  type?: string;
   title?: string;
+  /** @format int32 */
+  status?: number;
   detail?: string;
   /** @format uri */
   instance?: string;
-  /** @format uri */
-  type?: string;
-  parameters?: Record<string, object>;
-  status?: StatusType;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
+  causeAsProblem?: any;
 }
 
 export interface Violation {
@@ -115,83 +53,41 @@ export interface Violation {
 
 /** Case status response */
 export interface CaseStatusResponse {
-  /**
-   * Case id
-   * @example "1234567890"
-   */
+  /** Case id */
   caseId?: string;
-  /**
-   * External case id
-   * @example "1234567890"
-   */
+  /** External case id */
   externalCaseId?: string;
-  /**
-   * Case type
-   * @example "Building permit"
-   */
+  /** Case type */
   caseType?: string;
-  /**
-   * Status
-   * @example "In progress"
-   */
+  /** Status */
   status?: string;
-  /**
-   * External status
-   * @example "Handläggning pågår"
-   */
+  /** External status */
   externalStatus?: string;
-  /**
-   * First submitted
-   * @example "2021-01-01"
-   */
+  /** First submitted */
   firstSubmitted?: string;
-  /**
-   * Last status change
-   * @example "2021-01-01"
-   */
+  /** Last status change */
   lastStatusChange?: string;
-  /**
-   * The system that the case is in
-   * @example "BYGGR"
-   */
+  /** The system that the case is in */
   system?: string;
-  /**
-   * The namespace of the case
-   * @example "Namespace"
-   */
+  /** The namespace of the case */
   namespace?: string;
-  /**
-   * Human readable identifier for the case
-   * @example "BYGGR-2024-123456"
-   */
+  /** Human readable identifier for the case */
   errandNumber?: string;
   propertyDesignations?: string[];
 }
 
 /** Case status response */
 export interface CasePdfResponse {
-  /**
-   * External case id
-   * @example "1234567890"
-   */
+  /** External case id */
   externalCaseId?: string;
-  /**
-   * Base64 encoded PDF
-   * @example "JVBERi0x"
-   */
+  /** Base64 encoded PDF */
   base64?: string;
 }
 
 /** Case status response */
 export interface OepStatusResponse {
-  /**
-   * Key
-   * @example "status"
-   */
+  /** Key */
   key?: string;
-  /**
-   * Value
-   * @example "In progress"
-   */
+  /** Value */
   value?: string;
 }

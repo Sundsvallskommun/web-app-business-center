@@ -53,6 +53,7 @@ import { RepresentingMode } from './interfaces/representing.interface';
 import { User } from './interfaces/users.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
 import { isValidUrl } from './utils/util';
+import { getBusinessEngagements, mapEngagements } from './services/legal-entity.service';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -214,7 +215,9 @@ class App {
         saveUninitialized: false,
         store: sessionStore,
         cookie: {
-          sameSite: 'lax',
+          httpOnly: this.env === 'production' && process.env.ENVIRONMENT !== 'TEST',
+          sameSite: process.env.ENVIRONMENT === 'TEST' ? 'lax' : 'none',
+          secure: this.env === 'production' && process.env.ENVIRONMENT !== 'TEST',
         },
       }),
     );
@@ -225,6 +228,7 @@ class App {
 
     this.app.get(
       `${BASE_URL_PREFIX}/saml/login`,
+      samlLimiter,
       (req, res, next) => {
         if (req.session.returnTo) {
           req.query.RelayState = req.session.returnTo;
@@ -253,6 +257,7 @@ class App {
 
     this.app.get(
       `${BASE_URL_PREFIX}/saml/logout`,
+      samlLimiter,
       (req, res, next) => {
         logger.info(
           `Logout request received: ${JSON.stringify(
@@ -359,7 +364,7 @@ class App {
         failureRedirect = successRedirect;
       }
 
-      passport.authenticate('saml', (err, user) => {
+      passport.authenticate('saml', async (err, user) => {
         if (err) {
           const queries = new URLSearchParams(failureRedirect.searchParams);
           if (err?.name) {
@@ -375,15 +380,27 @@ class App {
           failureRedirect.search = failMessage.toString();
           res.redirect(failureRedirect.toString());
         } else {
-          req.login(user, loginErr => {
-            if (loginErr) {
-              const failMessage = new URLSearchParams(failureRedirect.searchParams);
-              failMessage.append('failMessage', 'SAML_UNKNOWN_ERROR');
-              failureRedirect.search = failMessage.toString();
-              res.redirect(failureRedirect.toString());
-            }
-            return res.redirect(successRedirect?.toString());
+          const loginError = await new Promise<Error | null>(resolve => {
+            req.login(user, loginErr => {
+              resolve(loginErr || null);
+            });
           });
+
+          if (loginError) {
+            const failMessage = new URLSearchParams(failureRedirect.searchParams);
+            failMessage.append('failMessage', 'SAML_UNKNOWN_ERROR');
+            failureRedirect.search = failMessage.toString();
+            return res.redirect(failureRedirect.toString());
+          }
+
+          try {
+            const engagements = await getBusinessEngagements(user);
+            req.session.representingBusinessChoices = mapEngagements(engagements);
+          } catch (err) {
+            logger.error('Error fetching business engagements:', err);
+          }
+
+          return res.redirect(successRedirect?.toString());
         }
       })(req, res, next);
     });
@@ -430,7 +447,10 @@ class App {
         version: '1.0.0',
       },
     });
-
+    this.app.use(`${BASE_URL_PREFIX}/swagger.json`, (_req, res, next) => {
+      res.json(spec);
+      next();
+    });
     this.app.use(`${BASE_URL_PREFIX}/api-docs`, swaggerUi.serve, swaggerUi.setup(spec));
   }
 

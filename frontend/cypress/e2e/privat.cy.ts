@@ -32,7 +32,8 @@ describe('Privat', () => {
     });
   });
   it('should render Profil och inställningar when clicked', () => {
-    cy.contains('[role="navigationitem"]', 'Profil och inställningar').click();
+    cy.get('[data-cy="user-menu"]').click();
+    cy.contains('[role="menuitem"]', 'Profil och inställningar').click();
     cy.wait('@getContactSettings').then(() => {
       cy.url().should('include', '/privat/profil');
       testContactSettings(RepresentingMode.PRIVATE);

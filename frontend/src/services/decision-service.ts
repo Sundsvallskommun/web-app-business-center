@@ -1,5 +1,7 @@
 export interface ClientDecision {
   id?: number;
+  errandId?: number;
+  errandNumber?: string;
   decisionType?: string;
   decisionOutcome?: string;
   description?: string;

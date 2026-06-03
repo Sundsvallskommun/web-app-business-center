@@ -5,11 +5,13 @@ import { useRepresentingSwitch } from '@layouts/site-menu/site-menu-items';
 import { Button, Icon, Link } from '@sk-web-gui/react';
 import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import { appURL } from '../../../utils/app-url';
 
 export const NoRepresent: React.FC = ({}) => {
   const router = useRouter();
   const { setRepresenting } = useRepresentingSwitch();
+  const { t } = useTranslation(['common', 'valj-foretag']);
 
   const goPrivate = async () => {
     const res = await setRepresenting({ mode: RepresentingMode.PRIVATE, organizationNumber: undefined });
@@ -22,21 +24,20 @@ export const NoRepresent: React.FC = ({}) => {
   };
 
   return (
-    <EntryLayout title="Företagscenter Mina Sidor - Logga In">
+    <EntryLayout title={t('common:noRepresent.title')}>
       <CardElevated className="p-10">
         <div className="flex items-center justify-center">
           <div className="max-w-[68rem] p-20 ">
             <div className="mb-14">
-              <h1 className="text-xl">Hoppsan, vi hittade inget företag som är registrerat på dig</h1>
+              <h1 className="text-xl">{t('common:noRepresent.title')}</h1>
 
               <p className="my-0">
-                När du loggar in gör vi en kontroll mot Bolagsverket och Skatteverket, men vi fick ingen träff på ditt
-                personnummer.
+                {t('common:noRepresent.description')}
               </p>
               <p className="my-0">
-                Du kan läsa mer om hur vi hämtar information och hur kontrollen fungerar i våra{' '}
+                {t('valj-foretag:noRepresent.description2')}{' '}
                 <Link href="https://naringslivsbolaget.se/nu-lanserar-vi-mina-sidor-for-dig-som-foretagare/" external>
-                  frågor och svar på naringslivsbolaget.se.
+                  {t('valj-foretag:noRepresent.faqLink')}
                 </Link>
               </p>
             </div>
@@ -49,10 +50,10 @@ export const NoRepresent: React.FC = ({}) => {
                 onClick={() => goPrivate()}
                 rightIcon={<Icon icon={<ArrowRight />} />}
               >
-                Tillbaka till Mina sidor privat
+                {t('common:noRepresent.goBack')}
               </Button>
               <Button className="w-full" onClick={() => onLogout()} data-cy="loginButton">
-                Logga ut
+                {t('common:logout.logout')}
               </Button>
             </div>
           </div>

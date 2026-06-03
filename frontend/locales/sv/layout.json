@@ -1,0 +1,28 @@
+{
+  "goToContent": "Hoppa till innehåll",
+  "title": "Mina Sidor Privat/Företag",
+  "subtitle": "Sundsvalls kommun",
+  "contactUs": "Kontakta oss",
+  "phone": "060-19 10 00",
+  "email": "kontakt@sundsvall.se",
+  "organizationNumber": "Organisationsnummer: 212000-2411",
+  "visitUs": "Besök oss",
+  "municipality": "Sundsvalls kommun",
+  "address": "Norrmalmsgatan 4, 851 85 Sundsvall",
+  "cityHall": "Kommunhuset:",
+  "openingHoursAndMap": "Öppettider och karta",
+  "aboutContent": "Om innehållet",
+  "aboutWebsite": "Om webbplatsen",
+  "cookies": "Kakor (Cookies)",
+  "accessibility": "Tillgänglighet",
+  "personalData": "Personuppgifter",
+  "cookieBanner": {
+    "title": "Kakor på minasidor.sundsvall.se",
+    "description": "Vi använder kakor, cookies, för att ge dig en förbättrad upplevelse, sammanställa statistik och för att viss nödvändig funktionalitet ska fungera på webbplatsen.",
+    "readMore": "Läs mer om hur vi använder kakor",
+    "necessary": "Nödvändiga kakor",
+    "necessaryDescription": "Dessa kakor är nödvändiga för att webbplatsen ska fungera och kan inte stängas av i våra system.",
+    "statistics": "Kakor för statistik",
+    "statisticsDescription": "Dessa kakor tillåter oss att räkna besök och trafikkällor, så att vi kan mäta och förbättra prestanda på vår webbplats."
+  }
+}

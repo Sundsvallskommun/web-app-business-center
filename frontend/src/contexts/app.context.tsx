@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useContext, useState } from 'react';
-import { RepresentingMode } from '../interfaces/app';
 import { useRepresentingSwitch } from '../layouts/site-menu/site-menu-items';
 import { appURL } from '../utils/app-url';
 import {
@@ -11,15 +10,18 @@ import {
   isPrivateMode,
   newRepresentingModePathname,
 } from '../utils/representingModeRoute';
+import { RepresentingMode } from '@interfaces/app';
 
 export interface AppContextStates {
   representingMode: RepresentingMode;
   isRepresentingModeBusiness: boolean;
   isRepresentingModePrivate: boolean;
+  representingName?: string;
 }
 
 export interface AppContextActions {
   setRepresentingMode: (myPagsMode: RepresentingMode) => void;
+  setRepresentingName: (label?: string) => void;
   resetContextDefaults: () => void;
 }
 
@@ -34,9 +36,14 @@ export const defaults: AppContextStates = {
   representingMode: DEFAULT_REPRESENTING_MODE,
   isRepresentingModeBusiness: isBusinessMode(DEFAULT_REPRESENTING_MODE),
   isRepresentingModePrivate: isPrivateMode(DEFAULT_REPRESENTING_MODE),
+  representingName: undefined,
 };
 
-export function AppWrapper({ children }) {
+interface AppWrapperProps {
+  children?: React.ReactNode;
+}
+
+export function AppWrapper({ children }: AppWrapperProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -45,6 +52,7 @@ export function AppWrapper({ children }) {
   const [representingMode, setRepresentingMode] = useState<RepresentingMode>(
     getRepresentingMode(pathname) ?? defaults.representingMode
   );
+  const [representingName, setRepresentingName] = useState<string | undefined>();
 
   const switchRepresentingMode = async (newMode: RepresentingMode) => {
     setRepresenting({ mode: newMode });
@@ -68,6 +76,8 @@ export function AppWrapper({ children }) {
         setRepresentingMode: (representingMode: RepresentingMode) => switchRepresentingMode(representingMode),
         isRepresentingModeBusiness: representingMode === RepresentingMode.BUSINESS,
         isRepresentingModePrivate: representingMode === RepresentingMode.PRIVATE,
+        representingName,
+        setRepresentingName,
         resetContextDefaults,
       }}
     >

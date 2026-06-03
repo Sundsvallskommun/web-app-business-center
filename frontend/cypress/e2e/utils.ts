@@ -232,10 +232,9 @@ export const testInvoices = (representingMode: RepresentingMode = representingMo
 
 export const testAssetPage = (representingMode: RepresentingMode = representingModeDefault) => {
   cy.wait('@getAsset').its('response.statusCode').should('eq', 200);
-  cy.url().should('include', '/beslut-och-dokument/assetId-0');
+  cy.url().should('include', '/beslut-och-dokument/asset-id-0');
   cy.get('main').contains('Parkeringstillstånd för funktionshindrad').should('exist');
   cy.get('main').contains(RepresentingMode[representingMode]).should('exist');
-  cy.get('main').contains('Ärendenummer').next().should('contain.text', 'case-0').should('be.visible');
   cy.get('main').contains('Kortnummer').next().should('contain.text', 'assetId-0').should('be.visible');
   cy.get('main').contains('Beslutad').next().should('contain.text', '1 jan 2021').should('be.visible');
   cy.get('main')
@@ -252,7 +251,7 @@ export const testAssets = (representingMode: RepresentingMode = representingMode
     cy.contains(RepresentingMode[representingMode]).should('exist');
     cy.contains('1 jan 2021').should('exist');
   });
-  cy.get('ul[aria-label="Dokument"] li a[aria-label="Visa assetId-0"]')
+  cy.get('ul[aria-label="Dokument"] li a[aria-label*="Parkeringstillstånd för funktionshindrad"]')
     .click()
     .then(() => {
       testAssetPage(representingMode);

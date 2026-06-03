@@ -1,0 +1,24 @@
+{
+  "title": "Välj företag",
+  "subtitle": "Välj företaget du vill företräda",
+  "noEngagements": "Vi kontrollerar företagsangemang från Bolagsverket och Skatteverket. Det verkar inte som att ditt personnummer inte är kopplat till något företag.",
+  "select": "Välj",
+  "name": "Namn",
+  "organizationNumber": "Organisationsnummer",
+  "selectOrganization": "Välj organisation",
+  "representative": "(ombud)",
+  "orgNr": "Org.nr.",
+  "disclaimer": "*Genom att klicka på Fortsätt godkänner du att Sundsvalls kommun hämtar uppgifter om ditt företag från Bolagsverket.",
+  "continue": "Fortsätt",
+  "selectFailed": "Misslyckades med att välja företag",
+  "loading": "Hämtar företag",
+  "loadingEngagements": "Hämtar bolagsengagemang",
+  "noRepresent": {
+    "title": "Företagscenter Mina Sidor - Logga In",
+    "heading": "Hoppsan, vi hittade inget företag som är registrerat på dig",
+    "description1": "När du loggar in gör vi en kontroll mot Bolagsverket och Skatteverket, men vi fick ingen träff på ditt personnummer.",
+    "description2": "Du kan läsa mer om hur vi hämtar information och hur kontrollen fungerar i våra",
+    "faqLink": "frågor och svar på naringslivsbolaget.se.",
+    "backToPrivate": "Tillbaka till Mina sidor privat"
+  }
+}

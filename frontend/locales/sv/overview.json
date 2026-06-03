@@ -1,0 +1,42 @@
+{
+  "welcome": {
+    "title": "Välkommen till nya Mina sidor",
+    "description": "Nu blir det enklare för dig som bor och verkar i Sundsvall att se och följa ärenden du har med kommunen. Med våra nya Mina sidor får du en mer samlad bild över dina ärenden. Mer funktionalitet och förbättringar kommer lanseras löpande.",
+    "readMore": "Läs mer om nya Mina sidor"
+  },
+  "announcements": {
+    "title": "Nyheter"
+  },
+  "externalServices": {
+    "title": "Fler Mina sidor",
+    "description": "Här hittar du de av kommunens system som har egna e-tjänster och Mina sidor. Har du ett ärende i någon av dessa behöver du logga in där för att följa ditt ärende.",
+    "openExternal": "Öppna {{label}} (extern länk)"
+  },
+  "todo": {
+    "title": "Att göra",
+    "description": "Här visas ärenden där du har något att hantera.",
+    "fetching": "Laddar ärenden",
+    "noTodos": "Du har inga ärenden att hantera.",
+    "complementNeeded": "Komplettering behövs på ärende #{{caseId}}",
+    "complementDescription": "Du behöver skicka in fler uppgifter. Klicka på \"Till ärendet\" och skicka uppgifterna som ett meddelande till oss.",
+    "goToCase": "Till ärendet",
+    "contract": {
+      "title": "Förnya avtal X",
+      "description": "Ditt avtal går ut den <strong>27 april</strong> och behöver förnyas.",
+      "goToContract": "Till avtalet",
+      "ariaLabel": "AVTAL, till avtalet"
+    },
+    "message": {
+      "title": "Nytt meddelande på ärende X",
+      "description": "Du har ett nytt meddelande på ditt ärende Bygglov - Komplementbyggnad #X",
+      "goToMessage": "Till meddelandet",
+      "ariaLabel": "MEDDELANDE, till meddelandet"
+    },
+    "parkingPermitExpired": "Ditt parkeringstillstånd har löpt ut",
+    "parkingPermitExpiring": "Ditt parkeringstillstånd löper ut",
+    "parkingPermitDescription": "Ditt parkeringstillstånd {{pastTense}} den {{date}}. Gå in på tillståndet om du vill förlänga det.",
+    "parkingPermitAriaLabel": "Parkeringstillstånd, till ärendet",
+    "expired": "löpte ut",
+    "expiring": "löper ut"
+  }
+}

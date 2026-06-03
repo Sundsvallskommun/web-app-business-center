@@ -6,7 +6,7 @@ export const APIS = [
   },
   {
     name: 'case-data',
-    version: '11.13',
+    version: '12.3',
   },
   {
     name: 'supportmanagement',
@@ -18,11 +18,15 @@ export const APIS = [
   },
   {
     name: 'casestatus',
-    version: '4.2',
+    version: '4.3',
   },
   {
     name: 'partyassets',
-    version: '4.0',
+    version: '6.4',
+  },
+  {
+    name: 'jsonschema',
+    version: '1.0',
   },
   {
     name: 'contactsettings',
@@ -51,6 +55,10 @@ export const APIS = [
   {
     name: 'caremanagement',
     version: '1.0',
+  },
+  {
+    name: 'myrepresentatives',
+    version: '4.4',
   },
 ] as const;
 

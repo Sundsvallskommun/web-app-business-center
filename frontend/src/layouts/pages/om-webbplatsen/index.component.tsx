@@ -3,23 +3,25 @@
 import { PagesBreadcrumbsLayout } from '@layouts/pages-breadcrumbs-layout.component';
 import { Card, Icon } from '@sk-web-gui/react';
 import { ExternalLink } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function OmWebbplatsen() {
+  const { t } = useTranslation('about');
+
   return (
     <PagesBreadcrumbsLayout>
-      <h1>Om webbplatsen</h1>
+      <h1>{t('about:title')}</h1>
       <div>
-        Här hittar du information om hur webbplatsen fungerar, vår användning av kakor, tillgänglighet samt hur vi
-        hanterar personuppgifter.
+        {t('about:description')}
       </div>
       <div className="mt-56 flex flex-col large-device:flex-row gap-24 justify-start text-body">
-        <Card useHoverEffect href="/om-webbplatsen/kakor" layout="horizontal">
+        <Card useHoverEffect href='/om-webbplatsen/kakor' layout="horizontal">
           <Card.Body>
             <Card.Header>
-              <h2>Kakor (cookies)</h2>
+              <h2>{t('about:cookies.title')}</h2>
             </Card.Header>
             <Card.Text>
-              <p>På den här webbplatsen använder vi kakor (cookies). Läs mer om kakor.</p>
+              <p>{t('about:cookies.description')}</p>
             </Card.Text>
           </Card.Body>
         </Card>
@@ -33,10 +35,10 @@ export default function OmWebbplatsen() {
         >
           <Card.Body>
             <Card.Header>
-              <h2>Tillgänglighet</h2>
+              <h2>{t('about:accessibility.title')}</h2>
             </Card.Header>
             <Card.Text>
-              <p>Vi strävar efter att vår webbplats ska vara tillgänglig för alla. Läs mer om webbtillgänglighet.</p>
+              <p>{t('about:accessibility.description')}</p>
             </Card.Text>
           </Card.Body>
         </Card>
@@ -49,11 +51,11 @@ export default function OmWebbplatsen() {
           <Card.Body>
             <Card.Header>
               <h2>
-                Personuppgifter <Icon size={24} className="!pl-0" icon={<ExternalLink />} />
+                {t('about:personalData.title')} <Icon size={24} className="!pl-0" icon={<ExternalLink />} />
               </h2>
             </Card.Header>
             <Card.Text>
-              <p>Här kan du läsa om hur vi behandlar dina personuppgifter.</p>
+              <p>{t('about:personalData.description')}</p>
             </Card.Text>
           </Card.Body>
         </Card>

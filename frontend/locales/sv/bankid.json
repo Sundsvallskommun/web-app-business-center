@@ -1,0 +1,60 @@
+{
+  "signingTitle": "Signera fullmakt",
+  "open_on_this_device": "Öppna på den här enheten",
+  "error": "Något gick fel. Kunde inte starta BankID-signering",
+  "qrCode": "QR-kod till BankID.",
+  "qrCodeHelp": "Starta BankID-appen och tryck på Skanna QR-kod. Läs sedan av den här QR-koden:",
+  "clickToExpand": "Klicka för att öppna i fullskärm",
+  "failed": "Signeringen misslyckades",
+  "cancel": "Avbryt",
+  "retry": "Försök igen",
+  "use_other_device": "Använd BankID på en annan enhet",
+  "start": "Starta BankID för att signera fullmakt",
+  "errors": {
+    "hintCode": {
+      "userCancel": "Åtgärden avbröts.",
+      "timeout": "Du startade inte BankID i tid.",
+      "cancelled": "Åtgärden avbröts. Försök igen.",
+      "notSupportedByUserApp": "Din BankID-app stödjer inte den här typen av åtgärd. Uppgradera appen eller använd ett annat BankID.",
+      "expiredTransaction": "BankID-appen svarar inte. Kontrollera att den är startad och att du har internetanslutning. Försök sedan igen.",
+      "certificateErr": "Ditt BankID är för gammalt eller spärrat. Använd ett annat BankID eller skaffa ett nytt hos din bank."
+    }
+  },
+  "hintcode": {
+    "none": "Starta BankID-appen.",
+    "mobile": {
+      "outstandingTransaction": "Starta BankID-appen.",
+      "noClient": "Starta BankID-appen.",
+      "started": "Söker efter BankID. Säkerställ att du har ett giltigt BankID på den här enheten.",
+      "userMrtd": "Fotografera och läs av din ID-handling med BankID-appen.",
+      "userCallConfirm": "",
+      "userSign": "Skriv in din säkerhetskod i BankID-appen och skriv under.",
+      "processing": "En identifiering eller underskrift pågår.",
+      "expiredTransaction": "BankID-appen svarar inte. Kontrollera att den är startad och att du har internetanslutning. Försök sedan igen.",
+      "certificateErr": "Ditt BankID är för gammalt eller spärrat. Använd ett annat BankID eller skaffa ett nytt hos din bank.",
+      "userCancel": "Åtgärden avbröts.",
+      "cancelled": "Åtgärden avbröts. Försök igen.",
+      "startFailed": "Du verkar inte ha BankID-appen/programmet. Installera den och skaffa ett BankID hos din bank.",
+      "userDeclinedCall": "",
+      "notSupportedByUserApp": "Din BankID-app stödjer inte den här typen av åtgärd. Uppgradera appen eller använd ett annat BankID.",
+      "transactionRiskBlocked": ""
+    },
+    "desktop": {
+      "outstandingTransaction": "Starta BankID-appen.",
+      "noClient": "Starta BankID-appen.",
+      "started": "Söker efter BankID. Säkerställ att du har ett giltigt BankID på den här datorn. Om du har ett BankID på kort, sätt in kortet i kortläsaren.",
+      "userMrtd": "Fotografera och läs av din ID-handling med BankID-appen.",
+      "userCallConfirm": "",
+      "userSign": "Skriv in din säkerhetskod i BankID-appen och skriv under.",
+      "processing": "En identifiering eller underskrift pågår.",
+      "expiredTransaction": "BankID-appen svarar inte. Kontrollera att den är startad och att du har internetanslutning. Försök sedan igen.",
+      "certificateErr": "Ditt BankID är för gammalt eller spärrat. Använd ett annat BankID eller skaffa ett nytt hos din bank.",
+      "userCancel": "Åtgärden avbröts.",
+      "cancelled": "Åtgärden avbröts. Försök igen.",
+      "startFailed": "Misslyckades att starta BankID-appen.",
+      "userDeclinedCall": "",
+      "notSupportedByUserApp": "Din BankID-app stödjer inte den här typen av åtgärd. Uppgradera appen eller använd ett annat BankID.",
+      "transactionRiskBlocked": ""
+    }
+  }
+}

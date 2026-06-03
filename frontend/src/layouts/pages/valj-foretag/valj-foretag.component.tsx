@@ -14,10 +14,12 @@ import { getAdjustedPathname, getRepresentingModeRoute } from '@utils/representi
 import { ArrowRight } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function ValjForetag() {
   const router = useRouter();
   const { representingMode } = useAppContext();
+  const { t } = useTranslation(['valj-foretag', 'common']);
   const [error, setError] = useState('');
   const { isMinDesktop, isMinSmallDevice } = useThemeQueries();
   const searchParams = useSearchParams();
@@ -48,7 +50,7 @@ export default function ValjForetag() {
           : getRepresentingModeRoute(RepresentingMode.BUSINESS)
       );
     } else {
-      setError('Misslyckades med att välja företag');
+      setError(t('valj-foretag:selectFailed'));
     }
   };
 
@@ -71,12 +73,12 @@ export default function ValjForetag() {
       {engagementsIsLoading ? (
         <main>
           <div className="w-screen h-screen flex place-items-center place-content-center">
-            <Spinner aria-label="Hämtar företag" />
+            <Spinner aria-label={t('valj-foretag:loading')} />
           </div>
         </main>
       ) : (
         <EntryLayout
-          title="Välj företag"
+          title={t('valj-foretag:title')}
           logoClasses="hidden medium-device:block"
           className="!py-0 !medium-device:py-40 !px-0"
         >
@@ -84,25 +86,24 @@ export default function ValjForetag() {
             <CardElevated className="py-24 lg:py-40 px-14 lg:px-80">
               <Main>
                 <div>
-                  <h1 className="text-h1-small lg:text-h2-lg">Välj företaget du vill företräda</h1>
+                  <h1 className="text-h1-small lg:text-h2-lg">{t('valj-foretag:subtitle')}</h1>
                 </div>
                 <div className="break-words lg:my-56">
                   {!hasEngagements ? (
                     <div className="rounded max-w-prose">
-                      Vi kontrollerar företagsangemang från Bolagsverket och Skatteverket. Det verkar inte som att ditt
-                      personnummer inte är kopplat till något företag.
+                      {t('valj-foretag:noEngagements')}
                     </div>
                   ) : (
                     <Table background className={cx('mt-40', !isMinDesktop && '[&_.sk-table-thead]:sr-only')}>
                       <Table.Header>
                         {isMinDesktop ? (
                           <>
-                            <Table.HeaderColumn className="sr-only">Välj</Table.HeaderColumn>
-                            <Table.HeaderColumn>Namn</Table.HeaderColumn>
-                            <Table.HeaderColumn>Organisationsnummer</Table.HeaderColumn>
+                            <Table.HeaderColumn className="sr-only">{t('valj-foretag:select')}</Table.HeaderColumn>
+                            <Table.HeaderColumn>{t('valj-foretag:name')}</Table.HeaderColumn>
+                            <Table.HeaderColumn>{t('valj-foretag:organizationNumber')}</Table.HeaderColumn>
                           </>
                         ) : (
-                          <Table.HeaderColumn>Välj organisation</Table.HeaderColumn>
+                          <Table.HeaderColumn>{t('valj-foretag:selectOrganization')}</Table.HeaderColumn>
                         )}
                       </Table.Header>
                       <Table.Body>
@@ -119,12 +120,12 @@ export default function ValjForetag() {
                                     onChange={() => ({})}
                                     checked={e.organizationNumber === choosen}
                                     name="entity"
-                                    aria-label={`${e.organizationName}, välj organisation`}
+                                    aria-label={`${e.organizationName}, ${t('valj-foretag:selectOrganization')}`}
                                   />
                                 </Table.Column>
                                 <Table.Column>
                                   <span className="font-bold">{e.organizationName}</span>
-                                  {e.isRepresentative ? <span className="ml-[.5em]">(ombud)</span> : null}
+                                  {e.isRepresentative ? <span className="ml-[.5em]">{t('common:isRepresentative')}</span> : null}
                                 </Table.Column>
                                 <Table.Column>{e.organizationNumber}</Table.Column>
                               </>
@@ -135,17 +136,17 @@ export default function ValjForetag() {
                                     onChange={() => ({})}
                                     checked={e.organizationNumber === choosen}
                                     name="entity"
-                                    aria-label={`${e.organizationName}, välj organisation`}
+                                    aria-label={`${e.organizationName}, ${t('valj-foretag:selectOrganization')}`}
                                   />
                                   <div className="grow flex flex-col gap-8">
                                     <div className="flex flex-col gap-y-4">
                                       <div className="font-bold">
                                         <span className="font-bold">{e.organizationName}</span>
-                                        {e.isRepresentative ? <span className="ml-[.5em]">(ombud)</span> : null}
+                                        {e.isRepresentative ? <span className="ml-[.5em]">{t('common:isRepresentative')}</span> : null}
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-y-4">
-                                      <div>{`Org.nr. ${e.organizationNumber}`}</div>
+                                      <div>{`${t('valj-foretag:orgNr')} ${e.organizationNumber}`}</div>
                                     </div>
                                   </div>
                                 </div>
@@ -167,21 +168,20 @@ export default function ValjForetag() {
                     </Table>
                   )}
                   <p className="pt-12 pb-12">
-                    *Genom att klicka på Fortsätt godkänner du att Sundsvalls kommun hämtar uppgifter om ditt företag
-                    från Bolagsverket.
+                    {t('valj-foretag:disclaimer')}
                   </p>
                 </div>
                 <div className="flex justify-end">
                   <Button
                     data-cy="representingEntityButton"
                     loading={engagementsIsLoading}
-                    loadingText={'Hämtar bolagsengagemang'}
+                    loadingText={t('valj-foretag:loadingEngagements')}
                     color="vattjom"
                     disabled={!choosen}
                     onClick={() => onContinue()}
                     rightIcon={<Icon icon={<ArrowRight />} />}
                   >
-                    Fortsätt
+                    {t('valj-foretag:continue')}
                   </Button>
                 </div>
                 {error && <p className="pt-4 pb-4 text-red-500">{error}</p>}

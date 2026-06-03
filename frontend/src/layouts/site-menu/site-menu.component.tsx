@@ -1,11 +1,14 @@
 'use client';
 
+import { Link } from '@sk-web-gui/react';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../contexts/app.context';
-import { MyPagesBusinessSwitch, MyPagesToggle, useSiteMenuItems } from './site-menu-items';
+import { UserMenu } from '../user-menu/user-menu.component';
+import { MyPagesBusinessSwitch, MyPagesToggle } from './site-menu-items';
 
 export const SiteMenu = () => {
   const { isRepresentingModeBusiness } = useAppContext();
-  const siteMenuItems = useSiteMenuItems();
+  const { t } = useTranslation('common');
 
   return (
     <nav aria-label="Site menu" className="flex items-center">
@@ -18,9 +21,20 @@ export const SiteMenu = () => {
         <li>
           <MyPagesToggle />
         </li>
-        {siteMenuItems.map((item, index) => (
-          <li key={`${index}`}>{item}</li>
-        ))}
+        <li>
+          <Link
+            href={'https://e-tjanster.sundsvall.se/'}
+            variant="tertiary"
+            external={true}
+            strong={true}
+            className="ml-10"
+          >
+            {t('common:eServices')}
+          </Link>
+        </li>
+        <li>
+          <UserMenu />
+        </li>
       </ul>
     </nav>
   );

@@ -4,6 +4,7 @@ import { InvoicesData } from '@interfaces/invoice';
 import { sortInvoices } from '@services/invoice-service';
 import { Label, Table, useThemeQueries } from '@sk-web-gui/react';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { InvoiceTableCard } from './invoices-table-card.component';
 
 export const InvoicesTable: React.FC<{
@@ -14,6 +15,7 @@ export const InvoicesTable: React.FC<{
   // const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>();
   const ref = useRef<null | HTMLDivElement>(null);
   const { isMinDesktop } = useThemeQueries();
+  const { t } = useTranslation('invoice');
 
   const datarows = props.data?.invoices.sort(sortInvoices).map((item, idx: number) => {
     return (
@@ -51,23 +53,23 @@ export const InvoicesTable: React.FC<{
     return (
       <>
         {props.data && props.data?.invoices?.length === 0 && !props.isFetchingData ? (
-          <p>Inga fakturor</p>
+          <p>{t('invoice:table.empty')}</p>
         ) : props.data && props.data?.invoices?.length > 0 ? (
           <></>
         ) : (
-          props.isFetchingData && <p>Laddar fakturor</p>
+          props.isFetchingData && <p>{t('invoice:table.loading')}</p>
         )}
         {props.data && props.data?.invoices?.length > 0 && (
           <div>
             {isMinDesktop ? (
               <Table background>
                 <Table.Header className="bg-background-content border-b-1 border-secondary-outline-hover">
-                  <Table.HeaderColumn>Namn</Table.HeaderColumn>
-                  <Table.HeaderColumn>Status</Table.HeaderColumn>
-                  <Table.HeaderColumn>Förfallodatum</Table.HeaderColumn>
-                  <Table.HeaderColumn>Belopp</Table.HeaderColumn>
-                  <Table.HeaderColumn>Referensnummer/OCR</Table.HeaderColumn>
-                  <Table.HeaderColumn className="sr-only">Hämta faktura</Table.HeaderColumn>
+                  <Table.HeaderColumn>{t('invoice:table.name')}</Table.HeaderColumn>
+                  <Table.HeaderColumn>{t('invoice:table.status')}</Table.HeaderColumn>
+                  <Table.HeaderColumn>{t('invoice:table.dueDate')}</Table.HeaderColumn>
+                  <Table.HeaderColumn>{t('invoice:table.amount')}</Table.HeaderColumn>
+                  <Table.HeaderColumn>{t('invoice:table.reference')}</Table.HeaderColumn>
+                  <Table.HeaderColumn className="sr-only">{t('invoice:table.download')}</Table.HeaderColumn>
                 </Table.Header>
                 <Table.Body>{datarows}</Table.Body>
               </Table>

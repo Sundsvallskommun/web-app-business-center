@@ -9,9 +9,11 @@ import {
   invoicesHandler,
 } from '@services/invoice-service';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { InvoicesTable } from './invoices/invoices-table.component';
 
 export default function Invoices() {
+  const { t } = useTranslation('invoice');
   const {
     data: invoices = emptyInvoicesList,
     isLoading: invoicesIsLoading,
@@ -37,8 +39,8 @@ export default function Invoices() {
   if (!invoicesIsLoading && invoices.invoices.length < 1) {
     return (
       <div>
-        <h1>Dina fakturor</h1>
-        <p>Du har inga fakturor än, men så fort det finns något att betala kan du se det här.</p>
+        <h1>{t('invoice:title')}</h1>
+        <p>{t('invoice:empty')}</p>
       </div>
     );
   } else if (!invoicesIsLoading) {
@@ -46,17 +48,17 @@ export default function Invoices() {
       <div className="flex flex-col gap-[6.4rem]">
         <div>
           <div className="text-content">
-            <h1>Dina fakturor</h1>
+            <h1>{t('invoice:title')}</h1>
           </div>
         </div>
         <InvoicesTable
           data={notHandledInvoices}
-          heading={<h2 className="text-h3-sm desktop:text-h3-lg">Ohanterade</h2>}
+          heading={<h2 className="text-h3-sm desktop:text-h3-lg">{t('invoice:unhandled')}</h2>}
           isFetchingData={invoicesIsFetching}
         />
         <InvoicesTable
           data={handledInvoices}
-          heading={<h2 className="text-h3-sm desktop:text-h3-lg">Hanterade</h2>}
+          heading={<h2 className="text-h3-sm desktop:text-h3-lg">{t('invoice:handled')}</h2>}
           isFetchingData={invoicesIsFetching}
         />
       </div>

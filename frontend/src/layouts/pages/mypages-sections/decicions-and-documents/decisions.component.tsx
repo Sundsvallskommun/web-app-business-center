@@ -1,17 +1,20 @@
 import { CardList } from '@components/cards/cards.component';
 import { useApi } from '@services/api-service';
-import { ClientDecision, sortDecisionsByDate } from '@services/decision-service';
+import { ClientDecision, getDecisionOutcomeLabel, sortDecisionsByDate } from '@services/decision-service';
 import { downloadBlob } from '@utils/download-blob';
-import { Button, Icon, Spinner } from '@sk-web-gui/react';
+import { Button, Icon, Spinner, useThemeQueries } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import sv from 'dayjs/locale/sv';
-import { File } from 'lucide-react';
+import { Download, File } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
+import Link from 'next/link';
+import { getRepresentingModeRoute } from '@utils/representingModeRoute';
+import { useAppContext } from '@contexts/app.context';
 
 dayjs.locale(sv);
 
 const formatFileSize = (base64: string): string => {
-  const bytes = base64.length * 3 / 4;
+  const bytes = (base64.length * 3) / 4;
   if (bytes >= 1024 * 1024) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
@@ -20,14 +23,14 @@ const formatFileSize = (base64: string): string => {
 
 const DecisionCard: React.FC<{ item: ClientDecision }> = ({ item }) => {
   const attachment = item.attachments?.[0];
+  const { representingMode } = useAppContext();
+  const { isPhone } = useThemeQueries();
 
   const handleDownload = useCallback(() => {
     if (!attachment?.file) return;
     const filename = attachment.name || `beslut-${item.id}.pdf`;
     downloadBlob(attachment.file, 'application/pdf', filename);
   }, [attachment, item.id]);
-
-  const fileSize = useMemo(() => (attachment?.file ? formatFileSize(attachment.file) : null), [attachment?.file]);
 
   return (
     <div className="list-item-card">
@@ -38,15 +41,34 @@ const DecisionCard: React.FC<{ item: ClientDecision }> = ({ item }) => {
               <Icon icon={<File />} />
             </div>
             <div>
-              <div className="list-item-card-content-title">{`Beslut${fileSize ? ` (pdf, ${fileSize})` : ''}`}</div>
-              <div className="list-item-card-content-subtitle">
-                {item.decidedAt ? `Beslutad ${dayjs(item.decidedAt).format('D MMMM YYYY')}` : ''}
+              <div className="list-item-card-content-title">
+                Beslut {item.decisionOutcome ? ` - ${getDecisionOutcomeLabel(item.decisionOutcome)}` : ''}
               </div>
+              <div className="list-item-card-content-subtitle">
+                {item.decidedAt ? `Beslutad ${dayjs(item.decidedAt).format('D MMMM YYYY')}` : ''} {/* </span> */}
+              </div>
+              {item.errandNumber ? (
+                <div className="list-item-card-content-subtitle">
+                  Ärende{' '}
+                  <Link
+                    href={`${getRepresentingModeRoute(representingMode)}/arenden/${item.errandId}`}
+                    className="text-secondary underline"
+                  >
+                    {item.errandNumber}
+                  </Link>
+                </div>
+              ) : null}
             </div>
           </div>
           {attachment?.file && (
-            <Button variant="tertiary" size="sm" onClick={handleDownload}>
-              Ladda ner
+            <Button
+              iconButton={isPhone}
+              rightIcon={<Icon icon={<Download />} />}
+              variant="tertiary"
+              size="sm"
+              onClick={handleDownload}
+            >
+              {!isPhone ? 'Ladda ner' : null}
             </Button>
           )}
         </div>
@@ -65,10 +87,12 @@ export const Decisions = () => {
 
   if (isFetchingDecisions) {
     return (
-      <div className="flex items-center">
-        <p className="text-secondary">Laddar beslut</p>
-        <Spinner className="ml-10" size={2} />
-      </div>
+      <section className="mb-40">
+        <div className="flex items-center">
+          <p className="text-secondary">Laddar beslut</p>
+          <Spinner className="ml-10" size={2} />
+        </div>
+      </section>
     );
   }
 

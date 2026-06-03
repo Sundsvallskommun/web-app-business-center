@@ -3,6 +3,7 @@ import { Button, Icon } from '@sk-web-gui/react';
 import { getCaseTypeLabel } from '@utils/casetype-label-mapper';
 import { ArrowRight, FilePen } from 'lucide-react';
 import NextLink from 'next/link';
+import { useTranslation } from 'react-i18next';
 import styles from './todos.module.scss';
 
 interface TodoCaseProps {
@@ -10,6 +11,8 @@ interface TodoCaseProps {
 }
 
 export const TodoCase = ({ data }: TodoCaseProps) => {
+  const { t } = useTranslation('overview');
+
   return (
     <div className={styles['todo']}>
       <div className={styles['todo-main']}>
@@ -17,10 +20,9 @@ export const TodoCase = ({ data }: TodoCaseProps) => {
           <Icon className={styles['todo-type-icon']} icon={<FilePen />} />
         </div>
         <div className={styles['todo-content']}>
-          <h2 className={styles['todo-content-heading']}>{`Komplettering behövs på ärende #${data.errandNumber}`}</h2>
+          <h2 className={styles['todo-content-heading']}>{t('overview:todo.complementNeeded', { caseId: data.errandNumber })}</h2>
           <p className={styles['todo-content-text']}>
-            Du behöver skicka in fler uppgifter. Klicka på &quot;Till ärendet&quot; och skicka uppgifterna som ett
-            meddelande till oss.
+            {t('overview:todo.complementDescription')}
           </p>
         </div>
       </div>
@@ -32,7 +34,7 @@ export const TodoCase = ({ data }: TodoCaseProps) => {
             rightIcon={<ArrowRight />}
             aria-label={`${getCaseTypeLabel(data.caseType)}, till ärendet`}
           >
-            Till ärendet
+            {t('overview:todo.goToCase')}
           </Button>
         </NextLink>
       </div>

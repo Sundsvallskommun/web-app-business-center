@@ -17,6 +17,7 @@ import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { CaseMessage, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import ApiService from '@/services/api.service';
+import { getCitizen } from '@/services/citizen.service';
 import { getUserData } from '@/services/user.service';
 import { filterExternalConversation, findExternalConversation } from '@/utils/conversation-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
@@ -26,17 +27,22 @@ import authMiddleware from '@middlewares/auth.middleware';
 import dayjs from 'dayjs';
 import { Body, Controller, Get, Param, Post, Put, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
+import { CaseDataNamespace } from '@/interfaces/casedata.interface';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
 
 const USE_CASES_CACHE = false;
 
-const allowedNamespaces: string[] = ['SBK_MEX', 'SBK_PARKING_PERMIT', 'CONTACTSUNDSVALL'];
-const namespaceIsallowed = (c: CaseStatusResponse) => allowedNamespaces.includes(c.namespace);
+const allowedNamespaces: ReadonlySet<string> = new Set([
+  CaseDataNamespace.SBK_MEX,
+  CaseDataNamespace.SBK_PARKING_PERMIT,
+  CaseDataNamespace.CONTACTSUNDSVALL,
+]);
+const namespaceIsallowed = (c: CaseStatusResponse) => allowedNamespaces.has(c.namespace);
 
-const allowedSystems: string[] = ['OPEN_E_PLATFORM', 'BYGGR'];
-const systemIsAllowed = (c: CaseStatusResponse) => allowedSystems.includes(c.system);
+const allowedSystems: ReadonlySet<string> = new Set(['OPEN_E_PLATFORM', 'BYGGR']);
+const systemIsAllowed = (c: CaseStatusResponse) => allowedSystems.has(c.system);
 
 const caseIsallowed = (c: CaseStatusResponse) => namespaceIsallowed(c) || (typeof c.namespace === 'undefined' && systemIsAllowed(c));
 
@@ -101,39 +107,59 @@ export class CaseController {
   }
 
   private async normalizeConversationMessages(messages: MessageWithConversationId<Message>[], user: User): Promise<FrontendMessageResponse[]> {
-    const senderUsernames = Array.from(new Set(messages.filter(msg => msg.createdBy?.type === 'AD_ACCOUNT').map(msg => msg.createdBy.value)));
+    const senderAdUsernames: string[] = Array.from(
+      new Set(messages.filter(msg => msg.createdBy?.type === 'AD_ACCOUNT' && msg?.createdBy?.value).map(msg => msg.createdBy?.value ?? '')),
+    );
+    const senderCitizenPartyIds: string[] = Array.from(
+      new Set(messages.filter(msg => msg.createdBy?.type === 'PARTY_ID' && msg?.createdBy?.value).map(msg => msg.createdBy?.value ?? '')),
+    );
 
-    const namePromises = senderUsernames.map(async username => {
+    interface NameMap {
+      identifier: string;
+      name: string;
+    }
+
+    const adUsernamePromises: Promise<NameMap>[] = senderAdUsernames.map(async username => {
       const userData = await getUserData(username, { user });
       return {
-        username,
+        identifier: username,
         name: `${userData.givenname} ${userData.lastname}`,
       };
     });
 
-    return Promise.allSettled(namePromises).then(results => {
-      const nameMap = results.reduce((acc, result) => {
+    const citizenNamePromises: Promise<NameMap>[] = senderCitizenPartyIds.map(async partyId => {
+      const citizenData = await getCitizen(partyId, { user });
+      return {
+        identifier: partyId,
+        name: `${citizenData.givenname} ${citizenData.lastname}`,
+      };
+    });
+
+    return Promise.allSettled([...adUsernamePromises, ...citizenNamePromises]).then(async results => {
+      const nameMap = results.reduce((acc: Record<string, string>, result) => {
         if (result.status === 'fulfilled') {
-          acc[result.value.username] = result.value.name;
+          acc[result.value.identifier] = result.value.name;
         }
         return acc;
       }, {});
 
       return messages.map((msg: Message & { conversationId: string }) => {
+        let sender = '';
+        if (msg?.createdBy?.type === 'PARTY_ID' && msg?.createdBy?.value === user.partyId) {
+          sender = user.name;
+        } else {
+          sender = (msg.createdBy?.value && nameMap[msg.createdBy?.value]) ?? 'Okänd avsändare';
+        }
         return {
           conversationId: msg.conversationId,
           messageId: msg.id,
           message: msg.content,
           sent: msg.created,
-          sender:
-            msg?.createdBy?.value && msg?.createdBy?.value === user.partyId ? `${user.name}` : nameMap[msg.createdBy?.value] ?? 'Okänd avsändare',
-          direction: msg?.createdBy?.value ? (msg?.createdBy?.value === user.partyId ? 'INBOUND' : 'OUTBOUND') : '',
+          sender,
+          direction: msg?.createdBy?.type === 'PARTY_ID' ? 'INBOUND' : 'OUTBOUND',
           attachments: msg.attachments?.map(attachment => ({
-            attachmentId: attachment.id.toString(),
-            // FIXME: attachment.fileName is the correct field but the generated types are incorrect.
-            // When the API is fixed, the type conversions to any should be removed.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            name: (attachment as any).fileName,
+            attachmentId: attachment.id?.toString() ?? '',
+            name: attachment.fileName,
             contentType: attachment.mimeType,
           })),
         };
@@ -499,7 +525,10 @@ export class CaseController {
       if (!resConversation.data || resConversation.data.length === 0 || !externalConversation) {
         const createConversationUrl = `${apiBase}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
         const createConversationdata = this.conversationInit(req.user);
-        const resCreateConversation = await this.apiService.post<Conversation, typeof createConversationdata>({ data: createConversationdata, url: createConversationUrl }, req.user);
+        const resCreateConversation = await this.apiService.post<Conversation, typeof createConversationdata>(
+          { data: createConversationdata, url: createConversationUrl },
+          req.user,
+        );
 
         if (resCreateConversation.message === 'success') {
           const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req.user);

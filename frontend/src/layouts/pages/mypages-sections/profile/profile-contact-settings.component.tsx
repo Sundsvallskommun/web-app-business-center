@@ -6,9 +6,11 @@ import { useApi } from '@services/api-service';
 import { Button, Checkbox, FormControl, FormLabel, Icon } from '@sk-web-gui/react';
 import { Info, Pen } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ContactSettingsFormLogic from './components/contact-settings-form-logic.component';
 
 export const ContactSettings = () => {
+  const { t } = useTranslation('notifications');
   const { data: contactsettings } = useApi<ClientContactSetting>({
     url: '/contactsettings',
     method: 'get',
@@ -29,20 +31,20 @@ export const ContactSettings = () => {
                 if (isEdit) {
                   return (
                     <FormControl fieldset>
-                      <p className="text-large pb-8">Ändra dina aviseringar</p>
-                      <FormLabel>Välj kontaktväg för aviseringar</FormLabel>
+                      <p className="text-large pb-8">{t('notifications:changeNotifications')}</p>
+                      <FormLabel>{t('notifications:chooseContactMethod')}</FormLabel>
                       <Checkbox
                         disabled={!hasEmail}
                         {...register('notifications.email_enabled')}
                         data-cy="notification-channel-email-checkbox"
                         className="mt-8"
                       >
-                        E-post
+                        {t('notifications:byEmail')}
                       </Checkbox>
                       {!watch().email ? (
                         <div className="flex items-center gap-6">
                           <Icon size={16} icon={<Info />} className="ml-32 w-4 h-4 shrink-0" />
-                          <p className="text-small">För att få aviseringar via mail behöver du lägga till en e-post.</p>
+                          <p className="text-small">{t('notifications:byEmailWarning')}</p>
                         </div>
                       ) : null}
                       <Checkbox.Group className="gap-16 pb-16">
@@ -51,13 +53,13 @@ export const ContactSettings = () => {
                           {...register('notifications.phone_enabled')}
                           data-cy="notification-channel-sms-checkbox"
                         >
-                          Sms
+                          {t('notifications:bySms')}
                         </Checkbox>
                         {!watch().phone ? (
                           <div className="flex items-center gap-6">
                             <Icon size={16} icon={<Info />} className="ml-32 w-4 h-4 shrink-0" />
                             <p className="text-small">
-                              För att få aviseringar via sms behöver du lägga till ett mobilnummer.
+                              {t('notifications:bySmsWarning')}
                             </p>
                           </div>
                         ) : null}
@@ -67,23 +69,22 @@ export const ContactSettings = () => {
                 } else {
                   const contactWaysString =
                     watch('notifications.phone_enabled') && watch('notifications.email_enabled')
-                      ? 'sms och e-post'
+                      ? t('notifications:smsAndEmail')
                       : watch('notifications.phone_enabled')
-                        ? 'sms'
+                        ? t('notifications:bySms').toLowerCase()
                         : watch('notifications.email_enabled')
-                          ? 'e-post'
+                          ? t('notifications:byEmail').toLowerCase()
                           : '';
 
                   return (
                     <div className="text-content">
                       <p>
-                        Vi skickar aviseringar när du till exempel får en ny faktura eller ett nytt meddelande i ett
-                        ärende.
+                        {t('notifications:notificationDescription')}
                       </p>
                       <p className="font-bold">
                         {contactWaysString
-                          ? `Du får just nu aviseringar via ${contactWaysString}`
-                          : 'Du får inga aviseringar'}
+                          ? t('notifications:contactBy', { methods: contactWaysString })
+                          : t('notifications:none')}
                       </p>
                     </div>
                   );
@@ -107,10 +108,10 @@ export const ContactSettings = () => {
                       }}
                       data-cy="cancel-edit-notification-channel-button"
                     >
-                      Avbryt
+                      {t('notifications:cancel')}
                     </Button>
                     <Button type="submit" data-cy="save-notification-channel-button">
-                      Spara
+                      {t('notifications:save')}
                     </Button>
                   </>
                 ) : (
@@ -125,7 +126,7 @@ export const ContactSettings = () => {
                     }}
                     data-cy="edit-notification-channel-button"
                   >
-                    Ändra aviseringar
+                    {t('notifications:edit')}
                   </Button>
                 )}
               </div>

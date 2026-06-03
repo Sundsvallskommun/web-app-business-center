@@ -69,7 +69,7 @@ class ApiService {
       ...config,
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
-      headers: { ...config.headers, 'X-Sent-By': [`type=partyID; ${user.partyId}`] },
+      headers: { ...config.headers, 'X-Sent-By': [`type=partyId; ${user.partyId}`] },
       params: { ...defaultParams, ...config.params },
       url: config.baseURL ? config.url : apiURL(config?.url ?? ''),
     };

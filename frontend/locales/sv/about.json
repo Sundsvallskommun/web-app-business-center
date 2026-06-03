@@ -1,0 +1,16 @@
+{
+  "title": "Om webbplatsen",
+  "description": "Här hittar du information om hur webbplatsen fungerar, vår användning av kakor, tillgänglighet samt hur vi hanterar personuppgifter.",
+  "cookies": {
+    "title": "Kakor (cookies)",
+    "description": "På den här webbplatsen använder vi kakor (cookies). Läs mer om kakor."
+  },
+  "accessibility": {
+    "title": "Tillgänglighet",
+    "description": "Vi strävar efter att vår webbplats ska vara tillgänglig för alla. Läs mer om webbtillgänglighet."
+  },
+  "personalData": {
+    "title": "Personuppgifter",
+    "description": "Här kan du läsa om hur vi behandlar dina personuppgifter."
+  }
+}

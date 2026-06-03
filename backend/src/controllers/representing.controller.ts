@@ -1,13 +1,16 @@
-import { ClientBusinessInformation } from '@/interfaces/business-engagement';
 import { RepresentsDto } from '@dtos/represents.dto';
 import { HttpException } from '@exceptions/HttpException';
 import { RequestWithUser } from '@interfaces/auth.interface';
 import authMiddleware from '@middlewares/auth.middleware';
 import { validationMiddleware } from '@middlewares/validation.middleware';
-import { Body, Controller, Get, Post, Req, UseBefore } from 'routing-controllers';
-import { OpenAPI } from 'routing-controllers-openapi';
+import { getIsWhitelisted } from '@/services/mandate.service';
+import { Engagement, getBusinessInformationByGuid, getGuid } from '@/services/legal-entity.service';
+import { logger } from '@/utils/logger';
+import { Response } from 'express';
+import { Body, Controller, Get, Post, Req, Res, UseBefore } from 'routing-controllers';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { RepresentingBusinessEntity, RepresentingEntity, RepresentingEntityClient, RepresentingMode } from '../interfaces/representing.interface';
-import { Engagement, LegalEntityController } from './legal-entity.controller';
+import { ClientRepresentingApiResponse } from '@/responses/representing.response';
 
 interface ResponseData {
   data: any;
@@ -18,25 +21,6 @@ type IntersectByProperties<T, U> = Pick<T & U, Extract<keyof T, keyof U>>;
 
 @Controller()
 export class RepresentingController {
-  private legalEntityController = new LegalEntityController();
-
-  getBusinessInformation = async (guid: string, user: RequestWithUser['user']): Promise<ClientBusinessInformation> => {
-    const legalEntity = await this.legalEntityController.getLegalEntity(guid, user);
-    const address = legalEntity?.postAddress;
-    let businessInformation: ClientBusinessInformation = {};
-    if (legalEntity) {
-      businessInformation = {
-        companyLocation: {
-          city: address?.city ?? '',
-          street: address?.address1 ?? '',
-          postcode: address?.postalCode ?? '',
-          careOf: address?.coAdress ?? '',
-        },
-      };
-    }
-    return businessInformation;
-  };
-
   getSelected = <TSelected extends Record<string, any>, MatchKey extends keyof IntersectByProperties<TSelected, RepresentsDto>>(
     choices: TSelected[],
     selectedRepresenting: RepresentsDto,
@@ -64,13 +48,23 @@ export class RepresentingController {
   getDefaultBUSINESS = async (req: RequestWithUser): Promise<RepresentingBusinessEntity> => {
     const { representingBusinessChoices } = req?.session;
     const selected = this.getSelected<Engagement, 'organizationNumber'>(representingBusinessChoices, req.body, 'organizationNumber');
-    const guid = await this.legalEntityController.getGuid(selected.organizationNumber, req.user);
-    const businessInformation = await this.getBusinessInformation(guid, req.user);
+    const guid = await getGuid(selected.organizationNumber, req.user);
+    const partyId = this.fixGuid(guid);
+    const businessInformation = await getBusinessInformationByGuid(guid, req.user);
+
+    let whitelisted = false;
+    try {
+      whitelisted = await getIsWhitelisted(req.user, partyId);
+    } catch (error) {
+      logger.error('Error checking whitelisted status', error);
+    }
 
     return {
-      partyId: this.fixGuid(guid),
+      partyId,
       organizationName: selected.organizationName,
       organizationNumber: selected.organizationNumber,
+      isAuthorizedSignatory: selected.isAuthorizedSignatory ?? false,
+      whitelisted,
       information: businessInformation,
     };
   };
@@ -80,6 +74,8 @@ export class RepresentingController {
       ? {
           organizationName: newRepresenting?.BUSINESS?.organizationName,
           organizationNumber: newRepresenting?.BUSINESS?.organizationNumber,
+          isAuthorizedSignatory: newRepresenting?.BUSINESS?.isAuthorizedSignatory,
+          whitelisted: newRepresenting?.BUSINESS?.whitelisted,
           information: newRepresenting?.BUSINESS?.information,
         }
       : undefined,
@@ -93,9 +89,13 @@ export class RepresentingController {
 
   @Get('/representing')
   @OpenAPI({ summary: 'Return which entity a logged in user represents' })
+  @ResponseSchema(ClientRepresentingApiResponse)
   @UseBefore(authMiddleware)
-  async getBussinesEngagments(@Req() req: RequestWithUser): Promise<ResponseData> {
-    const { representing } = req?.session;
+  async getBussinesEngagments(
+    @Req() req: RequestWithUser,
+    @Res() res: Response<ClientRepresentingApiResponse>,
+  ): Promise<Response<ClientRepresentingApiResponse>> {
+    const representing = req.session?.representing ?? undefined;
 
     if (!representing) {
       throw new HttpException(403, 'Forbidden');
@@ -109,7 +109,7 @@ export class RepresentingController {
       throw new HttpException(400, 'Representing not set');
     }
 
-    return { data: this.getRepresentingToSend(req.session.representing), message: 'success' };
+    return res.send({ data: this.getRepresentingToSend(req.session.representing), message: 'success' });
   }
 
   @Post('/representing')

@@ -2,22 +2,7 @@
 
 ## APIer som används
 
-Dessa APIer används i projektet, applikationsanvändaren i WSO2 måste prenumerera på dessa.
-
-| API                 | Version |
-| ------------------- | ------: |
-| BusinessEngagements |     3.0 |
-| CaseData            |    11.5 |
-| SupportManagement   |    10.5 |
-| PartyAssets         |     3.0 |
-| WebMessageCollector |     5.1 |
-| CaseStatus          |     4.1 |
-| ContactSettings     |     2.0 |
-| Citizen             |     3.0 |
-| Employee            |     2.0 |
-| Messaging           |     7.0 |
-| Invoices            |     8.0 |
-| SimulatorServer     |     2.0 |
+Applikationsanvändaren i WSO2 måste prenumerera på de APIer som används i projektet. Vilka APIer och versioner det gäller definieras på ett ställe i [`backend/src/config/api-config.ts`](backend/src/config/api-config.ts) (`APIS`), som är single source of truth.
 
 ## Utveckling
 

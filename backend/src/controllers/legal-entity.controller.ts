@@ -1,19 +1,12 @@
-import { MUNICIPALITY_ID } from '@/config';
-import { getApiBase } from '@/config/api-config';
 import { ClientBusinessInformation } from '@/interfaces/business-engagement';
-import { LegalEntity2, PersonEngagement } from '@/data-contracts/legalentity/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
-import ApiService from '@/services/api.service';
+import { Engagement, getBusinessEngagements, getBusinessInformation, mapEngagements } from '@/services/legal-entity.service';
 import authMiddleware from '@middlewares/auth.middleware';
-import { Controller, Get, QueryParam, Req, UseBefore } from 'routing-controllers';
+import { Controller, Get, HttpError, QueryParam, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
-
-export interface Engagement {
-  organizationName?: string;
-  organizationNumber?: string;
-}
+import { logger } from '@/utils/logger';
 
 interface InformationResponse {
   information: ClientBusinessInformation;
@@ -21,9 +14,6 @@ interface InformationResponse {
 
 @Controller()
 export class LegalEntityController {
-  private apiService = new ApiService();
-  private apiBase = getApiBase('legalentity');
-
   @Get('/businessengagements')
   @OpenAPI({ summary: 'Return a list of business engagements for current logged in user' })
   @UseBefore(authMiddleware)
@@ -40,47 +30,25 @@ export class LegalEntityController {
       req.destroy();
     });
 
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/engagements/person/${personNumber}`;
+    try {
+      let engagements = req.session.representingBusinessChoices;
 
-    const res = await this.apiService.get<PersonEngagement[]>({ url }, req.user);
+      if (!engagements || engagements.length <= 0) {
+        const personEngagements = await getBusinessEngagements(req.user);
+        if (!personEngagements || personEngagements.length <= 0) {
+          throw new HttpError(404, 'Not found');
+        }
+        engagements = mapEngagements(personEngagements);
+      }
 
-    if (!res.data) {
-      throw new HttpException(404, 'Not Found');
+      return { data: engagements, message: 'success' };
+    } catch (error) {
+      if (error instanceof HttpError && error.httpCode === 404) {
+        throw new HttpException(404, 'Not found');
+      }
+      logger.error('Error getting business engagements', error);
+      throw new HttpException(500, 'Internal server error');
     }
-
-    const engagements: Engagement[] = res.data
-      .filter(e => e?.name && e?.organizationNumber)
-      .map(e => ({
-        organizationName: e?.name,
-        organizationNumber: e?.organizationNumber,
-      }));
-
-    // NOTE: set representing to session so we can use it to lookup later
-    req.session.representingBusinessChoices = engagements ?? [];
-
-    return { data: engagements, message: 'success' };
-  }
-
-  async getGuid(organizationNumber: string, user: RequestWithUser['user']): Promise<string> {
-    const guidUrl = `${this.apiBase}/${MUNICIPALITY_ID}/${organizationNumber}/guid`;
-    const guidRes = await this.apiService.get<string>({ url: guidUrl }, user);
-
-    if (!guidRes.data) {
-      throw new HttpException(404, 'Not Found');
-    }
-
-    return guidRes.data;
-  }
-
-  async getLegalEntity(guid: string, user: RequestWithUser['user']): Promise<LegalEntity2> {
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/${guid}`;
-    const res = await this.apiService.get<LegalEntity2>({ url }, user);
-
-    if (!res.data) {
-      throw new HttpException(404, 'Not Found');
-    }
-
-    return res.data;
   }
 
   @Get('/businessinformation')
@@ -104,23 +72,8 @@ export class LegalEntityController {
       throw new HttpException(500, 'Internal Server Error - Data not complete');
     }
 
-    const guid = await this.getGuid(engagement.organizationNumber, req.user);
-    const legalEntity = await this.getLegalEntity(guid, req.user);
-    const address = legalEntity?.postAddress;
+    const information = await getBusinessInformation(engagement.organizationNumber, req.user);
 
-    const responseData: InformationResponse = {
-      information: {
-        companyLocation: legalEntity
-          ? {
-              city: address?.city ?? '',
-              street: address?.address1 ?? '',
-              postcode: address?.postalCode ?? '',
-              careOf: address?.coAdress ?? '',
-            }
-          : undefined,
-      },
-    };
-
-    return { data: responseData, message: 'success' };
+    return { data: { information }, message: 'success' };
   }
 }

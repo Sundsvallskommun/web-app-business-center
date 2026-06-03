@@ -1,0 +1,28 @@
+name: Backend Tests
+
+on: [workflow_dispatch, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    name: Jest unit tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn --frozen-lockfile --silent --network-timeout 1000000
+
+      - name: Type check
+        run: yarn type-check
+
+      - name: Run tests
+        run: yarn test

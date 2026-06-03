@@ -1,4 +1,4 @@
-import { MUNICIPALITY_ID } from '@/config';
+import { MUNICIPALITY_ID, USE_DECISIONS } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { Decision, DecisionDecisionTypeEnum } from '@/data-contracts/case-data/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
@@ -18,6 +18,8 @@ interface PageDecision {
 
 export interface ClientDecision {
   id?: number;
+  errandId?: number;
+  errandNumber?: string;
   decisionType?: string;
   decisionOutcome?: string;
   description?: string;
@@ -40,6 +42,8 @@ export class DecisionsController {
   private toClientDecision = (decision: Decision): ClientDecision => {
     return {
       id: decision.id,
+      errandId: decision.errandId,
+      errandNumber: decision.errandNumber,
       decisionType: decision.decisionType,
       decisionOutcome: decision.decisionOutcome,
       description: decision.description,
@@ -63,6 +67,10 @@ export class DecisionsController {
   @OpenAPI({ summary: 'Return a list of decisions for current representing entity' })
   @UseBefore(authMiddleware)
   async getDecisions(@Req() req: RequestWithUser): Promise<ApiResponse<ClientDecision[]>> {
+    if (!USE_DECISIONS) {
+      return { data: [], message: 'Decisions feature disabled' };
+    }
+
     const { representing } = req.session ?? {};
 
     if (!representing) {
@@ -78,7 +86,7 @@ export class DecisionsController {
 
     try {
       const partyId = getRepresentingPartyId(representing);
-      const url = `${this.apiBase}/${MUNICIPALITY_ID}/errands/${partyId}/decisions`;
+      const url = `${this.apiBase}/${MUNICIPALITY_ID}/errands/${partyId}/decisions?sort=decisions.decidedAt,desc`;
       const params = {
         page: 0,
         size: 100,

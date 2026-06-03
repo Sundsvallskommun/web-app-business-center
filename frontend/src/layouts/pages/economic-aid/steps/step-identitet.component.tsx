@@ -334,7 +334,8 @@ export const StepIdentitet: React.FC<StepProps> = ({ onBack, onNext }) => {
                 pattern: {
                   // Avsiktligt enkelt mönster — matchar HTML5-validering.
                   // Strängare kontroll görs på backend via @IsEmail.
-                  value: /^\S+@\S+\.\S+$/,
+                  // Negerade klasser ([^\s@]) i stället för \S undviker backtracking (ReDoS).
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                   message: 'Ange en giltig e-postadress',
                 },
               })}

@@ -48,17 +48,18 @@ export const StepVagval: React.FC<StepProps> = ({ onNext }) => {
         {/*
           RadioButton.Group injicerar `flex flex-row` och en fix label-höjd, vilket
           krockar med en kort-layout. Vi roller-grupperar därför själva och låter
-          varje RadioButton bara vara markören — kortets klickbara yta är wrappern.
+          varje RadioButton bara vara markören — hela kortet är en <label> så att
+          mus- och tangentbordsaktivering går via den nativa radion.
         */}
         <div role="radiogroup" aria-labelledby="economic-aid-step-vagval-heading" className="grid gap-16 desktop:grid-cols-2">
           {KIND_OPTIONS.map((option) => {
             const checked = kind === option.value;
             const inputId = `vagvalKind-${option.value}`;
             return (
-              <div
+              <label
                 key={option.value}
+                htmlFor={inputId}
                 className={cardClass(checked)}
-                onClick={() => select(option.value)}
                 data-cy={`economic-aid-vagval-${option.value.toLowerCase()}`}
               >
                 <RadioButton
@@ -79,7 +80,7 @@ export const StepVagval: React.FC<StepProps> = ({ onNext }) => {
                     {option.helper}
                   </span>
                 </span>
-              </div>
+              </label>
             );
           })}
         </div>

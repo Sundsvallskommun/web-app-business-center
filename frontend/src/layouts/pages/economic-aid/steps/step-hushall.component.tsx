@@ -451,7 +451,8 @@ export const StepHushall: React.FC<StepProps> = ({ onBack, onNext }) => {
                     const cs = getValues('hushall.civilstand');
                     if (!cs || !CIVILSTAND_WITH_PARTNER.has(cs)) return true;
                     if (value.trim().length === 0) return true;
-                    return /^\S+@\S+\.\S+$/.test(value) || 'Ange en giltig e-postadress';
+                    // Negerade klasser ([^\s@]) i stället för \S undviker backtracking (ReDoS).
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || 'Ange en giltig e-postadress';
                   },
                 })}
               />

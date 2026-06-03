@@ -4,9 +4,9 @@ export default async function layout({
   params,
   children,
 }: {
-  params: Promise<{ assetId: string }>;
+  params: Promise<{ id: string }>;
   children: React.ReactNode;
 }) {
-  const { assetId } = await params;
-  return <AssetLayout assetId={assetId}>{children}</AssetLayout>;
+  const { id } = await params;
+  return <AssetLayout id={id}>{children}</AssetLayout>;
 }

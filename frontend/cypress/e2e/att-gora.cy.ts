@@ -10,8 +10,8 @@ const getAssetsWithExpiringPermit: (representingMode?: RepresentingMode) => ApiR
 ) => ({
   data: [
     {
+      id: 'asset-id-expiring',
       assetId: 'assetId-expiring',
-      caseReferenceIds: ['case-expiring'],
       description: `Parkeringstillstånd för funktionshindrad-${RepresentingMode[representingMode]}`,
       issued: '2021-01-01',
       origin: 'CASEDATA',
@@ -28,8 +28,8 @@ const getAssetsWithNoExpiringPermit: (representingMode?: RepresentingMode) => Ap
 ) => ({
   data: [
     {
+      id: 'asset-id-valid',
       assetId: 'assetId-valid',
-      caseReferenceIds: ['case-valid'],
       description: `Parkeringstillstånd för funktionshindrad-${RepresentingMode[representingMode]}`,
       issued: '2021-01-01',
       origin: 'CASEDATA',
@@ -110,7 +110,7 @@ describe('Att göra (Todo section)', () => {
           cy.get('a[href*="beslut-och-dokument"]').click();
         });
 
-      cy.url().should('include', '/privat/beslut-och-dokument/assetId-expiring');
+      cy.url().should('include', '/privat/beslut-och-dokument/asset-id-expiring');
     });
 
     it('should navigate to case page when clicking Till ärendet on case todo', () => {
@@ -181,7 +181,7 @@ describe('Att göra (Todo section)', () => {
         .first()
         .click({ force: true });
 
-      cy.url().should('include', '/foretag/beslut-och-dokument/assetId-expiring');
+      cy.url().should('include', '/foretag/beslut-och-dokument/asset-id-expiring');
     });
   });
 });

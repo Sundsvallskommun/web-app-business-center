@@ -1,6 +1,7 @@
 import { CardList } from '@components/cards/cards.component';
 import { useApi } from '@services/api-service';
 import { ClientDecision, getDecisionOutcomeLabel, sortDecisionsByDate } from '@services/decision-service';
+import { getCaseReference } from '@utils/case-reference';
 import { downloadBlob } from '@utils/download-blob';
 import { Button, Icon, Spinner, useThemeQueries } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
@@ -51,7 +52,10 @@ const DecisionCard: React.FC<{ item: ClientDecision }> = ({ item }) => {
                 <div className="list-item-card-content-subtitle">
                   Ärende{' '}
                   <Link
-                    href={`${getRepresentingModeRoute(representingMode)}/arenden/${item.errandId}`}
+                    href={`${getRepresentingModeRoute(representingMode)}/arenden/${getCaseReference({
+                      errandNumber: item.errandNumber,
+                      caseId: item.errandId?.toString(),
+                    })}`}
                     className="text-secondary underline"
                   >
                     {item.errandNumber}

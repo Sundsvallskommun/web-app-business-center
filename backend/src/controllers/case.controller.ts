@@ -46,6 +46,11 @@ const systemIsAllowed = (c: CaseStatusResponse) => allowedSystems.has(c.system);
 
 const caseIsallowed = (c: CaseStatusResponse) => namespaceIsallowed(c) || (typeof c.namespace === 'undefined' && systemIsAllowed(c));
 
+// A case is referenced in URLs by its human-readable errandNumber (ärendenummer) when available,
+// and otherwise by its internal caseId (e.g. OpenE cases, which have no errandNumber).
+// Internal callers pass an actual caseId, which still matches here.
+const caseMatchesReference = (c: CaseStatusResponse, reference: string) => c.errandNumber === reference || c.caseId === reference;
+
 @Controller()
 export class CaseController {
   private apiService = new ApiService();
@@ -90,7 +95,7 @@ export class CaseController {
     } else {
       cases = req.session.cache?.cases?.PRIVATE ?? null;
     }
-    return cases?.find(c => c.caseId === caseId) ?? null;
+    return cases?.find(c => caseMatchesReference(c, caseId)) ?? null;
   }
 
   private conversationInit(user: User) {
@@ -304,7 +309,7 @@ export class CaseController {
         throw new HttpException(500, 'No data from API');
       }
 
-      const _case = res.data.filter(caseIsallowed).find(c => c.caseId === caseId);
+      const _case = res.data.filter(caseIsallowed).find(c => caseMatchesReference(c, caseId));
 
       if (_case === undefined) {
         throw new HttpException(404, 'Case not found');

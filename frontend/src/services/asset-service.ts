@@ -41,7 +41,7 @@ export const formatAssetValidity = (
   const issued = formatAssetDate(asset?.issued);
   const validTo = formatAssetDate(asset?.validTo);
 
-  if (issued && validTo) return `${issued} – ${validTo}`;
+  if (issued && validTo) return `${issued} - ${validTo}`;
   if (validTo) return t('decisions:asset.validity.until', { date: validTo });
   if (issued) return t('decisions:asset.validity.indefiniteFrom', { date: issued });
   return t('decisions:asset.validity.indefinite');

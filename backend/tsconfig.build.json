@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "src/http", "src/logs", "src/tests", "src/data-contracts/*/swagger.json"]
+}

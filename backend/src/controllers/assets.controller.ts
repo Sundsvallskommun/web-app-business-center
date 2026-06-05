@@ -1,6 +1,13 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { AddressAddressCategoryEnum, Attachment, Errand, Stakeholder, StakeholderTypeEnum } from '@/data-contracts/case-data/data-contracts';
+import {
+  AddressAddressCategoryEnum,
+  Attachment,
+  AttachmentChannelEnum,
+  Errand,
+  Stakeholder,
+  StakeholderTypeEnum,
+} from '@/data-contracts/case-data/data-contracts';
 import { Asset } from '@/data-contracts/partyassets/data-contracts';
 import { AssetWithService } from '@/interfaces/asset.interface';
 import { AttachmentCategory, CaseDataNamespace, ParkingPermitCaseType, StakeholderRole } from '@/interfaces/casedata.interface';
@@ -60,6 +67,7 @@ export class AssetsController {
           mimeType: file.mimetype,
           file: file.buffer.toString('base64'),
           note: options.note,
+          channel: AttachmentChannelEnum.MY_PAGES,
         };
         return this.apiService.post<Attachment, Attachment>({ url: attachmentUrl, baseURL, data: attachmentData }, user);
       }),

@@ -6,11 +6,11 @@ export const APIS = [
   },
   {
     name: 'case-data',
-    version: '12.3',
+    version: '12.5',
   },
   {
     name: 'supportmanagement',
-    version: '12.4',
+    version: '14.8',
   },
   {
     name: 'webmessagecollector',

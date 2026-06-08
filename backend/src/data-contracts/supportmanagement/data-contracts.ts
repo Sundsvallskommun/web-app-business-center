@@ -161,7 +161,46 @@ export interface Label {
    * @pattern [A-Z0-9_]+
    */
   resourceName: string;
+  /**
+   * Indicates if the label is deprecated
+   * @default false
+   */
+  deprecated?: boolean;
   labels?: Label[];
+  /** Free-form key/value data owned by the client. Stored and returned as-is by the service, which does not interpret the contents (apart from rejecting duplicate keys per label). Keys are conventions agreed between clients (e.g. 'escalationEmail'). */
+  attributes?: LabelAttribute[];
+}
+
+/** Label attribute model. Free-form key/value data owned by the client; not interpreted by the service. Keys are conventions agreed between clients (e.g. 'escalationEmail'). */
+export interface LabelAttribute {
+  /**
+   * Attribute key
+   * @minLength 1
+   */
+  key: string;
+  /**
+   * Attribute value
+   * @minLength 1
+   */
+  value: string;
+}
+
+/** Message exchange worker config model */
+export interface MessageExchangeIntegration {
+  /** Status on errand that will trigger a status change when a new incoming message refers to an existing errand */
+  triggerStatusChangeOn?: string | null;
+  /** Status that will be set on errand if status change is triggered. Can only be null if 'triggerStatusChangeOn' is null. */
+  statusChangeTo?: string | null;
+  /**
+   * Timestamp when the configuration was created
+   * @format date-time
+   */
+  created?: string;
+  /**
+   * Timestamp when the configuration was last modified
+   * @format date-time
+   */
+  modified?: string;
 }
 
 /** Email integration config model */
@@ -184,7 +223,7 @@ export interface EmailIntegration {
    * Number of days before incoming mail is rejected. Measured from when the errand was last touched. Rejection can only occur if status on errand equals 'inactiveStatus'.
    * @format int32
    */
-  daysOfInactivityBeforeReject?: number | string | null;
+  daysOfInactivityBeforeReject?: string | null;
   /** Status set on errand when email results in a new errand */
   statusForNew: string;
   /** Status on errand that will trigger a status change when email refers to an existing errand */
@@ -194,7 +233,7 @@ export interface EmailIntegration {
   /** Status of an inactive errand. This value relates to property 'daysOfInactivityBeforeReject'. If set to null, no rejection mail will be sent */
   inactiveStatus?: string | null;
   /** If true sender is added as stakeholder */
-  addSenderAsStakeholder?: boolean | string | null;
+  addSenderAsStakeholder?: string | null;
   /** Role set on stakeholder. */
   stakeholderRole?: string | null;
   /** Channel set on created errands */
@@ -238,6 +277,125 @@ export interface MessageExchangeSync {
   active: boolean;
 }
 
+/** Filter on event type/subtype, used to limit which eventlog events trigger a notification */
+export interface EventFilter {
+  /**
+   * Event type. Matches the eventlog EventType enum.
+   * @minLength 1
+   * @pattern ^(CREATE|READ|UPDATE|DELETE|ACCESS|EXECUTE|CANCEL|DROP)$
+   */
+  type: EventFilterTypeEnum;
+  /**
+   * Event subtype. If null, all subtypes of the given type match.
+   * @minLength 0
+   * @maxLength 64
+   */
+  subtype?: string;
+}
+
+/** Identifier describing a user or subject (AD-account or party-id) */
+export interface Identifier {
+  /**
+   * Identifier type
+   * @minLength 1
+   * @pattern ^(adAccount|partyId)$
+   */
+  type: IdentifierTypeEnum;
+  /**
+   * Identifier value (AD-account name or partyId UUID)
+   * @minLength 0
+   * @maxLength 255
+   */
+  value: string;
+}
+
+/** Channel a subscriber wants to receive notifications on */
+export interface NotificationChannel {
+  /** Channel type */
+  type: NotificationChannelTypeEnum;
+  /**
+   * Optional destination override (e.g. an alternative e-mail address or phone number). If omitted, the default destination derived from the subscriber's identifier is used.
+   * @minLength 0
+   * @maxLength 255
+   */
+  destination?: string;
+}
+
+/** A subscriber describes who receives notifications, which channels they prefer, and which event types they are interested in. */
+export interface Subscriber {
+  /** Unique identifier of the subscriber */
+  id?: string;
+  /**
+   * Optional human-readable label. Useful when a person has several subscribers (e.g. one per role or purpose).
+   * @minLength 0
+   * @maxLength 255
+   */
+  name?: string;
+  /** Identifier of the principal that ultimately receives notifications (AD-account or partyId). Immutable once created. */
+  identifier?: Identifier;
+  /** Channels the subscriber wants to receive notifications on. If empty, defaults to INTERNAL. */
+  channels?: NotificationChannel[];
+  /** Event filters that restrict which eventlog events trigger notifications. If empty, all events match. */
+  eventFilters?: EventFilter[];
+  /**
+   * When the subscriber's notifications are paused from (inclusive). Null means not paused.
+   * @format date-time
+   */
+  pausedFrom?: string;
+  /**
+   * When the subscriber's notifications resume (exclusive). Null means paused indefinitely (only meaningful if pausedFrom is set).
+   * @format date-time
+   */
+  pausedUntil?: string;
+  /**
+   * Timestamp when the subscriber was created
+   * @format date-time
+   */
+  created?: string;
+  /**
+   * Timestamp when the subscriber was last modified
+   * @format date-time
+   */
+  modified?: string;
+  /** Identifier of the principal that created the subscriber */
+  createdBy?: Identifier;
+  /**
+   * Number of subscriptions currently owned by this subscriber
+   * @format int32
+   */
+  subscriptionCount?: number;
+}
+
+/** A subscription describes what a subscriber is listening for (an errand or all events in a namespace). Subscriptions support create and delete only — to change what is being listened to, delete and create a new one. */
+export interface Subscription {
+  /** Unique identifier of the subscription */
+  id?: string;
+  /** What this subscription targets (an errand or the whole namespace). */
+  target?: SubscriptionTarget;
+  /** Optional per-subscription override of the subscriber-level event filters. When set, these filters apply to events matched by this subscription instead of the subscriber's global filters. When null or empty, the subscriber-level filters are used as-is. */
+  eventFilters?: EventFilter[];
+  /**
+   * Optional expiration timestamp. After this point the subscription is eligible for automatic cleanup.
+   * @format date-time
+   */
+  expiresAt?: string;
+  /**
+   * Timestamp when the subscription was created
+   * @format date-time
+   */
+  created?: string;
+  /** Identifier of the principal that created the subscription (may differ from the owning subscriber, e.g. when an admin subscribes on behalf of someone else). */
+  createdBy?: Identifier;
+}
+
+/** What a subscription targets. The id field is required when type=ERRAND and ignored when type=NAMESPACE. */
+export interface SubscriptionTarget {
+  /** Target type */
+  type: SubscriptionTargetTypeEnum;
+  /** Identifier of the target. Required (errand UUID) when type=ERRAND. Must be null when type=NAMESPACE. */
+  id?: string;
+}
+
 /** Status model */
 export interface Status {
   /** Status ID */
@@ -256,6 +414,11 @@ export interface Status {
    * @format int32
    */
   sortOrder?: number | null;
+  /**
+   * Indicates if the status is deprecated
+   * @default false
+   */
+  deprecated?: boolean;
   /**
    * Timestamp when the status was created
    * @format date-time
@@ -284,6 +447,11 @@ export interface Role {
    * @format int32
    */
   sortOrder?: number | null;
+  /**
+   * Indicates if the role is deprecated
+   * @default false
+   */
+  deprecated?: boolean;
   /**
    * Timestamp when the role was created
    * @format date-time
@@ -319,6 +487,11 @@ export interface Phase {
   /** Transitions from this phase */
   transitions?: PhaseTransition[];
   /**
+   * Indicates if the phase is deprecated
+   * @default false
+   */
+  deprecated?: boolean;
+  /**
    * Timestamp when the phase was created
    * @format date-time
    */
@@ -345,6 +518,11 @@ export interface PhaseTransition {
   targetPhaseDisplayName?: string;
   /** Description of the transition */
   description?: string;
+  /**
+   * Indicates if the phase transition is deprecated
+   * @default false
+   */
+  deprecated?: boolean;
 }
 
 /** ExternalIdType model */
@@ -363,6 +541,11 @@ export interface ExternalIdType {
    * @format int32
    */
   sortOrder?: number | null;
+  /**
+   * Indicates if the external ID type is deprecated
+   * @default false
+   */
+  deprecated?: boolean;
   /**
    * Timestamp when the external id type was created
    * @format date-time
@@ -392,6 +575,11 @@ export interface ContactReason {
    */
   sortOrder?: number | null;
   /**
+   * Indicates if the contact reason is deprecated
+   * @default false
+   */
+  deprecated?: boolean;
+  /**
    * Timestamp when the contact reason was created
    * @format date-time
    */
@@ -416,6 +604,11 @@ export interface Category {
    * @format int32
    */
   sortOrder?: number | null;
+  /**
+   * Indicates if the category is deprecated
+   * @default false
+   */
+  deprecated?: boolean;
   /** @uniqueItems true */
   types?: Type[];
   /**
@@ -444,6 +637,11 @@ export interface Type {
    * @format email
    */
   escalationEmail?: string;
+  /**
+   * Indicates if the type is deprecated
+   * @default false
+   */
+  deprecated?: boolean;
   /**
    * Timestamp when type was created
    * @format date-time
@@ -619,6 +817,10 @@ export interface JsonNode {
   number?: boolean;
   string?: boolean;
   boolean?: boolean;
+  valueNode?: boolean;
+  container?: boolean;
+  missingNode?: boolean;
+  nodeType?: JsonNodeNodeTypeEnum;
   integralNumber?: boolean;
   pojo?: boolean;
   floatingPointNumber?: boolean;
@@ -631,10 +833,6 @@ export interface JsonNode {
   /** @deprecated */
   textual?: boolean;
   binary?: boolean;
-  valueNode?: boolean;
-  container?: boolean;
-  missingNode?: boolean;
-  nodeType?: JsonNodeNodeTypeEnum;
   embeddedValue?: boolean;
 }
 
@@ -909,20 +1107,6 @@ export interface ConversationRequest {
   metadata?: KeyValues[];
 }
 
-/** Identifier model */
-export interface Identifier {
-  /**
-   * The conversation identifier type
-   * @pattern ^(adAccount|partyId)$
-   */
-  type?: string;
-  /**
-   * The conversation identifier value
-   * @minLength 1
-   */
-  value: string;
-}
-
 /** KeyValues model */
 export interface KeyValues {
   /** The key */
@@ -1063,40 +1247,40 @@ export interface MetadataResponse {
 }
 
 export interface PageErrand {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
   /** @format int32 */
   size?: number;
   content?: Errand[];
   /** @format int32 */
   number?: number;
-  pageable?: PageableObject;
   first?: boolean;
   last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   sort?: SortObject;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
 export interface PageableObject {
   /** @format int64 */
   offset?: number;
+  sort?: SortObject;
+  unpaged?: boolean;
   paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
-  unpaged?: boolean;
-  sort?: SortObject;
 }
 
 export interface SortObject {
   empty?: boolean;
-  sorted?: boolean;
   unsorted?: boolean;
+  sorted?: boolean;
 }
 
 /** Revision model */
@@ -1199,10 +1383,18 @@ export interface MetaData {
 
 /** Event model */
 export interface Event {
+  /** Unique identifier for the event */
+  id?: string;
   /** Type of event */
   type?: EventType;
-  /** Event description */
+  /** Subtype describing what kind of entity the event refers to */
+  subType?: string;
+  /** Groups related events and notifications together within one operation */
+  requestGroupId?: string;
+  /** Short event description */
   message?: string;
+  /** Detailed event description */
+  details?: string;
   /** Service that created event */
   owner?: string;
   /**
@@ -1226,21 +1418,21 @@ export interface EventMetaData {
 }
 
 export interface PageEvent {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
   /** @format int32 */
   size?: number;
   content?: Event[];
   /** @format int32 */
   number?: number;
-  pageable?: PageableObject;
   first?: boolean;
   last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   sort?: SortObject;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
@@ -1333,21 +1525,21 @@ export interface Message {
 }
 
 export interface PageMessage {
-  /** @format int32 */
-  totalPages?: number;
   /** @format int64 */
   totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
   /** @format int32 */
   size?: number;
   content?: Message[];
   /** @format int32 */
   number?: number;
-  pageable?: PageableObject;
   first?: boolean;
   last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   sort?: SortObject;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
@@ -1370,6 +1562,8 @@ export interface ErrandAttachment {
   fileName?: string;
   /** Mime type of the file */
   mimeType?: string;
+  /** The channel the attachment was received via */
+  channel?: ErrandAttachmentChannelEnum;
   /**
    * The attachment created date
    * @format date-time
@@ -1380,6 +1574,45 @@ export interface ErrandAttachment {
 export interface CountResponse {
   /** @format int64 */
   count?: number;
+}
+
+/**
+ * Event type. Matches the eventlog EventType enum.
+ * @minLength 1
+ * @pattern ^(CREATE|READ|UPDATE|DELETE|ACCESS|EXECUTE|CANCEL|DROP)$
+ */
+export enum EventFilterTypeEnum {
+  CREATE = "CREATE",
+  READ = "READ",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+  ACCESS = "ACCESS",
+  EXECUTE = "EXECUTE",
+  CANCEL = "CANCEL",
+  DROP = "DROP",
+}
+
+/**
+ * Identifier type
+ * @minLength 1
+ * @pattern ^(adAccount|partyId)$
+ */
+export enum IdentifierTypeEnum {
+  AdAccount = "adAccount",
+  PartyId = "partyId",
+}
+
+/** Channel type */
+export enum NotificationChannelTypeEnum {
+  INTERNAL = "INTERNAL",
+  EMAIL = "EMAIL",
+  SMS = "SMS",
+}
+
+/** Target type */
+export enum SubscriptionTargetTypeEnum {
+  ERRAND = "ERRAND",
+  NAMESPACE = "NAMESPACE",
 }
 
 export enum JsonNodeNodeTypeEnum {
@@ -1411,4 +1644,12 @@ export enum CommunicationCommunicationTypeEnum {
 export enum MessageTypeEnum {
   USER_CREATED = "USER_CREATED",
   SYSTEM_CREATED = "SYSTEM_CREATED",
+}
+
+/** The channel the attachment was received via */
+export enum ErrandAttachmentChannelEnum {
+  EMAIL = "EMAIL",
+  ESERVICE = "ESERVICE",
+  WEB_UI = "WEB_UI",
+  MY_PAGES = "MY_PAGES",
 }

@@ -1,4 +1,4 @@
-import { Message, MessageResponseDirectionEnum, MessageTypeEnum } from '@/data-contracts/case-data/data-contracts';
+import { AttachmentResponse, Message, MessageResponseDirectionEnum, MessageTypeEnum } from '@/data-contracts/case-data/data-contracts';
 import { CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
@@ -14,10 +14,10 @@ const allowedNamespaces: ReadonlySet<string> = new Set([
   CaseDataNamespace.SBK_PARKING_PERMIT,
   CaseDataNamespace.CONTACTSUNDSVALL,
 ]);
-const namespaceIsAllowed = (c: CaseStatusResponse): boolean => allowedNamespaces.has(c.namespace);
+const namespaceIsAllowed = (c: CaseStatusResponse): boolean => !!c?.namespace && allowedNamespaces.has(c.namespace);
 
 const allowedSystems: ReadonlySet<string> = new Set(['OPEN_E_PLATFORM', 'BYGGR']);
-const systemIsAllowed = (c: CaseStatusResponse): boolean => allowedSystems.has(c.system);
+const systemIsAllowed = (c: CaseStatusResponse): boolean => !!c?.system && allowedSystems.has(c.system);
 
 // A case is shown when its namespace is whitelisted, or — when it has no
 // namespace at all — when its originating system is whitelisted.
@@ -62,15 +62,23 @@ export const buildMessagingWebMessageRequest = (
 });
 
 // --- Message normalization ---------------------------------------------------
+// The standard identifier types are camelCase; the uppercase variants are kept
+// as an exception for sources that still emit them.
+const citizenCreatedKeys = ['partyId', 'PARTY_ID'];
+const adUserCreatedKeys = ['adAccount', 'AD_ACCOUNT'];
 
 // From a batch of conversation messages, the distinct sender identifiers that
 // need a name lookup, split by identifier type (AD users vs. citizens).
 export const collectSenderIdentifiers = (messages: MessageWithConversationId<Message>[]): { adUsernames: string[]; citizenPartyIds: string[] } => ({
   adUsernames: Array.from(
-    new Set(messages.filter(msg => msg.createdBy?.type === 'AD_ACCOUNT' && msg?.createdBy?.value).map(msg => msg.createdBy?.value ?? '')),
+    new Set(
+      messages.filter(msg => adUserCreatedKeys.includes(msg.createdBy?.type ?? '') && msg?.createdBy?.value).map(msg => msg.createdBy?.value ?? ''),
+    ),
   ),
   citizenPartyIds: Array.from(
-    new Set(messages.filter(msg => msg.createdBy?.type === 'PARTY_ID' && msg?.createdBy?.value).map(msg => msg.createdBy?.value ?? '')),
+    new Set(
+      messages.filter(msg => citizenCreatedKeys.includes(msg.createdBy?.type ?? '') && msg?.createdBy?.value).map(msg => msg.createdBy?.value ?? ''),
+    ),
   ),
 });
 
@@ -78,7 +86,7 @@ export const collectSenderIdentifiers = (messages: MessageWithConversationId<Mes
 // shape, resolving the sender name from a pre-fetched identifier -> name map.
 export const toFrontendMessage = (msg: MessageWithConversationId<Message>, nameMap: Record<string, string>, user: User): FrontendMessageResponse => {
   let sender = '';
-  if (msg?.createdBy?.type === 'PARTY_ID' && msg?.createdBy?.value === user.partyId) {
+  if (citizenCreatedKeys.includes(msg?.createdBy?.type ?? '') && msg?.createdBy?.value === user.partyId) {
     sender = user.name;
   } else {
     sender = (msg.createdBy?.value && nameMap[msg.createdBy?.value]) ?? 'Okänd avsändare';
@@ -89,7 +97,7 @@ export const toFrontendMessage = (msg: MessageWithConversationId<Message>, nameM
     message: msg.content,
     sent: msg.created,
     sender,
-    direction: msg?.createdBy?.type === 'PARTY_ID' ? 'INBOUND' : 'OUTBOUND',
+    direction: citizenCreatedKeys.includes(msg?.createdBy?.type ?? '') ? 'INBOUND' : 'OUTBOUND',
     attachments: msg.attachments?.map(attachment => ({
       attachmentId: attachment.id?.toString() ?? '',
       name: attachment.fileName,
@@ -103,16 +111,22 @@ export const normalizeWebMessageCollectorMessages = (messages: MessageDTO[]): Fr
   messages.map(message => ({
     // FIXME: Finns conversationId i webmessagecollector?
     conversationId: '',
-    messageId: message.messageId,
+    messageId: message.messageId ?? '',
     direction: message.direction === 'OUTBOUND' ? MessageResponseDirectionEnum.OUTBOUND : MessageResponseDirectionEnum.INBOUND,
-    message: message.message,
-    sent: message.sent,
-    sender: `${message.firstName} ${message.lastName}`,
-    attachments: message.attachments.map(attachment => ({
-      attachmentId: `${attachment.attachmentId}`,
-      name: attachment.name,
-      contentType: attachment.mimeType,
-    })),
+    message: message.message ?? '',
+    sent: message.sent ?? '',
+    sender: `${message.firstName ?? ''} ${message.lastName ?? ''}`,
+    attachments:
+      message.attachments
+        ?.filter(a => a && a.attachmentId != null && a.name)
+        .map(
+          attachment =>
+            ({
+              attachmentId: `${attachment.attachmentId}`,
+              name: attachment.name,
+              contentType: attachment.mimeType,
+            } as AttachmentResponse),
+        ) || [],
   }));
 
 // Of the freshly fetched messages, the user-created ones not already seen,

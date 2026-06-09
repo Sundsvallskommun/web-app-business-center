@@ -24,7 +24,7 @@ const convMessage = (overrides: Partial<MessageWithConversationId<Message>> = {}
     created: '2025-01-01T00:00:00Z',
     conversationId: 'c1',
     type: MessageTypeEnum.USER_CREATED,
-    createdBy: { type: 'PARTY_ID', value: 'party-other' },
+    createdBy: { type: 'partyId', value: 'party-other' },
     ...overrides,
   } as MessageWithConversationId<Message>);
 
@@ -84,11 +84,23 @@ describe('case.service', () => {
   describe('collectSenderIdentifiers', () => {
     it('splits distinct senders by identifier type and ignores empty/other values', () => {
       const messages = [
-        convMessage({ createdBy: { type: 'AD_ACCOUNT', value: 'ad1' } }),
-        convMessage({ createdBy: { type: 'AD_ACCOUNT', value: 'ad1' } }), // duplicate
-        convMessage({ createdBy: { type: 'PARTY_ID', value: 'p1' } }),
-        convMessage({ createdBy: { type: 'PARTY_ID', value: '' } }), // empty value
+        convMessage({ createdBy: { type: 'adAccount', value: 'ad1' } }),
+        convMessage({ createdBy: { type: 'adAccount', value: 'ad1' } }), // duplicate
+        convMessage({ createdBy: { type: 'partyId', value: 'p1' } }),
+        convMessage({ createdBy: { type: 'partyId', value: '' } }), // empty value
         convMessage({ createdBy: undefined }), // no createdBy
+      ];
+
+      expect(collectSenderIdentifiers(messages)).toEqual({
+        adUsernames: ['ad1'],
+        citizenPartyIds: ['p1'],
+      });
+    });
+
+    it('buckets the uppercase identifier types the same as the camelCase ones', () => {
+      const messages = [
+        convMessage({ createdBy: { type: 'AD_ACCOUNT', value: 'ad1' } }),
+        convMessage({ createdBy: { type: 'PARTY_ID', value: 'p1' } }),
       ];
 
       expect(collectSenderIdentifiers(messages)).toEqual({
@@ -100,23 +112,30 @@ describe('case.service', () => {
 
   describe('toFrontendMessage', () => {
     it("uses the logged in user's own name when they are the sender", () => {
-      const msg = convMessage({ createdBy: { type: 'PARTY_ID', value: 'party-me' } });
+      const msg = convMessage({ createdBy: { type: 'partyId', value: 'party-me' } });
       expect(toFrontendMessage(msg, {}, mockUser).sender).toBe('Test Testsson');
     });
 
     it('resolves other senders from the name map', () => {
-      const msg = convMessage({ createdBy: { type: 'PARTY_ID', value: 'party-other' } });
+      const msg = convMessage({ createdBy: { type: 'partyId', value: 'party-other' } });
       expect(toFrontendMessage(msg, { 'party-other': 'Other Person' }, mockUser).sender).toBe('Other Person');
     });
 
     it('falls back to "Okänd avsändare" when the sender is unknown', () => {
-      const msg = convMessage({ createdBy: { type: 'AD_ACCOUNT', value: 'missing' } });
+      const msg = convMessage({ createdBy: { type: 'adAccount', value: 'missing' } });
       expect(toFrontendMessage(msg, {}, mockUser).sender).toBe('Okänd avsändare');
     });
 
-    it('marks PARTY_ID senders as INBOUND and others as OUTBOUND', () => {
+    it('marks partyId senders as INBOUND and others as OUTBOUND', () => {
+      expect(toFrontendMessage(convMessage({ createdBy: { type: 'partyId', value: 'x' } }), {}, mockUser).direction).toBe('INBOUND');
+      expect(toFrontendMessage(convMessage({ createdBy: { type: 'adAccount', value: 'x' } }), {}, mockUser).direction).toBe('OUTBOUND');
+    });
+
+    it('also handles the uppercase PARTY_ID/AD_ACCOUNT variants', () => {
       expect(toFrontendMessage(convMessage({ createdBy: { type: 'PARTY_ID', value: 'x' } }), {}, mockUser).direction).toBe('INBOUND');
       expect(toFrontendMessage(convMessage({ createdBy: { type: 'AD_ACCOUNT', value: 'x' } }), {}, mockUser).direction).toBe('OUTBOUND');
+      // own message via uppercase PARTY_ID resolves to the logged in user's name
+      expect(toFrontendMessage(convMessage({ createdBy: { type: 'PARTY_ID', value: 'party-me' } }), {}, mockUser).sender).toBe('Test Testsson');
     });
 
     it('maps message fields and attachments to the frontend shape', () => {
@@ -166,6 +185,24 @@ describe('case.service', () => {
     it('stringifies attachment ids', () => {
       const result = normalizeWebMessageCollectorMessages([dto({ attachments: [{ attachmentId: 7, name: 'f.png', mimeType: 'image/png' }] })]);
       expect(result[0].attachments).toEqual([{ attachmentId: '7', name: 'f.png', contentType: 'image/png' }]);
+    });
+
+    it('keeps attachments without a mime type (contentType undefined) but drops those missing id or name', () => {
+      const result = normalizeWebMessageCollectorMessages([
+        dto({
+          attachments: [
+            { attachmentId: 1, name: 'no-mime.bin' }, // kept, contentType undefined
+            { attachmentId: 0, name: 'zero-id.txt', mimeType: 'text/plain' }, // kept, id 0 is valid
+            { name: 'no-id.txt', mimeType: 'text/plain' }, // dropped, missing id
+            { attachmentId: 2, mimeType: 'text/plain' }, // dropped, missing name
+            null as never, // dropped, null entry
+          ],
+        }),
+      ]);
+      expect(result[0].attachments).toEqual([
+        { attachmentId: '1', name: 'no-mime.bin', contentType: undefined },
+        { attachmentId: '0', name: 'zero-id.txt', contentType: 'text/plain' },
+      ]);
     });
   });
 

@@ -31,8 +31,9 @@ import { buildMyPagesErrand } from '@/utils/casedata-errand-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
 import { apiURL } from '@/utils/util';
+import { AssetsApiResponse } from '@/responses/asset.response';
 import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
-import { OpenAPI } from 'routing-controllers-openapi';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 interface AttachmentOptions {
   category: AttachmentCategory;
@@ -138,6 +139,7 @@ export class AssetsController {
 
   @Get('/assets')
   @OpenAPI({ summary: 'Return a list of assets for current representing entity' })
+  @ResponseSchema(AssetsApiResponse)
   @UseBefore(authMiddleware)
   async getAssets(@Req() req: RequestWithUser): Promise<ApiResponse<AssetWithService[]>> {
     const { representing } = req.session ?? {};

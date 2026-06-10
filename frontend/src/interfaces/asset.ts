@@ -1,4 +1,4 @@
-import { Asset } from '@data-contracts/partyassets/data-contracts';
+import { Asset } from '@data-contracts/backend/data-contracts';
 
 // Human-readable detail of a service-style asset (e.g. paratransit), resolved by
 // the BFF from the asset's json parameter form data against its RJSF schema.

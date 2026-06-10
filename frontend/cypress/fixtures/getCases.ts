@@ -1,4 +1,4 @@
-import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { CaseStatusResponse } from '@data-contracts/backend/data-contracts';
 import { RepresentingMode } from '@interfaces/app';
 import { ApiResponse } from '@services/api-service';
 import { representingModeDefault } from 'cypress/support/e2e';

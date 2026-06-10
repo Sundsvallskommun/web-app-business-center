@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppContext } from '@contexts/app.context';
-import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { CaseStatusResponse } from '@data-contracts/backend/data-contracts';
 import { FrontendMessageResponse, ICaseStatusResponse } from '@interfaces/case';
 import { PagesBreadcrumbsLayout } from '@layouts/pages-breadcrumbs-layout.component';
 import { useApi } from '@services/api-service';

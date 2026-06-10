@@ -22,11 +22,8 @@ echo "Replacing runtime environment variables..."
 echo "Running as user: $(id)"
 
 # --- Non NEXT_PUBLIC vars (explicit placeholders) ---
+# Note: base path is baked at build time (see .env-cicd), not replaced here.
 replace_in_next "DOMAIN_NAME_PLACEHOLDER" "${DOMAIN_NAME:-__UNSET__}"
-# Base path: the leading slash is part of the placeholder token so an empty
-# BASE_PATH (root deploy) removes it cleanly. Set BASE_PATH="" for the root, or
-# "/segment" (WITH leading slash) for a sub-path. Defaults to root.
-replace_in_next "/BASE_PATH_PLACEHOLDER" "${BASE_PATH:-}"
 replace_in_next "HEALTH_USERNAME_PLACEHOLDER" "${HEALTH_USERNAME:-__UNSET__}"
 replace_in_next "HEALTH_PASSWORD_PLACEHOLDER" "${HEALTH_PASSWORD:-__UNSET__}"
 
@@ -40,7 +37,6 @@ done
 # sed -i can't write temp files in /app, so process via /tmp and copy back
 echo "Preparing server.js..."
 cp /app/server.js /tmp/server.js
-sed -i "s|/BASE_PATH_PLACEHOLDER|${BASE_PATH:-}|g" /tmp/server.js
 env | grep '^NEXT_PUBLIC_' | while IFS='=' read -r name value; do
   sed -i "s|${name}_PLACEHOLDER|${value}|g" /tmp/server.js
 done

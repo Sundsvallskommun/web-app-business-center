@@ -88,14 +88,19 @@ const samlStrategy = new Strategy(
   },
   async function (profile: Profile, done: VerifiedCallback) {
     if (!profile) {
+      logger.error('SAML verify: no profile returned in assertion');
       return done({
         name: 'SAML_MISSING_PROFILE',
         message: 'SAML_MISSING_PROFILE',
       });
     }
+    logger.info(`SAML verify: assertion attribute keys: [${Object.keys(profile).join(', ')}]`);
     const { firstname: givenName, Surname: surname, citizenIdentifier } = profile;
 
     if (!givenName || !surname || !citizenIdentifier) {
+      logger.error(
+        `SAML verify: missing required attributes — firstname=${!!givenName}, Surname=${!!surname}, citizenIdentifier=${!!citizenIdentifier}`,
+      );
       return done(null, null, {
         name: 'SAML_MISSING_ATTRIBUTES',
         message: 'SAML_MISSING_ATTRIBUTES',
@@ -106,6 +111,7 @@ const samlStrategy = new Strategy(
       const apiBase = getApiBase('citizen');
       const personNumber = profile.citizenIdentifier;
       const url = `${apiBase}/${MUNICIPALITY_ID}/${personNumber}/guid`;
+      logger.info(`SAML verify: looking up citizen guid at "${url}"`);
       const citizenResult = await apiService.get<any>(
         { url },
         {
@@ -114,8 +120,10 @@ const samlStrategy = new Strategy(
         },
       );
       const { data: personId } = citizenResult;
+      logger.info(`SAML verify: citizen lookup ok, personId present=${!!personId}`);
 
       if (!personId) {
+        logger.error('SAML verify: citizen lookup returned no personId');
         return done({
           name: 'SAML_CITIZEN_FAILED',
           message: 'Failed to fetch user from Citizen API',
@@ -147,6 +155,9 @@ const samlStrategy = new Strategy(
       }
       done(null, findUser);
     } catch (err) {
+      logger.error(
+        `SAML verify: citizen lookup threw — name=${err?.name}, status=${err?.status ?? err?.response?.status}, message=${err?.message}, data=${JSON.stringify(err?.response?.data)}`,
+      );
       if (err instanceof HttpException && err?.status === 404) {
         // TODO: Handle missing person form Citizen?
       }
@@ -364,8 +375,9 @@ class App {
         failureRedirect = successRedirect;
       }
 
-      passport.authenticate('saml', async (err, user) => {
+      passport.authenticate('saml', async (err, user, info) => {
         if (err) {
+          logger.error(`SAML callback: authentication error — name=${err?.name}, message=${err?.message}`);
           const queries = new URLSearchParams(failureRedirect.searchParams);
           if (err?.name) {
             queries.append('failMessage', err.name);
@@ -375,6 +387,7 @@ class App {
           failureRedirect.search = queries.toString();
           res.redirect(failureRedirect.toString());
         } else if (!user) {
+          logger.error(`SAML callback: no user returned — info=${JSON.stringify(info)}`);
           const failMessage = new URLSearchParams(failureRedirect.searchParams);
           failMessage.append('failMessage', 'NO_USER');
           failureRedirect.search = failMessage.toString();

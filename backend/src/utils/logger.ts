@@ -4,8 +4,9 @@ import winston from 'winston';
 import winstonDaily from 'winston-daily-rotate-file';
 import { LOG_DIR } from '@config';
 
-// logs dir
-const logDir: string = join(__dirname, LOG_DIR);
+// logs dir — fall back to the container's data/logs path when LOG_DIR is unset
+// so a missing env var can't crash the process before validateEnv() runs.
+const logDir: string = join(__dirname, LOG_DIR ?? '../../data/logs');
 
 if (!existsSync(logDir)) {
   mkdirSync(logDir, { recursive: true });

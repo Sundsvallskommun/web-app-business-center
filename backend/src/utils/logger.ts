@@ -53,6 +53,10 @@ const logger = winston.createLogger({
 
 logger.add(
   new winston.transports.Console({
+    // Also surface uncaught exceptions/rejections on stdout/stderr (not only in
+    // the error log file) so crashes are visible in container logs (Dokploy).
+    handleExceptions: true,
+    handleRejections: true,
     format: winston.format.combine(winston.format.splat(), winston.format.colorize()),
   }),
 );

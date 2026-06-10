@@ -364,6 +364,14 @@ class App {
     this.app.post(`${BASE_URL_PREFIX}/saml/login/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
       let successRedirect: URL, failureRedirect: URL;
 
+      // Diagnostic: the SAMLResponse is base64. If it contains spaces, the "+"
+      // chars were turned into spaces (form-encoding mangled by a proxy) which
+      // corrupts the XML and breaks signature validation.
+      const samlResponse: string = req?.body?.SAMLResponse ?? '';
+      logger.info(
+        `SAML callback: SAMLResponse length=${samlResponse.length}, spaces=${(samlResponse.match(/ /g) || []).length}, head="${samlResponse.slice(0, 24)}", tail="${samlResponse.slice(-24)}"`,
+      );
+
       const urls = req?.body?.RelayState.split(',');
 
       if (isValidUrl(urls[0])) {

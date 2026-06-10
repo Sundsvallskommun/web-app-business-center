@@ -74,10 +74,8 @@ const samlStrategy = new Strategy(
     identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
     callbackUrl: SAML_CALLBACK_URL,
     entryPoint: SAML_ENTRY_SSO,
-    // Normalize literal "\n" (as stored by some env UIs, e.g. Dokploy) into real
-    // newlines so PEM certs/keys parse correctly.
-    privateKey: SAML_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    idpCert: SAML_IDP_PUBLIC_CERT?.replace(/\\n/g, '\n'),
+    privateKey: SAML_PRIVATE_KEY,
+    idpCert: SAML_IDP_PUBLIC_CERT,
     issuer: SAML_ISSUER,
     signatureAlgorithm: 'sha256',
     digestAlgorithm: 'sha256',
@@ -264,8 +262,7 @@ class App {
 
     this.app.get(`${BASE_URL_PREFIX}/saml/metadata`, (req, res) => {
       res.type('application/xml');
-      const samlPublicKey = SAML_PUBLIC_KEY?.replace(/\\n/g, '\n');
-      const metadata = samlStrategy.generateServiceProviderMetadata(samlPublicKey, samlPublicKey);
+      const metadata = samlStrategy.generateServiceProviderMetadata(SAML_PUBLIC_KEY, SAML_PUBLIC_KEY);
       res.status(200).send(metadata);
     });
 

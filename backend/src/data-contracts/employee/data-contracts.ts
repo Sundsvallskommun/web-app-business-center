@@ -10,6 +10,20 @@
  * ---------------------------------------------------------------
  */
 
+export enum SortDirection {
+  ASC = "ASC",
+  DESC = "DESC",
+}
+
+export enum ManagerEmployeesDetailOrderBy {
+  FullName = "FullName",
+  Birthdate = "Birthdate",
+  EmploymentId = "EmploymentId",
+  Title = "Title",
+  IsMainEmployment = "IsMainEmployment",
+  OrgName = "OrgName",
+}
+
 export interface Account {
   domain?: string | null;
   loginname?: string | null;
@@ -28,10 +42,10 @@ export interface Employeev2 {
   lastname?: string | null;
   accounts?: Account[] | null;
   referenceNumbers?: ReferenceNumberCompany[] | null;
-  employments?: Employment[] | null;
+  employments?: EmploymentV2[] | null;
 }
 
-export interface Employment {
+export interface EmploymentV2 {
   /** @format int32 */
   companyId?: number;
   /** @format date-time */
@@ -56,8 +70,11 @@ export interface Employment {
   isMainEmployment?: boolean;
   isManager?: boolean | null;
   manager?: Manager;
+  hiringManager?: Manager;
   aid?: string | null;
   empRowId?: string | null;
+  /** @format int32 */
+  employmentId?: number;
 }
 
 export interface Manager {
@@ -78,6 +95,48 @@ export interface ManagerEmployee {
   hireDate?: string | null;
   /** @format date-time */
   retireDate?: string | null;
+}
+
+export interface ManagerEmployeeDetail {
+  /** @format uuid */
+  personId?: string;
+  fullName?: string | null;
+  birthdate?: string | null;
+  employments?: ManagerEmployeeEmploymentDetail[] | null;
+}
+
+/** Används för att returnera paginerat resultat */
+export interface ManagerEmployeeDetailPagedOffsetResponse {
+  /**
+   * Vilken Sida
+   * @format int32
+   */
+  pageNumber?: number;
+  /**
+   * Hur många items per sida
+   * @format int32
+   */
+  pageSize?: number;
+  /**
+   * Antalet
+   * @format int32
+   */
+  totalRecords?: number;
+  /**
+   * Antal sidor
+   * @format int32
+   */
+  totalPages?: number;
+  /** Lista med data */
+  data?: ManagerEmployeeDetail[] | null;
+}
+
+export interface ManagerEmployeeEmploymentDetail {
+  /** @format int32 */
+  employmentId?: number;
+  title?: string | null;
+  isMainEmployment?: boolean;
+  orgName?: string | null;
 }
 
 export interface ModelPostPersonImage {
@@ -123,8 +182,11 @@ export interface NewEmployment {
   isMainEmployment?: boolean;
   isManager?: boolean | null;
   manager?: Manager;
+  hiringManager?: Manager;
   aid?: string | null;
   empRowId?: string | null;
+  /** @format int32 */
+  employmentId?: number;
   eventType?: string | null;
   eventInfo?: string | null;
 }

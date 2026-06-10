@@ -17,6 +17,7 @@ import { logger } from '@/utils/logger';
 import { Response } from 'express';
 import { Body, Controller, Delete, Get, Param, Post, QueryParams, Req, Res, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
+import { getCitizen, getCitizenPersonnumber } from '@/services/citizen.service';
 
 @Controller()
 @UseBefore(authMiddleware)
@@ -71,26 +72,23 @@ export class MandateController {
 
       for (const mandate of result.data.mandateDetailsList ?? []) {
         try {
-          const grantorDetails = this.apiService.get<CitizenExtended>(
-            { url: `${this.citizenApiBase}/${mandate.grantorDetails.signatoryPartyId}` },
-            req.user,
-          );
-          const granteeDetails = this.apiService.get<CitizenExtended>({ url: `${this.citizenApiBase}/${mandate.granteeDetails.partyId}` }, req.user);
-          const granteePersonNumber = this.apiService.get<number>(
-            { url: `${this.citizenApiBase}/${mandate.granteeDetails.partyId}/personnumber` },
-            req.user,
-          );
+          if (!mandate?.grantorDetails?.signatoryPartyId || !mandate?.granteeDetails?.partyId) {
+            throw new Error('Missing partyIds');
+          }
+          const grantorDetails = getCitizen(mandate.grantorDetails.signatoryPartyId, req);
+          const granteeDetails = getCitizen(mandate.granteeDetails.partyId, req);
+          const granteePersonNumber = getCitizenPersonnumber(mandate.granteeDetails.partyId, req);
           const mandateDetails = await Promise.all([grantorDetails, granteeDetails, granteePersonNumber]);
           mandates.push({
-            id: mandate.id,
+            id: mandate.id ?? '',
             activeFrom: mandate.activeFrom,
             inactiveAfter: mandate.inactiveAfter,
             created: mandate.created,
             status: mandate.status,
-            grantor: { name: `${mandateDetails[0].data.givenname} ${mandateDetails[0].data.lastname}` },
+            grantor: { name: `${mandateDetails[0].givenname} ${mandateDetails[0].lastname}` },
             grantee: {
-              name: `${mandateDetails[1].data.givenname} ${mandateDetails[1].data.lastname}`,
-              personNumber: mandateDetails[2].data?.toString().slice(0, -4).concat('****'),
+              name: `${mandateDetails[1].givenname} ${mandateDetails[1].lastname}`,
+              personNumber: mandateDetails[2].toString().slice(0, -4).concat('****'),
             },
           });
         } catch (error) {

@@ -328,6 +328,8 @@ export interface Attachment {
   updated?: string;
   /** Category of the attachment */
   category?: string;
+  /** Channel through which the attachment was received */
+  channel?: AttachmentChannelEnum;
   /** Name of the attachment */
   name?: string;
   /** Note about the attachment */
@@ -497,10 +499,7 @@ export interface Errand {
    * @maxLength 255
    */
   phase?: string;
-  /**
-   * The current status of the errand
-   * @maxLength 255
-   */
+  /** The current status of the errand */
   status?: Status;
   /** The statuses connected to the errand */
   statuses?: Status[];
@@ -585,10 +584,6 @@ export interface JsonNode {
   null?: boolean;
   object?: boolean;
   float?: boolean;
-  valueNode?: boolean;
-  container?: boolean;
-  missingNode?: boolean;
-  nodeType?: JsonNodeNodeTypeEnum;
   integralNumber?: boolean;
   pojo?: boolean;
   floatingPointNumber?: boolean;
@@ -601,6 +596,10 @@ export interface JsonNode {
   /** @deprecated */
   textual?: boolean;
   binary?: boolean;
+  valueNode?: boolean;
+  container?: boolean;
+  missingNode?: boolean;
+  nodeType?: JsonNodeNodeTypeEnum;
   number?: boolean;
   string?: boolean;
   boolean?: boolean;
@@ -1031,6 +1030,8 @@ export interface PatchErrand {
   labels?: string[];
   /** The current status of the errand */
   status?: Status;
+  /** Whether the errand is confidential or not */
+  confidential?: boolean;
 }
 
 export interface PatchDecision {
@@ -1064,40 +1065,40 @@ export interface PatchDecision {
 }
 
 export interface PageErrand {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   /** @format int32 */
   size?: number;
   content?: Errand[];
   /** @format int32 */
   number?: number;
-  pageable?: PageableObject;
-  /** @format int32 */
-  numberOfElements?: number;
   first?: boolean;
   last?: boolean;
+  /** @format int32 */
+  numberOfElements?: number;
   sort?: SortObject;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
 export interface PageableObject {
   /** @format int64 */
   offset?: number;
+  sort?: SortObject;
   paged?: boolean;
+  unpaged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
-  sort?: SortObject;
-  unpaged?: boolean;
 }
 
 export interface SortObject {
   empty?: boolean;
-  sorted?: boolean;
   unsorted?: boolean;
+  sorted?: boolean;
 }
 
 export interface CommitMetadata {
@@ -1215,40 +1216,40 @@ export interface MessageResponse {
 }
 
 export interface PageMessage {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   /** @format int32 */
   size?: number;
   content?: Message[];
   /** @format int32 */
   number?: number;
-  pageable?: PageableObject;
-  /** @format int32 */
-  numberOfElements?: number;
   first?: boolean;
   last?: boolean;
+  /** @format int32 */
+  numberOfElements?: number;
   sort?: SortObject;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
 export interface PageDecision {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   /** @format int32 */
   size?: number;
   content?: Decision[];
   /** @format int32 */
   number?: number;
-  pageable?: PageableObject;
-  /** @format int32 */
-  numberOfElements?: number;
   first?: boolean;
   last?: boolean;
+  /** @format int32 */
+  numberOfElements?: number;
   sort?: SortObject;
+  pageable?: PageableObject;
   empty?: boolean;
 }
 
@@ -1270,6 +1271,14 @@ export enum ContactInformationContactTypeEnum {
 export enum StakeholderTypeEnum {
   PERSON = "PERSON",
   ORGANIZATION = "ORGANIZATION",
+}
+
+/** Channel through which the attachment was received */
+export enum AttachmentChannelEnum {
+  EMAIL = "EMAIL",
+  ESERVICE = "ESERVICE",
+  WEB_UI = "WEB_UI",
+  MY_PAGES = "MY_PAGES",
 }
 
 /** Type of the decision */

@@ -62,7 +62,7 @@ describe('Report Lost Parking Permit', () => {
 
     // Should be back on asset page
     cy.contains('Parkeringstillstånd för funktionshindrad').should('be.visible');
-    cy.contains('Ärendenummer').should('be.visible');
+    cy.contains('Kortnummer').should('be.visible');
   });
 
   it('should display form with all required fields', () => {
@@ -299,7 +299,7 @@ describe('Report Lost Parking Permit', () => {
 
     // Should be back on asset page
     cy.contains('Parkeringstillstånd för funktionshindrad').should('be.visible');
-    cy.contains('Ärendenummer').should('be.visible');
+    cy.contains('Kortnummer').should('be.visible');
   });
 
   it('should validate required police report number field', () => {

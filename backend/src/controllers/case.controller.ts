@@ -1,15 +1,8 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import {
-  Conversation,
-  Message,
-  MessageRequest,
-  MessageResponseDirectionEnum,
-  MessageTypeEnum,
-  PageMessage,
-} from '@/data-contracts/case-data/data-contracts';
+import { Conversation, Message, MessageRequest, PageMessage } from '@/data-contracts/case-data/data-contracts';
 import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
-import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
+import { WebMessageRequest as MessagingWebMessageRequest } from '@/data-contracts/messaging/data-contracts';
 import { WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
 import { CaseMessageDto } from '@/dtos/case-data.dto';
@@ -17,13 +10,23 @@ import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { CaseMessage, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import ApiService from '@/services/api.service';
+import {
+  buildMessagingWebMessageRequest,
+  caseIsAllowed,
+  collectSenderIdentifiers,
+  conversationInit,
+  filterNewUserMessages,
+  normalizeWebMessageCollectorMessages,
+  sortMessagesBySentDesc,
+  toFrontendMessage,
+} from '@/services/case.service';
+import { getCitizen } from '@/services/citizen.service';
 import { getUserData } from '@/services/user.service';
 import { filterExternalConversation, findExternalConversation } from '@/utils/conversation-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
 import { User } from '@interfaces/users.interface';
 import authMiddleware from '@middlewares/auth.middleware';
-import dayjs from 'dayjs';
 import { Body, Controller, Get, Param, Post, Put, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { RepresentingMode } from '../interfaces/representing.interface';
@@ -32,13 +35,10 @@ import { formatOrgNr } from '../utils/util';
 
 const USE_CASES_CACHE = false;
 
-const allowedNamespaces: string[] = ['SBK_MEX', 'SBK_PARKING_PERMIT', 'CONTACTSUNDSVALL'];
-const namespaceIsallowed = (c: CaseStatusResponse) => allowedNamespaces.includes(c.namespace);
-
-const allowedSystems: string[] = ['OPEN_E_PLATFORM', 'BYGGR'];
-const systemIsAllowed = (c: CaseStatusResponse) => allowedSystems.includes(c.system);
-
-const caseIsallowed = (c: CaseStatusResponse) => namespaceIsallowed(c) || (typeof c.namespace === 'undefined' && systemIsAllowed(c));
+// A case is referenced in URLs by its human-readable errandNumber (ärendenummer) when available,
+// and otherwise by its internal caseId (e.g. OpenE cases, which have no errandNumber).
+// Internal callers pass an actual caseId, which still matches here.
+const caseMatchesReference = (c: CaseStatusResponse, reference: string) => c.errandNumber === reference || c.caseId === reference;
 
 @Controller()
 export class CaseController {
@@ -84,103 +84,42 @@ export class CaseController {
     } else {
       cases = req.session.cache?.cases?.PRIVATE ?? null;
     }
-    return cases?.find(c => c.caseId === caseId) ?? null;
-  }
-
-  private conversationInit(user: User) {
-    return {
-      topic: 'Mina Sidor',
-      type: 'EXTERNAL',
-      participants: [
-        {
-          type: 'partyId',
-          value: user.partyId,
-        },
-      ],
-    };
+    return cases?.find(c => caseMatchesReference(c, caseId)) ?? null;
   }
 
   private async normalizeConversationMessages(messages: MessageWithConversationId<Message>[], user: User): Promise<FrontendMessageResponse[]> {
-    const senderUsernames = Array.from(new Set(messages.filter(msg => msg.createdBy?.type === 'AD_ACCOUNT').map(msg => msg.createdBy.value)));
+    const { adUsernames, citizenPartyIds } = collectSenderIdentifiers(messages);
 
-    const namePromises = senderUsernames.map(async username => {
+    interface NameMap {
+      identifier: string;
+      name: string;
+    }
+
+    const adUsernamePromises: Promise<NameMap>[] = adUsernames.map(async username => {
       const userData = await getUserData(username, { user });
       return {
-        username,
+        identifier: username,
         name: `${userData.givenname} ${userData.lastname}`,
       };
     });
 
-    return Promise.allSettled(namePromises).then(results => {
-      const nameMap = results.reduce((acc, result) => {
-        if (result.status === 'fulfilled') {
-          acc[result.value.username] = result.value.name;
-        }
-        return acc;
-      }, {});
-
-      return messages.map((msg: Message & { conversationId: string }) => {
-        return {
-          conversationId: msg.conversationId,
-          messageId: msg.id,
-          message: msg.content,
-          sent: msg.created,
-          sender:
-            msg?.createdBy?.value && msg?.createdBy?.value === user.partyId ? `${user.name}` : nameMap[msg.createdBy?.value] ?? 'Okänd avsändare',
-          direction: msg?.createdBy?.value ? (msg?.createdBy?.value === user.partyId ? 'INBOUND' : 'OUTBOUND') : '',
-          attachments: msg.attachments?.map(attachment => ({
-            attachmentId: attachment.id.toString(),
-            // FIXME: attachment.fileName is the correct field but the generated types are incorrect.
-            // When the API is fixed, the type conversions to any should be removed.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            name: (attachment as any).fileName,
-            contentType: attachment.mimeType,
-          })),
-        };
-      }) as FrontendMessageResponse[];
+    const citizenNamePromises: Promise<NameMap>[] = citizenPartyIds.map(async partyId => {
+      const citizenData = await getCitizen(partyId, { user });
+      return {
+        identifier: partyId,
+        name: `${citizenData.givenname} ${citizenData.lastname}`,
+      };
     });
-  }
 
-  private normalizeWebMessageCollectorMessages(messages: MessageDTO[]): FrontendMessageResponse[] {
-    return messages.map(message => ({
-      // FIXME: Finns conversationId i webmessagecollector?
-      conversationId: '',
-      messageId: message.messageId,
-      direction: message.direction === 'OUTBOUND' ? MessageResponseDirectionEnum.OUTBOUND : MessageResponseDirectionEnum.INBOUND,
-      message: message.message,
-      sent: message.sent,
-      sender: `${message.firstName} ${message.lastName}`,
-      attachments: message.attachments.map(attachment => ({
-        attachmentId: `${attachment.attachmentId}`,
-        name: attachment.name,
-        contentType: attachment.mimeType,
-      })),
-    }));
-  }
+    const results = await Promise.allSettled([...adUsernamePromises, ...citizenNamePromises]);
+    const nameMap = results.reduce((acc: Record<string, string>, result) => {
+      if (result.status === 'fulfilled') {
+        acc[result.value.identifier] = result.value.name;
+      }
+      return acc;
+    }, {});
 
-  private postMessageToMessagingMessage(
-    req: RequestWithUser,
-    caseId: string,
-    message: string,
-    files: Express.Multer.File[],
-  ): MessagingWebMessageRequest {
-    return {
-      sendAsOwner: true,
-      party: {
-        partyId: req.user.partyId,
-        externalReferences: [
-          {
-            key: 'flowInstanceId',
-            value: caseId,
-          },
-        ],
-      },
-      oepInstance: WebMessageRequestOepInstanceEnum.EXTERNAL,
-      message: message,
-      attachments: files.length
-        ? files?.map(x => ({ base64Data: x.buffer.toString('base64'), fileName: x.originalname, mimeType: x.mimetype }))
-        : undefined,
-    };
+    return messages.map(msg => toFrontendMessage(msg, nameMap, user));
   }
 
   private readonly fetchAttachment = async (url: string, req: RequestWithUser): Promise<ApiResponse<string | null>> => {
@@ -222,7 +161,7 @@ export class CaseController {
         if (!res.data) {
           throw new HttpException(500, 'No data from API');
         }
-        const cases = res.data.filter(caseIsallowed);
+        const cases = res.data.filter(caseIsAllowed);
         this.setCasesCache(req, cases);
 
         return { data: cases, message: 'success' };
@@ -278,7 +217,7 @@ export class CaseController {
         throw new HttpException(500, 'No data from API');
       }
 
-      const _case = res.data.filter(caseIsallowed).find(c => c.caseId === caseId);
+      const _case = res.data.filter(caseIsAllowed).find(c => caseMatchesReference(c, caseId));
 
       if (_case === undefined) {
         throw new HttpException(404, 'Case not found');
@@ -338,21 +277,6 @@ export class CaseController {
       throw new HttpException(400, 'Bad request');
     }
 
-    const onlyNewIds = (seenMessages: Message[]) => (message: Message) => {
-      const mIds = seenMessages.map(m => m.id) || [];
-      return !mIds.includes(message.id);
-    };
-
-    const handleMessageResponse = (
-      seenMessages: MessageWithConversationId<Message>[],
-      responseMessages: Message[],
-      conversationId: string,
-    ): MessageWithConversationId<Message>[] => {
-      return responseMessages
-        .filter(msg => onlyNewIds(seenMessages)(msg) && msg.type === MessageTypeEnum.USER_CREATED)
-        .map(msg => ({ ...msg, conversationId }));
-    };
-
     try {
       let url: string;
       let data: FrontendMessageResponse[];
@@ -368,7 +292,7 @@ export class CaseController {
           }/messages?page=0&size=9000`;
           const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req.user);
           if (resMessages.data) {
-            const messagesWithConversationId = handleMessageResponse(messages, resMessages.data.content, conversation.id);
+            const messagesWithConversationId = filterNewUserMessages(messages, resMessages.data.content, conversation.id);
             messages.push(...messagesWithConversationId);
           }
         }
@@ -388,7 +312,7 @@ export class CaseController {
           }/errands/${caseId}/communication/conversations/${conversation.id}/messages?page=0&size=9000`;
           const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req.user);
           if (resMessages.data) {
-            const messagesWithConversationId = handleMessageResponse(messages, resMessages.data.content, conversation.id);
+            const messagesWithConversationId = filterNewUserMessages(messages, resMessages.data.content, conversation.id);
             messages.push(...messagesWithConversationId);
           }
         }
@@ -400,7 +324,7 @@ export class CaseController {
         if (!resWebMessageCollector.data) {
           throw new HttpException(500, 'No data from API');
         }
-        data = this.normalizeWebMessageCollectorMessages(resWebMessageCollector.data);
+        data = normalizeWebMessageCollectorMessages(resWebMessageCollector.data);
       } else if (_case.system === 'BYGGR' || _case.system === 'ECOS') {
         // NOTE: BYGGR and ECOS are using externalCaseId
         url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/flow-instances/${_case.externalCaseId}`;
@@ -408,7 +332,7 @@ export class CaseController {
         if (!resWebMessageCollector.data) {
           throw new HttpException(500, 'No data from API');
         }
-        data = this.normalizeWebMessageCollectorMessages(resWebMessageCollector.data);
+        data = normalizeWebMessageCollectorMessages(resWebMessageCollector.data);
       } else {
         throw new HttpException(400, 'Bad request');
       }
@@ -417,12 +341,7 @@ export class CaseController {
         throw new HttpException(500, 'No data from API');
       }
 
-      const messages = data.sort((a, b) => {
-        if (!a.sent && !b.sent) return 0;
-        if (!a.sent) return 1;
-        if (!b.sent) return -1;
-        return dayjs(b.sent).isBefore(dayjs(a.sent)) ? -1 : 1;
-      });
+      const messages = sortMessagesBySentDesc(data);
 
       return { data: messages, message: 'success' };
     } catch (error) {
@@ -498,8 +417,11 @@ export class CaseController {
       const externalConversation = findExternalConversation(resConversation.data);
       if (!resConversation.data || resConversation.data.length === 0 || !externalConversation) {
         const createConversationUrl = `${apiBase}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/communication/conversations`;
-        const createConversationdata = this.conversationInit(req.user);
-        const resCreateConversation = await this.apiService.post<Conversation, typeof createConversationdata>({ data: createConversationdata, url: createConversationUrl }, req.user);
+        const createConversationdata = conversationInit(req.user);
+        const resCreateConversation = await this.apiService.post<Conversation, typeof createConversationdata>(
+          { data: createConversationdata, url: createConversationUrl },
+          req.user,
+        );
 
         if (resCreateConversation.message === 'success') {
           const resConversation = await this.apiService.get<Conversation[]>({ url: conversationUrl }, req.user);
@@ -541,7 +463,7 @@ export class CaseController {
       data = await buildMessageData(apiBase);
     } else if (_case.system === 'OPEN_E_PLATFORM') {
       url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
-      data = this.postMessageToMessagingMessage(req, caseId, body.message, files);
+      data = buildMessagingWebMessageRequest(req.user.partyId, caseId, body.message, files);
     } else if (_case.system === 'BYGGR' || _case.system === 'ECOS') {
       // NOTE: BYGGR and ECOS are using externalCaseId
       // url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;

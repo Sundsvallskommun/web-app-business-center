@@ -9,6 +9,18 @@ export const CREDENTIALS = process.env.CREDENTIALS === 'true';
 export const SWAGGER_ENABLED = process.env.SWAGGER_ENABLED === 'true';
 export const SESSION_MEMORY = process.env.SESSION_MEMORY === 'true';
 
+// Mirrors the frontend NEXT_PUBLIC_USE_DECISIONS flag; enforced server-side.
+export const USE_DECISIONS = process.env.USE_DECISIONS === 'true';
+
+// Whitelist of partyassets `type` values that may be returned to the client.
+// Comma-separated env list; the backend is the single authority for this filter.
+export const WHITELIST_ASSET_TYPES: ReadonlySet<string> = new Set(
+  (process.env.WHITELIST_ASSET_TYPES ?? '')
+    .split(',')
+    .map(type => type.trim())
+    .filter(Boolean),
+);
+
 export const {
   NODE_ENV,
   PORT,

@@ -1,5 +1,6 @@
 import { ICaseStatusResponse } from '@interfaces/case';
 import { Button, Icon } from '@sk-web-gui/react';
+import { getCaseReference } from '@utils/case-reference';
 import { getCaseTypeLabel } from '@utils/casetype-label-mapper';
 import { ArrowRight, FilePen } from 'lucide-react';
 import NextLink from 'next/link';
@@ -27,7 +28,7 @@ export const TodoCase = ({ data }: TodoCaseProps) => {
         </div>
       </div>
       <div className={styles['todo-action']}>
-        <NextLink href={`arenden/${data.caseId}`}>
+        <NextLink href={`arenden/${getCaseReference(data)}`}>
           <Button
             className={styles['todo-action-button']}
             color="vattjom"

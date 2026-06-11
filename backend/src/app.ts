@@ -380,9 +380,13 @@ class App {
         const configuredCert = (SAML_IDP_PUBLIC_CERT ?? '').replace(/-----[^-]+-----/g, '').replace(/\\n/g, '').replace(/\s/g, '');
         const issuer = decodedResponse.match(/<[^>]*Issuer[^>]*>([^<]+)<\/[^>]*Issuer>/)?.[1] ?? 'NONE';
         const hasSignature = /<[^>]*:?Signature[ >]/.test(decodedResponse);
+        const sigAlg = decodedResponse.match(/SignatureMethod[^>]*Algorithm="([^"]+)"/)?.[1] ?? 'NONE';
+        const digestAlg = decodedResponse.match(/DigestMethod[^>]*Algorithm="([^"]+)"/)?.[1] ?? 'NONE';
+        const c14nAlg = decodedResponse.match(/CanonicalizationMethod[^>]*Algorithm="([^"]+)"/)?.[1] ?? 'NONE';
         logger.info(
           `SAML callback: response Issuer="${issuer}", hasSignature=${hasSignature}, embeddedCert=${embeddedCert === 'NONE' ? 'NONE' : 'present'}, idpCertMatch=${embeddedCert === configuredCert}`,
         );
+        logger.info(`SAML callback: sigAlg=${sigAlg}, digestAlg=${digestAlg}, c14n=${c14nAlg}`);
         if (embeddedCert !== 'NONE' && embeddedCert !== configuredCert) {
           // Public cert from the IdP's own response — safe to log; paste this into SAML_IDP_PUBLIC_CERT.
           logger.info(`SAML callback: IdP signing cert from response: ${embeddedCert}`);

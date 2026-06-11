@@ -378,11 +378,14 @@ class App {
         const decodedResponse = Buffer.from(samlResponse, 'base64').toString('utf8');
         const embeddedCert = decodedResponse.match(/X509Certificate>([^<]+)</)?.[1]?.replace(/\s/g, '') ?? 'NONE';
         const configuredCert = (SAML_IDP_PUBLIC_CERT ?? '').replace(/-----[^-]+-----/g, '').replace(/\\n/g, '').replace(/\s/g, '');
-        logger.info(`SAML callback: idpCert match=${embeddedCert === configuredCert}`);
-        if (embeddedCert !== configuredCert) {
-          // Public cert from the IdP's own response — safe to log; paste this into SAML_IDP_PUBLIC_CERT if it differs.
+        const issuer = decodedResponse.match(/<[^>]*Issuer[^>]*>([^<]+)<\/[^>]*Issuer>/)?.[1] ?? 'NONE';
+        const hasSignature = /<[^>]*:?Signature[ >]/.test(decodedResponse);
+        logger.info(
+          `SAML callback: response Issuer="${issuer}", hasSignature=${hasSignature}, embeddedCert=${embeddedCert === 'NONE' ? 'NONE' : 'present'}, idpCertMatch=${embeddedCert === configuredCert}`,
+        );
+        if (embeddedCert !== 'NONE' && embeddedCert !== configuredCert) {
+          // Public cert from the IdP's own response — safe to log; paste this into SAML_IDP_PUBLIC_CERT.
           logger.info(`SAML callback: IdP signing cert from response: ${embeddedCert}`);
-          logger.info(`SAML callback: configured idpCert (stripped): ${configuredCert.slice(0, 80)}...`);
         }
       } catch (e) {
         logger.error(`SAML callback: failed to inspect embedded cert — ${e?.message}`);

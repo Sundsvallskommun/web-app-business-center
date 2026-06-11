@@ -2,7 +2,7 @@
 # =====================
 # Build
 # =====================
-FROM registry.access.redhat.com/ubi9/nodejs-20 AS builder
+FROM node:22-slim AS deps
 
 USER root
 RUN mkdir -p /app && chown -R 1001:0 /app
@@ -22,7 +22,7 @@ RUN yarn build
 # =====================
 # Runtime
 # =====================
-FROM registry.access.redhat.com/ubi9/nodejs-20 AS runner
+FROM node:22-slim AS runner
 
 WORKDIR /app
 

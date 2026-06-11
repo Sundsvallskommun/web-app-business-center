@@ -371,6 +371,22 @@ class App {
       logger.info(
         `SAML callback: SAMLResponse length=${samlResponse.length}, spaces=${(samlResponse.match(/ /g) || []).length}, head="${samlResponse.slice(0, 24)}", tail="${samlResponse.slice(-24)}"`,
       );
+      // Compare the cert the IdP actually signed with (embedded in the response)
+      // against the configured idpCert. If they differ, SAML_IDP_PUBLIC_CERT is
+      // the wrong cert for this specific IdP.
+      try {
+        const decodedResponse = Buffer.from(samlResponse, 'base64').toString('utf8');
+        const embeddedCert = decodedResponse.match(/X509Certificate>([^<]+)</)?.[1]?.replace(/\s/g, '') ?? 'NONE';
+        const configuredCert = (SAML_IDP_PUBLIC_CERT ?? '').replace(/-----[^-]+-----/g, '').replace(/\\n/g, '').replace(/\s/g, '');
+        logger.info(`SAML callback: idpCert match=${embeddedCert === configuredCert}`);
+        if (embeddedCert !== configuredCert) {
+          // Public cert from the IdP's own response — safe to log; paste this into SAML_IDP_PUBLIC_CERT if it differs.
+          logger.info(`SAML callback: IdP signing cert from response: ${embeddedCert}`);
+          logger.info(`SAML callback: configured idpCert (stripped): ${configuredCert.slice(0, 80)}...`);
+        }
+      } catch (e) {
+        logger.error(`SAML callback: failed to inspect embedded cert — ${e?.message}`);
+      }
 
       const urls = req?.body?.RelayState.split(',');
 

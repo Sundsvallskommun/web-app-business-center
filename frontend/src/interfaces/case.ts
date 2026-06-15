@@ -1,6 +1,13 @@
-import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import {
+  AttachmentResponse,
+  CaseStatusResponse,
+  FrontendMessageResponse as GeneratedMessageResponse,
+} from '@data-contracts/backend/data-contracts';
 import { statusCodes } from './status-codes';
-import { AttachmentResponse, MessageResponseDirectionEnum } from '@data-contracts/case-data/data-contracts';
+
+// The message direction is generated as an inline union on the backend contract;
+// derive it here so it stays in sync without re-importing the (locally redefined) type.
+type MessageResponseDirectionEnum = GeneratedMessageResponse['direction'];
 
 export interface ICaseStatusResponse extends Omit<CaseStatusResponse, 'status'> {
   status: { code: statusCodes; color: 'neutral' | 'info' | 'warning' | 'error'; label: string };

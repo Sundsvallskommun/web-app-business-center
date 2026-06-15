@@ -1,6 +1,13 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { AddressAddressCategoryEnum, Attachment, Errand, Stakeholder, StakeholderTypeEnum } from '@/data-contracts/case-data/data-contracts';
+import {
+  AddressAddressCategoryEnum,
+  Attachment,
+  AttachmentChannelEnum,
+  Errand,
+  Stakeholder,
+  StakeholderTypeEnum,
+} from '@/data-contracts/case-data/data-contracts';
 import { Asset } from '@/data-contracts/partyassets/data-contracts';
 import { AssetWithService } from '@/interfaces/asset.interface';
 import { AttachmentCategory, CaseDataNamespace, ParkingPermitCaseType, StakeholderRole } from '@/interfaces/casedata.interface';
@@ -10,24 +17,27 @@ import { ApiResponse } from '@/interfaces/service';
 import { User } from '@/interfaces/users.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
-import { isAllowedAsset, isVisibleStatus, toClientAsset, toServiceDetails, toVisibleAssets } from '@/services/asset.service';
+import {
+  buildRenewalExtraParameters,
+  isAllowedAsset,
+  isVisibleStatus,
+  ParkingPermitRenewalBody,
+  toClientAsset,
+  toServiceDetails,
+  toVisibleAssets,
+} from '@/services/asset.service';
 import { getCitizen } from '@/services/citizen.service';
+import { buildMyPagesErrand } from '@/utils/casedata-errand-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
 import { apiURL } from '@/utils/util';
+import { AssetsApiResponse } from '@/responses/asset.response';
 import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
-import { OpenAPI } from 'routing-controllers-openapi';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 interface AttachmentOptions {
   category: AttachmentCategory;
   note: string;
-}
-
-interface ParkingPermitRenewalBody {
-  description?: string;
-  circumstancesChanged?: string;
-  date?: string;
-  walkingAids?: string; // JSON string of string[]
 }
 
 interface CreateErrandOptions {
@@ -58,6 +68,7 @@ export class AssetsController {
           mimeType: file.mimetype,
           file: file.buffer.toString('base64'),
           note: options.note,
+          channel: AttachmentChannelEnum.MY_PAGES,
         };
         return this.apiService.post<Attachment, Attachment>({ url: attachmentUrl, baseURL, data: attachmentData }, user);
       }),
@@ -106,14 +117,14 @@ export class AssetsController {
 
     const stakeholder = await this.getApplicantStakeholder(representing.PRIVATE.partyId, req.user);
 
-    const data: Errand = {
+    const data = buildMyPagesErrand({
       caseType: options.caseType,
       status: {
         statusType: 'Ärende inkommit',
       },
       stakeholders: [stakeholder],
       extraParameters: options.extraParameters,
-    };
+    });
 
     const baseURL = apiURL(this.casedataApiBase);
     const url = `${MUNICIPALITY_ID}/${CaseDataNamespace.SBK_PARKING_PERMIT}/errands`;
@@ -128,6 +139,7 @@ export class AssetsController {
 
   @Get('/assets')
   @OpenAPI({ summary: 'Return a list of assets for current representing entity' })
+  @ResponseSchema(AssetsApiResponse)
   @UseBefore(authMiddleware)
   async getAssets(@Req() req: RequestWithUser): Promise<ApiResponse<AssetWithService[]>> {
     const { representing } = req.session ?? {};
@@ -217,26 +229,7 @@ export class AssetsController {
     @Body() body: ParkingPermitRenewalBody,
     @UploadedFiles('files', { options: fileUploadOptions, required: false }) files: Express.Multer.File[],
   ): Promise<ApiResponse<{ success: boolean }>> {
-    const extraParameters: Errand['extraParameters'] = [];
-
-    extraParameters.push({
-      key: 'application.reason',
-      values: [body.description ?? ''],
-    });
-
-    if (body.walkingAids) {
-      try {
-        const walkingAidsArray: string[] = JSON.parse(body.walkingAids);
-        if (Array.isArray(walkingAidsArray) && walkingAidsArray.length > 0) {
-          extraParameters.push({
-            key: 'disability.aid',
-            values: walkingAidsArray,
-          });
-        }
-      } catch {
-        // Invalid JSON, skip walkingAids
-      }
-    }
+    const extraParameters = buildRenewalExtraParameters(body);
 
     return this.createParkingPermitErrand(req, {
       caseType: ParkingPermitCaseType.RENEWAL,

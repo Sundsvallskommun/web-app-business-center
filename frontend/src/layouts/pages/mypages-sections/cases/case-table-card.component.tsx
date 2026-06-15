@@ -1,6 +1,7 @@
 import { useAppContext } from '@contexts/app.context';
 import { ICaseStatusResponse } from '@interfaces/case';
 import { Button, Icon, Label } from '@sk-web-gui/react';
+import { getCaseReference } from '@utils/case-reference';
 import { getCaseTypeLabel } from '@utils/casetype-label-mapper';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { ChevronRight } from 'lucide-react';
@@ -11,7 +12,7 @@ export const CaseTableCard: React.FC<{ item: ICaseStatusResponse }> = ({ item })
 
   return (
     <NextLink
-      href={`${getRepresentingModeRoute(representingMode)}/arenden/${item.caseId}`}
+      href={`${getRepresentingModeRoute(representingMode)}/arenden/${getCaseReference(item)}`}
       aria-label={`Visa ${getCaseTypeLabel(item.caseType)}`}
       className={`list-item-card-link`}
     >

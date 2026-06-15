@@ -81,10 +81,10 @@ describe('Parking Permit Renewal', () => {
 
     // Verify form fields
     cy.contains('Har förutsättningarna för din ansökan förändrats').should('be.visible');
-    cy.get('input[type="radio"][value="TRUE"]').should('be.checked');
-    cy.get('input[type="radio"][value="FALSE"]').should('not.be.checked');
+    cy.get('input[type="radio"][value="Y"]').should('be.checked');
+    cy.get('input[type="radio"][value="N"]').should('not.be.checked');
 
-    cy.contains('Beskriv kort vad som förändrats').should('be.visible');
+    cy.contains('Beskriv anledningen till att du ansöker').should('be.visible');
     cy.contains('Vilket eller vilka hjälpmedel används vid förflyttning').should('be.visible');
 
     // Verify walking aids checkboxes
@@ -104,20 +104,20 @@ describe('Parking Permit Renewal', () => {
     cy.contains('button', 'Skicka in').should('be.visible');
   });
 
-  it('should hide description field when circumstances have not changed', () => {
+  it('should hide descriptive fields when circumstances have not changed', () => {
     navigateToAssetPage();
 
     cy.contains('button', 'Förläng giltighet').click();
     cy.contains('button', 'Påbörja ansökan').click();
 
-    // Description field should be visible when "Ja" is selected
-    cy.contains('Beskriv kort vad som förändrats').should('be.visible');
+    // Descriptive fields should be visible when "Ja" is selected
+    cy.contains('Beskriv anledningen till att du ansöker').should('be.visible');
 
     // Click "Nej" radio button
     cy.get('[data-cy="circumstances-changed-false"]').click();
 
-    // Description and walking aids fields should be hidden
-    cy.contains('Beskriv kort vad som förändrats').should('not.exist');
+    // Descriptive and walking aids fields should be hidden
+    cy.contains('Beskriv anledningen till att du ansöker').should('not.exist');
     cy.contains('Vilket eller vilka hjälpmedel används').should('not.exist');
   });
 
@@ -128,7 +128,7 @@ describe('Parking Permit Renewal', () => {
     cy.contains('button', 'Påbörja ansökan').click();
 
     // Verify on form page
-    cy.contains('Beskriv kort vad som förändrats').should('be.visible');
+    cy.contains('Beskriv anledningen till att du ansöker').should('be.visible');
 
     // Click cancel
     cy.contains('button', 'Avbryt').click();
@@ -144,7 +144,7 @@ describe('Parking Permit Renewal', () => {
     cy.contains('button', 'Påbörja ansökan').click();
 
     // Fill out the form
-    cy.get('input[name="description"]').type('Försämrad rörlighet i höger ben');
+    cy.get('[data-cy="reason"]').type('Försämrad rörlighet i höger ben');
     cy.get('[data-cy="walking-aids-checkbox-0"]').parent().click(); // Rullator
     cy.get('[data-cy="walking-aids-checkbox-3"]').parent().click(); // Rullstol (manuell)
     cy.get('input[type="date"]').type('2025-12-31');
@@ -165,7 +165,7 @@ describe('Parking Permit Renewal', () => {
       expect(request.headers['content-type']).to.include('multipart/form-data');
 
       // Verify form fields are present
-      expect(request.body).to.include('name="description"');
+      expect(request.body).to.include('name="reason"');
       expect(request.body).to.include('Försämrad rörlighet i höger ben');
 
       expect(request.body).to.include('name="circumstancesChanged"');
@@ -193,7 +193,7 @@ describe('Parking Permit Renewal', () => {
     cy.contains('button', 'Påbörja ansökan').click();
 
     // Fill out the form
-    cy.get('input[name="description"]').type('Behöver ny bedömning');
+    cy.get('[data-cy="reason"]').type('Behöver ny bedömning');
     cy.get('input[type="date"]').type('2025-12-31');
 
     // Upload a medical certificate
@@ -219,7 +219,7 @@ describe('Parking Permit Renewal', () => {
       expect(request.headers['content-type']).to.include('multipart/form-data');
 
       // Verify form fields
-      expect(request.body).to.include('name="description"');
+      expect(request.body).to.include('name="reason"');
       expect(request.body).to.include('Behöver ny bedömning');
       expect(request.body).to.include('name="date"');
       expect(request.body).to.include('2025-12-31');
@@ -241,7 +241,7 @@ describe('Parking Permit Renewal', () => {
     cy.contains('button', 'Påbörja ansökan').click();
 
     // Fill required fields
-    cy.get('input[name="description"]').type('Test');
+    cy.get('[data-cy="reason"]').type('Test');
     cy.get('input[type="date"]').type('2025-12-31');
 
     // Submit the form
@@ -251,8 +251,8 @@ describe('Parking Permit Renewal', () => {
     cy.contains('button', 'Nej').click();
 
     // Should still be on form page
-    cy.contains('Beskriv kort vad som förändrats').should('be.visible');
-    cy.get('input[name="description"]').should('have.value', 'Test');
+    cy.contains('Beskriv anledningen till att du ansöker').should('be.visible');
+    cy.get('[data-cy="reason"]').should('have.value', 'Test');
   });
 
   it('should return to asset view from success page', () => {
@@ -262,7 +262,7 @@ describe('Parking Permit Renewal', () => {
     cy.contains('button', 'Påbörja ansökan').click();
 
     // Fill and submit form
-    cy.get('input[name="description"]').type('Test');
+    cy.get('[data-cy="reason"]').type('Test');
     cy.get('input[type="date"]').type('2025-12-31');
     cy.contains('button', 'Skicka in').click();
     cy.contains('button', 'Ja').click();

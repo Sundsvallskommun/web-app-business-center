@@ -1,6 +1,6 @@
 'use client';
 
-import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { CaseStatusResponse } from '@data-contracts/backend/data-contracts';
 import { CasesData } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { emptyCaseList, casesHandler, getOngoing, getClosed } from '@services/case-service';

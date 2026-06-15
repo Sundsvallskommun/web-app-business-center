@@ -1,4 +1,4 @@
-import { Asset } from '@data-contracts/partyassets/data-contracts';
+import { Asset } from '@data-contracts/backend/data-contracts';
 import { Button, Icon } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import { ArrowRight, Mail } from 'lucide-react';

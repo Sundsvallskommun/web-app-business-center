@@ -27,8 +27,9 @@ import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
 import { User } from '@interfaces/users.interface';
 import authMiddleware from '@middlewares/auth.middleware';
+import { CaseMessagesApiResponse, CasesApiResponse } from '@/responses/case.response';
 import { Body, Controller, Get, Param, Post, Put, Req, UploadedFiles, UseBefore } from 'routing-controllers';
-import { OpenAPI } from 'routing-controllers-openapi';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse } from '../interfaces/service';
 import { formatOrgNr } from '../utils/util';
@@ -144,6 +145,7 @@ export class CaseController {
 
   @Get('/cases')
   @OpenAPI({ summary: 'Return a list of cases for current logged in user' })
+  @ResponseSchema(CasesApiResponse)
   @UseBefore(authMiddleware)
   async getCases(@Req() req: RequestWithUser): Promise<ApiResponse<CaseStatusResponse[]>> {
     const { representing } = req?.session;
@@ -265,6 +267,7 @@ export class CaseController {
   // Messages
   @Get('/cases/:caseId/messages')
   @OpenAPI({ summary: 'Return messages for a case' })
+  @ResponseSchema(CaseMessagesApiResponse)
   @UseBefore(authMiddleware)
   async getCaseMessages(@Req() req: RequestWithUser, @Param('caseId') caseId: string): Promise<ApiResponse<FrontendMessageResponse[] | null>> {
     if (!caseId) {

@@ -260,6 +260,47 @@ export class SamtyckeStepDto implements SamtyckeStep {
   notifyChanges!: boolean;
 }
 
+/**
+ * Body for POST /economic-aid/eligibility. Only the civilstånd is sent from the
+ * client — the applicant's personnummer is taken from the authenticated session
+ * server-side, never trusted from the request.
+ */
+export class EligibilityRequestDto {
+  @IsIn(CIVILSTAND_VALUES, { message: 'Välj civilstånd' })
+  civilstand!: Civilstand;
+
+  // Medsökandes personnummer (YYYYMMDD-XXXX) — krävs när civilstånd innebär
+  // make/maka/sambo, eftersom eligibility då kontrollerar båda parter.
+  @ValidateIf((dto: EligibilityRequestDto) => CIVILSTAND_WITH_PARTNER.has(dto.civilstand))
+  @IsString()
+  @Matches(PERSONNUMMER_PATTERN, {
+    message: 'Personnummer på medsökande måste anges som YYYYMMDD-XXXX',
+  })
+  medsokandePersonnummer!: string;
+}
+
+/**
+ * Body for POST /economic-aid/applications/:slug. A thin envelope around the typed
+ * financial-assistance payload — caremanagement owns the deep validation of `data`
+ * (@OneOf enums etc.), so here we only require that `data` is present.
+ */
+export class CreateFinancialAssistanceDto {
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  priority?: string;
+
+  @IsObject({ message: 'data (ansökningspayload) krävs' })
+  data!: Record<string, unknown>;
+}
+
 export class EconomicAidApplicationDto implements EconomicAidApplicationV1 {
   @Equals(ECONOMIC_AID_SCHEMA_VERSION)
   schemaVersion!: EconomicAidSchemaVersion;

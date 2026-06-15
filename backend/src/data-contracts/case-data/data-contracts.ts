@@ -1086,9 +1086,9 @@ export interface PageErrand {
 export interface PageableObject {
   /** @format int64 */
   offset?: number;
+  unpaged?: boolean;
   sort?: SortObject;
   paged?: boolean;
-  unpaged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */

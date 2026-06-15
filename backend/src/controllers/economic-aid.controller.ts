@@ -1,10 +1,16 @@
-import { CAREMANAGEMENT_NAMESPACE, MUNICIPALITY_ID } from '@/config';
+import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { Errand, Parameter, Stakeholder } from '@/data-contracts/caremanagement/data-contracts';
-import CaremanagementApiService from '@/services/caremanagement-api.service';
-import { caremanagementUrl } from '@/utils/caremanagement-url';
+import {
+  CreateFinancialAssistanceRequest,
+  EligibilityRequest,
+  EligibilityResponse,
+} from '@/data-contracts/caremanagement/data-contracts';
 import { CitizenAddress, CitizenExtended, PersonGuidBatch } from '@/data-contracts/citizen/data-contracts';
-import { EconomicAidApplicationDto } from '@/dtos/economic-aid.dto';
+import {
+  CreateFinancialAssistanceDto,
+  EconomicAidApplicationDto,
+  EligibilityRequestDto,
+} from '@/dtos/economic-aid.dto';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import {
@@ -12,17 +18,33 @@ import {
   ApplicantProfile,
   Civilstand,
   EconomicAidApplicationV1,
+  EligibilityResult,
   SubmitApplicationResponse,
 } from '@/interfaces/economic-aid.interface';
 import { ApiResponse } from '@/interfaces/service';
 import ApiService from '@/services/api.service';
+import CaremanagementApiService from '@/services/caremanagement-api.service';
+import { caremanagementUrl } from '@/utils/caremanagement-url';
 import { validateRequestBody } from '@/utils/validate';
 import authMiddleware from '@middlewares/auth.middleware';
 import { logger } from '@utils/logger';
-import { Body, Controller, Get, Post, Req, UseBefore } from 'routing-controllers';
+import { Body, Controller, Get, Param, Post, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
-const NAMESPACE = CAREMANAGEMENT_NAMESPACE;
+// Citizen-API:t taggar folkbokföringsadressen med addressType. Värdet
+// kan variera mellan miljöer ("POPULATION_REGISTRATION_ADDRESS",
+// "Folkbokföringsadress" m.m.) — vi väljer hellre lite tolerant.
+const POPULATION_REGISTRATION_ADDRESS_TYPES = new Set(['POPULATION_REGISTRATION_ADDRESS', 'POPULATION_REGISTRATION', 'FOLKBOKFORINGSADRESS']);
+
+/** Strips everything but digits — personnummer reaches us in varying formats. */
+const onlyDigits = (value: string | null | undefined): string => (value ?? '').replace(/\D/g, '');
+
+/** The three financial-assistance typeSlugs the create endpoint accepts (path-constrained). */
+const FINANCIAL_ASSISTANCE_SLUGS: ReadonlySet<string> = new Set([
+  'financial-assistance-new',
+  'financial-assistance-renewal',
+  'financial-assistance-supplementary',
+]);
 
 /**
  * caremanagement returns 201 Created with an empty body and the new resource in the Location
@@ -33,15 +55,6 @@ const errandIdFromLocation = (location?: string): string | undefined => {
   const segments = location.split('/').filter(Boolean);
   return segments[segments.length - 1] || undefined;
 };
-
-// Citizen-API:t taggar folkbokföringsadressen med addressType. Värdet
-// kan variera mellan miljöer ("POPULATION_REGISTRATION_ADDRESS",
-// "Folkbokföringsadress" m.m.) — vi väljer hellre lite tolerant.
-const POPULATION_REGISTRATION_ADDRESS_TYPES = new Set([
-  'POPULATION_REGISTRATION_ADDRESS',
-  'POPULATION_REGISTRATION',
-  'FOLKBOKFORINGSADRESS',
-]);
 
 const formatPostnummer = (raw: string | null | undefined): string => {
   const digits = (raw ?? '').replace(/\D/g, '');
@@ -66,14 +79,6 @@ const toApplicantAddress = (address: CitizenAddress): ApplicantAddress => ({
 const isPopulationRegistration = (address: CitizenAddress): boolean =>
   !!address.addressType && POPULATION_REGISTRATION_ADDRESS_TYPES.has(address.addressType.toUpperCase());
 
-const buildApplicantStakeholder = (req: RequestWithUser): Stakeholder => ({
-  role: 'APPLICANT',
-  externalId: req.user.partyId,
-  externalIdType: 'PRIVATE',
-  firstName: req.user.givenName,
-  lastName: req.user.surname,
-});
-
 // Privacy constraint: we never list other people via Citizen in the citizen-
 // facing app. Household members are entered manually; the lookup below runs
 // server-side only and is exposed exclusively to the caseworker.
@@ -84,11 +89,7 @@ type HouseholdMemberRef =
   | { kind: 'BARN'; index: number; fornamn: string; efternamn: string; personnummer: string }
   | { kind: 'MEDSOKANDE'; fornamn: string; efternamn: string; personnummer: string };
 
-type HouseholdAddressFlagReason =
-  | 'NOT_AT_APPLICANT_ADDRESS'
-  | 'NOT_FOUND'
-  | 'PROTECTED_IDENTITY'
-  | 'LOOKUP_FAILED';
+type HouseholdAddressFlagReason = 'NOT_AT_APPLICANT_ADDRESS' | 'NOT_FOUND' | 'PROTECTED_IDENTITY' | 'LOOKUP_FAILED';
 
 type HouseholdAddressFlag = {
   kind: HouseholdMemberRef['kind'];
@@ -151,8 +152,7 @@ const memberToFlag = (member: HouseholdMemberRef, reason: HouseholdAddressFlagRe
         reason,
       };
 
-const addressKey = (a: ApplicantAddress): string =>
-  `${a.gatuadress.toLowerCase().replace(/\s+/g, ' ').trim()}|${a.postnummer.replace(/\D/g, '')}`;
+const addressKey = (a: ApplicantAddress): string => `${a.gatuadress.toLowerCase().replace(/\s+/g, ' ').trim()}|${a.postnummer.replace(/\D/g, '')}`;
 
 const addressMatches = (a: ApplicantAddress, b: ApplicantAddress): boolean =>
   addressKey(a) === addressKey(b) && a.gatuadress.trim().length > 0 && a.postnummer.replace(/\D/g, '').length > 0;
@@ -162,47 +162,6 @@ const isProtectedIdentity = (citizen: CitizenExtended): boolean => {
   const classified = citizen.classified?.trim();
   return !!(protectedNR && protectedNR.length > 0) || !!(classified && classified.length > 0 && classified !== '0');
 };
-
-/**
- * Maps the typed application document to a careManagement Errand.
- *
- * The full application is stored as a single JSON parameter on the
- * errand (`applicationDocument`) together with its `applicationSchemaVersion`.
- * Selected workflow signals are denormalized into separate parameters
- * so handläggar-vyer and BPMN/DMN rules can read them without parsing
- * the document. Add to the denormalized list as the form grows — never
- * read business-critical values from the JSON blob alone.
- */
-export const applicationToErrand = (data: EconomicAidApplicationV1, req: RequestWithUser): Errand => ({
-  namespace: NAMESPACE,
-  title: 'Ansökan om ekonomiskt bistånd',
-  category: 'ECONOMIC_AID',
-  type: 'APPLICATION',
-  status: 'NEW',
-  reporterUserId: req.user.partyId,
-  stakeholders: [buildApplicantStakeholder(req)],
-  externalTags: [{ key: 'submittedFromMyPages', value: 'true' }],
-  parameters: [
-    {
-      key: 'applicationSchemaVersion',
-      displayName: 'Schemaversion',
-      parameterGroup: 'application',
-      values: [data.schemaVersion],
-    },
-    {
-      key: 'applicationKind',
-      displayName: 'Ansökningstyp',
-      parameterGroup: 'application',
-      values: [data.vagval.kind ?? ''],
-    },
-    {
-      key: 'applicationDocument',
-      displayName: 'Ansökningsdokument (JSON)',
-      parameterGroup: 'application',
-      values: [JSON.stringify(data)],
-    },
-  ],
-});
 
 @Controller()
 export class EconomicAidController {
@@ -221,12 +180,10 @@ export class EconomicAidController {
     }
 
     const citizenUrl = `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}`;
-    const citizenRes = await this.apiService
-      .get<CitizenExtended>({ url: citizenUrl }, req.user)
-      .catch(err => {
-        logger.warn(`[economic-aid] failed to fetch citizen for partyId=${partyId}: ${err?.message ?? err}`);
-        return null;
-      });
+    const citizenRes = await this.apiService.get<CitizenExtended>({ url: citizenUrl }, req.user).catch(err => {
+      logger.warn(`[economic-aid] failed to fetch citizen for partyId=${partyId}: ${err?.message ?? err}`);
+      return null;
+    });
 
     const citizen = citizenRes?.data ?? null;
     const addresses = citizen?.addresses ?? [];
@@ -237,12 +194,10 @@ export class EconomicAidController {
     const folkbokforingsadress = populationAddress
       ? toApplicantAddress(populationAddress)
       : addresses.find(a => a.address)
-        ? toApplicantAddress(addresses.find(a => a.address)!)
-        : null;
+      ? toApplicantAddress(addresses.find(a => a.address)!)
+      : null;
 
-    const andraAdresser = addresses
-      .filter(a => a !== populationAddress && a.address)
-      .map(toApplicantAddress);
+    const andraAdresser = addresses.filter(a => a !== populationAddress && a.address).map(toApplicantAddress);
 
     const profile: ApplicantProfile = {
       fornamn: citizen?.givenname?.trim() || req.user.givenName || '',
@@ -259,13 +214,106 @@ export class EconomicAidController {
     return { data: profile, message: 'success' };
   }
 
+  @Post('/economic-aid/eligibility')
+  @OpenAPI({
+    summary: 'Resolve which financial assistance application(s) to offer for the logged-in applicant',
+  })
+  @UseBefore(authMiddleware)
+  async checkEligibility(@Req() req: RequestWithUser, @Body() body: EligibilityRequestDto): Promise<ApiResponse<EligibilityResult>> {
+    // @Body is typed; routing-controllers does not auto-validate, so validate explicitly.
+    await validateRequestBody(EligibilityRequestDto, body);
+
+    // The applicant's personnummer ALWAYS comes from the authenticated session — never from
+    // the request body — so a citizen cannot probe eligibility for an arbitrary person.
+    const applicant = onlyDigits(req.user?.personNumber);
+    if (!applicant) {
+      throw new HttpException(401, 'Unauthorized');
+    }
+
+    // For gift/sambo a co-applicant is involved — the partner's personnummer comes from the
+    // request (entered by the citizen) so eligibility is checked for both parties.
+    const coApplicant = PARTNER_CIVILSTAND.has(body.civilstand) ? onlyDigits(body.medsokandePersonnummer) : undefined;
+
+    const eligibilityRequest: EligibilityRequest = { applicant, ...(coApplicant ? { coApplicant } : {}) };
+    logger.info(`[economic-aid] eligibility check (civilstånd=${body.civilstand}, coApplicant=${coApplicant ? 'yes' : 'no'})`);
+
+    const response = await this.caremanagementApiService.post<EligibilityResponse>({
+      url: caremanagementUrl('errands', 'financial-assistance', 'eligibility'),
+      data: eligibilityRequest,
+    });
+
+    const eligibility = response.data ?? {};
+    const result: EligibilityResult = {
+      suggestions: (eligibility.suggestions ?? []).map(suggestion => ({
+        typeSlug: suggestion.typeSlug ?? '',
+        applicationType: suggestion.applicationType ?? null,
+        label: suggestion.label ?? '',
+        recommended: suggestion.recommended ?? false,
+        periodMonth: suggestion.periodMonth ?? null,
+        periodYear: suggestion.periodYear ?? null,
+      })),
+      message: eligibility.message ?? null,
+      reasonCode: eligibility.reasonCode ?? null,
+    };
+
+    return { data: result, message: 'success' };
+  }
+
+  @Post('/economic-aid/applications/:slug')
+  @OpenAPI({
+    summary: 'Create a financial assistance errand of the given typeSlug (new/renewal/supplementary)',
+  })
+  @UseBefore(authMiddleware)
+  async createApplication(
+    @Req() req: RequestWithUser,
+    @Param('slug') slug: string,
+    @Body() body: CreateFinancialAssistanceDto,
+  ): Promise<ApiResponse<SubmitApplicationResponse>> {
+    if (!FINANCIAL_ASSISTANCE_SLUGS.has(slug)) {
+      throw new HttpException(400, 'Unknown financial assistance typeSlug');
+    }
+    await validateRequestBody(CreateFinancialAssistanceDto, body);
+    if (!req.user?.partyId) {
+      throw new HttpException(401, 'Unauthorized');
+    }
+
+    // The applicant's personnummer is set from the authenticated session, never trusted from
+    // the client. Co-applicant pnr stays as entered by the citizen.
+    const applicantPersonalNumber = onlyDigits(req.user.personNumber);
+    const persons = body.data?.persons as Array<Record<string, unknown>> | undefined;
+    if (applicantPersonalNumber && Array.isArray(persons)) {
+      const applicant = persons.find(person => person?.role === 'APPLICANT');
+      if (applicant) applicant.personalNumber = applicantPersonalNumber;
+    }
+
+    // applicationType is derived server-side from the slug by caremanagement — we never send it.
+    const request: CreateFinancialAssistanceRequest = {
+      title: body.title?.trim() || 'Ansökan om ekonomiskt bistånd',
+      description: body.description,
+      priority: body.priority,
+      reporterUserId: req.user.partyId,
+      data: body.data,
+    };
+
+    const created = await this.caremanagementApiService.post<unknown>({
+      url: caremanagementUrl('errands', slug),
+      data: request,
+    });
+
+    const errandId = errandIdFromLocation(created.location);
+    if (!errandId) {
+      logger.error(`[economic-aid] create (${slug}) returned no Location header (partyId=${req.user.partyId})`);
+      throw new HttpException(502, 'Errand was created but no id was returned from caremanagement');
+    }
+
+    logger.info(`[economic-aid] created ${slug} errand ${errandId} for partyId=${req.user.partyId}`);
+    return { data: { errandId }, message: 'success' };
+  }
+
   @Post('/economic-aid/applications')
   @OpenAPI({ summary: 'Submit an economic aid application' })
   @UseBefore(authMiddleware)
-  async submit(
-    @Req() req: RequestWithUser,
-    @Body() body: EconomicAidApplicationV1,
-  ): Promise<ApiResponse<SubmitApplicationResponse>> {
+  async submit(@Req() req: RequestWithUser, @Body() body: EconomicAidApplicationV1): Promise<ApiResponse<SubmitApplicationResponse>> {
     // routing-controllers does not auto-validate when @Body is typed as an
     // interface, so we run the DTO check here explicitly. Mirrors the pattern
     // used in case.controller.ts (newCaseMessage).
@@ -275,41 +323,29 @@ export class EconomicAidController {
       throw new HttpException(401, 'Unauthorized');
     }
 
-    const errand = applicationToErrand(body, req);
-
     // Best-effort: Citizen outage must never block submission.
     const verification = await this.verifyHouseholdAddresses(body, req);
-    errand.parameters!.push(...buildVerificationParameters(verification));
 
-    // POST directly to the caremanagement instance (Dokploy), bypassing the API gateway.
-    // caremanagement answers 201 Created with an empty body and the new errand in Location.
-    const created = await this.caremanagementApiService.post<unknown>({
-      url: caremanagementUrl('errands'),
-      data: errand,
-    });
-
-    const errandId = errandIdFromLocation(created.location);
-    if (!errandId) {
-      logger.error(
-        `[economic-aid] caremanagement create returned no Location header (partyId=${req.user.partyId})`,
-      );
-      throw new HttpException(502, 'Errand was created but no id was returned from caremanagement');
-    }
-
+    // NOTE: the submit flow is being rebuilt around caremanagement's typed financial-assistance
+    // model. The previous generic-errand + JSON-parameter mapping no longer matches the contract
+    // (Errand has no category/type/parameters; the payload is now a typed FinancialAssistanceData).
+    // The new flow is:
+    //   1. POST /errands/financial-assistance/eligibility  (applicant + ev. co-applicant pnr)
+    //      -> EligibilityResponse.suggestions[] (typeSlug, recommended, label)
+    //   2. POST /errands/{typeSlug}  with a CreateFinancialAssistanceRequest (FinancialAssistanceData)
+    // Until the rebuilt form collects FinancialAssistanceData we log and return a stub id.
     logger.info(
-      `[economic-aid] submitted errand ${errandId} for partyId=${req.user.partyId} kind=${body.vagval.kind}`,
+      `[economic-aid] application received for partyId=${req.user.partyId} kind=${body.vagval.kind} ` +
+        `householdFlags=${verification.flags.length} — submit not yet wired to the typed endpoint`,
     );
 
     return {
-      data: { errandId },
+      data: { errandId: `stub-${Date.now()}` },
       message: 'success',
     };
   }
 
-  private async verifyHouseholdAddresses(
-    data: EconomicAidApplicationV1,
-    req: RequestWithUser,
-  ): Promise<HouseholdVerification> {
+  private async verifyHouseholdAddresses(data: EconomicAidApplicationV1, req: RequestWithUser): Promise<HouseholdVerification> {
     const checkedAt = new Date().toISOString();
     const members = collectHouseholdMembers(data);
 
@@ -335,9 +371,7 @@ export class EconomicAidController {
       );
       batch = Array.isArray(res?.data) ? res.data : null;
     } catch (err) {
-      logger.warn(
-        `[economic-aid] household batch guid lookup failed: ${(err as Error)?.message ?? err}`,
-      );
+      logger.warn(`[economic-aid] household batch guid lookup failed: ${(err as Error)?.message ?? err}`);
     }
     if (!batch) {
       return {
@@ -357,15 +391,10 @@ export class EconomicAidController {
       }
       let citizen: CitizenExtended | null = null;
       try {
-        const res = await this.apiService.get<CitizenExtended>(
-          { url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/${match.personId}` },
-          req.user,
-        );
+        const res = await this.apiService.get<CitizenExtended>({ url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/${match.personId}` }, req.user);
         citizen = res?.data ?? null;
       } catch (err) {
-        logger.warn(
-          `[economic-aid] household citizen lookup failed for ${member.kind}: ${(err as Error)?.message ?? err}`,
-        );
+        logger.warn(`[economic-aid] household citizen lookup failed for ${member.kind}: ${(err as Error)?.message ?? err}`);
         flags.push(memberToFlag(member, 'LOOKUP_FAILED'));
         continue;
       }
@@ -394,34 +423,12 @@ export class EconomicAidController {
     const partyId = req.user?.partyId;
     if (!partyId) return null;
     try {
-      const res = await this.apiService.get<CitizenExtended>(
-        { url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}` },
-        req.user,
-      );
+      const res = await this.apiService.get<CitizenExtended>({ url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}` }, req.user);
       const populationAddress = (res?.data?.addresses ?? []).find(isPopulationRegistration);
       return populationAddress ? toApplicantAddress(populationAddress) : null;
     } catch (err) {
-      logger.warn(
-        `[economic-aid] applicant population-address lookup failed: ${(err as Error)?.message ?? err}`,
-      );
+      logger.warn(`[economic-aid] applicant population-address lookup failed: ${(err as Error)?.message ?? err}`);
       return null;
     }
   }
 }
-
-const buildVerificationParameters = (verification: HouseholdVerification): Parameter[] => [
-  {
-    key: 'householdAddressVerification',
-    displayName: 'Hushållskontroll – folkbokföringsadress',
-    parameterGroup: 'application',
-    values: [JSON.stringify(verification)],
-  },
-  // Denormalised so caseworker lists and BPMN/DMN rules can filter on
-  // "has discrepancy" without parsing the JSON blob.
-  {
-    key: 'householdAddressFlagsCount',
-    displayName: 'Antal avvikelser i hushållets folkbokföring',
-    parameterGroup: 'application',
-    values: [String(verification.flags.length)],
-  },
-];

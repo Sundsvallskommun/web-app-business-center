@@ -212,3 +212,37 @@ export interface EconomicAidApplicationV1 {
 export interface SubmitApplicationResponse {
   errandId: string;
 }
+
+/**
+ * A single application caremanagement suggests the citizen can submit
+ * (nyansökan / återansökan / tilläggsansökan), identified by its typeSlug.
+ * Mirrors caremanagement's ApplicationSuggestion, trimmed to what the
+ * frontend needs.
+ */
+export interface EligibilitySuggestion {
+  /** The errand type slug to create the application against. */
+  typeSlug: string;
+  /** The application type the slug maps to (NEW / RETURNING / SUPPLEMENTARY ...). */
+  applicationType: string | null;
+  /** Human-readable Swedish label for the suggestion. */
+  label: string;
+  /** True for the primary suggestion the citizen should be guided towards. */
+  recommended: boolean;
+  /** Month (1-12) the suggestion concerns. Null for a new application. */
+  periodMonth: number | null;
+  /** Year the suggestion concerns. Null for a new application. */
+  periodYear: number | null;
+}
+
+/**
+ * Result of resolving which financial assistance application(s) to offer.
+ * Returned to the frontend after the civilstånd step.
+ */
+export interface EligibilityResult {
+  /** Suggested applications, recommended one first. Empty when nothing can be offered automatically. */
+  suggestions: EligibilitySuggestion[];
+  /** Human-readable Swedish explanation of the result. */
+  message: string | null;
+  /** Machine-readable code for the gate that drove the suggestion (NO_EXISTING_CASE, CIVILSTAND_CHANGED, EXISTING_CASE). */
+  reasonCode: string | null;
+}

@@ -16,9 +16,10 @@ import { useSnackbar } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { MaritalStatus, isFinancialAssistanceSlug } from '@interfaces/financial-assistance';
 import { ApplicationProgressStepper } from './components/application-progress-stepper.component';
-// DEV ONLY — radera importen och komponenten nedan när SSBTEK-prefill finns.
-import { TestPersonPicker } from './components/test-person-picker.component';
+import { FinancialAssistanceApplication } from './financial-assistance/financial-assistance-application.component';
 import { STEP_COMPONENTS } from './steps/step-registry';
 
 const FIRST_STEP = 0;
@@ -31,6 +32,7 @@ interface SubmitResponse {
 export const EconomicAidApplication: React.FC = () => {
   const router = useRouter();
   const toastMessage = useSnackbar();
+  const { t } = useTranslation('economic-aid');
   const [currentStep, setCurrentStep] = useState(FIRST_STEP);
 
   const form = useForm<EconomicAidApplicationV1>({
@@ -91,6 +93,26 @@ export const EconomicAidApplication: React.FC = () => {
     router.push(`/privat/arenden?inskickad=${encodeURIComponent(result.errandId ?? '')}`);
   });
 
+  // Once the applicant picks a suggestion, the financial-assistance application takes over.
+  const chosenTypeSlug = form.watch('chosenTypeSlug');
+  if (chosenTypeSlug && isFinancialAssistanceSlug(chosenTypeSlug)) {
+    const civilstand = form.getValues('hushall.civilstand');
+    const maritalStatus: MaritalStatus = civilstand === 'gift' || civilstand === 'sambo' ? 'COHABITING' : 'SINGLE';
+    const suggestion = (form.getValues('eligibility')?.suggestions ?? []).find(
+      (item) => item.typeSlug === chosenTypeSlug,
+    );
+    return (
+      <FinancialAssistanceApplication
+        slug={chosenTypeSlug}
+        maritalStatus={maritalStatus}
+        periodMonth={suggestion?.periodMonth ?? null}
+        periodYear={suggestion?.periodYear ?? null}
+        coApplicantPersonalNumber={form.getValues('hushall.medsokande.personnummer')}
+        onExit={() => form.setValue('chosenTypeSlug', null)}
+      />
+    );
+  }
+
   const step = ECONOMIC_AID_STEPS[currentStep];
   const StepComponent = STEP_COMPONENTS[step.key];
 
@@ -98,11 +120,9 @@ export const EconomicAidApplication: React.FC = () => {
     <FormProvider {...form}>
       <form className="flex flex-col gap-32" onSubmit={handleSubmit} data-cy="economic-aid-form">
         <header className="text-content">
-          <h1>Ansökan om ekonomiskt bistånd</h1>
-          <p>Sundsvalls Kommun — Individ- och familjeförvaltningen</p>
+          <h1>{t('economic-aid:header.title')}</h1>
+          <p>{t('economic-aid:header.subtitle')}</p>
         </header>
-
-        <TestPersonPicker />
 
         <ApplicationProgressStepper current={currentStep} />
 

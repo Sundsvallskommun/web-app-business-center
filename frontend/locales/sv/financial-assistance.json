@@ -1,0 +1,262 @@
+{
+  "header": {
+    "title": "Ansökan om ekonomiskt bistånd"
+  },
+  "type": {
+    "NEW": "Nyansökan",
+    "RENEWAL": "Återansökan",
+    "SUPPLEMENTARY": "Tilläggsansökan"
+  },
+  "groups": {
+    "period-norm": "Period & norm",
+    "household-housing": "Hushåll & boende",
+    "economy": "Ekonomi",
+    "planning": "Planering",
+    "payment": "Utbetalning",
+    "review": "Granska & skicka"
+  },
+  "stepOf": "Steg {{current}} av {{total}}",
+  "common": {
+    "yes": "Ja",
+    "no": "Nej"
+  },
+  "maritalStatus": {
+    "SINGLE": "Ensamstående",
+    "COHABITING": "Gift eller sambo"
+  },
+  "periodChoice": {
+    "CURRENT_MONTH": "Denna månad",
+    "NEXT_MONTH": "Nästa månad",
+    "OTHER_BENEFIT": "Annat bistånd"
+  },
+  "normType": {
+    "RIKSNORM": "Riksnorm",
+    "OTHER_NORM": "Annan norm"
+  },
+  "residenceExtent": {
+    "FULL_TIME": "Heltid",
+    "HALF_TIME": "Växelvis / halvtid",
+    "OTHER": "Annat"
+  },
+  "housingForm": {
+    "NO_HOUSING_OR_INSTITUTION": "Utan bostad eller på institution",
+    "RENTAL": "Hyreslägenhet",
+    "SUBLET": "Andrahandsboende",
+    "LODGER": "Inneboende",
+    "CONDOMINIUM": "Bostadsrätt",
+    "OWNED_HOUSE": "Egen villa/fastighet",
+    "RENTED_HOUSE": "Hyrd villa",
+    "LIVING_WITH_PARENTS": "Bor hos förälder"
+  },
+  "child": {
+    "heading": "Barn {{number}}",
+    "remove": "Ta bort",
+    "firstName": "Förnamn",
+    "lastName": "Efternamn",
+    "personalNumber": "Personnummer",
+    "schoolName": "Skola (frivilligt)",
+    "residenceExtent": "Bor i hemmet",
+    "daysInHome": "Antal dagar per månad i hemmet",
+    "select": "Välj …"
+  },
+  "householdHousing": {
+    "heading": "Hushåll och boende",
+    "hasChildrenLabel": "Har du barn under 21 år som bor helt eller delvis i hemmet?",
+    "addChild": "Lägg till barn",
+    "childrenChangedLabel": "Har barnens boende ändrats sedan senaste ansökan?",
+    "changeDescriptionPlaceholder": "Beskriv förändringen",
+    "housingChangedLabel": "Har ditt boende ändrats sedan senaste ansökan?",
+    "housingHeading": "Boende",
+    "housingFormLabel": "Boendeform",
+    "adultsLabel": "Antal vuxna i boendet",
+    "childrenCountLabel": "Antal barn i boendet",
+    "roomsLabel": "Antal rum + kök",
+    "housingDescriptionLabel": "Beskriv din boendesituation"
+  },
+  "costType": {
+    "RENT": "Hyra",
+    "ELECTRICITY": "Hushållsel",
+    "HOME_INSURANCE": "Hemförsäkring",
+    "INTERNET": "Internet/bredband",
+    "UNEMPLOYMENT_FUND": "A-kassa",
+    "UNION_FEE": "Fackavgift",
+    "TRAVEL_APPROVED": "Godkända resor",
+    "TRAVEL_MEDICAL_TRANSPORT": "Sjukresor",
+    "MEDICAL_CARE": "Sjukvård",
+    "MEDICINE": "Medicin",
+    "OTHER": "Övrigt bistånd"
+  },
+  "costOtherSubType": {
+    "OTHER": "Övrigt",
+    "MUNICIPAL_FEES": "Kommunala avgifter",
+    "ACUTE_DENTAL": "Akut tandvård"
+  },
+  "incomeType": {
+    "SALARY": "Lön",
+    "OCCUPATIONAL_PENSION_INSURANCE": "Tjänstepension/försäkring",
+    "CHILD_SUPPORT": "Underhållsstöd",
+    "SWISH_DEPOSITS": "Swish-insättningar",
+    "RENT_SHARE_FROM_CHILD": "Hyresdel från barn",
+    "FINANCIAL_AID_OTHER_MUNICIPALITY": "Bistånd från annan kommun",
+    "OTHER_INCOME": "Övrig inkomst"
+  },
+  "recipient": {
+    "APPLICANT": "Sökande",
+    "CO_APPLICANT": "Medsökande"
+  },
+  "assetCategory": {
+    "BANK_SAVINGS": "Banktillgodohavande / sparande",
+    "REAL_ESTATE": "Fastighet",
+    "COMPANY": "Företag",
+    "VEHICLE": "Fordon"
+  },
+  "propertyType": {
+    "BOSTADSRATT": "Bostadsrätt",
+    "VILLA": "Villa",
+    "FASTIGHET": "Fastighet",
+    "FRITIDSHUS": "Fritidshus"
+  },
+  "vehicleType": {
+    "BIL": "Bil",
+    "BAT": "Båt",
+    "MC": "MC",
+    "HUSVAGN": "Husvagn",
+    "MOPED": "Moped",
+    "SNOSKOTER": "Snöskoter"
+  },
+  "economy": {
+    "heading": "Ekonomi",
+    "select": "Välj …",
+    "remove": "Ta bort",
+    "recipientLabel": "Avser",
+    "costsHeading": "Kostnader du ansöker om",
+    "addCost": "Lägg till kostnad",
+    "incomesHeading": "Inkomster",
+    "hasIncomesLabel": "Har du eller din medsökande några inkomster?",
+    "addIncome": "Lägg till inkomst",
+    "pendingBenefitsHeading": "Väntande ersättningar",
+    "hasPendingBenefitsLabel": "Väntar du på beslut om någon ersättning?",
+    "addPendingBenefit": "Lägg till ersättning",
+    "assetsHeading": "Tillgångar",
+    "hasAssetsLabel": "Har du eller din medsökande några tillgångar?",
+    "addAsset": "Lägg till tillgång",
+    "cost": {
+      "heading": "Kostnad {{number}}",
+      "typeLabel": "Typ av kostnad",
+      "amountLabel": "Belopp (kr)",
+      "subTypeLabel": "Underkategori",
+      "specificationLabel": "Vad avser kostnaden?",
+      "recipientOrPeriodLabel": "För vem / vilken period"
+    },
+    "income": {
+      "heading": "Inkomst {{number}}",
+      "typeLabel": "Typ av inkomst",
+      "amountLabel": "Belopp (kr)",
+      "dateLabel": "Datum"
+    },
+    "pendingBenefit": {
+      "heading": "Ersättning {{number}}",
+      "benefitNameLabel": "Vilken ersättning?",
+      "applicantNameLabel": "Vem har ansökt?"
+    },
+    "asset": {
+      "heading": "Tillgång {{number}}",
+      "categoryLabel": "Typ av tillgång",
+      "valueLabel": "Värde (kr)",
+      "descriptionLabel": "Beskrivning",
+      "propertyTypeLabel": "Typ av fastighet",
+      "purchaseYearLabel": "Inköpsår",
+      "purchasePriceLabel": "Inköpspris (kr)",
+      "companyNameLabel": "Företagsnamn",
+      "companyAssetSumLabel": "Företagets tillgångar (kr)",
+      "vehicleTypeLabel": "Typ av fordon",
+      "registrationNumberLabel": "Registreringsnummer",
+      "purchaseDateLabel": "Inköpsdatum"
+    }
+  },
+  "planningType": {
+    "WORK": "Arbete",
+    "JOBSEEKING": "Arbetssökande",
+    "SICK_LEAVE": "Sjukskrivning",
+    "SFI": "SFI",
+    "OTHER": "Övrigt"
+  },
+  "workExtent": {
+    "FULL": "Heltid",
+    "PART": "Deltid"
+  },
+  "paymentMethod": {
+    "BANK_ACCOUNT": "Bankkonto",
+    "OTHER": "Annat"
+  },
+  "planning": {
+    "heading": "Planering",
+    "remove": "Ta bort",
+    "personLabel": "Avser",
+    "typeLabel": "Typ av planering",
+    "workExtentLabel": "Omfattning",
+    "workDescriptionLabel": "Beskrivning av arbetet",
+    "sickLeaveLevelLabel": "Sjukskrivningsgrad",
+    "sickFromLabel": "Sjukskriven från",
+    "sickToLabel": "Sjukskriven till",
+    "sfiStudyPathLabel": "Studieväg (SFI)",
+    "sfiCourseLabel": "Kurs (SFI)",
+    "otherDescriptionLabel": "Beskrivning",
+    "planningsHeading": "Din planering",
+    "addPlanning": "Lägg till planering",
+    "activitiesHeading": "Planerade aktiviteter (Arbetsförmedlingen)",
+    "addActivity": "Lägg till aktivitet",
+    "jobApplicationsHeading": "Sökta jobb",
+    "addJobApplication": "Lägg till sökt jobb",
+    "planning": {
+      "heading": "Planering {{number}}"
+    },
+    "activity": {
+      "heading": "Aktivitet {{number}}",
+      "activityLabel": "Aktivitet",
+      "fromLabel": "Från",
+      "toLabel": "Till"
+    },
+    "jobApplication": {
+      "heading": "Sökt jobb {{number}}",
+      "dateLabel": "Datum",
+      "jobTitleLabel": "Tjänst",
+      "employerLabel": "Arbetsgivare och ort"
+    }
+  },
+  "payment": {
+    "heading": "Utbetalning",
+    "ingress": "Ange hur biståndet ska betalas ut.",
+    "methodLabel": "Utbetalningssätt",
+    "clearingLabel": "Clearingnummer",
+    "accountLabel": "Kontonummer",
+    "otherDescriptionLabel": "Beskriv utbetalningssätt",
+    "sameAsPreviousLabel": "Samma konto som föregående utbetalning?",
+    "needsInterpreterLabel": "Behöver du tolk?",
+    "interpreterLanguageLabel": "Vilket språk?",
+    "hadWorkLabel": "Har du haft arbete de senaste 12 månaderna?",
+    "hadWorkDescriptionLabel": "Beskriv arbetet"
+  },
+  "periodNorm": {
+    "heading": "Period och norm",
+    "maritalStatusLabel": "Civilstånd",
+    "periodChoiceLabel": "Vilken period gäller ansökan?",
+    "otherBenefitPlaceholder": "Beskriv vilket annat bistånd ansökan avser",
+    "periodLabel": "Ansökningsperiod",
+    "periodValue": "{{month}}/{{year}}",
+    "normTypeLabel": "Norm"
+  },
+  "review": {
+    "heading": "Granska och skicka",
+    "summaryHeading": "Kontrollera att uppgifterna stämmer innan du skickar in.",
+    "staysLabel": "Vistas du i kommunen under ansökningsmånaden?",
+    "stayDescriptionPlaceholder": "Beskriv varför",
+    "attestation": "Jag intygar på heder och samvete att uppgifterna jag lämnat är riktiga och fullständiga.",
+    "submit": "Skicka in ansökan"
+  },
+  "placeholder": {
+    "body": "Den här delen av formuläret byggs i nästa steg."
+  },
+  "submitSuccess": "Din ansökan har skickats in!",
+  "submitError": "Något gick fel när ansökan skulle skickas in. Försök igen senare."
+}

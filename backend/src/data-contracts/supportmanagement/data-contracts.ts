@@ -817,11 +817,6 @@ export interface JsonNode {
   number?: boolean;
   string?: boolean;
   boolean?: boolean;
-  valueNode?: boolean;
-  container?: boolean;
-  missingNode?: boolean;
-  nodeType?: JsonNodeNodeTypeEnum;
-  integralNumber?: boolean;
   pojo?: boolean;
   floatingPointNumber?: boolean;
   short?: boolean;
@@ -833,6 +828,11 @@ export interface JsonNode {
   /** @deprecated */
   textual?: boolean;
   binary?: boolean;
+  valueNode?: boolean;
+  container?: boolean;
+  missingNode?: boolean;
+  nodeType?: JsonNodeNodeTypeEnum;
+  integralNumber?: boolean;
   embeddedValue?: boolean;
 }
 
@@ -916,7 +916,7 @@ export interface Parameter {
 
 /** Stakeholder model */
 export interface Stakeholder {
-  /** Unique identifier for the stakeholder */
+  /** Unique identifier (partyId) for the stakeholder. Must be null or a valid UUID. */
   externalId?: string;
   /** Type of external id */
   externalIdType?: string;
@@ -1194,6 +1194,95 @@ export interface Conversation {
   metadata?: KeyValues[];
 }
 
+export interface PageSubscriberNotification {
+  /** @format int64 */
+  totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
+  /** @format int32 */
+  size?: number;
+  content?: SubscriberNotification[];
+  /** @format int32 */
+  number?: number;
+  first?: boolean;
+  last?: boolean;
+  /** @format int32 */
+  numberOfElements?: number;
+  sort?: SortObject;
+  pageable?: PageableObject;
+  empty?: boolean;
+}
+
+export interface PageableObject {
+  /** @format int64 */
+  offset?: number;
+  sort?: SortObject;
+  paged?: boolean;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  unpaged?: boolean;
+}
+
+export interface SortObject {
+  empty?: boolean;
+  sorted?: boolean;
+  unsorted?: boolean;
+}
+
+export interface SubscriberNotification {
+  /**
+   * Unique identifier for the notification
+   * @example "123e4567-e89b-12d3-a456-426614174000"
+   */
+  id?: string;
+  /**
+   * Timestamp when the notification was created
+   * @format date-time
+   * @example "2000-10-31T01:30:00.000+02:00"
+   */
+  created?: string;
+  /**
+   * Timestamp when the notification was last modified
+   * @format date-time
+   * @example "2000-10-31T01:30:00.000+02:00"
+   */
+  modified?: string;
+  /**
+   * Identifier type of the notification owner
+   * @example "adAccount"
+   */
+  identifierType?: string;
+  /**
+   * Identifier value of the notification owner
+   * @example "joe01doe"
+   */
+  identifierValue?: string;
+  /**
+   * ID of the errand this notification relates to
+   * @example "f0882f1d-06bc-47fd-b017-1d8307f5ce95"
+   */
+  errandId?: string;
+  /**
+   * Number of the errand this notification relates to
+   * @example "PRH-2022-000001"
+   */
+  errandNumber?: string;
+  /**
+   * Timestamp when the notification expires
+   * @format date-time
+   * @example "2000-10-31T01:30:00.000+02:00"
+   */
+  expires?: string;
+  /**
+   * Timestamp when the notification was acknowledged, null if not yet acknowledged
+   * @format date-time
+   * @example "2000-10-31T01:30:00.000+02:00"
+   */
+  acknowledged?: string;
+}
+
 /** Action definition model describing an available action and its conditions/parameters */
 export interface ActionDefinition {
   /** Name of the action */
@@ -1263,24 +1352,6 @@ export interface PageErrand {
   sort?: SortObject;
   pageable?: PageableObject;
   empty?: boolean;
-}
-
-export interface PageableObject {
-  /** @format int64 */
-  offset?: number;
-  sort?: SortObject;
-  unpaged?: boolean;
-  paged?: boolean;
-  /** @format int32 */
-  pageNumber?: number;
-  /** @format int32 */
-  pageSize?: number;
-}
-
-export interface SortObject {
-  empty?: boolean;
-  unsorted?: boolean;
-  sorted?: boolean;
 }
 
 /** Revision model */

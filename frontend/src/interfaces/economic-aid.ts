@@ -224,8 +224,40 @@ export interface SamtyckeStep {
   notifyChanges: boolean;
 }
 
+/**
+ * A financial assistance application caremanagement suggests the citizen can
+ * submit, identified by its typeSlug. Returned from /economic-aid/eligibility
+ * after the civilstånd step. Mirrors the backend EligibilitySuggestion.
+ */
+export interface EligibilitySuggestion {
+  typeSlug: string;
+  applicationType: string | null;
+  label: string;
+  recommended: boolean;
+  periodMonth: number | null;
+  periodYear: number | null;
+}
+
+/** Result of resolving which application(s) to offer for the logged-in applicant. */
+export interface EligibilityResult {
+  suggestions: EligibilitySuggestion[];
+  message: string | null;
+  /** NO_EXISTING_CASE | CIVILSTAND_CHANGED | EXISTING_CASE. */
+  reasonCode: string | null;
+}
+
 export interface EconomicAidApplicationV1 {
   schemaVersion: EconomicAidSchemaVersion;
+  /**
+   * Result of the eligibility lookup (civilstånd + personnummer → typeSlugs).
+   * Transient — populated after the civilstånd step, drives the form steps.
+   */
+  eligibility: EligibilityResult | null;
+  /**
+   * The financial-assistance typeSlug the applicant picked from the suggestions.
+   * Transient — when set, the financial-assistance application form takes over.
+   */
+  chosenTypeSlug: string | null;
   vagval: VagvalStep;
   identitet: IdentitetStep;
   hushall: HushallStep;
@@ -240,6 +272,8 @@ export interface EconomicAidApplicationV1 {
 
 export const emptyEconomicAidApplication = (): EconomicAidApplicationV1 => ({
   schemaVersion: ECONOMIC_AID_SCHEMA_VERSION,
+  eligibility: null,
+  chosenTypeSlug: null,
   vagval: { kind: null },
   identitet: {
     vistelseadressStammer: null,
@@ -298,17 +332,20 @@ export const emptyEconomicAidApplication = (): EconomicAidApplicationV1 => ({
   },
 });
 
+/**
+ * Aktivt flöde under ombyggnaden. Ansökan styrs framåt av typeSlugs som
+ * caremanagement returnerar utifrån civilstånd + personnummer — de stegen
+ * renderas dynamiskt i ett senare skede. Tills dess är flödet:
+ * information → civilstånd → (platshållare för det dynamiska formuläret).
+ *
+ * De tidigare stegen (vagval, identitet, hushall, boende ...) ligger kvar
+ * som typer/komponenter men är frånkopplade från flödet. Civilstånds-steget
+ * skriver till `hushall.civilstand` så ingen datamodell dubbleras.
+ */
 export const ECONOMIC_AID_STEPS = [
-  { key: 'vagval', label: 'Vägval' },
-  { key: 'identitet', label: 'Sökande' },
-  { key: 'hushall', label: 'Hushåll' },
-  { key: 'boende', label: 'Boende' },
-  { key: 'sysselsattning', label: 'Sysselsättning' },
-  { key: 'inkomster', label: 'Inkomster' },
-  { key: 'utgifter', label: 'Kostnader' },
-  { key: 'situation', label: 'Situation' },
-  { key: 'utbetalning', label: 'Utbetalning' },
-  { key: 'samtycke', label: 'Bekräftelse' },
+  { key: 'information', label: 'Information' },
+  { key: 'civilstand', label: 'Civilstånd' },
+  { key: 'formular', label: 'Ansökan' },
 ] as const;
 
 export type EconomicAidStepKey = (typeof ECONOMIC_AID_STEPS)[number]['key'];

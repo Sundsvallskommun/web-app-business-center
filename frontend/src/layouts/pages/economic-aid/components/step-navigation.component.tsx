@@ -32,19 +32,21 @@ export const StepNavigation: React.FC<StepNavigationProps> = ({
           Tillbaka
         </Button>
       )}
-      <Button
-        data-cy="economic-aid-step-forward"
-        size="lg"
-        color="vattjom"
-        rightIcon={<ArrowRight />}
-        type={isSubmit ? 'submit' : 'button'}
-        onClick={isSubmit ? undefined : onNext}
-        disabled={forwardDisabled}
-        loading={forwardLoading}
-        loadingText="Skickar"
-      >
-        {forwardLabel}
-      </Button>
+      {(onNext || isSubmit) && (
+        <Button
+          data-cy="economic-aid-step-forward"
+          size="lg"
+          color="vattjom"
+          rightIcon={<ArrowRight />}
+          type={isSubmit ? 'submit' : 'button'}
+          onClick={isSubmit ? undefined : onNext}
+          disabled={forwardDisabled}
+          loading={forwardLoading}
+          loadingText="Skickar"
+        >
+          {forwardLabel}
+        </Button>
+      )}
     </div>
   );
 };

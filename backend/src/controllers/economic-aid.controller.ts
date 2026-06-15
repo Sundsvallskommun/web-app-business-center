@@ -1,6 +1,8 @@
-import { MUNICIPALITY_ID } from '@/config';
+import { CAREMANAGEMENT_NAMESPACE, MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { Errand, Parameter, Stakeholder } from '@/data-contracts/caremanagement/data-contracts';
+import CaremanagementApiService from '@/services/caremanagement-api.service';
+import { caremanagementUrl } from '@/utils/caremanagement-url';
 import { CitizenAddress, CitizenExtended, PersonGuidBatch } from '@/data-contracts/citizen/data-contracts';
 import { EconomicAidApplicationDto } from '@/dtos/economic-aid.dto';
 import { HttpException } from '@/exceptions/HttpException';
@@ -20,7 +22,17 @@ import { logger } from '@utils/logger';
 import { Body, Controller, Get, Post, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
-const NAMESPACE = 'IFO_EKONOMISKT_BISTAND';
+const NAMESPACE = CAREMANAGEMENT_NAMESPACE;
+
+/**
+ * caremanagement returns 201 Created with an empty body and the new resource in the Location
+ * header. We pull the errand id off the last path segment.
+ */
+const errandIdFromLocation = (location?: string): string | undefined => {
+  if (!location) return undefined;
+  const segments = location.split('/').filter(Boolean);
+  return segments[segments.length - 1] || undefined;
+};
 
 // Citizen-API:t taggar folkbokföringsadressen med addressType. Värdet
 // kan variera mellan miljöer ("POPULATION_REGISTRATION_ADDRESS",
@@ -195,6 +207,7 @@ export const applicationToErrand = (data: EconomicAidApplicationV1, req: Request
 @Controller()
 export class EconomicAidController {
   private apiService = new ApiService();
+  private caremanagementApiService = new CaremanagementApiService();
   private citizenApiBase = getApiBase('citizen');
 
   @Get('/economic-aid/applicant-profile')
@@ -268,14 +281,27 @@ export class EconomicAidController {
     const verification = await this.verifyHouseholdAddresses(body, req);
     errand.parameters!.push(...buildVerificationParameters(verification));
 
-    // FIXME: ersätt detta med ett riktigt POST mot caremanagement-/{municipalityId}/{namespace}/errands
-    // när IFO-namespacet är registrerat och authn-policyn för Mina sidor → caremanagement är på plats.
-    // Tills dess loggar vi payloaden för utveckling/granskning och returnerar en stub-id.
-    logger.info(`[economic-aid] would submit errand for partyId=${req.user.partyId} kind=${body.vagval.kind}`);
-    logger.debug(`[economic-aid] errand payload: ${JSON.stringify(errand)}`);
+    // POST directly to the caremanagement instance (Dokploy), bypassing the API gateway.
+    // caremanagement answers 201 Created with an empty body and the new errand in Location.
+    const created = await this.caremanagementApiService.post<unknown>({
+      url: caremanagementUrl('errands'),
+      data: errand,
+    });
+
+    const errandId = errandIdFromLocation(created.location);
+    if (!errandId) {
+      logger.error(
+        `[economic-aid] caremanagement create returned no Location header (partyId=${req.user.partyId})`,
+      );
+      throw new HttpException(502, 'Errand was created but no id was returned from caremanagement');
+    }
+
+    logger.info(
+      `[economic-aid] submitted errand ${errandId} for partyId=${req.user.partyId} kind=${body.vagval.kind}`,
+    );
 
     return {
-      data: { errandId: `stub-${Date.now()}` },
+      data: { errandId },
       message: 'success',
     };
   }

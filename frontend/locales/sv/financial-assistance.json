@@ -246,7 +246,6 @@
       "partTimeWarning": "Vid deltid behöver du lägga till ytterligare planering så att din totala planering blir på heltid.",
       "sfi": "När du är SFI-studerande ska du också vara inskriven på och ha en aktuell planering med Arbetsförmedlingen och delta i deras insatser. Du behöver också välja \"Arbetssökande\"."
     },
-    "personLabel": "Avser",
     "typeLabel": "Typ av planering",
     "workExtentLabel": "Omfattning",
     "workDescriptionLabel": "Beskrivning av arbetet",

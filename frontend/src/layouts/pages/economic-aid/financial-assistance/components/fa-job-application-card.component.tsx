@@ -1,21 +1,21 @@
-import { FinancialAssistanceFormData, PersonRole } from '@interfaces/financial-assistance';
-import { Button, Card, FormControl, FormLabel, Icon, Input, Select } from '@sk-web-gui/react';
+import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
+import { Button, Card, FormControl, FormLabel, Icon, Input } from '@sk-web-gui/react';
 import { X } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-const PERSON_ROLES: PersonRole[] = ['APPLICANT', 'CO_APPLICANT'];
-
 interface FaJobApplicationCardProps {
   index: number;
-  showPerson: boolean;
   onRemove: () => void;
 }
 
-/** One submitted job application / sökt jobb (errand_fa_job_application). */
-export const FaJobApplicationCard: React.FC<FaJobApplicationCardProps> = ({ index, showPerson, onRemove }) => {
+/**
+ * One submitted job application / sökt jobb (errand_fa_job_application).
+ * Vem jobbansökan avser styrs av personsektionen i steget — ingen personväljare här.
+ */
+export const FaJobApplicationCard: React.FC<FaJobApplicationCardProps> = ({ index, onRemove }) => {
   const { t } = useTranslation('financial-assistance');
-  const { register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
+  const { register } = useFormContext<FinancialAssistanceFormData>();
 
   return (
     <Card data-cy={`fa-job-application-${index}`} className="flex flex-col gap-16 p-24">
@@ -34,33 +34,6 @@ export const FaJobApplicationCard: React.FC<FaJobApplicationCardProps> = ({ inde
           {t('financial-assistance:planning.remove')}
         </Button>
       </header>
-
-      {showPerson ? (
-        <FormControl className="w-full max-w-[20rem]">
-          <FormLabel htmlFor={`fa-job-application-${index}-person`}>
-            {t('financial-assistance:planning.personLabel')}
-          </FormLabel>
-          <Select
-            id={`fa-job-application-${index}-person`}
-            className="w-full"
-            value={watch(`jobApplications.${index}.person` as const) || ''}
-            onSelectValue={(next) =>
-              setValue(`jobApplications.${index}.person` as const, (next as PersonRole | '') || '', {
-                shouldDirty: true,
-              })
-            }
-          >
-            <Select.Option value="" disabled>
-              {t('financial-assistance:economy.select')}
-            </Select.Option>
-            {PERSON_ROLES.map((value) => (
-              <Select.Option key={value} value={value}>
-                {t(`financial-assistance:recipient.${value}`)}
-              </Select.Option>
-            ))}
-          </Select>
-        </FormControl>
-      ) : null}
 
       <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
         <FormControl className="w-full">

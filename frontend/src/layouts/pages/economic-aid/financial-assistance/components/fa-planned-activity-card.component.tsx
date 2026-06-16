@@ -1,21 +1,21 @@
-import { FinancialAssistanceFormData, PersonRole } from '@interfaces/financial-assistance';
-import { Button, Card, FormControl, FormLabel, Icon, Input, Select } from '@sk-web-gui/react';
+import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
+import { Button, Card, FormControl, FormLabel, Icon, Input } from '@sk-web-gui/react';
 import { X } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-const PERSON_ROLES: PersonRole[] = ['APPLICANT', 'CO_APPLICANT'];
-
 interface FaPlannedActivityCardProps {
   index: number;
-  showPerson: boolean;
   onRemove: () => void;
 }
 
-/** One planned activity towards self-sufficiency / AF-planering (errand_fa_planned_activity). */
-export const FaPlannedActivityCard: React.FC<FaPlannedActivityCardProps> = ({ index, showPerson, onRemove }) => {
+/**
+ * One planned activity towards self-sufficiency / AF-planering (errand_fa_planned_activity).
+ * Vem aktiviteten avser styrs av personsektionen i steget — ingen personväljare här.
+ */
+export const FaPlannedActivityCard: React.FC<FaPlannedActivityCardProps> = ({ index, onRemove }) => {
   const { t } = useTranslation('financial-assistance');
-  const { register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
+  const { register } = useFormContext<FinancialAssistanceFormData>();
 
   return (
     <Card data-cy={`fa-planned-activity-${index}`} className="flex flex-col gap-16 p-24">
@@ -34,33 +34,6 @@ export const FaPlannedActivityCard: React.FC<FaPlannedActivityCardProps> = ({ in
           {t('financial-assistance:planning.remove')}
         </Button>
       </header>
-
-      {showPerson ? (
-        <FormControl className="w-full max-w-[20rem]">
-          <FormLabel htmlFor={`fa-planned-activity-${index}-person`}>
-            {t('financial-assistance:planning.personLabel')}
-          </FormLabel>
-          <Select
-            id={`fa-planned-activity-${index}-person`}
-            className="w-full"
-            value={watch(`plannedActivities.${index}.person` as const) || ''}
-            onSelectValue={(next) =>
-              setValue(`plannedActivities.${index}.person` as const, (next as PersonRole | '') || '', {
-                shouldDirty: true,
-              })
-            }
-          >
-            <Select.Option value="" disabled>
-              {t('financial-assistance:economy.select')}
-            </Select.Option>
-            {PERSON_ROLES.map((value) => (
-              <Select.Option key={value} value={value}>
-                {t(`financial-assistance:recipient.${value}`)}
-              </Select.Option>
-            ))}
-          </Select>
-        </FormControl>
-      ) : null}
 
       <FormControl className="w-full">
         <FormLabel htmlFor={`fa-planned-activity-${index}-activity`}>

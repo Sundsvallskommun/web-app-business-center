@@ -122,7 +122,7 @@
   "costOtherSubType": {
     "OTHER": "Övrigt",
     "MUNICIPAL_FEES": "Kommunala avgifter",
-    "ACUTE_DENTAL": "Akut tandvård"
+    "ACUTE_DENTAL": "Akut tandvård/basundersökning"
   },
   "incomeType": {
     "SALARY": "Lön",
@@ -142,7 +142,7 @@
     "REAL_ESTATE": "Fastighet",
     "COMPANY": "Företag",
     "VEHICLE": "Fordon",
-    "OTHER": "Övrig tillgång"
+    "OTHER": "Konst, smycken eller andra övriga tillgångar"
   },
   "propertyType": {
     "BOSTADSRATT": "Bostadsrätt",
@@ -204,6 +204,7 @@
       "categoryLabel": "Typ av tillgång",
       "valueLabel": "Värde (kr)",
       "descriptionLabel": "Beskrivning",
+      "whatLabel": "Ange vad",
       "propertyTypeLabel": "Typ av fastighet",
       "purchaseYearLabel": "Inköpsår",
       "purchasePriceLabel": "Inköpspris (kr)",
@@ -225,9 +226,9 @@
   "planningType": {
     "WORK": "Arbete",
     "JOBSEEKING": "Arbetssökande",
-    "SICK_LEAVE": "Sjukskrivning",
-    "SFI": "SFI",
-    "OTHER": "Övrigt"
+    "SICK_LEAVE": "Sjukskriven",
+    "SFI": "SFI-studerande",
+    "OTHER": "Annan planering (exempelvis föräldraledig, behandling, studerande, sjuk-/aktivitetsersättning eller annan planering som jag och min handläggare har kommit överens om)"
   },
   "workExtent": {
     "FULL": "Heltid",
@@ -243,9 +244,9 @@
     "info": {
       "jobseeking": "När du är arbetssökande ska du vara inskriven på och ha en aktuell planering med Arbetsförmedlingen, aktivt söka jobb och delta i Arbetsförmedlingens insatser.",
       "sickLeave": "När du är sjukskriven ska du ha ett giltigt läkarintyg för aktuell period. Bifoga läkarintyget om du inte redan har gjort det.",
-      "partialSickWarning": "Vid deltidssjukskrivning behöver du lägga till ytterligare planering så att din totala planering blir på heltid.",
+      "partialSickWarning": "Om du är deltidssjukskriven behöver du välja ytterligare alternativ för din planering då du behöver ha en planering på heltid",
       "partTimeWarning": "Vid deltid behöver du lägga till ytterligare planering så att din totala planering blir på heltid.",
-      "sfi": "När du är SFI-studerande ska du också vara inskriven på och ha en aktuell planering med Arbetsförmedlingen och delta i deras insatser. Du behöver också välja \"Arbetssökande\"."
+      "sfi": "När du är SFI-studerande ska du också vara inskriven på och ha en aktuell planering med Arbetsförmedlingen och delta i Arbetsförmedlingens insatser."
     },
     "typeLabel": "Typ av planering",
     "workExtentLabel": "Omfattning",
@@ -256,9 +257,10 @@
     "sfiStudyPathLabel": "Studieväg (SFI)",
     "sfiCourseLabel": "Kurs (SFI)",
     "otherDescriptionLabel": "Beskrivning",
-    "planningsHeading": "Din planering",
-    "personPlanning": "{{name}}s planering",
-    "coApplicantPlanning": "Medsökandes planering",
+    "planningsHeading": "Vilken planering har du?",
+    "personPlanning": "Vilken planering har {{name}}?",
+    "coApplicantPlanning": "Vilken planering har medsökande?",
+    "planningIntro": "Du behöver ha och redovisa en planering på heltid, du kan välja flera alternativ om du exempelvis är sjukskriven 75% och arbetssökande 25%.",
     "addPlanning": "Lägg till planering",
     "activitiesHeading": "Planerade aktiviteter (Arbetsförmedlingen)",
     "addActivity": "Lägg till aktivitet",
@@ -282,13 +284,15 @@
   },
   "payment": {
     "heading": "Utbetalning",
-    "ingress": "Ange hur biståndet ska betalas ut.",
-    "ingressCohabiting": "Biståndet delas lika till er båda — ni behöver uppge varsitt konto som eventuell utbetalning kan göras till.",
+    "payoutQuestion": "Hur vill du ha eventuellt bistånd utbetalt?",
+    "payoutQuestion_ni": "Hur vill ni ha eventuellt bistånd utbetalt?",
+    "payoutInfoCohabiting": "Biståndet delas lika till er båda.",
     "methodLabel": "Utbetalningssätt",
+    "newMethodLabel": "Nytt utbetalningssätt",
     "clearingLabel": "Clearingnummer",
     "accountLabel": "Kontonummer",
-    "otherDescriptionLabel": "Beskriv utbetalningssätt",
-    "sameAsPreviousLabel": "Samma konto som föregående utbetalning?",
+    "otherDescriptionLabel": "Beskriv hur du vill att eventuellt bistånd utbetalas",
+    "sameAsPreviousLabel": "Samma utbetalningssätt/bankkonto som föregående ansökan",
     "needsInterpreterLabel": "Behöver du tolk?",
     "interpreterLanguageLabel": "Vilket språk?",
     "hadWorkLabel": "Har du haft arbete de senaste 12 månaderna?",
@@ -308,11 +312,17 @@
     "heading": "Granska och skicka",
     "summaryHeading": "Kontrollera att uppgifterna stämmer innan du skickar in.",
     "attestationHeading": "Försäkran",
-    "attestationInfo": "Om du lämnar felaktiga uppgifter eller inte meddelar förändringar som rör din ekonomiska situation kan en polisanmälan om misstänkt bidragsbrott göras och du kan bli återbetalningsskyldig. Socialtjänsten kan inhämta och kontrollera uppgifter från berörda myndigheter, även bakåt i tiden.",
-    "staysLabel": "Vistas du i kommunen under ansökningsmånaden?",
-    "staysLabel_ni": "Vistas ni i kommunen under ansökningsmånaden?",
+    "attestationInfo": [
+      "Om du lämnar felaktiga uppgifter eller inte meddelar förändringar som rör din ekonomiska situation kan en polisanmälan om misstänkt bidragsbrott göras och du kan bli återbetalningsskyldig.",
+      "Socialtjänsten kan inhämta uppgifter från berörda myndigheter (exempelvis Försäkringskassan, Arbetsförmedlingen, A-kassa/Alfa-kassa, Transportstyrelsen, Skatteverket, Bolagsverket, CSN och SFI) för komplettering till och kontroll av de uppgifter du lämnat. Socialtjänsten kan göra kontroller bakåt i tiden.",
+      "Om dina ekonomiska förhållanden ändras under tiden du uppbär ekonomiskt bistånd ska detta meddelas till enheten för ekonomiskt bistånd. Om du under tiden skulle vara berättigad till annan förmån från Försäkringskassan, kommer en framställan om återbetalning av utgivet ekonomiskt bistånd göras, med stöd av Socialförsäkringsbalken 107 kap 5 §."
+    ],
+    "staysHeading": "Vistelse under ansökningsmånaden",
+    "staysInfo": "Jag intygar att jag kommer att bo i och till största delen befinna mig i Sundsvall under perioden som ansökan avser.",
+    "staysInfo_ni": "Vi intygar att vi kommer att bo i och till största delen befinna oss i Sundsvall under perioden som ansökan avser.",
     "stayDescriptionPlaceholder": "Beskriv varför",
-    "attestation": "Jag intygar på heder och samvete att uppgifterna jag lämnat är riktiga och fullständiga.",
+    "attestation": "Jag försäkrar på heder och samvete att min ansökan är riktig och sanningsenlig. Jag medger att samtliga uppgifter, som jag lämnat ovan om mina förhållanden får kontrolleras. Jag är medveten om min skyldighet att anmäla sådana förhållanden som kan påverka beräkning av och/eller rätten till ekonomiskt bistånd.",
+    "messageInfo": "Om du vill informera om någonting kan du använda meddelandefunktionen på Mina sidor för att få kontakt med din socialsekreterare (exempelvis barn som jobbar, nyöppnade bankkonton, planerad flytt till annan stad).",
     "submit": "Skicka in ansökan"
   },
   "placeholder": {
@@ -327,6 +337,8 @@
     "yes": "Ja, det har skett förändringar eller min socialsekreterare har informerat mig att jag behöver lämna in underlag",
     "dropHint": "Dra och släpp filer här, eller klicka för att välja filer",
     "maxSize": "Maximal filstorlek: 25 MB per fil.",
+    "acceptedTypes": "Tillåtna filformat: PDF, Word (doc, docx), JPG och PNG.",
+    "fileTypeError": "Filtypen stöds inte. Tillåtna format: PDF, Word (doc, docx), JPG och PNG.",
     "docs": {
       "rentalContract": "Hyreskontrakt",
       "rentalInvoice": "Hyresavi med specifikation/underlag som visar kostnaden",
@@ -343,8 +355,16 @@
       "waterSewage": "Underlag för vatten/avlopp (helst för de senaste 12 månaderna)",
       "wasteCollection": "Underlag för renhållning (sophämtning/sotning, helst för de senaste 12 månaderna)",
       "sickCertificate": "Läkarintyg för aktuell period",
-      "assetStatements": "Underlag för dina tillgångar (t.ex. kontoutdrag eller engagemangsbesked)",
-      "acuteDental": "Faktura eller kvitto för akut tandvård"
+      "bankSavingsValue": "Underlag som visar aktuellt värde för bankmedel, aktier, fonder, annat sparande och kontanter",
+      "realEstatePurchaseContract": "Köpekontrakt för bostadsrätt, villa, fastighet eller fritidshus",
+      "realEstateMarketValue": "Underlag som visar aktuellt marknadsvärde för bostadsrätt, villa, fastighet eller fritidshus",
+      "realEstateMortgage": "Underlag som visar eventuella bolån för bostadsrätt, villa, fastighet eller fritidshus",
+      "companyFinances": "Underlag som visar ekonomin/eventuella tillgångar i företaget de senaste 3 månaderna",
+      "vehicleReceipt": "Kvitto/köpehandling för alla fordon",
+      "vehicleValuation": "Aktuell värdering från bilfirma/verkstad för alla fordon",
+      "vehicleLoan": "Underlag som visar eventuella lån för alla fordon",
+      "otherAssetValue": "Underlag som visar värde på konst, smycken eller övriga tillgångar",
+      "acuteDental": "Kvitto för akut tandvård/basundersökning"
     }
   },
   "bankid": {
@@ -355,6 +375,5 @@
     "submitConfirm": "Signera och skicka in (mock)"
   },
   "submitSuccess": "Din ansökan har skickats in!",
-  "submitError": "Något gick fel när ansökan skulle skickas in. Försök igen senare.",
-  "attachmentsError": "Ansökan skickades in, men bilagorna kunde inte laddas upp. Du kan komplettera via meddelandefunktionen på Mina sidor."
+  "submitError": "Något gick fel när ansökan skulle skickas in. Försök igen senare."
 }

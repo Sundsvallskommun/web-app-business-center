@@ -18,12 +18,18 @@ export const StepPayment: React.FC<FaStepProps> = ({ applicationType, onBack, on
   const stays = watch('staysInMunicipality');
   const attestation = watch('attestation');
   const showStay = applicationType !== 'SUPPLEMENTARY';
+  const attestationInfo = t('financial-assistance:review.attestationInfo', { returnObjects: true }) as string[];
 
   return (
     <section className="flex flex-col gap-24" data-cy="fa-step-payment">
-      <header className="text-content">
+      <header className="text-content flex flex-col gap-8">
         <h2>{t('financial-assistance:payment.heading')}</h2>
-        <p>{isCohabiting ? t('financial-assistance:payment.ingressCohabiting') : t('financial-assistance:payment.ingress')}</p>
+        <p className="font-bold">
+          {t('financial-assistance:payment.payoutQuestion', isCohabiting ? { context: 'ni' } : undefined)}
+        </p>
+        {isCohabiting ? (
+          <p className="text-small text-dark-secondary">{t('financial-assistance:payment.payoutInfoCohabiting')}</p>
+        ) : null}
       </header>
 
       {fields.map((field, index) => (
@@ -40,9 +46,10 @@ export const StepPayment: React.FC<FaStepProps> = ({ applicationType, onBack, on
         <>
           <Divider />
           <FormControl data-cy="fa-stays">
-            <FormLabel className="font-bold">
-              {t('financial-assistance:review.staysLabel', isCohabiting ? { context: 'ni' } : undefined)}
-            </FormLabel>
+            <FormLabel className="font-bold">{t('financial-assistance:review.staysHeading')}</FormLabel>
+            <p className="text-small text-dark-secondary mb-8">
+              {t('financial-assistance:review.staysInfo', isCohabiting ? { context: 'ni' } : undefined)}
+            </p>
             <RadioButton.Group inline>
               <RadioButton
                 size="sm"
@@ -85,13 +92,24 @@ export const StepPayment: React.FC<FaStepProps> = ({ applicationType, onBack, on
       {/* Försäkran (heder & samvete) — före granska-steget. */}
       <section className="flex flex-col gap-16 text-content" data-cy="fa-attestation-section">
         <h3 className="text-h4-md font-bold">{t('financial-assistance:review.attestationHeading')}</h3>
-        <p className="text-small text-dark-secondary">{t('financial-assistance:review.attestationInfo')}</p>
+        <div className="flex flex-col gap-8">
+          {attestationInfo.map((paragraph) => (
+            <p key={paragraph} className="text-small text-dark-secondary">
+              {paragraph}
+            </p>
+          ))}
+        </div>
         <FormControl>
           <Checkbox data-cy="fa-attestation" {...register('attestation', { required: true })}>
             {t('financial-assistance:review.attestation')}
           </Checkbox>
         </FormControl>
       </section>
+
+      {/* Meddelandefunktion — uppmana till komplettering via Mina sidor. */}
+      <p role="note" className="bg-vattjom-background-200 rounded-button px-14 py-12 text-content" data-cy="fa-message-info">
+        {t('financial-assistance:review.messageInfo')}
+      </p>
 
       <StepNavigation onBack={onBack} onNext={onNext} forwardDisabled={!attestation} />
     </section>

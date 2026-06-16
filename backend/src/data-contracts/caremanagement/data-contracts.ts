@@ -752,6 +752,8 @@ export interface EligibilityResponse {
   lifecareChecked?: boolean;
   /** True when the request included a co-applicant (medsökande) */
   hasCoApplicant?: boolean;
+  /** True when the applicant or co-applicant has skyddad identitet (protected identity) in folkbokföring or Lifecare. When true no application is offered (suggestions is empty) and the citizen is directed to a handläggare. */
+  protectedIdentity?: boolean;
 }
 
 /** PatchErrand model — patchable envelope fields only */
@@ -1299,6 +1301,7 @@ export enum EligibilityResponseReasonCodeEnum {
   NO_EXISTING_CASE = "NO_EXISTING_CASE",
   CIVILSTAND_CHANGED = "CIVILSTAND_CHANGED",
   EXISTING_CASE = "EXISTING_CASE",
+  PROTECTED_IDENTITY = "PROTECTED_IDENTITY",
   ALL_TYPES_TEST = "ALL_TYPES_TEST",
 }
 

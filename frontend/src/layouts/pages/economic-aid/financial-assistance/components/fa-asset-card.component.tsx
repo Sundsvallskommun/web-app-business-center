@@ -92,6 +92,29 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
         </div>
       ) : null}
 
+      {/* Övriga tillgångar (konst, smycken m.m.) — ange vad + värde */}
+      {category === 'OTHER' ? (
+        <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
+          <FormControl className="w-full">
+            <FormLabel htmlFor={`fa-asset-${index}-description`}>
+              {t('financial-assistance:economy.asset.whatLabel')}
+            </FormLabel>
+            <Input id={`fa-asset-${index}-description`} {...register(`assets.${index}.description` as const)} />
+          </FormControl>
+          <FormControl className="w-full">
+            <FormLabel htmlFor={`fa-asset-${index}-value`}>
+              {t('financial-assistance:economy.asset.valueLabel')}
+            </FormLabel>
+            <Input
+              id={`fa-asset-${index}-value`}
+              type="number"
+              min={0}
+              {...register(`assets.${index}.value` as const, numberFieldOptions)}
+            />
+          </FormControl>
+        </div>
+      ) : null}
+
       {/* Fastighet — typ, inköpsår, inköpspris (ingen beskrivning/värde) */}
       {category === 'REAL_ESTATE' ? (
         <div className="grid grid-cols-1 desktop:grid-cols-3 gap-16">

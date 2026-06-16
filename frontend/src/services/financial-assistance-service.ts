@@ -140,6 +140,10 @@ const buildAsset = (asset: AssetForm): Record<string, unknown> =>
           value: asset.value,
         }
       : {}),
+    // Övrigt (konst, smycken m.m.): fritext "ange vad" + värde.
+    ...(asset.assetCategory === 'OTHER'
+      ? { description: asset.description.trim(), value: asset.value }
+      : {}),
   });
 
 const buildPlanning = (planning: PlanningForm): Record<string, unknown> =>

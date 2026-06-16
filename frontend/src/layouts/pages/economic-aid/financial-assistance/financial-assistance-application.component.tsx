@@ -11,13 +11,12 @@ import {
   applicationTypeFromSlug,
   emptyFinancialAssistanceFormData,
 } from '@interfaces/financial-assistance';
-import { apiService, useApi } from '@services/api-service';
+import { apiService } from '@services/api-service';
 import { clearEconomicAidDraft } from '@services/economic-aid-service';
 import { buildFinancialAssistanceData } from '@services/financial-assistance-service';
-import { toBase64 } from '@utils/toBase64';
 import { ProgressBar } from '@sk-web-gui/progress-bar';
 import { ProgressStepper } from '@sk-web-gui/progress-stepper';
-import { UploadFile, useSnackbar } from '@sk-web-gui/react';
+import { useSnackbar } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -39,29 +38,6 @@ interface FinancialAssistanceApplicationProps {
 interface CreateResponse {
   errandId: string;
 }
-
-/** Uploads the selected files to the newly created errand. Best-effort — returns false on failure. */
-const uploadAttachments = async (errandId: string, attachments: UploadFile[]): Promise<boolean> => {
-  if (!errandId || attachments.length === 0) return true;
-  try {
-    const formData = new FormData();
-    await Promise.all(
-      attachments.map(async (file) => {
-        if (!(file.file instanceof Blob)) return;
-        const base64 = await toBase64(file.file);
-        const buffer = Buffer.from(base64, 'base64');
-        const blob = new Blob([buffer], { type: file.file.type });
-        formData.append('files', blob, `${file.meta.name}.${file.meta.ending}`);
-      })
-    );
-    await apiService.post(`/economic-aid/applications/${errandId}/attachments`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return true;
-  } catch {
-    return false;
-  }
-};
 
 /**
  * Grouped wizard for a financial-assistance application. Groups are gated per
@@ -97,9 +73,9 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
     mode: 'onChange',
   });
 
-  const create = useApi<CreateResponse>({ url: `/economic-aid/applications/${slug}`, method: 'post' });
   const isCohabiting = maritalStatus === 'COHABITING';
   const [signOpen, setSignOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   const goNext = () => setCurrent((step) => Math.min(step + 1, groups.length - 1));
   const goBack = () => (current === 0 ? onExit() : setCurrent((step) => step - 1));
@@ -108,36 +84,48 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
   // sökande och, vid gift/sambo, medsökande innan ärendet skapas.
   const openSign = form.handleSubmit(() => setSignOpen(true));
 
-  // Körs när signeringen är "klar" (mock) — skapar ärendet och laddar upp bilagor.
+  // Körs när signeringen är "klar" (mock) — skapar ärendet med bilagorna i samma multipart-anrop.
+  // Bilagorna skickas som "files"; payloaden (titel + data) som ett JSON-fält. caremanagement
+  // sparar varje fil som egen bilaga och genererar dessutom en sammanslagen PDF.
   const runCreate = async () => {
     const values = form.getValues();
     const data = buildFinancialAssistanceData(values, applicationType);
-    const result = await create.mutateAsync({ title: t('financial-assistance:header.title'), data });
 
-    if (!result || result.error) {
+    const formData = new FormData();
+    formData.append('payload', JSON.stringify({ title: t('financial-assistance:header.title'), data }));
+    values.attachments.forEach((file) => {
+      if (file.file instanceof Blob) {
+        formData.append('files', file.file, `${file.meta.name}.${file.meta.ending}`);
+      }
+    });
+
+    setCreating(true);
+    try {
+      const response = await apiService.post<{ data: CreateResponse }>(
+        `/economic-aid/applications/${slug}`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      );
       setSignOpen(false);
+      toastMessage({
+        position: 'bottom',
+        closeable: false,
+        status: 'success',
+        message: t('financial-assistance:submitSuccess'),
+      });
+      const errandId = response.data?.data?.errandId ?? '';
+      clearEconomicAidDraft();
+      router.push(`/privat/arenden?inskickad=${encodeURIComponent(errandId)}`);
+    } catch {
       toastMessage({
         position: 'bottom',
         closeable: false,
         status: 'error',
         message: t('financial-assistance:submitError'),
       });
-      return;
+    } finally {
+      setCreating(false);
     }
-
-    // Errand created — upload attachments to it (best-effort; can be completed later via messages).
-    const errandId = result.errandId ?? '';
-    clearEconomicAidDraft();
-    const attachmentsOk = await uploadAttachments(errandId, values.attachments);
-
-    setSignOpen(false);
-    toastMessage({
-      position: 'bottom',
-      closeable: false,
-      status: attachmentsOk ? 'success' : 'error',
-      message: attachmentsOk ? t('financial-assistance:submitSuccess') : t('financial-assistance:attachmentsError'),
-    });
-    router.push(`/privat/arenden?inskickad=${encodeURIComponent(errandId)}`);
   };
 
   const groupKey = groups[current];
@@ -173,7 +161,7 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
             applicationType={applicationType}
             onBack={goBack}
             onNext={goNext}
-            isSubmitting={create.isPending}
+            isSubmitting={creating}
           />
         </CardElevated>
       </form>
@@ -187,7 +175,7 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
             : t('financial-assistance:bankid.submitDescription')
         }
         confirmLabel={t('financial-assistance:bankid.submitConfirm')}
-        confirmLoading={create.isPending}
+        confirmLoading={creating}
         onClose={() => setSignOpen(false)}
         onConfirm={runCreate}
       />

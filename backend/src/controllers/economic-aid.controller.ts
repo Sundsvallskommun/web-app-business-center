@@ -4,7 +4,6 @@ import {
   CreateFinancialAssistanceRequest,
   EligibilityRequest,
   EligibilityResponse,
-  Errand,
   RenewalPrefill,
 } from '@/data-contracts/caremanagement/data-contracts';
 import { CitizenAddress, CitizenExtended, PersonGuidBatch } from '@/data-contracts/citizen/data-contracts';
@@ -27,7 +26,7 @@ import ApiService from '@/services/api.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
 import { makeClientContactSetting } from '@/services/contact-setting.service';
 import { caremanagementUrl } from '@/utils/caremanagement-url';
-import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
+import { economicAidUploadOptions } from '@/utils/files/economicAidUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
 import authMiddleware from '@middlewares/auth.middleware';
 import { logger } from '@utils/logger';
@@ -205,17 +204,6 @@ export class EconomicAidController {
   private citizenApiBase = getApiBase('citizen');
   private contactSettingsApiBase = getApiBase('contactsettings');
 
-  private async assertErrandBelongsToUser(errandId: string, partyId: string): Promise<void> {
-    const res = await this.caremanagementApiService.get<Errand>({ url: caremanagementUrl('errands', errandId) });
-    if (!res.data?.id) {
-      throw new HttpException(404, 'Errand not found');
-    }
-    if (res.data.reporterUserId !== partyId) {
-      logger.warn(`[economic-aid] denied attachment upload to errand ${errandId} for partyId=${partyId}`);
-      throw new HttpException(403, 'Forbidden');
-    }
-  }
-
   @Get('/economic-aid/applicant-profile')
   @OpenAPI({ summary: 'Return citizen-derived profile for the logged-in applicant (step 1)' })
   @UseBefore(authMiddleware)
@@ -379,21 +367,34 @@ export class EconomicAidController {
 
   @Post('/economic-aid/applications/:slug')
   @OpenAPI({
-    summary: 'Create a financial assistance errand of the given typeSlug (new/renewal/supplementary)',
+    summary: 'Create a financial assistance errand (multipart: a JSON "payload" field + optional "files")',
   })
   @UseBefore(authMiddleware)
   async createApplication(
     @Req() req: RequestWithUser,
     @Param('slug') slug: string,
-    @Body() body: CreateFinancialAssistanceDto,
+    @UploadedFiles('files', { options: economicAidUploadOptions, required: false }) files?: Express.Multer.File[],
   ): Promise<ApiResponse<SubmitApplicationResponse>> {
     if (!FINANCIAL_ASSISTANCE_SLUGS.has(slug)) {
       throw new HttpException(400, 'Unknown financial assistance typeSlug');
     }
-    await validateRequestBody(CreateFinancialAssistanceDto, body);
     if (!req.user?.partyId) {
       throw new HttpException(401, 'Unauthorized');
     }
+
+    // The request is sent as multipart: the application is a JSON string in the "payload" field
+    // (alongside the binary "files"). Parse + validate it as the create DTO.
+    const rawPayload = (req.body as Record<string, unknown> | undefined)?.payload;
+    if (typeof rawPayload !== 'string') {
+      throw new HttpException(400, 'Missing application payload');
+    }
+    let body: CreateFinancialAssistanceDto;
+    try {
+      body = JSON.parse(rawPayload) as CreateFinancialAssistanceDto;
+    } catch {
+      throw new HttpException(400, 'Invalid application payload (not valid JSON)');
+    }
+    await validateRequestBody(CreateFinancialAssistanceDto, body);
 
     // The EB API identifies persons/children by partyId. The frontend collects personnummer,
     // so resolve those to partyId here (applicant comes straight from the session) and drop the
@@ -409,9 +410,17 @@ export class EconomicAidController {
       data: body.data,
     };
 
-    const created = await this.caremanagementApiService.post<unknown>({
+    // caremanagement create is multipart: a JSON "request" part + an optional "attachments" file list.
+    // It stores each file as its own attachment and also generates a combined sammanstallning.pdf.
+    const form = new FormData();
+    form.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+    (files ?? []).forEach(file => {
+      form.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
+    });
+
+    const created = await this.caremanagementApiService.postForm<unknown>({
       url: caremanagementUrl('errands', slug),
-      data: request,
+      data: form,
     });
 
     const errandId = errandIdFromLocation(created.location);
@@ -420,44 +429,15 @@ export class EconomicAidController {
       throw new HttpException(502, 'Errand was created but no id was returned from caremanagement');
     }
 
-    logger.info(`[economic-aid] created ${slug} errand ${errandId} for partyId=${req.user.partyId}`);
+    logger.info(
+      `[economic-aid] created ${slug} errand ${errandId} with ${files?.length ?? 0} attachment(s) for partyId=${req.user.partyId}`,
+    );
 
     // Mirror any edited contact details/notification preferences back to each person's
     // contactsettings. Best-effort — a failure here must never undo a created errand.
     await this.syncContactSettings(body.data, req);
 
     return { data: { errandId }, message: 'success' };
-  }
-
-  @Post('/economic-aid/applications/:errandId/attachments')
-  @OpenAPI({ summary: 'Upload one or more attachments to a financial assistance errand' })
-  @UseBefore(authMiddleware)
-  async uploadAttachments(
-    @Req() req: RequestWithUser,
-    @Param('errandId') errandId: string,
-    @UploadedFiles('files', { options: fileUploadOptions, required: false }) files?: Express.Multer.File[],
-  ): Promise<ApiResponse<{ uploaded: number }>> {
-    if (!req.user?.partyId) {
-      throw new HttpException(401, 'Unauthorized');
-    }
-    if (!files || files.length === 0) {
-      return { data: { uploaded: 0 }, message: 'success' };
-    }
-
-    await this.assertErrandBelongsToUser(errandId, req.user.partyId);
-
-    // caremanagement takes one file per request under the field name "file".
-    const url = caremanagementUrl('errands', errandId, 'attachments');
-    let uploaded = 0;
-    for (const file of files) {
-      const form = new FormData();
-      form.append('file', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
-      await this.caremanagementApiService.postForm({ url, data: form });
-      uploaded += 1;
-    }
-
-    logger.info(`[economic-aid] uploaded ${uploaded} attachment(s) to errand ${errandId}`);
-    return { data: { uploaded }, message: 'success' };
   }
 
   @Post('/economic-aid/applications')

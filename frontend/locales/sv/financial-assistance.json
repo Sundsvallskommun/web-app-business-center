@@ -49,14 +49,14 @@
     "OTHER": "Annat (ange antal dagar)"
   },
   "housingForm": {
-    "NO_HOUSING_OR_INSTITUTION": "Utan bostad eller på institution",
-    "RENTAL": "Hyreslägenhet",
-    "SUBLET": "Andrahandsboende",
+    "NO_HOUSING_OR_INSTITUTION": "Utan bostad eller bor på stödboende/institution",
+    "RENTAL": "Hyresrätt",
+    "SUBLET": "Andrahand",
     "LODGER": "Inneboende",
     "CONDOMINIUM": "Bostadsrätt",
-    "OWNED_HOUSE": "Egen villa/fastighet",
-    "RENTED_HOUSE": "Hyrd villa",
-    "LIVING_WITH_PARENTS": "Bor hos förälder"
+    "OWNED_HOUSE": "Äger villa eller radhus",
+    "RENTED_HOUSE": "Hyr villa eller radhus",
+    "LIVING_WITH_PARENTS": "Bor hos föräldrar"
   },
   "child": {
     "heading": "Barn {{number}}",

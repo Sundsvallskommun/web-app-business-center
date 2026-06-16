@@ -85,7 +85,8 @@ const buildChild = (child: ChildForm): Record<string, unknown> =>
     personalNumber: child.personalNumber.trim(),
     schoolName: child.schoolName.trim(),
     residenceExtent: child.residenceExtent,
-    daysInHome: child.daysInHome,
+    // Antal dagar samlas bara in när boendet är "Annat".
+    daysInHome: child.residenceExtent === 'OTHER' ? child.daysInHome : null,
   });
 
 const buildCost = (cost: CostForm): Record<string, unknown> =>
@@ -93,7 +94,8 @@ const buildCost = (cost: CostForm): Record<string, unknown> =>
     costType: cost.costType,
     appliedAmount: cost.appliedAmount,
     otherSubType: cost.costType === 'OTHER' ? cost.otherSubType : '',
-    specification: cost.specification.trim(),
+    // "Vad avser kostnaden" visas/skickas bara för övrigt bistånd.
+    specification: cost.costType === 'OTHER' ? cost.specification.trim() : '',
     recipientOrPeriod: cost.recipientOrPeriod.trim(),
   });
 
@@ -111,19 +113,25 @@ const buildPendingBenefit = (benefit: PendingBenefitForm): Record<string, unknow
 const buildAsset = (asset: AssetForm): Record<string, unknown> =>
   compact({
     assetCategory: asset.assetCategory,
-    description: asset.description.trim(),
-    value: asset.value,
+    // Beskrivning + värde bara för bankmedel/sparande.
+    ...(asset.assetCategory === 'BANK_SAVINGS'
+      ? { description: asset.description.trim(), value: asset.value }
+      : {}),
+    // Fastighet/företag: inga beskrivnings-/värdefält.
     ...(asset.assetCategory === 'REAL_ESTATE'
       ? { propertyType: asset.propertyType, purchaseYear: asset.purchaseYear, purchasePrice: asset.purchasePrice }
       : {}),
     ...(asset.assetCategory === 'COMPANY'
       ? { companyName: asset.companyName.trim(), companyAssetSum: asset.companyAssetSum }
       : {}),
+    // Fordon: inköpspris + värde, ingen beskrivning. Regnr ej tvingande.
     ...(asset.assetCategory === 'VEHICLE'
       ? {
           vehicleType: asset.vehicleType,
           registrationNumber: asset.registrationNumber.trim(),
           purchaseDate: asset.purchaseDate.trim(),
+          purchasePrice: asset.purchasePrice,
+          value: asset.value,
         }
       : {}),
   });
@@ -133,11 +141,14 @@ const buildPlanning = (planning: PlanningForm): Record<string, unknown> =>
     person: planning.person,
     planningType: planning.planningType,
     ...(planning.planningType === 'WORK'
-      ? { workExtent: planning.workExtent, workDescription: planning.workDescription.trim() }
+      ? {
+          workExtent: planning.workExtent,
+          // Heltid behöver ingen beskrivning; deltid ska ange omfattning.
+          ...(planning.workExtent === 'PART' ? { workDescription: planning.workDescription.trim() } : {}),
+        }
       : {}),
-    ...(planning.planningType === 'SICK_LEAVE'
-      ? { sickLeaveLevel: planning.sickLeaveLevel, sickFrom: planning.sickFrom.trim(), sickTo: planning.sickTo.trim() }
-      : {}),
+    // Sjukskrivning: bara grad (från/till har tagits bort).
+    ...(planning.planningType === 'SICK_LEAVE' ? { sickLeaveLevel: planning.sickLeaveLevel } : {}),
     ...(planning.planningType === 'SFI'
       ? { sfiStudyPath: planning.sfiStudyPath, sfiCourse: planning.sfiCourse }
       : {}),
@@ -160,8 +171,13 @@ const buildJobApplication = (application: JobApplicationForm): Record<string, un
     employerAndPlace: application.employerAndPlace.trim(),
   });
 
-const buildPerson = (person: PersonForm, type: ApplicationType): Record<string, unknown> =>
-  compact({
+const buildPerson = (person: PersonForm, type: ApplicationType): Record<string, unknown> => {
+  // Renewal/supplementary: "samma konto som föregående" → skicka bara flaggan, inga kontouppgifter.
+  if (type !== 'NEW' && person.paymentSameAsPrevious === true) {
+    return compact({ role: person.role, personalNumber: person.personalNumber.trim(), paymentSameAsPrevious: true });
+  }
+
+  return compact({
     role: person.role,
     personalNumber: person.personalNumber.trim(),
     paymentMethod: person.paymentMethod,
@@ -177,6 +193,7 @@ const buildPerson = (person: PersonForm, type: ApplicationType): Record<string, 
         }
       : { paymentSameAsPrevious: person.paymentSameAsPrevious }),
   });
+};
 
 /**
  * Builds the caremanagement `data` payload from the form, omitting empty/unset values.

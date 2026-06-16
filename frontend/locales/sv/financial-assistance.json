@@ -11,6 +11,7 @@
     "period-norm": "Period & norm",
     "household-housing": "Hushåll & boende",
     "economy": "Ekonomi",
+    "income": "Inkomster & tillgångar",
     "planning": "Planering",
     "payment": "Utbetalning",
     "review": "Granska & skicka"
@@ -32,6 +33,10 @@
   "normType": {
     "RIKSNORM": "Riksnorm",
     "OTHER_NORM": "Annan norm"
+  },
+  "normInfo": {
+    "RIKSNORM": "Exempelvis mat, kläder/skor, fritid/lek och hygienartiklar.",
+    "OTHER_NORM": "Exempelvis kläder/skor, fritid/lek och hygienartiklar om du bor på exempelvis behandlingshem, Klippangården, Rättspsykiatriska regionkliniken eller HVB."
   },
   "residenceExtent": {
     "FULL_TIME": "Heltid",
@@ -130,6 +135,7 @@
     "remove": "Ta bort",
     "recipientLabel": "Avser",
     "costsHeading": "Kostnader du ansöker om",
+    "costsInfo": "Fyll endast i för de utgifter du faktiskt har och ansöker om. Inte obligatoriskt.",
     "addCost": "Lägg till kostnad",
     "incomesHeading": "Inkomster",
     "hasIncomesLabel": "Har du eller din medsökande några inkomster?",
@@ -174,6 +180,12 @@
       "purchaseDateLabel": "Inköpsdatum"
     }
   },
+  "income": {
+    "heading": "Inkomster och tillgångar",
+    "incomesInfo": "Inkomster från Försäkringskassan, Pensionsmyndigheten, CSN, A-kassa eller Skatteverket behöver inte redovisas. Redovisa alla andra inkomster, t.ex. swish, insättningar, lön, tjänstepension/försäkringar, arv, kontanter, underhållsbidrag och hyresdel från barn.",
+    "pendingBenefitsInfo": "Det kan till exempel vara bostadsbidrag, a-kassa, barnpension, omvårdnadsbidrag, sjukersättning eller tjänstepension/försäkringar.",
+    "assetsInfo": "Tillgångar kan exempelvis vara fordon, sparade pengar, fastigheter och konst."
+  },
   "planningType": {
     "WORK": "Arbete",
     "JOBSEEKING": "Arbetssökande",
@@ -192,6 +204,13 @@
   "planning": {
     "heading": "Planering",
     "remove": "Ta bort",
+    "info": {
+      "jobseeking": "När du är arbetssökande ska du vara inskriven på och ha en aktuell planering med Arbetsförmedlingen, aktivt söka jobb och delta i Arbetsförmedlingens insatser.",
+      "sickLeave": "När du är sjukskriven ska du ha ett giltigt läkarintyg för aktuell period. Bifoga läkarintyget om du inte redan har gjort det.",
+      "partialSickWarning": "Vid deltidssjukskrivning behöver du lägga till ytterligare planering så att din totala planering blir på heltid.",
+      "partTimeWarning": "Vid deltid behöver du lägga till ytterligare planering så att din totala planering blir på heltid.",
+      "sfi": "När du är SFI-studerande ska du också vara inskriven på och ha en aktuell planering med Arbetsförmedlingen och delta i deras insatser. Du behöver också välja \"Arbetssökande\"."
+    },
     "personLabel": "Avser",
     "typeLabel": "Typ av planering",
     "workExtentLabel": "Omfattning",
@@ -227,6 +246,7 @@
   "payment": {
     "heading": "Utbetalning",
     "ingress": "Ange hur biståndet ska betalas ut.",
+    "ingressCohabiting": "Biståndet delas lika till er båda — ni behöver uppge varsitt konto som eventuell utbetalning kan göras till.",
     "methodLabel": "Utbetalningssätt",
     "clearingLabel": "Clearingnummer",
     "accountLabel": "Kontonummer",
@@ -249,6 +269,8 @@
   "review": {
     "heading": "Granska och skicka",
     "summaryHeading": "Kontrollera att uppgifterna stämmer innan du skickar in.",
+    "attestationHeading": "Försäkran",
+    "attestationInfo": "Om du lämnar felaktiga uppgifter eller inte meddelar förändringar som rör din ekonomiska situation kan en polisanmälan om misstänkt bidragsbrott göras och du kan bli återbetalningsskyldig. Socialtjänsten kan inhämta och kontrollera uppgifter från berörda myndigheter, även bakåt i tiden.",
     "staysLabel": "Vistas du i kommunen under ansökningsmånaden?",
     "stayDescriptionPlaceholder": "Beskriv varför",
     "attestation": "Jag intygar på heder och samvete att uppgifterna jag lämnat är riktiga och fullständiga.",

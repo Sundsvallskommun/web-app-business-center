@@ -334,10 +334,12 @@ export const emptyPerson = (role: PersonRole, personalNumber: string): PersonFor
 });
 
 // --- Wizard groups, gated per applicationType (from the per-type field matrix) ---
-export type FaGroupKey = 'period-norm' | 'household-housing' | 'economy' | 'planning' | 'payment' | 'review';
+// 'household-housing' now leads with civilstånd + ansökningsperiod; 'economy' leads with norm
+// then costs; incomes/benefits/assets are their own 'income' group.
+export type FaGroupKey = 'household-housing' | 'economy' | 'income' | 'planning' | 'payment' | 'review';
 
 export const FA_GROUPS_BY_TYPE: Record<ApplicationType, FaGroupKey[]> = {
-  NEW: ['period-norm', 'household-housing', 'economy', 'planning', 'payment', 'review'],
-  RENEWAL: ['period-norm', 'household-housing', 'economy', 'planning', 'payment', 'review'],
-  SUPPLEMENTARY: ['period-norm', 'economy', 'payment', 'review'],
+  NEW: ['household-housing', 'economy', 'income', 'planning', 'payment', 'review'],
+  RENEWAL: ['household-housing', 'economy', 'income', 'planning', 'payment', 'review'],
+  SUPPLEMENTARY: ['household-housing', 'economy', 'payment', 'review'],
 };

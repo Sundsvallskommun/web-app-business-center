@@ -1,4 +1,5 @@
 import { CIVILSTAND_VALUES, Civilstand, EconomicAidApplicationV1, EligibilityResult } from '@interfaces/economic-aid';
+import { isFinancialAssistanceSlug } from '@interfaces/financial-assistance';
 import { useApi } from '@services/api-service';
 import { FormControl, FormErrorMessage, FormLabel, Input, RadioButton, useSnackbar } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
@@ -67,6 +68,14 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
     }
 
     setValue('eligibility', result, { shouldDirty: true });
+
+    // Only one suggestion → skip the selection step and go straight into that form.
+    const suggestions = result.suggestions ?? [];
+    if (suggestions.length === 1 && isFinancialAssistanceSlug(suggestions[0].typeSlug)) {
+      setValue('chosenTypeSlug', suggestions[0].typeSlug, { shouldDirty: true });
+      return;
+    }
+
     onNext();
   };
 

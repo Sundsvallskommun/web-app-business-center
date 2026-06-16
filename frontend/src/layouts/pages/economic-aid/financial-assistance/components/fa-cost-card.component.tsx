@@ -109,12 +109,14 @@ export const FaCostCard: React.FC<FaCostCardProps> = ({ index, showRecipientOrPe
         </FormControl>
       ) : null}
 
-      <FormControl className="w-full">
-        <FormLabel htmlFor={`fa-cost-${index}-specification`}>
-          {t('financial-assistance:economy.cost.specificationLabel')}
-        </FormLabel>
-        <Input id={`fa-cost-${index}-specification`} {...register(`costs.${index}.specification` as const)} />
-      </FormControl>
+      {costType === 'OTHER' ? (
+        <FormControl className="w-full">
+          <FormLabel htmlFor={`fa-cost-${index}-specification`}>
+            {t('financial-assistance:economy.cost.specificationLabel')}
+          </FormLabel>
+          <Input id={`fa-cost-${index}-specification`} {...register(`costs.${index}.specification` as const)} />
+        </FormControl>
+      ) : null}
 
       {showRecipientOrPeriod ? (
         <FormControl className="w-full">

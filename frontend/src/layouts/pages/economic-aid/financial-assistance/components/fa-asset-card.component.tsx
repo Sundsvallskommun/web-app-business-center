@@ -39,50 +39,55 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
         </Button>
       </header>
 
-      <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
-        <FormControl className="w-full">
-          <FormLabel htmlFor={`fa-asset-${index}-category`}>
-            {t('financial-assistance:economy.asset.categoryLabel')}
-          </FormLabel>
-          <Select
-            id={`fa-asset-${index}-category`}
-            className="w-full"
-            value={category || ''}
-            onSelectValue={(next) =>
-              setValue(`assets.${index}.assetCategory` as const, (next as AssetCategory | '') || '', {
-                shouldDirty: true,
-              })
-            }
-          >
-            <Select.Option value="" disabled>
-              {t('financial-assistance:economy.select')}
-            </Select.Option>
-            {ASSET_CATEGORIES.map((value) => (
-              <Select.Option key={value} value={value}>
-                {t(`financial-assistance:assetCategory.${value}`)}
-              </Select.Option>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl className="w-full">
-          <FormLabel htmlFor={`fa-asset-${index}-value`}>{t('financial-assistance:economy.asset.valueLabel')}</FormLabel>
-          <Input
-            id={`fa-asset-${index}-value`}
-            type="number"
-            min={0}
-            {...register(`assets.${index}.value` as const, numberFieldOptions)}
-          />
-        </FormControl>
-      </div>
-
-      <FormControl className="w-full">
-        <FormLabel htmlFor={`fa-asset-${index}-description`}>
-          {t('financial-assistance:economy.asset.descriptionLabel')}
+      <FormControl className="w-full max-w-[28rem]">
+        <FormLabel htmlFor={`fa-asset-${index}-category`}>
+          {t('financial-assistance:economy.asset.categoryLabel')}
         </FormLabel>
-        <Input id={`fa-asset-${index}-description`} {...register(`assets.${index}.description` as const)} />
+        <Select
+          id={`fa-asset-${index}-category`}
+          className="w-full"
+          value={category || ''}
+          onSelectValue={(next) =>
+            setValue(`assets.${index}.assetCategory` as const, (next as AssetCategory | '') || '', {
+              shouldDirty: true,
+            })
+          }
+        >
+          <Select.Option value="" disabled>
+            {t('financial-assistance:economy.select')}
+          </Select.Option>
+          {ASSET_CATEGORIES.map((value) => (
+            <Select.Option key={value} value={value}>
+              {t(`financial-assistance:assetCategory.${value}`)}
+            </Select.Option>
+          ))}
+        </Select>
       </FormControl>
 
+      {/* Bankmedel/sparande — beskrivning + värde */}
+      {category === 'BANK_SAVINGS' ? (
+        <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
+          <FormControl className="w-full">
+            <FormLabel htmlFor={`fa-asset-${index}-description`}>
+              {t('financial-assistance:economy.asset.descriptionLabel')}
+            </FormLabel>
+            <Input id={`fa-asset-${index}-description`} {...register(`assets.${index}.description` as const)} />
+          </FormControl>
+          <FormControl className="w-full">
+            <FormLabel htmlFor={`fa-asset-${index}-value`}>
+              {t('financial-assistance:economy.asset.valueLabel')}
+            </FormLabel>
+            <Input
+              id={`fa-asset-${index}-value`}
+              type="number"
+              min={0}
+              {...register(`assets.${index}.value` as const, numberFieldOptions)}
+            />
+          </FormControl>
+        </div>
+      ) : null}
+
+      {/* Fastighet — typ, inköpsår, inköpspris (ingen beskrivning/värde) */}
       {category === 'REAL_ESTATE' ? (
         <div className="grid grid-cols-1 desktop:grid-cols-3 gap-16">
           <FormControl className="w-full">
@@ -133,6 +138,7 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
         </div>
       ) : null}
 
+      {/* Företag — namn + summa tillgångar (ingen beskrivning/värde) */}
       {category === 'COMPANY' ? (
         <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
           <FormControl className="w-full">
@@ -155,52 +161,79 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
         </div>
       ) : null}
 
+      {/* Fordon — typ, regnr (ej tvingande), inköpsdatum, inköpspris, värde (ingen beskrivning) */}
       {category === 'VEHICLE' ? (
-        <div className="grid grid-cols-1 desktop:grid-cols-3 gap-16">
-          <FormControl className="w-full">
-            <FormLabel htmlFor={`fa-asset-${index}-vehicle-type`}>
-              {t('financial-assistance:economy.asset.vehicleTypeLabel')}
-            </FormLabel>
-            <Select
-              id={`fa-asset-${index}-vehicle-type`}
-              className="w-full"
-              value={watch(`assets.${index}.vehicleType` as const) || ''}
-              onSelectValue={(next) =>
-                setValue(`assets.${index}.vehicleType` as const, (next as VehicleType | '') || '', {
-                  shouldDirty: true,
-                })
-              }
-            >
-              <Select.Option value="" disabled>
-                {t('financial-assistance:economy.select')}
-              </Select.Option>
-              {VEHICLE_TYPES.map((value) => (
-                <Select.Option key={value} value={value}>
-                  {t(`financial-assistance:vehicleType.${value}`)}
+        <>
+          <div className="grid grid-cols-1 desktop:grid-cols-3 gap-16">
+            <FormControl className="w-full">
+              <FormLabel htmlFor={`fa-asset-${index}-vehicle-type`}>
+                {t('financial-assistance:economy.asset.vehicleTypeLabel')}
+              </FormLabel>
+              <Select
+                id={`fa-asset-${index}-vehicle-type`}
+                className="w-full"
+                value={watch(`assets.${index}.vehicleType` as const) || ''}
+                onSelectValue={(next) =>
+                  setValue(`assets.${index}.vehicleType` as const, (next as VehicleType | '') || '', {
+                    shouldDirty: true,
+                  })
+                }
+              >
+                <Select.Option value="" disabled>
+                  {t('financial-assistance:economy.select')}
                 </Select.Option>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl className="w-full">
-            <FormLabel htmlFor={`fa-asset-${index}-registration`}>
-              {t('financial-assistance:economy.asset.registrationNumberLabel')}
-            </FormLabel>
-            <Input
-              id={`fa-asset-${index}-registration`}
-              {...register(`assets.${index}.registrationNumber` as const)}
-            />
-          </FormControl>
-          <FormControl className="w-full">
-            <FormLabel htmlFor={`fa-asset-${index}-purchase-date`}>
-              {t('financial-assistance:economy.asset.purchaseDateLabel')}
-            </FormLabel>
-            <Input
-              id={`fa-asset-${index}-purchase-date`}
-              type="date"
-              {...register(`assets.${index}.purchaseDate` as const)}
-            />
-          </FormControl>
-        </div>
+                {VEHICLE_TYPES.map((value) => (
+                  <Select.Option key={value} value={value}>
+                    {t(`financial-assistance:vehicleType.${value}`)}
+                  </Select.Option>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl className="w-full">
+              <FormLabel htmlFor={`fa-asset-${index}-registration`}>
+                {t('financial-assistance:economy.asset.registrationNumberLabel')}
+              </FormLabel>
+              <Input
+                id={`fa-asset-${index}-registration`}
+                {...register(`assets.${index}.registrationNumber` as const)}
+              />
+            </FormControl>
+            <FormControl className="w-full">
+              <FormLabel htmlFor={`fa-asset-${index}-purchase-date`}>
+                {t('financial-assistance:economy.asset.purchaseDateLabel')}
+              </FormLabel>
+              <Input
+                id={`fa-asset-${index}-purchase-date`}
+                type="date"
+                {...register(`assets.${index}.purchaseDate` as const)}
+              />
+            </FormControl>
+          </div>
+          <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
+            <FormControl className="w-full">
+              <FormLabel htmlFor={`fa-asset-${index}-vehicle-price`}>
+                {t('financial-assistance:economy.asset.purchasePriceLabel')}
+              </FormLabel>
+              <Input
+                id={`fa-asset-${index}-vehicle-price`}
+                type="number"
+                min={0}
+                {...register(`assets.${index}.purchasePrice` as const, numberFieldOptions)}
+              />
+            </FormControl>
+            <FormControl className="w-full">
+              <FormLabel htmlFor={`fa-asset-${index}-vehicle-value`}>
+                {t('financial-assistance:economy.asset.valueLabel')}
+              </FormLabel>
+              <Input
+                id={`fa-asset-${index}-vehicle-value`}
+                type="number"
+                min={0}
+                {...register(`assets.${index}.value` as const, numberFieldOptions)}
+              />
+            </FormControl>
+          </div>
+        </>
       ) : null}
     </Card>
   );

@@ -19,6 +19,16 @@ const SFI_STUDY_PATHS: SfiStudyPath[] = ['1', '2', '3'];
 const SFI_COURSES: SfiCourse[] = ['A', 'B', 'C', 'D'];
 const PERSON_ROLES: PersonRole[] = ['APPLICANT', 'CO_APPLICANT'];
 
+const Info: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <p className="text-small text-dark-secondary">{children}</p>
+);
+
+const Warning: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <p role="note" className="bg-warning-background-200 rounded-button px-14 py-12 text-small">
+    {children}
+  </p>
+);
+
 interface FaPlanningCardProps {
   index: number;
   showPerson: boolean;
@@ -31,6 +41,8 @@ export const FaPlanningCard: React.FC<FaPlanningCardProps> = ({ index, showPerso
   const { register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
 
   const planningType = watch(`plannings.${index}.planningType` as const);
+  const workExtent = watch(`plannings.${index}.workExtent` as const);
+  const sickLevel = watch(`plannings.${index}.sickLeaveLevel` as const);
 
   return (
     <Card data-cy={`fa-planning-${index}`} className="flex flex-col gap-16 p-24">
@@ -99,15 +111,15 @@ export const FaPlanningCard: React.FC<FaPlanningCardProps> = ({ index, showPerso
       </div>
 
       {planningType === 'WORK' ? (
-        <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
-          <FormControl className="w-full">
+        <div className="flex flex-col gap-16">
+          <FormControl className="w-full max-w-[20rem]">
             <FormLabel htmlFor={`fa-planning-${index}-work-extent`}>
               {t('financial-assistance:planning.workExtentLabel')}
             </FormLabel>
             <Select
               id={`fa-planning-${index}-work-extent`}
               className="w-full"
-              value={watch(`plannings.${index}.workExtent` as const) || ''}
+              value={workExtent || ''}
               onSelectValue={(next) =>
                 setValue(`plannings.${index}.workExtent` as const, (next as WorkExtent | '') || '', {
                   shouldDirty: true,
@@ -124,28 +136,37 @@ export const FaPlanningCard: React.FC<FaPlanningCardProps> = ({ index, showPerso
               ))}
             </Select>
           </FormControl>
-          <FormControl className="w-full">
-            <FormLabel htmlFor={`fa-planning-${index}-work-description`}>
-              {t('financial-assistance:planning.workDescriptionLabel')}
-            </FormLabel>
-            <Input
-              id={`fa-planning-${index}-work-description`}
-              {...register(`plannings.${index}.workDescription` as const)}
-            />
-          </FormControl>
+          {/* Heltid behöver ingen beskrivning; deltid ska ange omfattning + varning om heltidsplanering. */}
+          {workExtent === 'PART' ? (
+            <>
+              <Warning>{t('financial-assistance:planning.info.partTimeWarning')}</Warning>
+              <FormControl className="w-full">
+                <FormLabel htmlFor={`fa-planning-${index}-work-description`}>
+                  {t('financial-assistance:planning.workDescriptionLabel')}
+                </FormLabel>
+                <Input
+                  id={`fa-planning-${index}-work-description`}
+                  {...register(`plannings.${index}.workDescription` as const)}
+                />
+              </FormControl>
+            </>
+          ) : null}
         </div>
       ) : null}
 
+      {planningType === 'JOBSEEKING' ? <Info>{t('financial-assistance:planning.info.jobseeking')}</Info> : null}
+
       {planningType === 'SICK_LEAVE' ? (
-        <div className="grid grid-cols-1 desktop:grid-cols-3 gap-16">
-          <FormControl className="w-full">
+        <div className="flex flex-col gap-16">
+          <Info>{t('financial-assistance:planning.info.sickLeave')}</Info>
+          <FormControl className="w-full max-w-[20rem]">
             <FormLabel htmlFor={`fa-planning-${index}-sick-level`}>
               {t('financial-assistance:planning.sickLeaveLevelLabel')}
             </FormLabel>
             <Select
               id={`fa-planning-${index}-sick-level`}
               className="w-full"
-              value={watch(`plannings.${index}.sickLeaveLevel` as const) || ''}
+              value={sickLevel || ''}
               onSelectValue={(next) =>
                 setValue(`plannings.${index}.sickLeaveLevel` as const, (next as SickLeaveLevel | '') || '', {
                   shouldDirty: true,
@@ -162,69 +183,64 @@ export const FaPlanningCard: React.FC<FaPlanningCardProps> = ({ index, showPerso
               ))}
             </Select>
           </FormControl>
-          <FormControl className="w-full">
-            <FormLabel htmlFor={`fa-planning-${index}-sick-from`}>
-              {t('financial-assistance:planning.sickFromLabel')}
-            </FormLabel>
-            <Input id={`fa-planning-${index}-sick-from`} type="date" {...register(`plannings.${index}.sickFrom` as const)} />
-          </FormControl>
-          <FormControl className="w-full">
-            <FormLabel htmlFor={`fa-planning-${index}-sick-to`}>
-              {t('financial-assistance:planning.sickToLabel')}
-            </FormLabel>
-            <Input id={`fa-planning-${index}-sick-to`} type="date" {...register(`plannings.${index}.sickTo` as const)} />
-          </FormControl>
+          {/* Deltidssjukskrivning (75/50/25 %) kräver ytterligare planering för att nå heltid. */}
+          {sickLevel && sickLevel !== '100' ? (
+            <Warning>{t('financial-assistance:planning.info.partialSickWarning')}</Warning>
+          ) : null}
         </div>
       ) : null}
 
       {planningType === 'SFI' ? (
-        <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
-          <FormControl className="w-full">
-            <FormLabel htmlFor={`fa-planning-${index}-sfi-path`}>
-              {t('financial-assistance:planning.sfiStudyPathLabel')}
-            </FormLabel>
-            <Select
-              id={`fa-planning-${index}-sfi-path`}
-              className="w-full"
-              value={watch(`plannings.${index}.sfiStudyPath` as const) || ''}
-              onSelectValue={(next) =>
-                setValue(`plannings.${index}.sfiStudyPath` as const, (next as SfiStudyPath | '') || '', {
-                  shouldDirty: true,
-                })
-              }
-            >
-              <Select.Option value="" disabled>
-                {t('financial-assistance:economy.select')}
-              </Select.Option>
-              {SFI_STUDY_PATHS.map((value) => (
-                <Select.Option key={value} value={value}>
-                  {value}
+        <div className="flex flex-col gap-16">
+          <Info>{t('financial-assistance:planning.info.sfi')}</Info>
+          <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
+            <FormControl className="w-full">
+              <FormLabel htmlFor={`fa-planning-${index}-sfi-path`}>
+                {t('financial-assistance:planning.sfiStudyPathLabel')}
+              </FormLabel>
+              <Select
+                id={`fa-planning-${index}-sfi-path`}
+                className="w-full"
+                value={watch(`plannings.${index}.sfiStudyPath` as const) || ''}
+                onSelectValue={(next) =>
+                  setValue(`plannings.${index}.sfiStudyPath` as const, (next as SfiStudyPath | '') || '', {
+                    shouldDirty: true,
+                  })
+                }
+              >
+                <Select.Option value="" disabled>
+                  {t('financial-assistance:economy.select')}
                 </Select.Option>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl className="w-full">
-            <FormLabel htmlFor={`fa-planning-${index}-sfi-course`}>
-              {t('financial-assistance:planning.sfiCourseLabel')}
-            </FormLabel>
-            <Select
-              id={`fa-planning-${index}-sfi-course`}
-              className="w-full"
-              value={watch(`plannings.${index}.sfiCourse` as const) || ''}
-              onSelectValue={(next) =>
-                setValue(`plannings.${index}.sfiCourse` as const, (next as SfiCourse | '') || '', { shouldDirty: true })
-              }
-            >
-              <Select.Option value="" disabled>
-                {t('financial-assistance:economy.select')}
-              </Select.Option>
-              {SFI_COURSES.map((value) => (
-                <Select.Option key={value} value={value}>
-                  {value}
+                {SFI_STUDY_PATHS.map((value) => (
+                  <Select.Option key={value} value={value}>
+                    {value}
+                  </Select.Option>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl className="w-full">
+              <FormLabel htmlFor={`fa-planning-${index}-sfi-course`}>
+                {t('financial-assistance:planning.sfiCourseLabel')}
+              </FormLabel>
+              <Select
+                id={`fa-planning-${index}-sfi-course`}
+                className="w-full"
+                value={watch(`plannings.${index}.sfiCourse` as const) || ''}
+                onSelectValue={(next) =>
+                  setValue(`plannings.${index}.sfiCourse` as const, (next as SfiCourse | '') || '', { shouldDirty: true })
+                }
+              >
+                <Select.Option value="" disabled>
+                  {t('financial-assistance:economy.select')}
                 </Select.Option>
-              ))}
-            </Select>
-          </FormControl>
+                {SFI_COURSES.map((value) => (
+                  <Select.Option key={value} value={value}>
+                    {value}
+                  </Select.Option>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
         </div>
       ) : null}
 

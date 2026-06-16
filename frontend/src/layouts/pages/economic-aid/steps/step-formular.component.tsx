@@ -61,14 +61,8 @@ export const StepFormular: React.FC<StepProps> = ({ onBack }) => {
                     onChange={() => setSelected(suggestion.typeSlug)}
                     aria-labelledby={`${inputId}-label`}
                   />
-                  <span className="flex flex-col gap-2">
-                    <span id={`${inputId}-label`} className="flex items-center gap-8 font-bold">
-                      {suggestion.label || suggestion.typeSlug}
-                      {suggestion.recommended && (
-                        <span className="text-small font-bold">{t('economic-aid:formular.recommended')}</span>
-                      )}
-                    </span>
-                    <span className="text-small text-dark-secondary">{suggestion.typeSlug}</span>
+                  <span id={`${inputId}-label`} className="font-bold">
+                    {suggestion.label}
                   </span>
                 </label>
               );

@@ -141,7 +141,8 @@
     "BANK_SAVINGS": "Banktillgodohavande / sparande",
     "REAL_ESTATE": "Fastighet",
     "COMPANY": "Företag",
-    "VEHICLE": "Fordon"
+    "VEHICLE": "Fordon",
+    "OTHER": "Konst, smycken eller andra övriga tillgångar"
   },
   "propertyType": {
     "BOSTADSRATT": "Bostadsrätt",
@@ -203,6 +204,7 @@
       "categoryLabel": "Typ av tillgång",
       "valueLabel": "Värde (kr)",
       "descriptionLabel": "Beskrivning",
+      "whatLabel": "Ange vad",
       "propertyTypeLabel": "Typ av fastighet",
       "purchaseYearLabel": "Inköpsår",
       "purchasePriceLabel": "Inköpspris (kr)",
@@ -361,6 +363,7 @@
       "vehicleReceipt": "Kvitto/köpehandling för alla fordon",
       "vehicleValuation": "Aktuell värdering från bilfirma/verkstad för alla fordon",
       "vehicleLoan": "Underlag som visar eventuella lån för alla fordon",
+      "otherAssetValue": "Underlag som visar värde på konst, smycken eller övriga tillgångar",
       "acuteDental": "Kvitto för akut tandvård/basundersökning"
     }
   },

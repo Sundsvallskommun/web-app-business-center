@@ -20,6 +20,7 @@ const ASSET_DOCUMENTS: Record<AssetCategory, string[]> = {
   REAL_ESTATE: ['realEstatePurchaseContract', 'realEstateMarketValue', 'realEstateMortgage'],
   COMPANY: ['companyFinances'],
   VEHICLE: ['vehicleReceipt', 'vehicleValuation', 'vehicleLoan'],
+  OTHER: ['otherAssetValue'],
 };
 
 /**

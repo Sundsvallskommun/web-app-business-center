@@ -68,7 +68,7 @@ export type IncomeType =
   | 'CHILD_SUPPORT'
   | 'RENT_SHARE_FROM_CHILD';
 export type Recipient = 'APPLICANT' | 'CO_APPLICANT';
-export type AssetCategory = 'BANK_SAVINGS' | 'REAL_ESTATE' | 'COMPANY' | 'VEHICLE';
+export type AssetCategory = 'BANK_SAVINGS' | 'REAL_ESTATE' | 'COMPANY' | 'VEHICLE' | 'OTHER';
 export type PropertyType = 'BOSTADSRATT' | 'VILLA' | 'FASTIGHET' | 'FRITIDSHUS';
 export type VehicleType = 'BIL' | 'BAT' | 'MC' | 'HUSVAGN' | 'MOPED' | 'SNOSKOTER' | 'ANNAT';
 export type ResidenceExtent = 'FULL_TIME' | 'HALF_TIME' | 'OTHER';

@@ -20,8 +20,8 @@ export interface Problem {
   instance?: string;
   /** @format uri */
   type?: string;
-  detail?: string;
   title?: string;
+  detail?: string;
   /** @format int32 */
   status?: number;
 }
@@ -752,6 +752,8 @@ export interface EligibilityResponse {
   lifecareChecked?: boolean;
   /** True when the request included a co-applicant (medsökande) */
   hasCoApplicant?: boolean;
+  /** True when the applicant or co-applicant has skyddad identitet (protected identity) in folkbokföring or Lifecare. When true no application is offered (suggestions is empty) and the citizen is directed to a handläggare. */
+  protectedIdentity?: boolean;
 }
 
 /** PatchErrand model — patchable envelope fields only */
@@ -768,6 +770,52 @@ export interface PatchErrand {
   reporterUserId?: string;
   /** User id of the assignee */
   assignedUserId?: string;
+}
+
+export interface UpdateNote {
+  /**
+   * @minLength 0
+   * @maxLength 8192
+   */
+  body: string;
+  /**
+   * @minLength 0
+   * @maxLength 64
+   */
+  modifiedBy?: string;
+}
+
+/** Note attached to an errand */
+export interface Note {
+  /** Unique identifier */
+  id?: string;
+  /** Errand id this note belongs to */
+  errandId?: string;
+  /**
+   * Note body
+   * @example "Spoke to family today, awaiting docs."
+   */
+  body?: string;
+  /**
+   * Author user id
+   * @example "jane01doe"
+   */
+  author?: string;
+  /**
+   * Created timestamp
+   * @format date-time
+   */
+  created?: string;
+  /**
+   * User id of the last editor
+   * @example "jane01doe"
+   */
+  modifiedBy?: string;
+  /**
+   * Last modified timestamp; null until the note has been edited
+   * @format date-time
+   */
+  modified?: string;
 }
 
 /** Number of errands assigned to a given user */
@@ -857,29 +905,6 @@ export interface StatusHistoryEntry {
   changedBy?: string;
   /** @format date-time */
   changedAt?: string;
-}
-
-/** Note attached to an errand */
-export interface Note {
-  /** Unique identifier */
-  id?: string;
-  /** Errand id this note belongs to */
-  errandId?: string;
-  /**
-   * Note body
-   * @example "Spoke to family today, awaiting docs."
-   */
-  body?: string;
-  /**
-   * Author user id
-   * @example "jane01doe"
-   */
-  author?: string;
-  /**
-   * Created timestamp
-   * @format date-time
-   */
-  created?: string;
 }
 
 /** A message in the errand's conversation */
@@ -1057,6 +1082,7 @@ export enum AssetAssetCategoryEnum {
   REAL_ESTATE = "REAL_ESTATE",
   COMPANY = "COMPANY",
   VEHICLE = "VEHICLE",
+  OTHER = "OTHER",
 }
 
 /** Type of real estate property */
@@ -1275,6 +1301,7 @@ export enum EligibilityResponseReasonCodeEnum {
   NO_EXISTING_CASE = "NO_EXISTING_CASE",
   CIVILSTAND_CHANGED = "CIVILSTAND_CHANGED",
   EXISTING_CASE = "EXISTING_CASE",
+  PROTECTED_IDENTITY = "PROTECTED_IDENTITY",
   ALL_TYPES_TEST = "ALL_TYPES_TEST",
 }
 

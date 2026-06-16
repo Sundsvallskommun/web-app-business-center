@@ -6,9 +6,19 @@ import {
   FormControl,
   FormLabel,
   RadioButton,
+  useSnackbar,
 } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+
+// Tillåtna filtyper för bilagor: PDF, Word (doc/docx), JPG/JPEG och PNG. Matchas mot filens MIME-typ.
+const ACCEPTED_MIME_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
 
 /**
  * Bilagor på utbetalningssteget. Om gjorda val kräver underlag visas en lista
@@ -20,6 +30,7 @@ import { useTranslation } from 'react-i18next';
  */
 export const FaAttachments: React.FC = () => {
   const { t } = useTranslation('financial-assistance');
+  const toastMessage = useSnackbar();
   const { watch, setValue } = useFormContext<FinancialAssistanceFormData>();
 
   const requiredDocuments = getRequiredDocuments(watch());
@@ -33,6 +44,15 @@ export const FaAttachments: React.FC = () => {
       setValue('attachments', attachments.concat(event.target.value), { shouldDirty: true });
     }
   };
+
+  // Visar ett felmeddelande när en otillåten filtyp (eller för stor fil) väljs.
+  const handleInvalid = () =>
+    toastMessage({
+      position: 'bottom',
+      closeable: false,
+      status: 'error',
+      message: t('financial-assistance:attachments.fileTypeError'),
+    });
 
   const removeAttachment = (index: number) =>
     setValue(
@@ -89,9 +109,12 @@ export const FaAttachments: React.FC = () => {
             variant="horizontal"
             name="attachments"
             maxFileSizeMB={25}
+            accept={ACCEPTED_MIME_TYPES}
             onChange={handleChange}
+            onInvalid={handleInvalid}
           />
           <p className="text-small text-dark-secondary">{t('financial-assistance:attachments.maxSize')}</p>
+          <p className="text-small text-dark-secondary">{t('financial-assistance:attachments.acceptedTypes')}</p>
           {attachments.length ? (
             <FileUpload.List name="attachments" showBorder>
               {attachments.map((file, index) => (

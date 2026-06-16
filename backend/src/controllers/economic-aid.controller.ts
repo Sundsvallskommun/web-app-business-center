@@ -30,7 +30,7 @@ import ApiService from '@/services/api.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
 import { makeClientContactSetting } from '@/services/contact-setting.service';
 import { caremanagementUrl } from '@/utils/caremanagement-url';
-import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
+import { economicAidUploadOptions } from '@/utils/files/economicAidUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
 import authMiddleware from '@middlewares/auth.middleware';
 import { logger } from '@utils/logger';
@@ -433,7 +433,7 @@ export class EconomicAidController {
   async uploadAttachments(
     @Req() req: RequestWithUser,
     @Param('errandId') errandId: string,
-    @UploadedFiles('files', { options: fileUploadOptions, required: false }) files?: Express.Multer.File[],
+    @UploadedFiles('files', { options: economicAidUploadOptions, required: false }) files?: Express.Multer.File[],
   ): Promise<ApiResponse<{ uploaded: number }>> {
     if (!req.user?.partyId) {
       throw new HttpException(401, 'Unauthorized');

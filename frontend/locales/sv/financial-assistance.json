@@ -335,6 +335,8 @@
     "yes": "Ja, det har skett förändringar eller min socialsekreterare har informerat mig att jag behöver lämna in underlag",
     "dropHint": "Dra och släpp filer här, eller klicka för att välja filer",
     "maxSize": "Maximal filstorlek: 25 MB per fil.",
+    "acceptedTypes": "Tillåtna filformat: PDF, Word (doc, docx), JPG och PNG.",
+    "fileTypeError": "Filtypen stöds inte. Tillåtna format: PDF, Word (doc, docx), JPG och PNG.",
     "docs": {
       "rentalContract": "Hyreskontrakt",
       "rentalInvoice": "Hyresavi med specifikation/underlag som visar kostnaden",

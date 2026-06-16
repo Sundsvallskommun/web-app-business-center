@@ -126,12 +126,12 @@
   },
   "incomeType": {
     "SALARY": "Lön",
-    "OCCUPATIONAL_PENSION_INSURANCE": "Tjänstepension/försäkring",
-    "CHILD_SUPPORT": "Underhållsstöd",
-    "SWISH_DEPOSITS": "Swish-insättningar",
-    "RENT_SHARE_FROM_CHILD": "Hyresdel från barn",
-    "FINANCIAL_AID_OTHER_MUNICIPALITY": "Bistånd från annan kommun",
-    "OTHER_INCOME": "Övrig inkomst"
+    "OCCUPATIONAL_PENSION_INSURANCE": "Tjänstepension/försäkringar (AFA, AMF, KPA, SPV etc)",
+    "CHILD_SUPPORT": "Underhållsbidrag från den andra föräldern",
+    "SWISH_DEPOSITS": "Swish/kontoinsättningar",
+    "RENT_SHARE_FROM_CHILD": "Hyresdel från barn/inneboende",
+    "FINANCIAL_AID_OTHER_MUNICIPALITY": "Ekonomiskt bistånd från annan kommun",
+    "OTHER_INCOME": "Annan inkomst (lån, spelvinst, försörjning av tillgång, gåva, kontanter)"
   },
   "recipient": {
     "APPLICANT": "Sökande",
@@ -168,16 +168,16 @@
     "costsInfo": "Fyll endast i för de utgifter du faktiskt har och ansöker om. Inte obligatoriskt.",
     "addCost": "Lägg till kostnad",
     "incomesHeading": "Inkomster",
-    "hasIncomesLabel": "Har du några inkomster?",
-    "hasIncomesLabel_ni": "Har ni några inkomster?",
+    "hasIncomesLabel": "Har du fått eller kommer du få några inkomster/insättningar sedan senaste ansökan?",
+    "hasIncomesLabel_ni": "Har ni fått eller kommer ni få några inkomster/insättningar sedan senaste ansökan?",
     "addIncome": "Lägg till inkomst",
     "pendingBenefitsHeading": "Väntande ersättningar",
-    "hasPendingBenefitsLabel": "Väntar du på beslut om någon ersättning?",
-    "hasPendingBenefitsLabel_ni": "Väntar ni på beslut om någon ersättning?",
+    "hasPendingBenefitsLabel": "Har du ansökt om någon ny ersättning och väntar på beslut från någon annan myndighet/organisation?",
+    "hasPendingBenefitsLabel_ni": "Har ni ansökt om någon ny ersättning och väntar på beslut från någon annan myndighet/organisation?",
     "addPendingBenefit": "Lägg till ersättning",
     "assetsHeading": "Tillgångar",
-    "hasAssetsLabel": "Har du några tillgångar?",
-    "hasAssetsLabel_ni": "Har ni några tillgångar?",
+    "hasAssetsLabel": "Har du några tillgångar som du inte har informerat om tidigare?",
+    "hasAssetsLabel_ni": "Har ni några tillgångar som ni inte har informerat om tidigare?",
     "addAsset": "Lägg till tillgång",
     "cost": {
       "heading": "Kostnad {{number}}",
@@ -196,7 +196,7 @@
     "pendingBenefit": {
       "heading": "Ersättning {{number}}",
       "benefitNameLabel": "Vilken ersättning?",
-      "applicantNameLabel": "Vem har ansökt?"
+      "applicantNameLabel": "Namn på den som sökt ersättningen"
     },
     "asset": {
       "heading": "Tillgång {{number}}",
@@ -215,9 +215,11 @@
   },
   "income": {
     "heading": "Inkomster och tillgångar",
-    "incomesInfo": "Inkomster från Försäkringskassan, Pensionsmyndigheten, CSN, A-kassa eller Skatteverket behöver inte redovisas. Redovisa alla andra inkomster, t.ex. swish, insättningar, lön, tjänstepension/försäkringar, arv, kontanter, underhållsbidrag och hyresdel från barn.",
-    "pendingBenefitsInfo": "Det kan till exempel vara bostadsbidrag, a-kassa, barnpension, omvårdnadsbidrag, sjukersättning eller tjänstepension/försäkringar.",
-    "assetsInfo": "Tillgångar kan exempelvis vara fordon, sparade pengar, fastigheter och konst."
+    "incomesInfo": "Inkomster från Försäkringskassan, Pensionsmyndigheten, CSN, A-kassa eller Skatteverket behöver inte redovisas. Du behöver redovisa alla andra inkomster, exempelvis swish, insättningar på kontot, lön, tjänstepension/försäkringar, arv, kontanter, underhållsbidrag från den andra föräldern, hyresdel från barn/inneboende.",
+    "incomesInfo_ni": "Inkomster från Försäkringskassan, Pensionsmyndigheten, CSN, A-kassa eller Skatteverket behöver inte redovisas. Ni behöver redovisa alla andra inkomster, exempelvis swish, insättningar på kontot, lön, tjänstepension/försäkringar, arv, kontanter, underhållsbidrag från den andra föräldern, hyresdel från barn/inneboende.",
+    "pendingBenefitsInfo": "Det kan till exempel vara att du har ansökt och väntar på beslut om bostadsbidrag, a-kassa, barnpension, omvårdnadsbidrag, sjukersättning, tjänstepension/försäkringar (exempelvis AFA, AMF, KPA, SPV).",
+    "pendingBenefitsInfo_ni": "Det kan till exempel vara att ni har ansökt och väntar på beslut om bostadsbidrag, a-kassa, barnpension, omvårdnadsbidrag, sjukersättning, tjänstepension/försäkringar (exempelvis AFA, AMF, KPA, SPV).",
+    "assetsInfo": "Tillgångar kan exempelvis vara fordon, sparade pengar, fastigheter, smycken och konst."
   },
   "planningType": {
     "WORK": "Arbete",

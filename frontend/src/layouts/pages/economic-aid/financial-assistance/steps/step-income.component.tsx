@@ -92,7 +92,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
           'hasIncomes',
           hasIncomes,
           t('financial-assistance:economy.hasIncomesLabel', ni),
-          t('financial-assistance:income.incomesInfo'),
+          t('financial-assistance:income.incomesInfo', ni),
           'fa-has-incomes',
         )}
         {hasIncomes === true ? (
@@ -125,7 +125,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
           'hasPendingBenefits',
           hasPendingBenefits,
           t('financial-assistance:economy.hasPendingBenefitsLabel', ni),
-          t('financial-assistance:income.pendingBenefitsInfo'),
+          t('financial-assistance:income.pendingBenefitsInfo', ni),
           'fa-has-pending-benefits',
         )}
         {hasPendingBenefits === true ? (

@@ -1,6 +1,7 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { Conversation, Message, MessageRequest, PageMessage } from '@/data-contracts/case-data/data-contracts';
+import { FindErrandsResponse, Message as CareManagementMessage } from '@/data-contracts/caremanagement/data-contracts';
 import { CasePdfResponse, CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import { WebMessageRequest as MessagingWebMessageRequest } from '@/data-contracts/messaging/data-contracts';
 import { WebMessageRequest } from '@/data-contracts/supportmanagement/data-contracts';
@@ -10,18 +11,24 @@ import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { CaseMessage, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import ApiService from '@/services/api.service';
+import CaremanagementApiService from '@/services/caremanagement-api.service';
 import {
   buildMessagingWebMessageRequest,
+  CARE_MANAGEMENT_SYSTEM,
   caseIsAllowed,
   collectSenderIdentifiers,
   conversationInit,
   filterNewUserMessages,
+  mapCareManagementErrandToCase,
+  mapCareManagementMessage,
   normalizeWebMessageCollectorMessages,
   sortMessagesBySentDesc,
   toFrontendMessage,
 } from '@/services/case.service';
 import { getCitizen } from '@/services/citizen.service';
 import { getUserData } from '@/services/user.service';
+import { caremanagementUrl } from '@/utils/caremanagement-url';
+import { logger } from '@utils/logger';
 import { filterExternalConversation, findExternalConversation } from '@/utils/conversation-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
@@ -44,7 +51,26 @@ const caseMatchesReference = (c: CaseStatusResponse, reference: string) => c.err
 @Controller()
 export class CaseController {
   private apiService = new ApiService();
+  private caremanagementApiService = new CaremanagementApiService();
   private apiBase = getApiBase('casestatus');
+
+  /**
+   * Fetches the citizen's own caremanagement errands (by reporterUserId) and maps them onto the
+   * CaseStatusResponse shape. caremanagement is not aggregated by casestatus, so we read it directly
+   * and merge into the private case list. Best-effort: a caremanagement outage must not break /cases.
+   */
+  private async fetchCareManagementCases(partyId: string): Promise<CaseStatusResponse[]> {
+    try {
+      const res = await this.caremanagementApiService.get<FindErrandsResponse>({
+        url: caremanagementUrl('errands'),
+        params: { filter: `reporterUserId:'${partyId}'`, size: 100 },
+      });
+      return (res.data?.errands ?? []).map(mapCareManagementErrandToCase);
+    } catch (error) {
+      logger.warn(`[cases] failed to fetch caremanagement errands for partyId=${partyId}: ${(error as Error)?.message ?? error}`);
+      return [];
+    }
+  }
 
   private setBusinesCasesCache(req: RequestWithUser, orgNumber: string, data: CaseStatusResponse[]) {
     if (!req.session.cache) {
@@ -195,7 +221,20 @@ export class CaseController {
 
       url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses`;
     }
-    return fetchCases(url);
+
+    const result = await fetchCases(url);
+
+    // caremanagement errands are not produced by casestatus — fetch the citizen's own and merge them
+    // in. Economic aid is personal, so only in private mode (keyed by the session partyId).
+    if (representing?.mode !== RepresentingMode.BUSINESS && req.user.partyId) {
+      const careCases = await this.fetchCareManagementCases(req.user.partyId);
+      if (careCases.length > 0) {
+        result.data = [...result.data, ...careCases];
+        this.setCasesCache(req, result.data);
+      }
+    }
+
+    return result;
   }
 
   @Get('/cases/:caseId')
@@ -336,6 +375,25 @@ export class CaseController {
           throw new HttpException(500, 'No data from API');
         }
         data = normalizeWebMessageCollectorMessages(resWebMessageCollector.data);
+      } else if (_case.system === CARE_MANAGEMENT_SYSTEM) {
+        // caremanagement keeps the thread on the errand itself (no conversation grouping). Address it
+        // by the resolved errand id, not the URL reference (which may be the human errandNumber).
+        const errandId = _case.caseId ?? caseId;
+        const res = await this.caremanagementApiService.get<CareManagementMessage[]>({ url: caremanagementUrl('errands', errandId, 'messages') });
+        const careMessages = res.data ?? [];
+        // OUTBOUND messages are authored by a handläggare (AD username) — resolve their names; INBOUND
+        // messages are the citizen's own, so they carry the logged-in user's name (shown as "Jag").
+        const adUsernames = Array.from(new Set(careMessages.filter(m => m.direction === 'OUTBOUND' && m.author).map(m => m.author as string)));
+        const nameMap: Record<string, string> = {};
+        await Promise.allSettled(
+          adUsernames.map(async username => {
+            const userData = await getUserData(username, { user: req.user });
+            nameMap[username] = `${userData.givenname} ${userData.lastname}`.trim();
+          }),
+        );
+        data = careMessages.map(m =>
+          mapCareManagementMessage(m, m.direction === 'OUTBOUND' ? nameMap[m.author ?? ''] ?? 'Handläggare' : req.user.name),
+        );
       } else {
         throw new HttpException(400, 'Bad request');
       }
@@ -407,6 +465,19 @@ export class CaseController {
     }
 
     const _case = (await this.getCase(req, caseId)).data;
+
+    // caremanagement uses its own transport (not the shared gateway), so handle it up front and return.
+    // The applicant's message is INBOUND, authored by their partyId. Text-only today — files are
+    // ignored until caremanagement supports message attachments.
+    if (_case.system === CARE_MANAGEMENT_SYSTEM) {
+      const errandId = _case.caseId ?? caseId;
+      await this.caremanagementApiService.post<void>({
+        url: caremanagementUrl('errands', errandId, 'messages'),
+        data: { direction: 'INBOUND', body: body.message, author: req.user.partyId },
+      });
+      const messages = (await this.getCaseMessages(req, caseId)).data;
+      return { data: messages, message: 'success' };
+    }
 
     let url: string;
     let headers: Record<string, string> = {};

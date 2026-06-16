@@ -12,6 +12,7 @@ import {
   emptyFinancialAssistanceFormData,
 } from '@interfaces/financial-assistance';
 import { apiService } from '@services/api-service';
+import { clearEconomicAidDraft } from '@services/economic-aid-service';
 import { buildFinancialAssistanceData } from '@services/financial-assistance-service';
 import { ProgressBar } from '@sk-web-gui/progress-bar';
 import { ProgressStepper } from '@sk-web-gui/progress-stepper';
@@ -112,7 +113,9 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
         status: 'success',
         message: t('financial-assistance:submitSuccess'),
       });
-      router.push(`/privat/arenden?inskickad=${encodeURIComponent(response.data?.data?.errandId ?? '')}`);
+      const errandId = response.data?.data?.errandId ?? '';
+      clearEconomicAidDraft();
+      router.push(`/privat/arenden?inskickad=${encodeURIComponent(errandId)}`);
     } catch {
       toastMessage({
         position: 'bottom',

@@ -225,9 +225,7 @@ export interface FinancialAssistancePrefill {
   coApplicantPersonalNumber: string;
 }
 
-export const emptyFinancialAssistanceFormData = (
-  prefill: FinancialAssistancePrefill,
-): FinancialAssistanceFormData => {
+export const emptyFinancialAssistanceFormData = (prefill: FinancialAssistancePrefill): FinancialAssistanceFormData => {
   const persons: PersonForm[] = [emptyPerson('APPLICANT', prefill.applicantPersonalNumber)];
   if (prefill.maritalStatus === 'COHABITING') {
     persons.push(emptyPerson('CO_APPLICANT', prefill.coApplicantPersonalNumber));

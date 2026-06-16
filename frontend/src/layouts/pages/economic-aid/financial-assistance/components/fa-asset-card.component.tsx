@@ -1,4 +1,9 @@
-import { AssetCategory, FinancialAssistanceFormData, PropertyType, VehicleType } from '@interfaces/financial-assistance';
+import {
+  AssetCategory,
+  FinancialAssistanceFormData,
+  PropertyType,
+  VehicleType,
+} from '@interfaces/financial-assistance';
 import { Button, Card, FormControl, FormLabel, Icon, Input, Select } from '@sk-web-gui/react';
 import { X } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
@@ -64,8 +69,8 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
         </Select>
       </FormControl>
 
-      {/* Bankmedel/sparande — beskrivning + värde */}
-      {category === 'BANK_SAVINGS' ? (
+      {/* Bankmedel/sparande eller övrig tillgång — beskrivning + värde */}
+      {category === 'BANK_SAVINGS' || category === 'OTHER' ? (
         <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
           <FormControl className="w-full">
             <FormLabel htmlFor={`fa-asset-${index}-description`}>

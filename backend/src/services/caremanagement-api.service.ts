@@ -13,9 +13,7 @@ const toHttpException = (error: unknown, config: AxiosRequestConfig): HttpExcept
     const status = (error as AxiosError).response?.status;
     const data = (error as AxiosError).response?.data;
     logger.warn(
-      `[caremanagement] ${config.method ?? 'GET'} ${config.url} failed: ${status ?? 'no-status'} ${
-        data ? JSON.stringify(data) : error.message
-      }`,
+      `[caremanagement] ${config.method ?? 'GET'} ${config.url} failed: ${status ?? 'no-status'} ${data ? JSON.stringify(data) : error.message}`,
     );
     if (status === 404) return new HttpException(404, 'Not found');
     if (status && status >= 400 && status < 500) {

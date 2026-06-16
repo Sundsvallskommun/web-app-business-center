@@ -17,7 +17,7 @@ export enum CaseCurrentTab {
   MEDDELANDEN = 'meddelanden',
 }
 
-const MESSAGES_ALLOWED_SYSTEMS = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM']);
+const MESSAGES_ALLOWED_SYSTEMS = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM', 'CARE_MANAGEMENT']);
 
 export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { caseId: string; currentTab: string }) {
   const currentTabWithDefault = _currentTab ? _currentTab[0] : CaseCurrentTab.UPPGIFTER;

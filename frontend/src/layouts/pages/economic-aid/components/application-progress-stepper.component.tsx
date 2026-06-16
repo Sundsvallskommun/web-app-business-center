@@ -1,13 +1,15 @@
 import { ECONOMIC_AID_STEPS } from '@interfaces/economic-aid';
 import { ProgressBar } from '@sk-web-gui/progress-bar';
 import { ProgressStepper } from '@sk-web-gui/progress-stepper';
+import { useTranslation } from 'react-i18next';
 
 export interface ApplicationProgressStepperProps {
   current: number;
 }
 
 export const ApplicationProgressStepper: React.FC<ApplicationProgressStepperProps> = ({ current }) => {
-  const stepLabels = ECONOMIC_AID_STEPS.map((step) => step.label);
+  const { t } = useTranslation('economic-aid');
+  const stepLabels = ECONOMIC_AID_STEPS.map((step) => t(`economic-aid:steps.${step.key}`));
   const total = stepLabels.length;
   const currentLabel = stepLabels[current];
   const nextLabel = current < total - 1 ? stepLabels[current + 1] : null;
@@ -21,9 +23,13 @@ export const ApplicationProgressStepper: React.FC<ApplicationProgressStepperProp
       <div className="desktop:hidden flex flex-col gap-12" aria-hidden="true">
         <div className="flex items-baseline justify-between gap-12">
           <p className="text-small text-dark-secondary">
-            Steg {current + 1} av {total}
+            {t('economic-aid:stepper.stepOf', { current: current + 1, total })}
           </p>
-          {nextLabel && <p className="text-small text-dark-secondary">Nästa: {nextLabel}</p>}
+          {nextLabel && (
+            <p className="text-small text-dark-secondary">
+              {t('economic-aid:stepper.next', { label: nextLabel })}
+            </p>
+          )}
         </div>
         <p className="font-bold">{currentLabel}</p>
         <ProgressBar steps={total} current={current + 1} color="vattjom" size="sm" />
@@ -41,9 +47,9 @@ export const ApplicationProgressStepper: React.FC<ApplicationProgressStepperProp
       <ol className="sr-only desktop:hidden">
         {stepLabels.map((label, index) => (
           <li key={label} aria-current={index === current ? 'step' : undefined}>
-            Steg {index + 1} av {total}: {label}
-            {index < current && ' (klart)'}
-            {index === current && ' (pågår)'}
+            {t('economic-aid:stepper.srStep', { number: index + 1, total, label })}
+            {index < current && t('economic-aid:stepper.done')}
+            {index === current && t('economic-aid:stepper.current')}
           </li>
         ))}
       </ol>

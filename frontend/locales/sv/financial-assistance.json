@@ -59,6 +59,7 @@
     "firstName": "Förnamn",
     "lastName": "Efternamn",
     "personalNumber": "Personnummer",
+    "personalNumberPlaceholder": "ÅÅÅÅMMDD-XXXX",
     "schoolName": "Skola (frivilligt)",
     "residenceExtent": "Bor i hemmet",
     "daysInHome": "Antal dagar per månad i hemmet",

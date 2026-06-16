@@ -345,10 +345,12 @@ export const emptyEconomicAidApplication = (): EconomicAidApplicationV1 => ({
  * som typer/komponenter men är frånkopplade från flödet. Civilstånds-steget
  * skriver till `hushall.civilstand` så ingen datamodell dubbleras.
  */
+// Step order/identity. Display labels are resolved at render time via the
+// `economic-aid` i18n namespace (`steps.<key>`) — no UI text lives here.
 export const ECONOMIC_AID_STEPS = [
-  { key: 'information', label: 'Information' },
-  { key: 'civilstand', label: 'Civilstånd' },
-  { key: 'formular', label: 'Ansökan' },
+  { key: 'information' },
+  { key: 'civilstand' },
+  { key: 'formular' },
 ] as const;
 
 export type EconomicAidStepKey = (typeof ECONOMIC_AID_STEPS)[number]['key'];

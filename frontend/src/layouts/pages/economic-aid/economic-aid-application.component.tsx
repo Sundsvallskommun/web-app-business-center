@@ -76,7 +76,7 @@ export const EconomicAidApplication: React.FC = () => {
       toastMessage({
         position: 'bottom',
         closeable: false,
-        message: 'Något gick fel när ansökan skulle skickas in. Försök igen senare.',
+        message: t('economic-aid:submitError'),
         status: 'error',
       });
       return;
@@ -86,7 +86,7 @@ export const EconomicAidApplication: React.FC = () => {
     toastMessage({
       position: 'bottom',
       closeable: false,
-      message: 'Din ansökan har skickats in!',
+      message: t('economic-aid:submitSuccess'),
       status: 'success',
     });
     // FIXME: ersätt med dedikerad bekräftelsesida när den finns.
@@ -128,7 +128,7 @@ export const EconomicAidApplication: React.FC = () => {
 
         <CardElevated className="w-full max-w-[80rem] mx-auto p-24 desktop:p-32">
           <StepComponent
-            label={`Steg ${currentStep + 1} – ${step.label}`}
+            label={t(`economic-aid:steps.${step.key}`)}
             onBack={goBack}
             onNext={goNext}
             isSubmitting={submitApplication.isPending}

@@ -62,7 +62,7 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
         position: 'bottom',
         closeable: false,
         status: 'error',
-        message: 'Det gick inte att hämta vilken ansökan som passar dig. Försök igen senare.',
+        message: t('economic-aid:civilstand.eligibilityError'),
       });
       return;
     }
@@ -138,13 +138,17 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
           <Input
             id="economic-aid-medsokande-personnummer"
             data-cy="economic-aid-medsokande-personnummer"
-            placeholder="ÅÅÅÅMMDD-XXXX"
+            placeholder={t('economic-aid:civilstand.medsokande.personnummerPlaceholder')}
             {...register('hushall.medsokande.personnummer', {
               validate: (value) => {
                 const selected = getValues('hushall.civilstand');
                 if (!selected || !CIVILSTAND_WITH_PARTNER.has(selected)) return true;
-                if (value.trim().length === 0) return 'Personnummer på medsökande krävs';
-                return PERSONNUMMER_PATTERN.test(value) || 'Personnummer måste anges som ÅÅÅÅMMDD-XXXX';
+                if (value.trim().length === 0)
+                  return t('economic-aid:civilstand.medsokande.personnummerRequired');
+                return (
+                  PERSONNUMMER_PATTERN.test(value) ||
+                  t('economic-aid:civilstand.medsokande.personnummerFormat')
+                );
               },
             })}
           />

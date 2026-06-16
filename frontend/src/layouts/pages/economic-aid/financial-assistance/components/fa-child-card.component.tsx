@@ -57,7 +57,7 @@ export const FaChildCard: React.FC<FaChildCardProps> = ({ index, applicationType
           </FormLabel>
           <Input
             id={`fa-child-${index}-personalNumber`}
-            placeholder="ÅÅÅÅMMDD-XXXX"
+            placeholder={t('financial-assistance:child.personalNumberPlaceholder')}
             {...register(`children.${index}.personalNumber` as const)}
           />
         </FormControl>

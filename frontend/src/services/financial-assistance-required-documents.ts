@@ -1,4 +1,4 @@
-import { FinancialAssistanceFormData, HousingForm } from '@interfaces/financial-assistance';
+import { AssetCategory, FinancialAssistanceFormData, HousingForm } from '@interfaces/financial-assistance';
 
 /**
  * Bilagor som ska bifogas per vald boendeform. Varje id mappar mot en etikett under
@@ -12,6 +12,14 @@ const HOUSING_FORM_DOCUMENTS: Partial<Record<HousingForm, string[]>> = {
   CONDOMINIUM: ['purchaseContract', 'feeInvoice', 'interestStatements', 'marketValue'],
   OWNED_HOUSE: ['purchaseContract', 'heatingCosts', 'interestStatements', 'waterSewage', 'wasteCollection', 'marketValue'],
   RENTED_HOUSE: ['rentalContract', 'rentalInvoice'],
+};
+
+/** Bilagor som ska bifogas per vald tillgångskategori. */
+const ASSET_DOCUMENTS: Record<AssetCategory, string[]> = {
+  BANK_SAVINGS: ['bankSavingsValue'],
+  REAL_ESTATE: ['realEstatePurchaseContract', 'realEstateMarketValue', 'realEstateMortgage'],
+  COMPANY: ['companyFinances'],
+  VEHICLE: ['vehicleReceipt', 'vehicleValuation', 'vehicleLoan'],
 };
 
 /**
@@ -32,9 +40,14 @@ export const getRequiredDocuments = (form: FinancialAssistanceFormData): string[
   if (form.plannings.some((planning) => planning.planningType === 'SICK_LEAVE')) {
     documents.push('sickCertificate');
   }
-  // Tillgångar → underlag för tillgångar.
+  // Tillgångar → underlag per vald tillgångskategori (dedupliceras, t.ex. vid flera fordon).
   if (form.hasAssets === true) {
-    documents.push('assetStatements');
+    const assetDocs = new Set<string>();
+    form.assets.forEach((asset) => {
+      if (!asset.assetCategory) return;
+      ASSET_DOCUMENTS[asset.assetCategory].forEach((id) => assetDocs.add(id));
+    });
+    documents.push(...assetDocs);
   }
   // Akut tandvård (övrigt bistånd) → faktura/kvitto.
   if (form.costs.some((cost) => cost.costType === 'OTHER' && cost.otherSubType === 'ACUTE_DENTAL')) {

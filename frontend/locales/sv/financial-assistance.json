@@ -122,7 +122,7 @@
   "costOtherSubType": {
     "OTHER": "Övrigt",
     "MUNICIPAL_FEES": "Kommunala avgifter",
-    "ACUTE_DENTAL": "Akut tandvård"
+    "ACUTE_DENTAL": "Akut tandvård/basundersökning"
   },
   "incomeType": {
     "SALARY": "Lön",
@@ -353,8 +353,15 @@
       "waterSewage": "Underlag för vatten/avlopp (helst för de senaste 12 månaderna)",
       "wasteCollection": "Underlag för renhållning (sophämtning/sotning, helst för de senaste 12 månaderna)",
       "sickCertificate": "Läkarintyg för aktuell period",
-      "assetStatements": "Underlag för dina tillgångar (t.ex. kontoutdrag eller engagemangsbesked)",
-      "acuteDental": "Faktura eller kvitto för akut tandvård"
+      "bankSavingsValue": "Underlag som visar aktuellt värde för bankmedel, aktier, fonder, annat sparande och kontanter",
+      "realEstatePurchaseContract": "Köpekontrakt för bostadsrätt, villa, fastighet eller fritidshus",
+      "realEstateMarketValue": "Underlag som visar aktuellt marknadsvärde för bostadsrätt, villa, fastighet eller fritidshus",
+      "realEstateMortgage": "Underlag som visar eventuella bolån för bostadsrätt, villa, fastighet eller fritidshus",
+      "companyFinances": "Underlag som visar ekonomin/eventuella tillgångar i företaget de senaste 3 månaderna",
+      "vehicleReceipt": "Kvitto/köpehandling för alla fordon",
+      "vehicleValuation": "Aktuell värdering från bilfirma/verkstad för alla fordon",
+      "vehicleLoan": "Underlag som visar eventuella lån för alla fordon",
+      "acuteDental": "Kvitto för akut tandvård/basundersökning"
     }
   },
   "bankid": {

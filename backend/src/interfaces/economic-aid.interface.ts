@@ -139,25 +139,10 @@ export interface HushallStep {
   medsokande: Medsokande;
 }
 
-export const BOENDEFORM_VALUES = [
-  'hyreslagenhet',
-  'bostadsratt',
-  'villa',
-  'andrahand',
-  'inneboende',
-  'annat',
-] as const;
+export const BOENDEFORM_VALUES = ['hyreslagenhet', 'bostadsratt', 'villa', 'andrahand', 'inneboende', 'annat'] as const;
 export type Boendeform = (typeof BOENDEFORM_VALUES)[number];
 
-export const ANTAL_RUM_VALUES = [
-  '1_rok',
-  '1_rk',
-  '2_rk',
-  '3_rk',
-  '4_rk',
-  '5_rk',
-  '6plus_rk',
-] as const;
+export const ANTAL_RUM_VALUES = ['1_rok', '1_rk', '2_rk', '3_rk', '4_rk', '5_rk', '6plus_rk'] as const;
 export type AntalRum = (typeof ANTAL_RUM_VALUES)[number];
 
 export interface BoendeStep {
@@ -172,14 +157,7 @@ export interface BoendeStep {
   hemforsakring: string;
 }
 
-export const SYSSELSATTNING_VALUES = [
-  'arbetssokande',
-  'anstalld',
-  'sjukskriven',
-  'foraldraledig',
-  'studerar',
-  'annat',
-] as const;
+export const SYSSELSATTNING_VALUES = ['arbetssokande', 'anstalld', 'sjukskriven', 'foraldraledig', 'studerar', 'annat'] as const;
 export type Sysselsattning = (typeof SYSSELSATTNING_VALUES)[number];
 
 export interface SysselsattningStep {

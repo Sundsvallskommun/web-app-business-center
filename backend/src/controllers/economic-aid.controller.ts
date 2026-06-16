@@ -7,11 +7,7 @@ import {
   RenewalPrefill,
 } from '@/data-contracts/caremanagement/data-contracts';
 import { CitizenAddress, CitizenExtended, PersonGuidBatch } from '@/data-contracts/citizen/data-contracts';
-import {
-  CreateFinancialAssistanceDto,
-  EconomicAidApplicationDto,
-  EligibilityRequestDto,
-} from '@/dtos/economic-aid.dto';
+import { CreateFinancialAssistanceDto, EconomicAidApplicationDto, EligibilityRequestDto } from '@/dtos/economic-aid.dto';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import {
@@ -68,9 +64,7 @@ const channelKey = (channel: ContactSettingChannel): string =>
 
 /** True when the managed (EMAIL/SMS) channels already match the form — nothing to write back. */
 const managedChannelsUnchanged = (existing: ContactSettingChannel[] | undefined, desired: ContactSettingChannel[]): boolean => {
-  const managed = (existing ?? []).filter(
-    channel => channel.contactMethod === ContactMethod.EMAIL || channel.contactMethod === ContactMethod.SMS,
-  );
+  const managed = (existing ?? []).filter(channel => channel.contactMethod === ContactMethod.EMAIL || channel.contactMethod === ContactMethod.SMS);
   const existingKeys = managed.map(channelKey).sort();
   const desiredKeys = desired.map(channelKey).sort();
   return existingKeys.length === desiredKeys.length && existingKeys.every((value, index) => value === desiredKeys[index]);
@@ -219,12 +213,7 @@ export class EconomicAidController {
       throw new HttpException(401, 'Unauthorized');
     }
 
-    const profile = await this.buildProfile(
-      partyId,
-      personNumber ?? '',
-      { fornamn: req.user.givenName, efternamn: req.user.surname },
-      req,
-    );
+    const profile = await this.buildProfile(partyId, personNumber ?? '', { fornamn: req.user.givenName, efternamn: req.user.surname }, req);
     return { data: profile, message: 'success' };
   }
 
@@ -278,10 +267,11 @@ export class EconomicAidController {
     const addresses = citizen?.addresses ?? [];
 
     const populationAddress = addresses.find(isPopulationRegistration);
+    const firstStreetAddress = addresses.find(hasStreet);
     const folkbokforingsadress = populationAddress
       ? toApplicantAddress(populationAddress)
-      : addresses.find(hasStreet)
-      ? toApplicantAddress(addresses.find(hasStreet)!)
+      : firstStreetAddress
+      ? toApplicantAddress(firstStreetAddress)
       : null;
     const andraAdresser = addresses.filter(a => a !== populationAddress && hasStreet(a)).map(toApplicantAddress);
 
@@ -350,7 +340,7 @@ export class EconomicAidController {
 
   @Get('/economic-aid/prefill')
   @OpenAPI({
-    summary: 'Prefill household children from the applicant\'s most recent Lifecare normberäkning (återansökan)',
+    summary: "Prefill household children from the applicant's most recent Lifecare normberäkning (återansökan)",
   })
   @UseBefore(authMiddleware)
   async getPrefill(@Req() req: RequestWithUser): Promise<ApiResponse<PrefillResult>> {
@@ -601,10 +591,7 @@ export class EconomicAidController {
   }
 
   /** Reads the applicant's e-post + telefon from contactsettings (best-effort). */
-  private async fetchContactDetails(
-    partyId: string,
-    req: RequestWithUser,
-  ): Promise<{ epost: string | null; telefon: string | null }> {
+  private async fetchContactDetails(partyId: string, req: RequestWithUser): Promise<{ epost: string | null; telefon: string | null }> {
     try {
       const url = `${getApiBase('contactsettings')}/${MUNICIPALITY_ID}/settings`;
       const res = await this.apiService.get<ContactSetting[]>({ url, params: { partyId } }, req.user);

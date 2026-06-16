@@ -3,7 +3,7 @@ import { isFinancialAssistanceSlug } from '@interfaces/financial-assistance';
 import { apiService, useApi } from '@services/api-service';
 import { FormControl, FormErrorMessage, FormLabel, Icon, Input, RadioButton, useSnackbar } from '@sk-web-gui/react';
 import { Check } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FaBankidMock } from '../financial-assistance/components/fa-bankid-mock.component';
@@ -28,9 +28,9 @@ interface CoApplicantLookup {
 }
 
 /**
- * Steg 1 — civilstånd. Vid gift/sambo matas medsökandes personnummer in; på blur slås
- * namnet upp mot Citizen och måste få träff innan man går vidare. När man fortsätter
- * signerar medsökande med BankID (mockad — spinner + knapp tills riktig signering finns).
+ * Steg 1 — civilstånd. Vid gift/sambo matas medsökandes personnummer in; så snart numret är
+ * giltigt slås namnet upp mot Citizen (ingen blur krävs) och måste få träff innan man går vidare.
+ * När man fortsätter signerar medsökande med BankID (mockad — spinner + knapp tills riktig signering finns).
  */
 export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
   const { t } = useTranslation('economic-aid');
@@ -40,7 +40,12 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
 
   const civilstand = watch('hushall.civilstand');
   const showMedsokande = civilstand !== null && CIVILSTAND_WITH_PARTNER.has(civilstand);
+  const medsokandePnr = watch('hushall.medsokande.personnummer');
   const personnummerError = formState.errors.hushall?.medsokande?.personnummer;
+  // Visa formatfelet först när fältet rörts (blur) eller efter ett framåt-försök — inte
+  // medan man fortfarande skriver. Annars blinkar felet redan vid första siffran.
+  const personnummerTouched = !!formState.touchedFields.hushall?.medsokande?.personnummer;
+  const showPersonnummerError = personnummerTouched && !!personnummerError;
 
   const [coApplicant, setCoApplicant] = useState<CoApplicantLookup | null>(null);
   const [lookupLoading, setLookupLoading] = useState(false);
@@ -78,6 +83,17 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
     }
   };
 
+  // Slå upp namnet så snart personnumret är giltigt — ingen blur krävs. onChange nollställer
+  // coApplicant vid varje ändring, så effekten kör om för ett nytt giltigt värde; lookupLoading
+  // hindrar dubbeluppslag medan ett uppslag pågår.
+  useEffect(() => {
+    if (!showMedsokande) return;
+    if (lookupLoading || coApplicant !== null) return;
+    if (!PERSONNUMMER_PATTERN.test(medsokandePnr)) return;
+    void runCoApplicantLookup();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [medsokandePnr, showMedsokande, coApplicant, lookupLoading]);
+
   // Sparar eligibility-resultatet och går vidare (direkt in i formuläret om bara ett förslag).
   const proceed = (result: EligibilityResult) => {
     setValue('eligibility', result, { shouldDirty: true });
@@ -95,7 +111,13 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
     const isPartner = CIVILSTAND_WITH_PARTNER.has(civilstand);
     if (isPartner) {
       const validFormat = await trigger('hushall.medsokande.personnummer');
-      if (!validFormat) return;
+      if (!validFormat) {
+        // Markera som touched så formatfelet visas även om man tryckt Fortsätt utan att blura.
+        setValue('hushall.medsokande.personnummer', getValues('hushall.medsokande.personnummer'), {
+          shouldTouch: true,
+        });
+        return;
+      }
       const lookup = coApplicant ?? (await runCoApplicantLookup());
       if (!lookup || !lookup.found) {
         toastMessage({
@@ -192,7 +214,7 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
       </FormControl>
 
       {showMedsokande && (
-        <FormControl invalid={!!personnummerError} className="w-full max-w-[24rem]">
+        <FormControl invalid={showPersonnummerError} className="w-full max-w-[24rem]">
           <FormLabel htmlFor="economic-aid-medsokande-personnummer" className="font-bold">
             {t('economic-aid:civilstand.medsokande.personnummerLabel')}
           </FormLabel>
@@ -205,16 +227,13 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
               pnrField.onChange(event);
               setCoApplicant(null);
             }}
-            onBlur={(event) => {
-              pnrField.onBlur(event);
-              void runCoApplicantLookup();
-            }}
+            onBlur={pnrField.onBlur}
           />
           <p className="text-small text-dark-secondary mt-4">
             {t('economic-aid:civilstand.medsokande.personnummerHelper')}
           </p>
-          {personnummerError?.message ? (
-            <FormErrorMessage className="text-error">{personnummerError.message}</FormErrorMessage>
+          {showPersonnummerError ? (
+            <FormErrorMessage className="text-error">{personnummerError?.message}</FormErrorMessage>
           ) : null}
 
           {lookupLoading ? (

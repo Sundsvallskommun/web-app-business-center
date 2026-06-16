@@ -20,8 +20,8 @@ export interface Problem {
   instance?: string;
   /** @format uri */
   type?: string;
-  title?: string;
   detail?: string;
+  title?: string;
   /** @format int32 */
   status?: number;
 }
@@ -664,6 +664,8 @@ export interface NormberakningRequest {
    * @pattern ^\d{4}-(0[1-9]|1[0-2])$
    */
   applicationMonth: string;
+  /** The id of the caremanagement errand the normberäkning concerns. When present, a Decision(RECOMMENDATION) summarising the income warnings is recorded on the errand for the handläggare to review; when omitted, the normberäkning is built without recording a recommendation. */
+  errandId?: string;
 }
 
 /** The created Lifecare normberäkning id plus the income warnings to review. */
@@ -897,6 +899,28 @@ export interface Message {
    * @format date-time
    */
   created?: string;
+  /** Files attached to the message */
+  attachments?: MessageAttachment[];
+}
+
+/** Metadata of a file attached to a message. Download the content via GET .../messages/{messageId}/attachments/{id}/file */
+export interface MessageAttachment {
+  /** Unique identifier */
+  id?: string;
+  /** File name */
+  fileName?: string;
+  /** Mime type */
+  mimeType?: string;
+  /**
+   * File size in bytes
+   * @format int32
+   */
+  fileSize?: number;
+  /**
+   * Created timestamp
+   * @format date-time
+   */
+  created?: string;
 }
 
 /** Attachment model */
@@ -981,6 +1005,50 @@ export interface RenewalPrefill {
   children?: PrefilledChild[];
   /** True when the Lifecare lookup succeeded. False means the answer is degraded (empty children). */
   lifecareChecked?: boolean;
+}
+
+/** Form descriptor for an errand type slug — statuses, roles and the fields its data payload should carry. */
+export interface ErrandTypeSchema {
+  /** The errand type slug */
+  typeSlug?: string;
+  /** The application-type variant the slug maps to, when the type exposes one; null otherwise */
+  applicationType?: string;
+  /** Human-readable display name of the type */
+  displayName?: string;
+  /** Allowed status codes for the type, sorted */
+  statuses?: string[];
+  /** Stakeholder roles valid for the type */
+  roles?: RoleDefinition[];
+  /** The fields the type's data payload should carry, as form guidance */
+  fields?: FieldDescriptor[];
+}
+
+/** Form-guidance descriptor for a single data field of an errand type. */
+export interface FieldDescriptor {
+  /** The data field name */
+  name?: string;
+  /** The field kind */
+  type?: FieldDescriptorTypeEnum;
+  /** True when the field is unconditionally required for the application types it applies to */
+  required?: boolean;
+  /** Allowable values when type is ENUM, otherwise null */
+  options?: string[];
+  /** For ARRAY fields, the OpenAPI component name of the element shape (resolve via /api-docs); null otherwise */
+  itemsRef?: string;
+  /** The application types that collect this field */
+  appliesTo?: string[];
+  /** Human-readable gate describing when the field is collected, when conditional; null when always collected */
+  condition?: string;
+  /** Short description of the field */
+  description?: string;
+}
+
+export interface RoleDefinition {
+  code?: string;
+  displayName?: string;
+  /** @format int32 */
+  maxOccurrences?: number;
+  required?: boolean;
 }
 
 /** The category of asset */
@@ -1214,6 +1282,17 @@ export enum EligibilityResponseReasonCodeEnum {
 export enum MessageDirectionEnum {
   INBOUND = "INBOUND",
   OUTBOUND = "OUTBOUND",
+}
+
+/** The field kind */
+export enum FieldDescriptorTypeEnum {
+  STRING = "STRING",
+  BOOLEAN = "BOOLEAN",
+  INTEGER = "INTEGER",
+  DECIMAL = "DECIMAL",
+  DATE_TIME = "DATE_TIME",
+  ENUM = "ENUM",
+  ARRAY = "ARRAY",
 }
 
 /** Lookup kind */

@@ -467,14 +467,17 @@ export class CaseController {
     const _case = (await this.getCase(req, caseId)).data;
 
     // caremanagement uses its own transport (not the shared gateway), so handle it up front and return.
-    // The applicant's message is INBOUND, authored by their partyId. Text-only today — files are
-    // ignored until caremanagement supports message attachments.
+    // The applicant's message is INBOUND, authored by their partyId. Sent as multipart: a JSON
+    // `message` part plus zero or more `attachments` file parts (mirrors the conversation API).
     if (_case.system === CARE_MANAGEMENT_SYSTEM) {
       const errandId = _case.caseId ?? caseId;
-      await this.caremanagementApiService.post<void>({
-        url: caremanagementUrl('errands', errandId, 'messages'),
-        data: { direction: 'INBOUND', body: body.message, author: req.user.partyId },
+      const form = new FormData();
+      const message = { direction: 'INBOUND', body: body.message, author: req.user.partyId };
+      form.append('message', new Blob([JSON.stringify(message)], { type: 'application/json' }));
+      (files ?? []).forEach(file => {
+        form.append('attachments', new Blob([file.buffer as BlobPart], { type: file.mimetype }), file.originalname);
       });
+      await this.caremanagementApiService.postForm<void>({ url: caremanagementUrl('errands', errandId, 'messages'), data: form });
       const messages = (await this.getCaseMessages(req, caseId)).data;
       return { data: messages, message: 'success' };
     }
@@ -625,5 +628,39 @@ export class CaseController {
 
     const url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
     return this.fetchAttachment(url, req);
+  }
+
+  @Get('/cases/:caseId/messages/:messageId/attachments/:attachmentId')
+  @OpenAPI({ summary: 'Return a message attachment for a caremanagement errand' })
+  @UseBefore(authMiddleware)
+  async getCareManagementMessageAttachment(
+    @Req() req: RequestWithUser,
+    @Param('caseId') caseId: string,
+    @Param('messageId') messageId: string,
+    @Param('attachmentId') attachmentId: string,
+  ): Promise<ApiResponse<string | null>> {
+    if (!caseId) {
+      throw new HttpException(400, 'Bad Request');
+    }
+
+    const _case = (await this.getCase(req, caseId)).data;
+    if (_case.system !== CARE_MANAGEMENT_SYSTEM) {
+      throw new HttpException(400, 'Bad request');
+    }
+
+    const errandId = _case.caseId ?? caseId;
+    const url = caremanagementUrl('errands', errandId, 'messages', messageId, 'attachments', attachmentId, 'file');
+    try {
+      const res = await this.caremanagementApiService.get<ArrayBuffer>({ url, responseType: 'arraybuffer' });
+      if (!res.data) {
+        return { data: null, message: 'error' };
+      }
+      return { data: Buffer.from(res.data).toString('base64'), message: 'success' };
+    } catch (error) {
+      if ((error as { status?: number })?.status === 404) {
+        return { data: null, message: 'success' };
+      }
+      return { data: null, message: 'error' };
+    }
   }
 }

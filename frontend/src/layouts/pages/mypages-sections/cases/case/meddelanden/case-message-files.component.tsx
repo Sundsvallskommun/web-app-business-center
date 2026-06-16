@@ -17,6 +17,9 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
       let url;
       if (caseData.system === 'OPEN_E_PLATFORM' || caseData.system === 'BYGGR' || caseData.system === 'ECOS') {
         url = `/cases/${caseData?.caseId}/messages/attachments/${file.attachmentId}`;
+      } else if (caseData.system === 'CARE_MANAGEMENT') {
+        // caremanagement keeps attachments on the message itself (no conversation), keyed by errand id.
+        url = `/cases/${caseData?.caseId}/messages/${message.messageId}/attachments/${file.attachmentId}`;
       } else {
         url = `/cases/${caseData?.caseId}/conversations/${message.conversationId}/messages/${message.messageId}/attachments/${file.attachmentId}`;
       }

@@ -61,7 +61,11 @@ export const mapCareManagementMessage = (msg: CareManagementMessage, senderName:
   message: msg.body ?? '',
   sent: msg.created ?? '',
   sender: senderName,
-  attachments: [],
+  attachments: (msg.attachments ?? []).map(attachment => ({
+    attachmentId: attachment.id ?? '',
+    name: attachment.fileName ?? '',
+    contentType: attachment.mimeType,
+  })),
 });
 
 // --- Conversation / message payload builders ---------------------------------

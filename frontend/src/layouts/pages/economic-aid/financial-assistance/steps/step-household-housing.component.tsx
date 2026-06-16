@@ -43,6 +43,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
   const { fields, append, remove } = useFieldArray({ control, name: 'children' });
 
   const maritalStatus = watch('maritalStatus');
+  const civilstandChoice = watch('civilstandChoice');
   const hasChildren = watch('hasChildrenUnder21');
   const childrenChanged = watch('childrenResidenceChanged');
   const housingChanged = watch('housingChanged');
@@ -134,7 +135,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
       {/* Civilstånd — från portalen, skrivskyddat */}
       <div className="text-content">
         <p className="font-bold">{t('financial-assistance:periodNorm.maritalStatusLabel')}</p>
-        <p>{t(`financial-assistance:maritalStatus.${maritalStatus}`)}</p>
+        <p>{t(`financial-assistance:civilstand.${civilstandChoice}`)}</p>
       </div>
 
       {/* Kontaktuppgifter + notisval — sökande, och medsökande vid gift/sambo */}

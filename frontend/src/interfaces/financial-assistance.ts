@@ -33,6 +33,8 @@ export const applicationTypeFromSlug = (slug: FinancialAssistanceSlug): Applicat
 
 // --- Enums (string values match the contract) ---
 export type MaritalStatus = 'SINGLE' | 'COHABITING';
+/** Det exakta civilstånd användaren valde (visas i UI; maritalStatus skickas till API:t). */
+export type CivilstandChoice = 'gift' | 'sambo' | 'ensamstaende';
 export type PeriodChoice = 'CURRENT_MONTH' | 'NEXT_MONTH' | 'OTHER_BENEFIT';
 export type NormType = 'RIKSNORM' | 'OTHER_NORM';
 export type HousingForm =
@@ -166,6 +168,8 @@ export interface PersonForm {
 /** The full superset the wizard edits. Sections are gated per applicationType. */
 export interface FinancialAssistanceFormData {
   maritalStatus: MaritalStatus;
+  /** Exakt civilstånd som visas i UI (gift/sambo/ensamstaende). */
+  civilstandChoice: CivilstandChoice;
   periodMonth: number | null;
   periodYear: number | null;
   periodChoice: PeriodChoice | '';
@@ -214,6 +218,7 @@ export interface FinancialAssistanceFormData {
 
 export interface FinancialAssistancePrefill {
   maritalStatus: MaritalStatus;
+  civilstandChoice: CivilstandChoice;
   periodMonth: number | null;
   periodYear: number | null;
   applicantPersonalNumber: string;
@@ -230,6 +235,7 @@ export const emptyFinancialAssistanceFormData = (
 
   return {
     maritalStatus: prefill.maritalStatus,
+    civilstandChoice: prefill.civilstandChoice,
     periodMonth: prefill.periodMonth,
     periodYear: prefill.periodYear,
     periodChoice: '',

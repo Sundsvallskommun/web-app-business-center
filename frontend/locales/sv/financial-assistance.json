@@ -25,6 +25,11 @@
     "SINGLE": "Ensamstående",
     "COHABITING": "Gift eller sambo"
   },
+  "civilstand": {
+    "gift": "Gift eller registrerad partner",
+    "sambo": "Sambo",
+    "ensamstaende": "Ensamstående (ogift, skild, änka, änkling)"
+  },
   "periodChoice": {
     "CURRENT_MONTH": "Denna månad",
     "NEXT_MONTH": "Nästa månad",

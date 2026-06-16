@@ -173,10 +173,41 @@ const buildJobApplication = (application: JobApplicationForm): Record<string, un
     employerAndPlace: application.employerAndPlace.trim(),
   });
 
-const buildPerson = (person: PersonForm, type: ApplicationType): Record<string, unknown> => {
+/**
+ * Kontaktuppgifter + notisval för en person. Fälten lagras på formulärnivå (sökande resp.
+ * medsökande) och fästs här på rätt person så de sparas på stakeholdern i caremanagement.
+ * Notis-flaggorna (boolean) behålls alltid; tomma e-post/telefon rensas av compact().
+ */
+const personContact = (person: PersonForm, form: FinancialAssistanceFormData): Record<string, unknown> =>
+  person.role === 'CO_APPLICANT'
+    ? {
+        email: form.coApplicantEmail.trim(),
+        phone: form.coApplicantPhone.trim(),
+        notifyByEmail: form.coNotifyByEmail,
+        notifyBySms: form.coNotifyBySms,
+      }
+    : {
+        email: form.contactEmail.trim(),
+        phone: form.contactPhone.trim(),
+        notifyByEmail: form.notifyByEmail,
+        notifyBySms: form.notifyBySms,
+      };
+
+const buildPerson = (
+  person: PersonForm,
+  type: ApplicationType,
+  form: FinancialAssistanceFormData,
+): Record<string, unknown> => {
+  const contact = personContact(person, form);
+
   // Renewal/supplementary: "samma konto som föregående" → skicka bara flaggan, inga kontouppgifter.
   if (type !== 'NEW' && person.paymentSameAsPrevious === true) {
-    return compact({ role: person.role, personalNumber: person.personalNumber.trim(), paymentSameAsPrevious: true });
+    return compact({
+      role: person.role,
+      personalNumber: person.personalNumber.trim(),
+      paymentSameAsPrevious: true,
+      ...contact,
+    });
   }
 
   return compact({
@@ -194,6 +225,7 @@ const buildPerson = (person: PersonForm, type: ApplicationType): Record<string, 
           hadWorkDescription: person.hadWorkLast12Months === true ? person.hadWorkDescription.trim() : '',
         }
       : { paymentSameAsPrevious: person.paymentSameAsPrevious }),
+    ...contact,
   });
 };
 
@@ -285,7 +317,7 @@ export const buildFinancialAssistanceData = (
   }
 
   // Persons / payment — all application types.
-  const persons = form.persons.map((person) => buildPerson(person, applicationType)).filter(hasFields);
+  const persons = form.persons.map((person) => buildPerson(person, applicationType, form)).filter(hasFields);
   if (persons.length > 0) data.persons = persons;
 
   return data;

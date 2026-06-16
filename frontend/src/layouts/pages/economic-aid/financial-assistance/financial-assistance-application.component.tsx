@@ -3,6 +3,7 @@
 import { CardElevated } from '@components/cards/card-elevated.component';
 import {
   ApplicationType,
+  CivilstandChoice,
   FA_GROUPS_BY_TYPE,
   FinancialAssistanceFormData,
   FinancialAssistanceSlug,
@@ -26,6 +27,7 @@ import { FA_STEP_COMPONENTS } from './steps/fa-step-registry';
 interface FinancialAssistanceApplicationProps {
   slug: FinancialAssistanceSlug;
   maritalStatus: MaritalStatus;
+  civilstandChoice: CivilstandChoice;
   periodMonth: number | null;
   periodYear: number | null;
   coApplicantPersonalNumber: string;
@@ -68,6 +70,7 @@ const uploadAttachments = async (errandId: string, attachments: UploadFile[]): P
 export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplicationProps> = ({
   slug,
   maritalStatus,
+  civilstandChoice,
   periodMonth,
   periodYear,
   coApplicantPersonalNumber,
@@ -84,6 +87,7 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
   const form = useForm<FinancialAssistanceFormData>({
     defaultValues: emptyFinancialAssistanceFormData({
       maritalStatus,
+      civilstandChoice,
       periodMonth,
       periodYear,
       applicantPersonalNumber: '',

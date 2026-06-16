@@ -105,6 +105,7 @@ export const EconomicAidApplication: React.FC = () => {
       <FinancialAssistanceApplication
         slug={chosenTypeSlug}
         maritalStatus={maritalStatus}
+        civilstandChoice={civilstand ?? 'ensamstaende'}
         periodMonth={suggestion?.periodMonth ?? null}
         periodYear={suggestion?.periodYear ?? null}
         coApplicantPersonalNumber={form.getValues('hushall.medsokande.personnummer')}

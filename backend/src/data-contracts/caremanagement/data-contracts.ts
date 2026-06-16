@@ -268,6 +268,14 @@ export interface Person {
   otherPaymentDescription?: string;
   /** Whether the payment details are the same as previously used */
   paymentSameAsPrevious?: boolean;
+  /** Email address used for notifications about the application */
+  email?: string;
+  /** Phone number used for SMS notifications about the application */
+  phone?: string;
+  /** Whether the person wants notifications about the application by email */
+  notifyByEmail?: boolean;
+  /** Whether the person wants notifications about the application by SMS */
+  notifyBySms?: boolean;
 }
 
 /** A planned activity for the applicant or co-applicant. */

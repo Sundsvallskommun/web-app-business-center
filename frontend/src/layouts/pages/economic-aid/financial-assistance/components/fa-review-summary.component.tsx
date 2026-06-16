@@ -50,7 +50,7 @@ export const FaReviewSummary: React.FC<FaReviewSummaryProps> = ({ applicationTyp
       <SummarySection heading={t('financial-assistance:groups.period-norm')}>
         <Row
           label={t('financial-assistance:periodNorm.maritalStatusLabel')}
-          value={t(`financial-assistance:maritalStatus.${values.maritalStatus}`)}
+          value={t(`financial-assistance:civilstand.${values.civilstandChoice}`)}
         />
         <Row label={t('financial-assistance:periodNorm.periodLabel')} value={period} />
         <Row

@@ -25,7 +25,8 @@ interface FaContactSectionProps {
 /**
  * Kontaktuppgifter + notisval för en person (sökande eller medsökande). Personnummer + adress
  * visas skrivskyddat; e-post/telefon förifylls från Mina sidor men kan redigeras. Notisvalet
- * (minst en kanal) sparas senare på personens stakeholder — bara ikryssade kanaler.
+ * (minst en kanal) sparas på personens stakeholder i caremanagement, och ändrade kontaktuppgifter
+ * synkas tillbaka till personens contactsettings vid inskick.
  */
 export const FaContactSection: React.FC<FaContactSectionProps> = ({
   heading,

@@ -24,7 +24,8 @@ import {
   SubmitApplicationResponse,
 } from '@/interfaces/economic-aid.interface';
 import { ApiResponse } from '@/interfaces/service';
-import { ContactSetting } from '@/interfaces/contact-settings';
+import { ContactSetting, ContactSettingChannel, NewContactSettings, UpdateContactSettings } from '@/interfaces/contact-settings';
+import { ContactMethod } from '@/data-contracts/contactsettings/data-contracts';
 import ApiService from '@/services/api.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
 import { makeClientContactSetting } from '@/services/contact-setting.service';
@@ -43,6 +44,37 @@ const POPULATION_REGISTRATION_ADDRESS_TYPES = new Set(['POPULATION_REGISTRATION_
 
 /** Strips everything but digits — personnummer reaches us in varying formats. */
 const onlyDigits = (value: string | null | undefined): string => (value ?? '').replace(/\D/g, '');
+
+/**
+ * Builds the EMAIL/SMS contact channels we manage for a person from the contact fields
+ * carried on the FA payload. A channel is only emitted when its destination is filled in;
+ * the notify-flags decide whether the channel is disabled (no notifications) or active.
+ */
+const buildManagedChannels = (person: Record<string, unknown>): ContactSettingChannel[] => {
+  const email = typeof person.email === 'string' ? person.email.trim() : '';
+  const phone = typeof person.phone === 'string' ? person.phone.trim() : '';
+  const channels: ContactSettingChannel[] = [];
+  if (email) {
+    channels.push({ contactMethod: ContactMethod.EMAIL, destination: email, disabled: person.notifyByEmail === false, alias: 'default' });
+  }
+  if (phone) {
+    channels.push({ contactMethod: ContactMethod.SMS, destination: phone, disabled: person.notifyBySms === false, alias: 'default' });
+  }
+  return channels;
+};
+
+const channelKey = (channel: ContactSettingChannel): string =>
+  `${channel.contactMethod}|${(channel.destination ?? '').trim()}|${channel.disabled ? 1 : 0}`;
+
+/** True when the managed (EMAIL/SMS) channels already match the form — nothing to write back. */
+const managedChannelsUnchanged = (existing: ContactSettingChannel[] | undefined, desired: ContactSettingChannel[]): boolean => {
+  const managed = (existing ?? []).filter(
+    channel => channel.contactMethod === ContactMethod.EMAIL || channel.contactMethod === ContactMethod.SMS,
+  );
+  const existingKeys = managed.map(channelKey).sort();
+  const desiredKeys = desired.map(channelKey).sort();
+  return existingKeys.length === desiredKeys.length && existingKeys.every((value, index) => value === desiredKeys[index]);
+};
 
 /** The three financial-assistance typeSlugs the create endpoint accepts (path-constrained). */
 const FINANCIAL_ASSISTANCE_SLUGS: ReadonlySet<string> = new Set([
@@ -176,6 +208,7 @@ export class EconomicAidController {
   private apiService = new ApiService();
   private caremanagementApiService = new CaremanagementApiService();
   private citizenApiBase = getApiBase('citizen');
+  private contactSettingsApiBase = getApiBase('contactsettings');
 
   @Get('/economic-aid/applicant-profile')
   @OpenAPI({ summary: 'Return citizen-derived profile for the logged-in applicant (step 1)' })
@@ -386,6 +419,11 @@ export class EconomicAidController {
     }
 
     logger.info(`[economic-aid] created ${slug} errand ${errandId} for partyId=${req.user.partyId}`);
+
+    // Mirror any edited contact details/notification preferences back to each person's
+    // contactsettings. Best-effort — a failure here must never undo a created errand.
+    await this.syncContactSettings(body.data, req);
+
     return { data: { errandId }, message: 'success' };
   }
 
@@ -517,6 +555,55 @@ export class EconomicAidController {
       }
       delete child.personalNumber;
     });
+  }
+
+  /**
+   * Speglar varje persons kontaktuppgifter/notisval (från ansökningspayloaden) tillbaka till
+   * deras contactsettings. Körs efter att ärendet skapats och är best-effort: ett fel per person
+   * loggas men fäller varken övriga personer eller själva inskicket. Personer utan partyId eller
+   * utan ifyllda kontaktuppgifter hoppas över.
+   */
+  private async syncContactSettings(data: Record<string, unknown>, req: RequestWithUser): Promise<void> {
+    const persons = Array.isArray(data?.persons) ? (data.persons as Array<Record<string, unknown>>) : [];
+    for (const person of persons) {
+      const partyId = typeof person?.partyId === 'string' ? person.partyId : '';
+      if (!partyId) continue;
+      const desired = buildManagedChannels(person);
+      if (desired.length === 0) continue;
+      try {
+        await this.upsertContactSettings(partyId, desired, req);
+      } catch (err) {
+        logger.warn(`[economic-aid] contactsettings sync failed for partyId=${partyId}: ${(err as Error)?.message ?? err}`);
+      }
+    }
+  }
+
+  /**
+   * Creates the person's contactsettings when missing, otherwise patches it — but only when the
+   * managed EMAIL/SMS channels actually differ, so an unchanged form does not trigger a write.
+   */
+  private async upsertContactSettings(partyId: string, desired: ContactSettingChannel[], req: RequestWithUser): Promise<void> {
+    const settingsUrl = `${this.contactSettingsApiBase}/${MUNICIPALITY_ID}/settings`;
+    const res = await this.apiService.get<ContactSetting[]>({ url: settingsUrl, params: { partyId } }, req.user);
+    const existing = res?.data?.[0];
+
+    if (!existing) {
+      const body: NewContactSettings = {
+        alias: 'default',
+        partyId,
+        createdById: req.user.partyId,
+        contactChannels: desired,
+      };
+      await this.apiService.post<ContactSetting, NewContactSettings>({ url: settingsUrl, data: body }, req.user);
+      logger.info(`[economic-aid] created contactsettings for partyId=${partyId}`);
+      return;
+    }
+
+    if (managedChannelsUnchanged(existing.contactChannels, desired)) return;
+
+    const body: UpdateContactSettings = { alias: existing.alias ?? 'default', contactChannels: desired };
+    await this.apiService.patch<ContactSetting, UpdateContactSettings>({ url: `${settingsUrl}/${existing.id}`, data: body }, req.user);
+    logger.info(`[economic-aid] updated contactsettings for partyId=${partyId}`);
   }
 
   /** Reads the applicant's e-post + telefon from contactsettings (best-effort). */

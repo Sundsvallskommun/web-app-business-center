@@ -60,12 +60,23 @@ export class CaseController {
    * and merge into the private case list. Best-effort: a caremanagement outage must not break /cases.
    */
   private async fetchCareManagementCases(partyId: string): Promise<CaseStatusResponse[]> {
+    const size = 100;
+    let page = 0;
+    let totalPages = 1;
+    const errands: FindErrandsResponse['errands'] = [];
+
     try {
-      const res = await this.caremanagementApiService.get<FindErrandsResponse>({
-        url: caremanagementUrl('errands'),
-        params: { filter: `reporterUserId:'${partyId}'`, size: 100 },
-      });
-      return (res.data?.errands ?? []).map(mapCareManagementErrandToCase);
+      do {
+        const res = await this.caremanagementApiService.get<FindErrandsResponse>({
+          url: caremanagementUrl('errands'),
+          params: { filter: `reporterUserId:'${partyId}'`, page, size },
+        });
+        errands.push(...(res.data?.errands ?? []));
+        totalPages = res.data?._meta?.totalPages ?? page + 1;
+        page += 1;
+      } while (page < totalPages);
+
+      return errands.map(mapCareManagementErrandToCase);
     } catch (error) {
       logger.warn(`[cases] failed to fetch caremanagement errands for partyId=${partyId}: ${(error as Error)?.message ?? error}`);
       return [];

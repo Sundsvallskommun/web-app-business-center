@@ -1,11 +1,16 @@
-import { AssetCategory, FinancialAssistanceFormData, PropertyType, VehicleType } from '@interfaces/financial-assistance';
+import {
+  AssetCategory,
+  FinancialAssistanceFormData,
+  PropertyType,
+  VehicleType,
+} from '@interfaces/financial-assistance';
 import { Button, Card, FormControl, FormLabel, Icon, Input, Select } from '@sk-web-gui/react';
 import { X } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { numberFieldOptions } from './fa-form-helpers';
 
-const ASSET_CATEGORIES: AssetCategory[] = ['BANK_SAVINGS', 'REAL_ESTATE', 'COMPANY', 'VEHICLE'];
+const ASSET_CATEGORIES: AssetCategory[] = ['BANK_SAVINGS', 'REAL_ESTATE', 'COMPANY', 'VEHICLE', 'OTHER'];
 const PROPERTY_TYPES: PropertyType[] = ['BOSTADSRATT', 'VILLA', 'FASTIGHET', 'FRITIDSHUS'];
 const VEHICLE_TYPES: VehicleType[] = ['BIL', 'BAT', 'MC', 'HUSVAGN', 'MOPED', 'SNOSKOTER', 'ANNAT'];
 
@@ -64,8 +69,8 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
         </Select>
       </FormControl>
 
-      {/* Bankmedel/sparande — beskrivning + värde */}
-      {category === 'BANK_SAVINGS' ? (
+      {/* Bankmedel/sparande eller övrig tillgång — beskrivning + värde */}
+      {category === 'BANK_SAVINGS' || category === 'OTHER' ? (
         <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
           <FormControl className="w-full">
             <FormLabel htmlFor={`fa-asset-${index}-description`}>

@@ -68,7 +68,7 @@ export type IncomeType =
   | 'CHILD_SUPPORT'
   | 'RENT_SHARE_FROM_CHILD';
 export type Recipient = 'APPLICANT' | 'CO_APPLICANT';
-export type AssetCategory = 'BANK_SAVINGS' | 'REAL_ESTATE' | 'COMPANY' | 'VEHICLE';
+export type AssetCategory = 'BANK_SAVINGS' | 'REAL_ESTATE' | 'COMPANY' | 'VEHICLE' | 'OTHER';
 export type PropertyType = 'BOSTADSRATT' | 'VILLA' | 'FASTIGHET' | 'FRITIDSHUS';
 export type VehicleType = 'BIL' | 'BAT' | 'MC' | 'HUSVAGN' | 'MOPED' | 'SNOSKOTER' | 'ANNAT';
 export type ResidenceExtent = 'FULL_TIME' | 'HALF_TIME' | 'OTHER';
@@ -225,9 +225,7 @@ export interface FinancialAssistancePrefill {
   coApplicantPersonalNumber: string;
 }
 
-export const emptyFinancialAssistanceFormData = (
-  prefill: FinancialAssistancePrefill,
-): FinancialAssistanceFormData => {
+export const emptyFinancialAssistanceFormData = (prefill: FinancialAssistancePrefill): FinancialAssistanceFormData => {
   const persons: PersonForm[] = [emptyPerson('APPLICANT', prefill.applicantPersonalNumber)];
   if (prefill.maritalStatus === 'COHABITING') {
     persons.push(emptyPerson('CO_APPLICANT', prefill.coApplicantPersonalNumber));

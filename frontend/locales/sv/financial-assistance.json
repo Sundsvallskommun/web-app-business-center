@@ -141,7 +141,8 @@
     "BANK_SAVINGS": "Banktillgodohavande / sparande",
     "REAL_ESTATE": "Fastighet",
     "COMPANY": "Företag",
-    "VEHICLE": "Fordon"
+    "VEHICLE": "Fordon",
+    "OTHER": "Övrig tillgång"
   },
   "propertyType": {
     "BOSTADSRATT": "Bostadsrätt",

@@ -20,8 +20,8 @@ export interface Problem {
   instance?: string;
   /** @format uri */
   type?: string;
-  detail?: string;
   title?: string;
+  detail?: string;
   /** @format int32 */
   status?: number;
 }
@@ -770,6 +770,52 @@ export interface PatchErrand {
   assignedUserId?: string;
 }
 
+export interface UpdateNote {
+  /**
+   * @minLength 0
+   * @maxLength 8192
+   */
+  body: string;
+  /**
+   * @minLength 0
+   * @maxLength 64
+   */
+  modifiedBy?: string;
+}
+
+/** Note attached to an errand */
+export interface Note {
+  /** Unique identifier */
+  id?: string;
+  /** Errand id this note belongs to */
+  errandId?: string;
+  /**
+   * Note body
+   * @example "Spoke to family today, awaiting docs."
+   */
+  body?: string;
+  /**
+   * Author user id
+   * @example "jane01doe"
+   */
+  author?: string;
+  /**
+   * Created timestamp
+   * @format date-time
+   */
+  created?: string;
+  /**
+   * User id of the last editor
+   * @example "jane01doe"
+   */
+  modifiedBy?: string;
+  /**
+   * Last modified timestamp; null until the note has been edited
+   * @format date-time
+   */
+  modified?: string;
+}
+
 /** Number of errands assigned to a given user */
 export interface AssigneeCount {
   /** The assigned user id */
@@ -857,29 +903,6 @@ export interface StatusHistoryEntry {
   changedBy?: string;
   /** @format date-time */
   changedAt?: string;
-}
-
-/** Note attached to an errand */
-export interface Note {
-  /** Unique identifier */
-  id?: string;
-  /** Errand id this note belongs to */
-  errandId?: string;
-  /**
-   * Note body
-   * @example "Spoke to family today, awaiting docs."
-   */
-  body?: string;
-  /**
-   * Author user id
-   * @example "jane01doe"
-   */
-  author?: string;
-  /**
-   * Created timestamp
-   * @format date-time
-   */
-  created?: string;
 }
 
 /** A message in the errand's conversation */
@@ -1057,6 +1080,7 @@ export enum AssetAssetCategoryEnum {
   REAL_ESTATE = "REAL_ESTATE",
   COMPANY = "COMPANY",
   VEHICLE = "VEHICLE",
+  OTHER = "OTHER",
 }
 
 /** Type of real estate property */

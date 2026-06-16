@@ -20,7 +20,7 @@ import {
  */
 const compact = (record: Record<string, unknown>): Record<string, unknown> =>
   Object.fromEntries(
-    Object.entries(record).filter(([, value]) => value !== '' && value !== null && value !== undefined),
+    Object.entries(record).filter(([, value]) => value !== '' && value !== null && value !== undefined)
   );
 
 const hasFields = (record: Record<string, unknown>): boolean => Object.keys(record).length > 0;
@@ -46,7 +46,11 @@ const derivePeriod = (choice: PeriodChoice): Period => {
 };
 
 /** Builds and assigns the period fields onto `data` for the given application type. */
-const assignPeriod = (data: Record<string, unknown>, form: FinancialAssistanceFormData, type: ApplicationType): void => {
+const assignPeriod = (
+  data: Record<string, unknown>,
+  form: FinancialAssistanceFormData,
+  type: ApplicationType
+): void => {
   if (type !== 'NEW') {
     Object.assign(data, compact({ periodMonth: form.periodMonth, periodYear: form.periodYear }));
     return;
@@ -58,7 +62,7 @@ const assignPeriod = (data: Record<string, unknown>, form: FinancialAssistanceFo
       periodChoice: form.periodChoice,
       ...derivePeriod(form.periodChoice),
       otherBenefitDescription: form.periodChoice === 'OTHER_BENEFIT' ? form.otherBenefitDescription.trim() : '',
-    }),
+    })
   );
 };
 
@@ -68,7 +72,7 @@ const assignGatedList = (
   gateKey: string,
   gate: boolean | null,
   listKey: string,
-  items: Record<string, unknown>[],
+  items: Record<string, unknown>[]
 ): void => {
   if (gate == null) return;
   data[gateKey] = gate;
@@ -115,8 +119,8 @@ const buildPendingBenefit = (benefit: PendingBenefitForm): Record<string, unknow
 const buildAsset = (asset: AssetForm): Record<string, unknown> =>
   compact({
     assetCategory: asset.assetCategory,
-    // Beskrivning + värde bara för bankmedel/sparande.
-    ...(asset.assetCategory === 'BANK_SAVINGS'
+    // Beskrivning + värde för bankmedel/sparande och övrig tillgång.
+    ...(asset.assetCategory === 'BANK_SAVINGS' || asset.assetCategory === 'OTHER'
       ? { description: asset.description.trim(), value: asset.value }
       : {}),
     // Fastighet/företag: inga beskrivnings-/värdefält.
@@ -151,9 +155,7 @@ const buildPlanning = (planning: PlanningForm): Record<string, unknown> =>
       : {}),
     // Sjukskrivning: bara grad (från/till har tagits bort).
     ...(planning.planningType === 'SICK_LEAVE' ? { sickLeaveLevel: planning.sickLeaveLevel } : {}),
-    ...(planning.planningType === 'SFI'
-      ? { sfiStudyPath: planning.sfiStudyPath, sfiCourse: planning.sfiCourse }
-      : {}),
+    ...(planning.planningType === 'SFI' ? { sfiStudyPath: planning.sfiStudyPath, sfiCourse: planning.sfiCourse } : {}),
     ...(planning.planningType === 'OTHER' ? { otherDescription: planning.otherDescription.trim() } : {}),
   });
 
@@ -196,7 +198,7 @@ const personContact = (person: PersonForm, form: FinancialAssistanceFormData): R
 const buildPerson = (
   person: PersonForm,
   type: ApplicationType,
-  form: FinancialAssistanceFormData,
+  form: FinancialAssistanceFormData
 ): Record<string, unknown> => {
   const contact = personContact(person, form);
 
@@ -236,7 +238,7 @@ const buildPerson = (
  */
 export const buildFinancialAssistanceData = (
   form: FinancialAssistanceFormData,
-  applicationType: ApplicationType,
+  applicationType: ApplicationType
 ): Record<string, unknown> => {
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
 
@@ -268,7 +270,7 @@ export const buildFinancialAssistanceData = (
             form.childrenResidenceChanged === true ? form.childrenResidenceChangeDescription.trim() : '',
           housingChanged: form.housingChanged,
           housingChangeDescription: form.housingChanged === true ? form.housingChangeDescription.trim() : '',
-        }),
+        })
       );
     }
 
@@ -280,7 +282,7 @@ export const buildFinancialAssistanceData = (
           housingForm: form.housingForm,
           housingRoomsPlusKitchen: form.housingRoomsPlusKitchen,
           housingDescription: form.housingDescription.trim(),
-        }),
+        })
       );
     }
     // Antal personer i hushållet — i full boendeform och vid återansökan utan boendeförändring.
@@ -298,7 +300,7 @@ export const buildFinancialAssistanceData = (
       'hasPendingBenefits',
       form.hasPendingBenefits,
       'pendingBenefits',
-      form.pendingBenefits.map(buildPendingBenefit),
+      form.pendingBenefits.map(buildPendingBenefit)
     );
     assignGatedList(data, 'hasAssets', form.hasAssets, 'assets', form.assets.map(buildAsset));
   }

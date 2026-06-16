@@ -12,6 +12,7 @@ import {
   emptyFinancialAssistanceFormData,
 } from '@interfaces/financial-assistance';
 import { apiService, useApi } from '@services/api-service';
+import { clearEconomicAidDraft } from '@services/economic-aid-service';
 import { buildFinancialAssistanceData } from '@services/financial-assistance-service';
 import { toBase64 } from '@utils/toBase64';
 import { ProgressBar } from '@sk-web-gui/progress-bar';
@@ -51,7 +52,7 @@ const uploadAttachments = async (errandId: string, attachments: UploadFile[]): P
         const buffer = Buffer.from(base64, 'base64');
         const blob = new Blob([buffer], { type: file.file.type });
         formData.append('files', blob, `${file.meta.name}.${file.meta.ending}`);
-      }),
+      })
     );
     await apiService.post(`/economic-aid/applications/${errandId}/attachments`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -126,6 +127,7 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
 
     // Errand created — upload attachments to it (best-effort; can be completed later via messages).
     const errandId = result.errandId ?? '';
+    clearEconomicAidDraft();
     const attachmentsOk = await uploadAttachments(errandId, values.attachments);
 
     setSignOpen(false);
@@ -133,9 +135,7 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
       position: 'bottom',
       closeable: false,
       status: attachmentsOk ? 'success' : 'error',
-      message: attachmentsOk
-        ? t('financial-assistance:submitSuccess')
-        : t('financial-assistance:attachmentsError'),
+      message: attachmentsOk ? t('financial-assistance:submitSuccess') : t('financial-assistance:attachmentsError'),
     });
     router.push(`/privat/arenden?inskickad=${encodeURIComponent(errandId)}`);
   };

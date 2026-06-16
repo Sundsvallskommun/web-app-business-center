@@ -1,4 +1,18 @@
-import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
+import { FinancialAssistanceFormData, HousingForm } from '@interfaces/financial-assistance';
+
+/**
+ * Bilagor som ska bifogas per vald boendeform. Varje id mappar mot en etikett under
+ * `financial-assistance:attachments.docs.<id>`. Boendeformer utan krav saknas i mappen.
+ * Detta är endast informativt — inskick valideras inte mot listan.
+ */
+const HOUSING_FORM_DOCUMENTS: Partial<Record<HousingForm, string[]>> = {
+  RENTAL: ['rentalContract', 'rentalInvoice'],
+  SUBLET: ['subletContract', 'originalRentalInvoice', 'subletApproval'],
+  LODGER: ['lodgerContract', 'originalRentalInvoice', 'previousRentProof'],
+  CONDOMINIUM: ['purchaseContract', 'feeInvoice', 'interestStatements', 'marketValue'],
+  OWNED_HOUSE: ['purchaseContract', 'heatingCosts', 'interestStatements', 'waterSewage', 'wasteCollection', 'marketValue'],
+  RENTED_HOUSE: ['rentalContract', 'rentalInvoice'],
+};
 
 /**
  * Returns the ids of documents the applicant must attach based on the choices made.
@@ -10,6 +24,10 @@ import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
 export const getRequiredDocuments = (form: FinancialAssistanceFormData): string[] => {
   const documents: string[] = [];
 
+  // Boendeform → boenderelaterade underlag (hyreskontrakt, avier, lånespecifikationer m.m.).
+  if (form.housingForm) {
+    documents.push(...(HOUSING_FORM_DOCUMENTS[form.housingForm] ?? []));
+  }
   // Sjukskrivning → läkarintyg.
   if (form.plannings.some((planning) => planning.planningType === 'SICK_LEAVE')) {
     documents.push('sickCertificate');

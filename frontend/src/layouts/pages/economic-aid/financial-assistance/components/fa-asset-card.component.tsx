@@ -7,7 +7,7 @@ import { numberFieldOptions } from './fa-form-helpers';
 
 const ASSET_CATEGORIES: AssetCategory[] = ['BANK_SAVINGS', 'REAL_ESTATE', 'COMPANY', 'VEHICLE'];
 const PROPERTY_TYPES: PropertyType[] = ['BOSTADSRATT', 'VILLA', 'FASTIGHET', 'FRITIDSHUS'];
-const VEHICLE_TYPES: VehicleType[] = ['BIL', 'BAT', 'MC', 'HUSVAGN', 'MOPED', 'SNOSKOTER'];
+const VEHICLE_TYPES: VehicleType[] = ['BIL', 'BAT', 'MC', 'HUSVAGN', 'MOPED', 'SNOSKOTER', 'ANNAT'];
 
 interface FaAssetCardProps {
   index: number;

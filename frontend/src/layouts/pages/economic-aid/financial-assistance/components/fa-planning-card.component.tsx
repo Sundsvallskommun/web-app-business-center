@@ -1,6 +1,5 @@
 import {
   FinancialAssistanceFormData,
-  PersonRole,
   PlanningType,
   SfiCourse,
   SfiStudyPath,
@@ -17,7 +16,6 @@ const WORK_EXTENTS: WorkExtent[] = ['FULL', 'PART'];
 const SICK_LEAVE_LEVELS: SickLeaveLevel[] = ['100', '75', '50', '25'];
 const SFI_STUDY_PATHS: SfiStudyPath[] = ['1', '2', '3'];
 const SFI_COURSES: SfiCourse[] = ['A', 'B', 'C', 'D'];
-const PERSON_ROLES: PersonRole[] = ['APPLICANT', 'CO_APPLICANT'];
 
 const Info: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <p className="text-small text-dark-secondary">{children}</p>
@@ -31,12 +29,14 @@ const Warning: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 interface FaPlanningCardProps {
   index: number;
-  showPerson: boolean;
   onRemove: () => void;
 }
 
-/** One planning entry per person (errand_fa_planning). Fields depend on planningType. */
-export const FaPlanningCard: React.FC<FaPlanningCardProps> = ({ index, showPerson, onRemove }) => {
+/**
+ * One planning entry (errand_fa_planning). Fields depend on planningType. Vem planeringen avser
+ * styrs av sektionen i steget (sökande/medsökande) — därför finns ingen personväljare här.
+ */
+export const FaPlanningCard: React.FC<FaPlanningCardProps> = ({ index, onRemove }) => {
   const { t } = useTranslation('financial-assistance');
   const { register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
 
@@ -63,29 +63,6 @@ export const FaPlanningCard: React.FC<FaPlanningCardProps> = ({ index, showPerso
       </header>
 
       <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
-        {showPerson ? (
-          <FormControl className="w-full">
-            <FormLabel htmlFor={`fa-planning-${index}-person`}>{t('financial-assistance:planning.personLabel')}</FormLabel>
-            <Select
-              id={`fa-planning-${index}-person`}
-              className="w-full"
-              value={watch(`plannings.${index}.person` as const) || ''}
-              onSelectValue={(next) =>
-                setValue(`plannings.${index}.person` as const, (next as PersonRole | '') || '', { shouldDirty: true })
-              }
-            >
-              <Select.Option value="" disabled>
-                {t('financial-assistance:economy.select')}
-              </Select.Option>
-              {PERSON_ROLES.map((value) => (
-                <Select.Option key={value} value={value}>
-                  {t(`financial-assistance:recipient.${value}`)}
-                </Select.Option>
-              ))}
-            </Select>
-          </FormControl>
-        ) : null}
-
         <FormControl className="w-full">
           <FormLabel htmlFor={`fa-planning-${index}-type`}>{t('financial-assistance:planning.typeLabel')}</FormLabel>
           <Select

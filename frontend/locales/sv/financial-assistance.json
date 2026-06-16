@@ -155,7 +155,8 @@
     "MC": "MC",
     "HUSVAGN": "Husvagn",
     "MOPED": "Moped",
-    "SNOSKOTER": "Snöskoter"
+    "SNOSKOTER": "Snöskoter",
+    "ANNAT": "Annat"
   },
   "economy": {
     "heading": "Ansökan",
@@ -254,6 +255,8 @@
     "sfiCourseLabel": "Kurs (SFI)",
     "otherDescriptionLabel": "Beskrivning",
     "planningsHeading": "Din planering",
+    "personPlanning": "{{name}}s planering",
+    "coApplicantPlanning": "Medsökandes planering",
     "addPlanning": "Lägg till planering",
     "activitiesHeading": "Planerade aktiviteter (Arbetsförmedlingen)",
     "addActivity": "Lägg till aktivitet",

@@ -20,25 +20,27 @@
   "information": {
     "heading": "Viktig information om ekonomiskt bistånd",
     "ingress": "Läs informationen på Sundsvalls kommuns hemsida genom att klicka på länken nedan. Där hittar du information om vilka krav som ställs och vilka rättigheter och skyldigheter du har när du ansöker om ekonomiskt bistånd.",
-    "lankUrl": "https://sundsvall.se",
-    "lankText": "Läs mer om ekonomiskt bistånd på sundsvall.se",
-    "automatiseratHeading": "Automatiserat beslut",
-    "automatiserat": "Din ansökan kan komma att hanteras av en automatiserad beslutsfattare. En handläggare hanterar alltid eventuella avslagsbeslut.",
+    "lankUrl": "https://sundsvall.se/kommun/omsorg-och-hjalp/ekonomi-och-ekonomiskt-bistand/ekonomiskt-bistand",
+    "lankText": "Ekonomiskt bistånd, sundsvall.se",
+    "skyddadeHeading": "Skyddade personuppgifter",
+    "skyddadeUppgifter": "Om du har skyddade personuppgifter ska du inte använda denna e-tjänst.",
     "processHeading": "Hur fungerar ansökan?",
+    "processIntro": "För att kunna signera ansökan behöver du och eventuell medsökande ha BankID.",
     "processSteps": [
-      "Logga in med ditt Bank-ID eller E-legitimation",
-      "Fyll i dina/era uppgifter",
-      "Signera med Bank-ID eller E-legitimation (både du och din partner behöver signera)",
-      "Meddelanden skickas digitalt via länk i mail/sms"
+      "Fyll i alla uppgifter som efterfrågas i ansökan. Observera att eventuell medsökande behöver signera med sitt BankID i steget ”Civilstånd” för att ni ska kunna göra en ansökan.",
+      "Signera ansökan med BankID i sista steget så att den skickas in. Observera att både du och din partner behöver signera ansökan."
     ],
-    "skyddadeUppgifter": "Har du skyddade personuppgifter ska du inte använda denna e-tjänst.",
-    "anmarkningarHeading": "Viktiga anmärkningar",
-    "anmarkningar": [
-      "Bank-ID eller E-legitimation krävs för legitimering",
-      "Du kan bli utvald för stickprovskontroll",
-      "Det är viktigt att du uppger korrekta uppgifter i ansökan gällande dina inkomster, utgifter, planering, tillgångar och annat som kan påverka din rätt till ekonomiskt bistånd.",
-      "Meddelandefunktion finns tillgänglig via Mina sidor"
-    ],
+    "processDigital": "Om vi skickar meddelande eller dokument till dig får du det digitalt. Du får ett mejl eller sms med en länk som du trycker på för att logga in och kunna läsa informationen.",
+    "stickprovHeading": "Stickprovskontroll",
+    "stickprov": "Du kan bli utvald för en slumpmässig stickprovskontroll och behöver då lämna in underlag för dina inkomster, utgifter och tillgångar bakåt i tiden. Vid en stickprovskontroll kommer du att meddelas vilka handlingar du behöver lämna in.",
+    "korrektaHeading": "Korrekta uppgifter",
+    "korrekta": "Det är viktigt att du uppger korrekta uppgifter i ansökan gällande dina inkomster, utgifter, planering, tillgångar och annat som kan påverka din rätt till ekonomiskt bistånd. Om du lämnar felaktiga uppgifter ses det som ett bidragsbrott och du riskerar att bli polisanmäld och återbetalningsskyldig. Vänta med att lämna in ansökan tills du har all information, exempelvis exakta summor på dina fakturor.",
+    "meddelandeHeading": "Meddelandefunktion",
+    "meddelande": "Det finns en meddelandefunktion kopplad till din ansökan där du kan kommunicera med din socialsekreterare.",
+    "fragorHeading": "Vid frågor",
+    "fragor": "Följ denna länk för att välja hur du vill kontakta oss.",
+    "fragorLankUrl": "https://sundsvall.se/kommun/kommun-och-politik/kontakta-oss-pa-kommunen",
+    "fragorLankText": "Kontakta oss på kommunen | Sundsvalls kommun",
     "start": "Påbörja ansökan"
   },
   "civilstand": {

@@ -12,7 +12,6 @@ export const StepInformation: React.FC<StepProps> = ({ onNext }) => {
   const { t } = useTranslation('economic-aid');
 
   const processSteps = t('economic-aid:information.processSteps', { returnObjects: true }) as string[];
-  const anmarkningar = t('economic-aid:information.anmarkningar', { returnObjects: true }) as string[];
 
   return (
     <section
@@ -28,32 +27,46 @@ export const StepInformation: React.FC<StepProps> = ({ onNext }) => {
         </Link>
       </header>
 
+      {/* Skyddade personuppgifter — visuellt avgränsad så den inte missas. */}
       <div className="text-content flex flex-col gap-8">
-        <h3>{t('economic-aid:information.automatiseratHeading')}</h3>
-        <p>{t('economic-aid:information.automatiserat')}</p>
+        <h3>{t('economic-aid:information.skyddadeHeading')}</h3>
+        <p role="note" className="bg-warning-background-200 rounded-button px-14 py-12 font-bold">
+          {t('economic-aid:information.skyddadeUppgifter')}
+        </p>
       </div>
 
       <div className="text-content flex flex-col gap-8">
         <h3>{t('economic-aid:information.processHeading')}</h3>
+        <p>{t('economic-aid:information.processIntro')}</p>
         <ol className="list-decimal flex flex-col gap-4 pl-20">
           {processSteps.map((processStep) => (
             <li key={processStep}>{processStep}</li>
           ))}
         </ol>
+        <p>{t('economic-aid:information.processDigital')}</p>
       </div>
 
-      {/* Viktig varning — visuellt avgränsad så den inte missas. */}
-      <p role="note" className="bg-warning-background-200 rounded-button px-14 py-12 font-bold text-content">
-        {t('economic-aid:information.skyddadeUppgifter')}
-      </p>
+      <div className="text-content flex flex-col gap-8">
+        <h3>{t('economic-aid:information.stickprovHeading')}</h3>
+        <p>{t('economic-aid:information.stickprov')}</p>
+      </div>
 
       <div className="text-content flex flex-col gap-8">
-        <h3>{t('economic-aid:information.anmarkningarHeading')}</h3>
-        <ul className="list-disc flex flex-col gap-4 pl-20">
-          {anmarkningar.map((anmarkning) => (
-            <li key={anmarkning}>{anmarkning}</li>
-          ))}
-        </ul>
+        <h3>{t('economic-aid:information.korrektaHeading')}</h3>
+        <p>{t('economic-aid:information.korrekta')}</p>
+      </div>
+
+      <div className="text-content flex flex-col gap-8">
+        <h3>{t('economic-aid:information.meddelandeHeading')}</h3>
+        <p>{t('economic-aid:information.meddelande')}</p>
+      </div>
+
+      <div className="text-content flex flex-col gap-8">
+        <h3>{t('economic-aid:information.fragorHeading')}</h3>
+        <p>{t('economic-aid:information.fragor')}</p>
+        <Link external href={t('economic-aid:information.fragorLankUrl')}>
+          {t('economic-aid:information.fragorLankText')}
+        </Link>
       </div>
 
       <StepNavigation onNext={onNext} forwardLabel={t('economic-aid:information.start')} />

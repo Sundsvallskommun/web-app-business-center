@@ -1,5 +1,7 @@
-import { FinancialAssistanceFormData, HousingForm, PeriodChoice, emptyChild } from '@interfaces/financial-assistance';
-import { Button, FormControl, FormLabel, Icon, Input, RadioButton, Select, Textarea } from '@sk-web-gui/react';
+import { ApplicantProfile } from '@interfaces/economic-aid';
+import { FinancialAssistanceFormData, HousingForm, emptyChild } from '@interfaces/financial-assistance';
+import { useApi } from '@services/api-service';
+import { Button, Checkbox, Divider, FormControl, FormErrorMessage, FormLabel, Icon, Input, RadioButton, Select, Textarea } from '@sk-web-gui/react';
 import { Plus } from 'lucide-react';
 import { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
@@ -8,7 +10,6 @@ import { StepNavigation } from '../../components/step-navigation.component';
 import { FaChildCard } from '../components/fa-child-card.component';
 import { FaStepProps } from './fa-step-registry';
 
-const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
 const HOUSING_FORMS: HousingForm[] = [
   'NO_HOUSING_OR_INSTITUTION',
   'RENTAL',
@@ -30,20 +31,36 @@ const numberFieldOptions = {
  */
 export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, onBack, onNext }) => {
   const { t } = useTranslation('financial-assistance');
-  const { control, register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
+  const { control, register, watch, setValue, getValues } = useFormContext<FinancialAssistanceFormData>();
 
   const { fields, append, remove } = useFieldArray({ control, name: 'children' });
 
+  // Adress visas skrivskyddat (Citizen). E-post/telefon förifylls från contactsettings
+  // i redigerbara fält. Minst en notiskanal måste vara vald.
+  const profileApi = useApi<ApplicantProfile>({ url: '/economic-aid/applicant-profile', method: 'get' });
+  const profile = profileApi.data;
+  const address = profile?.folkbokforingsadress ?? null;
+  const notifyByEmail = watch('notifyByEmail');
+  const notifyBySms = watch('notifyBySms');
+  const notifyMissing = !notifyByEmail && !notifyBySms;
+
+  // Förifyll kontaktuppgifter från contactsettings — bara när fälten inte redan ändrats.
+  useEffect(() => {
+    if (!profile) return;
+    if (profile.epost && getValues('contactEmail') === '') {
+      setValue('contactEmail', profile.epost, { shouldDirty: false });
+    }
+    if (profile.telefon && getValues('contactPhone') === '') {
+      setValue('contactPhone', profile.telefon, { shouldDirty: false });
+    }
+  }, [profile, getValues, setValue]);
+
   const maritalStatus = watch('maritalStatus');
-  const periodChoice = watch('periodChoice');
-  const periodMonth = watch('periodMonth');
-  const periodYear = watch('periodYear');
   const hasChildren = watch('hasChildrenUnder21');
   const childrenChanged = watch('childrenResidenceChanged');
   const housingChanged = watch('housingChanged');
   const housingForm = watch('housingForm');
 
-  const isNew = applicationType === 'NEW';
   const isRenewal = applicationType === 'RENEWAL';
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
   const showHousingDetails = !isRenewal || housingChanged === true;
@@ -62,54 +79,59 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
   return (
     <section className="flex flex-col gap-32" data-cy="fa-step-household-housing">
       <header className="text-content">
-        <h2>{t('financial-assistance:householdHousing.heading')}</h2>
+        <h2>{t('financial-assistance:personuppgifter.heading')}</h2>
       </header>
+
+      {/* Personuppgifter — adress (Citizen, skrivskyddat) + kontaktuppgifter (förifyllda inputfält) */}
+      <section className="flex flex-col gap-16 text-content" data-cy="fa-applicant-profile">
+        {address ? (
+          <div className="flex flex-col">
+            <span className="text-small text-dark-secondary">{t('financial-assistance:personuppgifter.addressLabel')}</span>
+            <span className="font-bold">
+              {[address.gatuadress, [address.postnummer, address.postort].filter(Boolean).join(' ')]
+                .filter(Boolean)
+                .join(', ')}
+            </span>
+          </div>
+        ) : null}
+        <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
+          <FormControl className="w-full">
+            <FormLabel htmlFor="fa-contact-email">{t('financial-assistance:personuppgifter.emailLabel')}</FormLabel>
+            <Input id="fa-contact-email" type="email" data-cy="fa-contact-email" {...register('contactEmail')} />
+          </FormControl>
+          <FormControl className="w-full">
+            <FormLabel htmlFor="fa-contact-phone">{t('financial-assistance:personuppgifter.phoneLabel')}</FormLabel>
+            <Input id="fa-contact-phone" inputMode="tel" data-cy="fa-contact-phone" {...register('contactPhone')} />
+          </FormControl>
+        </div>
+      </section>
+
+      {/* Notiskanaler — minst en krävs */}
+      <FormControl invalid={notifyMissing} data-cy="fa-notify">
+        <FormLabel className="font-bold">{t('financial-assistance:personuppgifter.notifyLabel')}</FormLabel>
+        <p className="text-small text-dark-secondary mb-8">{t('financial-assistance:personuppgifter.notifyInfo')}</p>
+        <div className="flex flex-col gap-8">
+          <Checkbox data-cy="fa-notify-email" {...register('notifyByEmail')}>
+            {t('financial-assistance:personuppgifter.notifyEmail')}
+          </Checkbox>
+          <Checkbox data-cy="fa-notify-sms" {...register('notifyBySms')}>
+            {t('financial-assistance:personuppgifter.notifySms')}
+          </Checkbox>
+        </div>
+        {notifyMissing ? (
+          <FormErrorMessage className="text-error">
+            {t('financial-assistance:personuppgifter.notifyRequired')}
+          </FormErrorMessage>
+        ) : null}
+      </FormControl>
+
+      <Divider />
 
       {/* Civilstånd — från portalen, skrivskyddat */}
       <div className="text-content">
         <p className="font-bold">{t('financial-assistance:periodNorm.maritalStatusLabel')}</p>
         <p>{t(`financial-assistance:maritalStatus.${maritalStatus}`)}</p>
       </div>
-
-      {/* Ansökningsperiod */}
-      {isNew ? (
-        <FormControl data-cy="fa-period-choice">
-          <FormLabel className="font-bold">{t('financial-assistance:periodNorm.periodChoiceLabel')}</FormLabel>
-          <RadioButton.Group>
-            {PERIOD_CHOICES.map((choice) => (
-              <RadioButton
-                key={choice}
-                size="sm"
-                name="fa-period-choice"
-                id={`fa-period-choice-${choice}`}
-                checked={periodChoice === choice}
-                onChange={() => {}}
-                onClick={() => setValue('periodChoice', choice, { shouldDirty: true })}
-              >
-                {t(`financial-assistance:periodChoice.${choice}`)}
-              </RadioButton>
-            ))}
-          </RadioButton.Group>
-          {periodChoice === 'OTHER_BENEFIT' ? (
-            <Textarea
-              className="w-full min-h-72 mt-12"
-              data-cy="fa-other-benefit"
-              placeholder={t('financial-assistance:periodNorm.otherBenefitPlaceholder')}
-              value={watch('otherBenefitDescription')}
-              onChange={(event) => setValue('otherBenefitDescription', event.target.value, { shouldDirty: true })}
-            />
-          ) : null}
-        </FormControl>
-      ) : (
-        <div className="text-content">
-          <p className="font-bold">{t('financial-assistance:periodNorm.periodLabel')}</p>
-          <p>
-            {periodMonth && periodYear
-              ? t('financial-assistance:periodNorm.periodValue', { month: periodMonth, year: periodYear })
-              : '—'}
-          </p>
-        </div>
-      )}
 
       {/* Barn + boende ingår inte i tilläggsansökan */}
       {!isSupplementary ? (
@@ -316,7 +338,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
         </>
       ) : null}
 
-      <StepNavigation onBack={onBack} onNext={onNext} />
+      <StepNavigation onBack={onBack} onNext={onNext} forwardDisabled={notifyMissing} />
     </section>
   );
 };

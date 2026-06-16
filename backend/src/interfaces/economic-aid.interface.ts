@@ -36,6 +36,9 @@ export interface ApplicantProfile {
   personnummer: string;
   folkbokforingsadress: ApplicantAddress | null;
   andraAdresser: ApplicantAddress[];
+  /** E-post och telefon hämtas från contactsettings (kontaktinställningar). */
+  epost: string | null;
+  telefon: string | null;
   medborgarskap: string | null;
   uppehallstillstand: string | null;
 }

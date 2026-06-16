@@ -77,6 +77,9 @@ export interface ApplicantProfile {
   personnummer: string;
   folkbokforingsadress: ApplicantAddress | null;
   andraAdresser: ApplicantAddress[];
+  /** E-post och telefon hämtas från contactsettings — null när de saknas. */
+  epost: string | null;
+  telefon: string | null;
   /** Saknas i Citizen-contractet idag — visas inte när null. */
   medborgarskap: string | null;
   uppehallstillstand: string | null;

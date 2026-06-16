@@ -1,5 +1,6 @@
-import { FinancialAssistanceFormData, NormType, emptyCost } from '@interfaces/financial-assistance';
-import { Button, FormControl, FormLabel, Icon, RadioButton } from '@sk-web-gui/react';
+import { FinancialAssistanceFormData, NormType, PeriodChoice, emptyCost } from '@interfaces/financial-assistance';
+import { swedishMonthName } from '@utils/swedish-month';
+import { Button, FormControl, FormLabel, Icon, RadioButton, Textarea } from '@sk-web-gui/react';
 import { Plus } from 'lucide-react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -7,14 +8,19 @@ import { StepNavigation } from '../../components/step-navigation.component';
 import { FaCostCard } from '../components/fa-cost-card.component';
 import { FaStepProps } from './fa-step-registry';
 
+const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
 const NORM_TYPES: NormType[] = ['RIKSNORM', 'OTHER_NORM'];
 
-/** Grupp 2 — ekonomi. Norm överst, därefter kostnader (alla ansökningstyper). */
+/** Grupp "Ansökan" — ansökningsperiod, norm och kostnader (alla ansökningstyper). */
 export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, onNext }) => {
   const { t } = useTranslation('financial-assistance');
   const { control, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
 
+  const isNew = applicationType === 'NEW';
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
+  const periodChoice = watch('periodChoice');
+  const periodMonth = watch('periodMonth');
+  const periodYear = watch('periodYear');
   const normType = watch('normType');
   const costs = useFieldArray({ control, name: 'costs' });
 
@@ -24,7 +30,50 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
         <h2>{t('financial-assistance:economy.heading')}</h2>
       </header>
 
-      {/* Norm — överst, med infotext per alternativ */}
+      {/* Ansökningsperiod */}
+      {isNew ? (
+        <FormControl data-cy="fa-period-choice">
+          <FormLabel className="font-bold">{t('financial-assistance:periodNorm.periodChoiceLabel')}</FormLabel>
+          <RadioButton.Group>
+            {PERIOD_CHOICES.map((choice) => (
+              <RadioButton
+                key={choice}
+                size="sm"
+                name="fa-period-choice"
+                id={`fa-period-choice-${choice}`}
+                checked={periodChoice === choice}
+                onChange={() => {}}
+                onClick={() => setValue('periodChoice', choice, { shouldDirty: true })}
+              >
+                {t(`financial-assistance:periodChoice.${choice}`)}
+              </RadioButton>
+            ))}
+          </RadioButton.Group>
+          {periodChoice === 'OTHER_BENEFIT' ? (
+            <Textarea
+              className="w-full min-h-72 mt-12"
+              data-cy="fa-other-benefit"
+              placeholder={t('financial-assistance:periodNorm.otherBenefitPlaceholder')}
+              value={watch('otherBenefitDescription')}
+              onChange={(event) => setValue('otherBenefitDescription', event.target.value, { shouldDirty: true })}
+            />
+          ) : null}
+        </FormControl>
+      ) : (
+        <div className="text-content">
+          <p className="font-bold">{t('financial-assistance:periodNorm.periodLabel')}</p>
+          <p>
+            {periodMonth && periodYear
+              ? t('financial-assistance:periodNorm.periodValue', {
+                  month: swedishMonthName(periodMonth),
+                  year: periodYear,
+                })
+              : '—'}
+          </p>
+        </div>
+      )}
+
+      {/* Norm — som en fråga besvarad med Riksnorm / Annan norm */}
       <FormControl data-cy="fa-norm-type">
         <FormLabel className="font-bold">{t('financial-assistance:periodNorm.normTypeLabel')}</FormLabel>
         <div className="flex flex-col gap-12">

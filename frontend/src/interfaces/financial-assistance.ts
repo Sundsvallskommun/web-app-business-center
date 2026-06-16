@@ -195,6 +195,12 @@ export interface FinancialAssistanceFormData {
   staysInMunicipality: boolean | null;
   stayDescription: string;
   attestation: boolean;
+  /** Kontaktuppgifter — förifylls från contactsettings men kan redigeras. */
+  contactEmail: string;
+  contactPhone: string;
+  /** Vilka kanaler den sökande vill ha notiser till (minst en krävs). */
+  notifyByEmail: boolean;
+  notifyBySms: boolean;
 }
 
 export interface FinancialAssistancePrefill {
@@ -246,6 +252,10 @@ export const emptyFinancialAssistanceFormData = (
     staysInMunicipality: null,
     stayDescription: '',
     attestation: false,
+    contactEmail: '',
+    contactPhone: '',
+    notifyByEmail: true,
+    notifyBySms: true,
   };
 };
 

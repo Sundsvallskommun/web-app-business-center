@@ -22,8 +22,10 @@ import {
   SubmitApplicationResponse,
 } from '@/interfaces/economic-aid.interface';
 import { ApiResponse } from '@/interfaces/service';
+import { ContactSetting } from '@/interfaces/contact-settings';
 import ApiService from '@/services/api.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
+import { makeClientContactSetting } from '@/services/contact-setting.service';
 import { caremanagementUrl } from '@/utils/caremanagement-url';
 import { validateRequestBody } from '@/utils/validate';
 import authMiddleware from '@middlewares/auth.middleware';
@@ -62,8 +64,11 @@ const formatPostnummer = (raw: string | null | undefined): string => {
   return `${digits.slice(0, 3)} ${digits.slice(3)}`;
 };
 
+// Citizen/folkbokföring lägger oftast gatunamnet i `addressArea`; `address` är ibland tomt.
+const hasStreet = (address: CitizenAddress): boolean => !!(address.addressArea || address.address);
+
 const buildStreetLine = (address: CitizenAddress): string => {
-  const street = address.address?.trim() ?? '';
+  const street = (address.addressArea || address.address || '').trim();
   const number = [address.addressNumber, address.addressLetter].filter(Boolean).join('');
   return [street, number].filter(Boolean).join(' ').trim();
 };
@@ -193,11 +198,14 @@ export class EconomicAidController {
     // som har en gatuadress alls. Bättre att visa något än tomt.
     const folkbokforingsadress = populationAddress
       ? toApplicantAddress(populationAddress)
-      : addresses.find(a => a.address)
-      ? toApplicantAddress(addresses.find(a => a.address)!)
+      : addresses.find(hasStreet)
+      ? toApplicantAddress(addresses.find(hasStreet)!)
       : null;
 
-    const andraAdresser = addresses.filter(a => a !== populationAddress && a.address).map(toApplicantAddress);
+    const andraAdresser = addresses.filter(a => a !== populationAddress && hasStreet(a)).map(toApplicantAddress);
+
+    // E-post och telefon hämtas från contactsettings (kontaktinställningar) för partyId.
+    const { epost, telefon } = await this.fetchContactDetails(partyId, req);
 
     const profile: ApplicantProfile = {
       fornamn: citizen?.givenname?.trim() || req.user.givenName || '',
@@ -205,6 +213,8 @@ export class EconomicAidController {
       personnummer: personNumber ?? '',
       folkbokforingsadress,
       andraAdresser,
+      epost,
+      telefon,
       // Inte tillgängliga i nuvarande Citizen-data-contract — TODO när
       // Migrationsverket-integration finns.
       medborgarskap: null,
@@ -343,6 +353,24 @@ export class EconomicAidController {
       data: { errandId: `stub-${Date.now()}` },
       message: 'success',
     };
+  }
+
+  /** Reads the applicant's e-post + telefon from contactsettings (best-effort). */
+  private async fetchContactDetails(
+    partyId: string,
+    req: RequestWithUser,
+  ): Promise<{ epost: string | null; telefon: string | null }> {
+    try {
+      const url = `${getApiBase('contactsettings')}/${MUNICIPALITY_ID}/settings`;
+      const res = await this.apiService.get<ContactSetting[]>({ url, params: { partyId } }, req.user);
+      const setting = res?.data?.[0];
+      if (!setting) return { epost: null, telefon: null };
+      const client = makeClientContactSetting(setting);
+      return { epost: client.email || null, telefon: client.phone || null };
+    } catch (err) {
+      logger.warn(`[economic-aid] failed to fetch contact settings for partyId=${partyId}: ${(err as Error)?.message ?? err}`);
+      return { epost: null, telefon: null };
+    }
   }
 
   private async verifyHouseholdAddresses(data: EconomicAidApplicationV1, req: RequestWithUser): Promise<HouseholdVerification> {

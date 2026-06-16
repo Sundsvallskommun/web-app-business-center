@@ -9,8 +9,8 @@
   },
   "groups": {
     "period-norm": "Period & norm",
-    "household-housing": "Hushåll & boende",
-    "economy": "Ekonomi",
+    "household-housing": "Personuppgifter",
+    "economy": "Ansökan",
     "income": "Inkomster & tillgångar",
     "planning": "Planering",
     "payment": "Utbetalning",
@@ -64,6 +64,17 @@
     "daysInHome": "Antal dagar per månad i hemmet",
     "select": "Välj …"
   },
+  "personuppgifter": {
+    "heading": "Personuppgifter",
+    "addressLabel": "Folkbokföringsadress",
+    "emailLabel": "E-post",
+    "phoneLabel": "Telefon",
+    "notifyLabel": "Hur vill du få notiser?",
+    "notifyInfo": "Välj minst en kanal som vi får skicka notiser till om din ansökan.",
+    "notifyEmail": "E-post",
+    "notifySms": "SMS",
+    "notifyRequired": "Välj minst en kanal för notiser."
+  },
   "householdHousing": {
     "heading": "Hushåll och boende",
     "hasChildrenLabel": "Har du barn under 21 år som bor helt eller delvis i hemmet?",
@@ -85,8 +96,8 @@
     "INTERNET": "Internet/bredband",
     "UNEMPLOYMENT_FUND": "A-kassa",
     "UNION_FEE": "Fackavgift",
-    "TRAVEL_APPROVED": "Godkända resor",
-    "TRAVEL_MEDICAL_TRANSPORT": "Sjukresor",
+    "TRAVEL_APPROVED": "Resor till godkänd planering/aktivitet",
+    "TRAVEL_MEDICAL_TRANSPORT": "Resor med sjukresor/färdtjänst till godkänd planering/aktivitet (egenavgift)",
     "MEDICAL_CARE": "Sjukvård",
     "MEDICINE": "Medicin",
     "OTHER": "Övrigt bistånd"
@@ -130,7 +141,7 @@
     "SNOSKOTER": "Snöskoter"
   },
   "economy": {
-    "heading": "Ekonomi",
+    "heading": "Ansökan",
     "select": "Välj …",
     "remove": "Ta bort",
     "recipientLabel": "Avser",
@@ -263,8 +274,8 @@
     "periodChoiceLabel": "Vilken period gäller ansökan?",
     "otherBenefitPlaceholder": "Beskriv vilket annat bistånd ansökan avser",
     "periodLabel": "Ansökningsperiod",
-    "periodValue": "{{month}}/{{year}}",
-    "normTypeLabel": "Norm"
+    "periodValue": "{{month}} {{year}}",
+    "normTypeLabel": "Vilken norm ansöker du bistånd för?"
   },
   "review": {
     "heading": "Granska och skicka",

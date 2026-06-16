@@ -1,4 +1,5 @@
 import { ApplicationType, FinancialAssistanceFormData } from '@interfaces/financial-assistance';
+import { swedishMonthName } from '@utils/swedish-month';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -36,7 +37,10 @@ export const FaReviewSummary: React.FC<FaReviewSummaryProps> = ({ applicationTyp
 
   const period =
     values.periodMonth && values.periodYear
-      ? t('financial-assistance:periodNorm.periodValue', { month: values.periodMonth, year: values.periodYear })
+      ? t('financial-assistance:periodNorm.periodValue', {
+          month: swedishMonthName(values.periodMonth),
+          year: values.periodYear,
+        })
       : values.periodChoice
         ? t(`financial-assistance:periodChoice.${values.periodChoice}`)
         : undefined;

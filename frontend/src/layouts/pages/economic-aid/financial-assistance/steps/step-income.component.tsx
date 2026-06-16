@@ -1,17 +1,12 @@
-import {
-  FinancialAssistanceFormData,
-  emptyAsset,
-  emptyIncome,
-  emptyPendingBenefit,
-} from '@interfaces/financial-assistance';
+import { FinancialAssistanceFormData, emptyPendingBenefit } from '@interfaces/financial-assistance';
 import { Button, FormControl, FormLabel, Icon, RadioButton } from '@sk-web-gui/react';
 import { Plus } from 'lucide-react';
 import { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { StepNavigation } from '../../components/step-navigation.component';
-import { FaAssetCard } from '../components/fa-asset-card.component';
-import { FaIncomeCard } from '../components/fa-income-card.component';
+import { FaAssetSelector } from '../components/fa-asset-selector.component';
+import { FaIncomeSelector } from '../components/fa-income-selector.component';
 import { FaPendingBenefitCard } from '../components/fa-pending-benefit-card.component';
 import { FaStepProps } from './fa-step-registry';
 
@@ -25,18 +20,23 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
   const showRecipient = watch('maritalStatus') === 'COHABITING';
   const ni = showRecipient ? { context: 'ni' } : undefined;
 
-  const incomes = useFieldArray({ control, name: 'incomes' });
   const pendingBenefits = useFieldArray({ control, name: 'pendingBenefits' });
-  const assets = useFieldArray({ control, name: 'assets' });
 
   const hasIncomes = watch('hasIncomes');
   const hasPendingBenefits = watch('hasPendingBenefits');
   const hasAssets = watch('hasAssets');
+  const incomes = watch('incomes');
+  const assets = watch('assets');
+
+  // Inkomster/tillgångar väljs via rutorna (FaIncomeSelector/FaAssetSelector) — ingen auto-rad.
+  // På "Nej" rensas tidigare ifyllda poster.
+  useEffect(() => {
+    if (hasIncomes === false && incomes.length > 0) setValue('incomes', [], { shouldDirty: true });
+  }, [hasIncomes, incomes, setValue]);
 
   useEffect(() => {
-    if (hasIncomes === true && incomes.fields.length === 0) incomes.append(emptyIncome(), { shouldFocus: false });
-    else if (hasIncomes === false && incomes.fields.length > 0) setValue('incomes', [], { shouldDirty: true });
-  }, [hasIncomes, incomes, setValue]);
+    if (hasAssets === false && assets.length > 0) setValue('assets', [], { shouldDirty: true });
+  }, [hasAssets, assets, setValue]);
 
   useEffect(() => {
     if (hasPendingBenefits === true && pendingBenefits.fields.length === 0)
@@ -44,11 +44,6 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
     else if (hasPendingBenefits === false && pendingBenefits.fields.length > 0)
       setValue('pendingBenefits', [], { shouldDirty: true });
   }, [hasPendingBenefits, pendingBenefits, setValue]);
-
-  useEffect(() => {
-    if (hasAssets === true && assets.fields.length === 0) assets.append(emptyAsset(), { shouldFocus: false });
-    else if (hasAssets === false && assets.fields.length > 0) setValue('assets', [], { shouldDirty: true });
-  }, [hasAssets, assets, setValue]);
 
   const renderGate = (field: GateField, value: boolean | null, label: string, info: string, cy: string) => (
     <FormControl data-cy={cy}>
@@ -95,29 +90,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
           t('financial-assistance:income.incomesInfo', ni),
           'fa-has-incomes',
         )}
-        {hasIncomes === true ? (
-          <>
-            {incomes.fields.map((field, index) => (
-              <FaIncomeCard
-                key={field.id}
-                index={index}
-                showRecipient={showRecipient}
-                onRemove={() => incomes.remove(index)}
-              />
-            ))}
-            <div>
-              <Button
-                variant="link"
-                size="sm"
-                data-cy="fa-income-add"
-                onClick={() => incomes.append(emptyIncome())}
-                leftIcon={<Icon icon={<Plus />} />}
-              >
-                {t('financial-assistance:economy.addIncome')}
-              </Button>
-            </div>
-          </>
-        ) : null}
+        {hasIncomes === true ? <FaIncomeSelector showRecipient={showRecipient} /> : null}
       </section>
 
       <section className="flex flex-col gap-16" data-cy="fa-pending-benefits">
@@ -156,24 +129,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
           t('financial-assistance:income.assetsInfo'),
           'fa-has-assets',
         )}
-        {hasAssets === true ? (
-          <>
-            {assets.fields.map((field, index) => (
-              <FaAssetCard key={field.id} index={index} onRemove={() => assets.remove(index)} />
-            ))}
-            <div>
-              <Button
-                variant="link"
-                size="sm"
-                data-cy="fa-asset-add"
-                onClick={() => assets.append(emptyAsset())}
-                leftIcon={<Icon icon={<Plus />} />}
-              >
-                {t('financial-assistance:economy.addAsset')}
-              </Button>
-            </div>
-          </>
-        ) : null}
+        {hasAssets === true ? <FaAssetSelector /> : null}
       </section>
 
       <StepNavigation onBack={onBack} onNext={onNext} />

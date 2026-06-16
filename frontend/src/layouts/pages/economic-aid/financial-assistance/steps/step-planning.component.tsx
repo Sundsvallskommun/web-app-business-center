@@ -2,21 +2,25 @@ import { ApplicantProfile } from '@interfaces/economic-aid';
 import {
   FinancialAssistanceFormData,
   PersonRole,
+  PlanningType,
   emptyJobApplication,
   emptyPlannedActivity,
   emptyPlanning,
 } from '@interfaces/financial-assistance';
 import { useApi } from '@services/api-service';
-import { Button, Divider, Icon } from '@sk-web-gui/react';
-import { Plus } from 'lucide-react';
+import { Button, Checkbox, Divider, Icon } from '@sk-web-gui/react';
+import { Plus, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { StepNavigation } from '../../components/step-navigation.component';
-import { FaJobApplicationCard } from '../components/fa-job-application-card.component';
-import { FaPlannedActivityCard } from '../components/fa-planned-activity-card.component';
-import { FaPlanningCard } from '../components/fa-planning-card.component';
+import { FaJobApplicationFields } from '../components/fa-job-application-fields.component';
+import { FaPlannedActivityFields } from '../components/fa-planned-activity-fields.component';
+import { FaPlanningFields } from '../components/fa-planning-fields.component';
+import { selectableBoxClass } from '../components/fa-form-helpers';
 import { FaStepProps } from './fa-step-registry';
+
+const PLANNING_TYPES: PlanningType[] = ['WORK', 'JOBSEEKING', 'SICK_LEAVE', 'SFI', 'OTHER'];
 
 /** Plockar ut posternas index för en given person. Sökanden fångar även poster utan satt person. */
 const entriesForPerson = (
@@ -32,14 +36,14 @@ const entriesForPerson = (
     });
 
 /**
- * Grupp 4 — planering. Allt delas upp per person: "Din planering" (sökande) och, om det finns en
- * medsökande, en egen sektion med medsökandes namn som rubrik. Varje sektion innehåller planering
- * och — vid nyansökan — planerade aktiviteter och sökta jobb. Vem posten avser avgörs av sektionen
- * och sparas på person-fältet i API:t (ingen "Avser"-väljare i korten).
+ * Grupp 4 — planering. Per person ("Vilken planering har <namn>?") väljs en eller flera
+ * planeringstyper som rutor med checkbox; ikryssad ruta expanderar och visar typens fält. Under
+ * "Arbetssökande" visas (vid nyansökan) planerade aktiviteter och sökta jobb, var och en med
+ * "Lägg till ny rad". Vem posten avser sparas på person-fältet i API:t.
  */
 export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, onNext }) => {
   const { t } = useTranslation('financial-assistance');
-  const { control, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
+  const { control, watch } = useFormContext<FinancialAssistanceFormData>();
 
   const showPerson = watch('maritalStatus') === 'COHABITING';
   const isNew = applicationType === 'NEW';
@@ -51,8 +55,7 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
     .join(' ')
     .trim();
 
-  // Medsökandes namn till sektionsrubriken. Hämtas på personnumret (samma uppslag som
-  // kontaktsektionen) — bara när det finns en medsökande.
+  // Medsökandes namn till sektionsrubriken — bara när det finns en medsökande.
   const coApplicantPnr = watch('persons')?.find((person) => person.role === 'CO_APPLICANT')?.personalNumber ?? '';
   const coApplicantProfile = useApi<ApplicantProfile>({
     url: `/economic-aid/co-applicant-profile?personnummer=${encodeURIComponent(coApplicantPnr)}`,
@@ -74,18 +77,20 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
 
   const addButton = (cy: string, label: string, onClick: () => void) => (
     <div>
-      <Button variant="link" size="sm" data-cy={cy} onClick={onClick} leftIcon={<Icon icon={<Plus />} />}>
+      <Button variant="secondary" size="sm" data-cy={cy} onClick={onClick} leftIcon={<Icon icon={<Plus />} />}>
         {label}
       </Button>
     </div>
   );
 
-  // Aktiviteter och sökta jobb är bara aktuella för en arbetssökande — visas när personen har
-  // minst en planering med typen "Arbetssökande" (JOBSEEKING).
-  const personIsJobseeking = (person: PersonRole): boolean =>
-    entriesForPerson(plannings.fields, watchedPlannings, person).some(
-      ({ index }) => watchedPlannings?.[index]?.planningType === 'JOBSEEKING',
-    );
+  // Index för en persons planering av en viss typ (poster utan person räknas som sökandens).
+  const planningIndexFor = (person: PersonRole, type: PlanningType): number =>
+    (watchedPlannings ?? []).findIndex((planning) => {
+      const planningPerson = planning.person === 'CO_APPLICANT' ? 'CO_APPLICANT' : 'APPLICANT';
+      return planningPerson === person && planning.planningType === type;
+    });
+
+  const personIsJobseeking = (person: PersonRole): boolean => planningIndexFor(person, 'JOBSEEKING') >= 0;
 
   // Rensar aktiviteter/sökta jobb för en person som inte längre är arbetssökande (eller när det
   // inte är en nyansökan) så att dolda poster aldrig följer med vid inskick.
@@ -95,56 +100,99 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
 
     const prunedActivities = (watchedActivities ?? []).filter((activity) => isKept(activity.person));
     if (prunedActivities.length !== (watchedActivities ?? []).length) {
-      setValue('plannedActivities', prunedActivities, { shouldDirty: true });
+      activities.replace(prunedActivities);
     }
     const prunedJobs = (watchedJobApplications ?? []).filter((job) => isKept(job.person));
     if (prunedJobs.length !== (watchedJobApplications ?? []).length) {
-      setValue('jobApplications', prunedJobs, { shouldDirty: true });
+      jobApplications.replace(prunedJobs);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchedPlannings, watchedActivities, watchedJobApplications, isNew]);
 
-  // En komplett planeringssektion för en person: planering och — vid nyansökan och arbetssökande —
-  // planerade aktiviteter och sökta jobb.
+  // En inline-rad (utan kort-ram) med "Ta bort" överst. Rader efter den första får en avgränsare.
+  const renderRows = (
+    entries: { id: string; index: number }[],
+    renderFields: (index: number) => React.ReactNode,
+    onRemove: (index: number) => void,
+    cyPrefix: string,
+  ) =>
+    entries.map(({ id, index }, rowNumber) => (
+      <div
+        key={id}
+        className={`flex flex-col gap-12 ${rowNumber > 0 ? 'border-t border-divider pt-12' : ''}`}
+        data-cy={`${cyPrefix}-row-${rowNumber}`}
+      >
+        <div className="flex justify-end">
+          <Button variant="link" size="sm" color="error" onClick={() => onRemove(index)} leftIcon={<Icon icon={<X />} />}>
+            {t('financial-assistance:planning.remove')}
+          </Button>
+        </div>
+        {renderFields(index)}
+      </div>
+    ));
+
+  // Aktiviteter/sökta jobb under "Arbetssökande" — per person, flera inline-rader.
+  const renderJobseekingExtras = (person: PersonRole) => (
+    <div className="flex flex-col gap-16 mt-4">
+      <div className="flex flex-col gap-12" data-cy={`fa-planned-activities-${person}`}>
+        <p className="font-bold">{t('financial-assistance:planning.activitiesHeading')}</p>
+        {renderRows(
+          entriesForPerson(activities.fields, watchedActivities, person),
+          (index) => <FaPlannedActivityFields index={index} />,
+          (index) => activities.remove(index),
+          `fa-planned-activity-${person}`,
+        )}
+        {addButton(`fa-planned-activity-add-${person}`, t('financial-assistance:planning.addActivity'), () =>
+          activities.append({ ...emptyPlannedActivity(), person }),
+        )}
+      </div>
+
+      <div className="flex flex-col gap-12" data-cy={`fa-job-applications-${person}`}>
+        <p className="font-bold">{t('financial-assistance:planning.jobApplicationsHeading')}</p>
+        {renderRows(
+          entriesForPerson(jobApplications.fields, watchedJobApplications, person),
+          (index) => <FaJobApplicationFields index={index} />,
+          (index) => jobApplications.remove(index),
+          `fa-job-application-${person}`,
+        )}
+        {addButton(`fa-job-application-add-${person}`, t('financial-assistance:planning.addJobApplication'), () =>
+          jobApplications.append({ ...emptyJobApplication(), person }),
+        )}
+      </div>
+    </div>
+  );
+
+  // En planeringstyp som en ruta med checkbox. Ikryssad ruta expanderar och visar typens fält.
+  const renderPlanningBox = (person: PersonRole, type: PlanningType) => {
+    const index = planningIndexFor(person, type);
+    const checked = index >= 0;
+    const label = t(`financial-assistance:planningType.${type}`);
+    const toggle = () =>
+      checked ? plannings.remove(index) : plannings.append({ ...emptyPlanning(), person, planningType: type });
+
+    return (
+      <div key={type} className={selectableBoxClass(checked)} data-cy={`fa-planning-box-${person}-${type}`}>
+        <Checkbox checked={checked} onChange={toggle} data-cy={`fa-planning-toggle-${person}-${type}`}>
+          <span className="font-bold">{label}</span>
+        </Checkbox>
+
+        {checked ? (
+          <div className="flex flex-col gap-16 mt-12 ml-32">
+            <FaPlanningFields index={index} planningType={type} />
+            {type === 'JOBSEEKING' && isNew ? renderJobseekingExtras(person) : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
   const renderPersonSection = (person: PersonRole, heading: string) => (
-    <section className="flex flex-col gap-24" data-cy={`fa-planning-section-${person}`}>
+    <section className="flex flex-col gap-16" data-cy={`fa-planning-section-${person}`}>
       <div className="text-content flex flex-col gap-8">
         <h3 className="text-h4-md font-bold">{heading}</h3>
         <p className="text-small text-dark-secondary">{t('financial-assistance:planning.planningIntro')}</p>
       </div>
-
-      <div className="flex flex-col gap-16" data-cy={`fa-plannings-${person}`}>
-        {entriesForPerson(plannings.fields, watchedPlannings, person).map(({ id, index }) => (
-          <FaPlanningCard key={id} index={index} onRemove={() => plannings.remove(index)} />
-        ))}
-        {addButton(`fa-planning-add-${person}`, t('financial-assistance:planning.addPlanning'), () =>
-          plannings.append({ ...emptyPlanning(), person }),
-        )}
-      </div>
-
-      {isNew && personIsJobseeking(person) ? (
-        <>
-          <div className="flex flex-col gap-16" data-cy={`fa-planned-activities-${person}`}>
-            <h4 className="text-h4-md font-bold">{t('financial-assistance:planning.activitiesHeading')}</h4>
-            {entriesForPerson(activities.fields, watchedActivities, person).map(({ id, index }) => (
-              <FaPlannedActivityCard key={id} index={index} onRemove={() => activities.remove(index)} />
-            ))}
-            {addButton(`fa-planned-activity-add-${person}`, t('financial-assistance:planning.addActivity'), () =>
-              activities.append({ ...emptyPlannedActivity(), person }),
-            )}
-          </div>
-
-          <div className="flex flex-col gap-16" data-cy={`fa-job-applications-${person}`}>
-            <h4 className="text-h4-md font-bold">{t('financial-assistance:planning.jobApplicationsHeading')}</h4>
-            {entriesForPerson(jobApplications.fields, watchedJobApplications, person).map(({ id, index }) => (
-              <FaJobApplicationCard key={id} index={index} onRemove={() => jobApplications.remove(index)} />
-            ))}
-            {addButton(`fa-job-application-add-${person}`, t('financial-assistance:planning.addJobApplication'), () =>
-              jobApplications.append({ ...emptyJobApplication(), person }),
-            )}
-          </div>
-        </>
-      ) : null}
+      <div className="flex flex-col gap-12">{PLANNING_TYPES.map((type) => renderPlanningBox(person, type))}</div>
     </section>
   );
 

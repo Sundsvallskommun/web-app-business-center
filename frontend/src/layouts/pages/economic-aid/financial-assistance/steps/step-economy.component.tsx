@@ -1,11 +1,10 @@
-import { FinancialAssistanceFormData, NormType, PeriodChoice, emptyCost } from '@interfaces/financial-assistance';
+import { FinancialAssistanceFormData, NormType, PeriodChoice } from '@interfaces/financial-assistance';
 import { swedishMonthName } from '@utils/swedish-month';
-import { Button, FormControl, FormLabel, Icon, RadioButton, Textarea } from '@sk-web-gui/react';
-import { Plus } from 'lucide-react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
+import { FormControl, FormLabel, RadioButton, Textarea } from '@sk-web-gui/react';
+import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { StepNavigation } from '../../components/step-navigation.component';
-import { FaCostCard } from '../components/fa-cost-card.component';
+import { FaCostSelector } from '../components/fa-cost-selector.component';
 import { FaStepProps } from './fa-step-registry';
 
 const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
@@ -14,7 +13,7 @@ const NORM_TYPES: NormType[] = ['RIKSNORM', 'OTHER_NORM'];
 /** Grupp "Ansökan" — ansökningsperiod, norm och kostnader (alla ansökningstyper). */
 export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, onNext }) => {
   const { t } = useTranslation('financial-assistance');
-  const { control, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
+  const { watch, setValue } = useFormContext<FinancialAssistanceFormData>();
 
   const isNew = applicationType === 'NEW';
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
@@ -23,7 +22,6 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
   const periodMonth = watch('periodMonth');
   const periodYear = watch('periodYear');
   const normType = watch('normType');
-  const costs = useFieldArray({ control, name: 'costs' });
 
   return (
     <section className="flex flex-col gap-32" data-cy="fa-step-economy">
@@ -97,29 +95,13 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
         </div>
       </FormControl>
 
-      {/* Kostnader */}
+      {/* Kostnader — markera en eller flera (rutor med checkboxar) */}
       <section className="flex flex-col gap-16" data-cy="fa-costs">
-        <h3 className="text-h4-md font-bold">{t('financial-assistance:economy.costsHeading', ni)}</h3>
-        <p className="text-small text-dark-secondary">{t('financial-assistance:economy.costsInfo')}</p>
-        {costs.fields.map((field, index) => (
-          <FaCostCard
-            key={field.id}
-            index={index}
-            showRecipientOrPeriod={isSupplementary}
-            onRemove={() => costs.remove(index)}
-          />
-        ))}
-        <div>
-          <Button
-            variant="link"
-            size="sm"
-            data-cy="fa-cost-add"
-            onClick={() => costs.append(emptyCost())}
-            leftIcon={<Icon icon={<Plus />} />}
-          >
-            {t('financial-assistance:economy.addCost')}
-          </Button>
+        <div className="text-content flex flex-col gap-4">
+          <h3 className="text-h4-md font-bold">{t('financial-assistance:economy.costsHeading', ni)}</h3>
+          <p className="text-small text-dark-secondary">{t('financial-assistance:economy.costsInfo')}</p>
         </div>
+        <FaCostSelector showRecipientOrPeriod={isSupplementary} />
       </section>
 
       <StepNavigation onBack={onBack} onNext={onNext} />

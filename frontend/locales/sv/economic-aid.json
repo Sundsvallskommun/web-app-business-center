@@ -5,8 +5,7 @@
   },
   "steps": {
     "information": "Information",
-    "civilstand": "Civilstånd",
-    "formular": "Ansökan"
+    "civilstand": "Civilstånd & ansökan"
   },
   "stepper": {
     "stepOf": "Steg {{current}} av {{total}}",

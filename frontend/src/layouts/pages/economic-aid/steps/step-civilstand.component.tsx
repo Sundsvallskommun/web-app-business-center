@@ -1,5 +1,4 @@
 import { ApplicantProfile, CIVILSTAND_VALUES, Civilstand, EconomicAidApplicationV1, EligibilityResult } from '@interfaces/economic-aid';
-import { isFinancialAssistanceSlug } from '@interfaces/financial-assistance';
 import { apiService, useApi } from '@services/api-service';
 import { FormControl, FormErrorMessage, FormLabel, Icon, Input, RadioButton, useSnackbar } from '@sk-web-gui/react';
 import { Check } from 'lucide-react';
@@ -28,11 +27,12 @@ interface CoApplicantLookup {
 }
 
 /**
- * Steg 1 — civilstånd. Vid gift/sambo matas medsökandes personnummer in; så snart numret är
- * giltigt slås namnet upp mot Citizen (ingen blur krävs) och måste få träff innan man går vidare.
- * När man fortsätter signerar medsökande med BankID (mockad — spinner + knapp tills riktig signering finns).
+ * Steg 1 — civilstånd + ansökan (sammanslaget). Vid gift/sambo matas medsökandes personnummer in;
+ * så snart numret är giltigt slås namnet upp mot Citizen (ingen blur krävs) och måste få träff
+ * innan man går vidare. När man fortsätter signerar medsökande med BankID (mockad) och eligibility
+ * körs — de föreslagna ansökningarna visas då direkt i samma steg, där man väljer och påbörjar en.
  */
-export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
+export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
   const { t } = useTranslation('economic-aid');
   const toastMessage = useSnackbar();
   const { register, watch, setValue, getValues, trigger, formState } =
@@ -51,11 +51,27 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
   const [lookupLoading, setLookupLoading] = useState(false);
   const [signOpen, setSignOpen] = useState(false);
   const [pendingResult, setPendingResult] = useState<EligibilityResult | null>(null);
+  const [selectedSlug, setSelectedSlug] = useState('');
 
   const eligibility = useApi<EligibilityResult>({ url: '/economic-aid/eligibility', method: 'post' });
 
-  const select = (value: Civilstand) =>
+  // Eligibility-resultatet (ansökningsförslagen) lagras i formuläret och visas inline i samma steg.
+  const eligibilityResult = watch('eligibility');
+  const suggestions = eligibilityResult?.suggestions ?? [];
+  const recommended = suggestions.find((suggestion) => suggestion.recommended) ?? suggestions[0];
+  const effectiveSlug = selectedSlug || recommended?.typeSlug || '';
+
+  // Återställer eligibility-förslagen — körs när civilstånd eller medsökande ändras så att gamla
+  // förslag inte ligger kvar; sökanden får köra fram dem på nytt utifrån de nya uppgifterna.
+  const resetEligibility = () => {
+    if (getValues('eligibility')) setValue('eligibility', null, { shouldDirty: true });
+    setSelectedSlug('');
+  };
+
+  const select = (value: Civilstand) => {
     setValue('hushall.civilstand', value, { shouldDirty: true });
+    resetEligibility();
+  };
 
   // Slår upp medsökandes namn mot Citizen. Returnerar uppslaget (eller null vid felaktigt format).
   const runCoApplicantLookup = async (): Promise<CoApplicantLookup | null> => {
@@ -94,15 +110,16 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [medsokandePnr, showMedsokande, coApplicant, lookupLoading]);
 
-  // Sparar eligibility-resultatet och går vidare (direkt in i formuläret om bara ett förslag).
+  // Sparar eligibility-resultatet så att ansökningsförslagen renderas inline i samma steg.
   const proceed = (result: EligibilityResult) => {
     setValue('eligibility', result, { shouldDirty: true });
-    const suggestions = result.suggestions ?? [];
-    if (suggestions.length === 1 && isFinancialAssistanceSlug(suggestions[0].typeSlug)) {
-      setValue('chosenTypeSlug', suggestions[0].typeSlug, { shouldDirty: true });
-      return;
-    }
-    onNext();
+    setSelectedSlug('');
+  };
+
+  // Väljer ett förslag och lämnar över till financial-assistance-formuläret (chosenTypeSlug).
+  const start = () => {
+    if (!effectiveSlug) return;
+    setValue('chosenTypeSlug', effectiveSlug, { shouldDirty: true });
   };
 
   const handleForward = async () => {
@@ -226,6 +243,7 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
             onChange={(event) => {
               pnrField.onChange(event);
               setCoApplicant(null);
+              resetEligibility();
             }}
             onBlur={pnrField.onBlur}
           />
@@ -255,12 +273,62 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack, onNext }) => {
         </FormControl>
       )}
 
-      <StepNavigation
-        onBack={onBack}
-        onNext={handleForward}
-        forwardDisabled={forwardDisabled}
-        forwardLoading={eligibility.isPending || lookupLoading}
-      />
+      {/* Ansökan — visas inline så snart eligibility körts (sammanslaget med civilståndssteget). */}
+      {eligibilityResult ? (
+        <section className="flex flex-col gap-24" data-cy="economic-aid-suggestions">
+          <header className="text-content">
+            <h3>{t('economic-aid:formular.heading')}</h3>
+          </header>
+
+          {eligibilityResult.message && <p className="text-content">{eligibilityResult.message}</p>}
+
+          {suggestions.length > 0 ? (
+            <>
+              <p className="text-content">{t('economic-aid:formular.intro')}</p>
+              <div role="radiogroup" aria-label={t('economic-aid:formular.heading')} className="flex flex-col gap-16">
+                {suggestions.map((suggestion) => {
+                  const checked = effectiveSlug === suggestion.typeSlug;
+                  const inputId = `economic-aid-suggestion-${suggestion.typeSlug}`;
+                  return (
+                    <label key={suggestion.typeSlug} htmlFor={inputId} className={cardClass(checked)} data-cy={inputId}>
+                      <RadioButton
+                        size="md"
+                        name="economic-aid-suggestion"
+                        id={inputId}
+                        checked={checked}
+                        onChange={() => setSelectedSlug(suggestion.typeSlug)}
+                        aria-labelledby={`${inputId}-label`}
+                      />
+                      <span id={`${inputId}-label`} className="font-bold">
+                        {suggestion.label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <StepNavigation
+                onBack={onBack}
+                onNext={start}
+                forwardDisabled={!effectiveSlug}
+                forwardLabel={t('economic-aid:formular.start')}
+              />
+            </>
+          ) : (
+            <>
+              <p className="text-content">{t('economic-aid:formular.empty')}</p>
+              <StepNavigation onBack={onBack} />
+            </>
+          )}
+        </section>
+      ) : (
+        <StepNavigation
+          onBack={onBack}
+          onNext={handleForward}
+          forwardDisabled={forwardDisabled}
+          forwardLoading={eligibility.isPending || lookupLoading}
+        />
+      )}
 
       <FaBankidMock
         show={signOpen}

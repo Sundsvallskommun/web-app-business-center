@@ -1,6 +1,5 @@
 import { EconomicAidStepKey } from '@interfaces/economic-aid';
 import { StepCivilstand } from './step-civilstand.component';
-import { StepFormular } from './step-formular.component';
 import { StepInformation } from './step-information.component';
 
 /**
@@ -17,13 +16,11 @@ export interface StepProps {
 }
 
 /**
- * Maps each active step key to the component that renders it. The flow is
- * being rebuilt around caremanagement typeSlugs — see ECONOMIC_AID_STEPS.
- * The dynamic, typeSlug-driven steps replace `formular` once the backend
- * endpoint is ready.
+ * Maps each active step key to the component that renders it. Civilstånd och ansökan
+ * är sammanslagna i StepCivilstand — eligibility-förslagen visas inline där, varifrån
+ * det dynamiska financial-assistance-formuläret tar över (chosenTypeSlug).
  */
 export const STEP_COMPONENTS: Record<EconomicAidStepKey, React.ComponentType<StepProps>> = {
   information: StepInformation,
   civilstand: StepCivilstand,
-  formular: StepFormular,
 };

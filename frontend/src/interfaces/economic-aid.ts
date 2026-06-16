@@ -350,7 +350,6 @@ export const emptyEconomicAidApplication = (): EconomicAidApplicationV1 => ({
 export const ECONOMIC_AID_STEPS = [
   { key: 'information' },
   { key: 'civilstand' },
-  { key: 'formular' },
 ] as const;
 
 export type EconomicAidStepKey = (typeof ECONOMIC_AID_STEPS)[number]['key'];

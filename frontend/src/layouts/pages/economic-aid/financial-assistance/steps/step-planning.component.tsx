@@ -44,8 +44,15 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
   const showPerson = watch('maritalStatus') === 'COHABITING';
   const isNew = applicationType === 'NEW';
 
-  // Medsökandes namn till sektionsrubriken ("<namn>s planering"). Hämtas på personnumret
-  // (samma uppslag som kontaktsektionen) — bara när det finns en medsökande.
+  // Sökandens namn till sektionsrubriken ("Vilken planering har <namn>?").
+  const applicantProfile = useApi<ApplicantProfile>({ url: '/economic-aid/applicant-profile', method: 'get' });
+  const applicantName = [applicantProfile.data?.fornamn, applicantProfile.data?.efternamn]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+
+  // Medsökandes namn till sektionsrubriken. Hämtas på personnumret (samma uppslag som
+  // kontaktsektionen) — bara när det finns en medsökande.
   const coApplicantPnr = watch('persons')?.find((person) => person.role === 'CO_APPLICANT')?.personalNumber ?? '';
   const coApplicantProfile = useApi<ApplicantProfile>({
     url: `/economic-aid/co-applicant-profile?personnummer=${encodeURIComponent(coApplicantPnr)}`,
@@ -101,7 +108,10 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
   // planerade aktiviteter och sökta jobb.
   const renderPersonSection = (person: PersonRole, heading: string) => (
     <section className="flex flex-col gap-24" data-cy={`fa-planning-section-${person}`}>
-      <h3 className="text-h4-md font-bold">{heading}</h3>
+      <div className="text-content flex flex-col gap-8">
+        <h3 className="text-h4-md font-bold">{heading}</h3>
+        <p className="text-small text-dark-secondary">{t('financial-assistance:planning.planningIntro')}</p>
+      </div>
 
       <div className="flex flex-col gap-16" data-cy={`fa-plannings-${person}`}>
         {entriesForPerson(plannings.fields, watchedPlannings, person).map(({ id, index }) => (
@@ -144,7 +154,12 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
         <h2>{t('financial-assistance:planning.heading')}</h2>
       </header>
 
-      {renderPersonSection('APPLICANT', t('financial-assistance:planning.planningsHeading'))}
+      {renderPersonSection(
+        'APPLICANT',
+        applicantName
+          ? t('financial-assistance:planning.personPlanning', { name: applicantName })
+          : t('financial-assistance:planning.planningsHeading'),
+      )}
       {showPerson ? (
         <>
           <Divider />

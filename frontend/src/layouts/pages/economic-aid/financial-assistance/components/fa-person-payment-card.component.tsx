@@ -23,6 +23,8 @@ export const FaPersonPaymentCard: React.FC<FaPersonPaymentCardProps> = ({ index,
   const isNew = applicationType === 'NEW';
   // For renewal/supplementary the citizen first answers "same account as previous?".
   const showMethod = isNew || sameAsPrevious === false;
+  // Vid återansökan/tillägg och "Nej" väljer man ett nytt utbetalningssätt — annars är det förstagångsval.
+  const methodLabelKey = !isNew && sameAsPrevious === false ? 'payment.newMethodLabel' : 'payment.methodLabel';
 
   const setBool = (field: 'needsInterpreter' | 'hadWorkLast12Months' | 'paymentSameAsPrevious', value: boolean) =>
     setValue(`persons.${index}.${field}` as const, value, { shouldDirty: true });
@@ -80,7 +82,7 @@ export const FaPersonPaymentCard: React.FC<FaPersonPaymentCardProps> = ({ index,
         <>
           <FormControl className="w-full max-w-[24rem]">
             <FormLabel htmlFor={`fa-person-${index}-payment-method`}>
-              {t('financial-assistance:payment.methodLabel')}
+              {t(`financial-assistance:${methodLabelKey}`)}
             </FormLabel>
             <Select
               id={`fa-person-${index}-payment-method`}

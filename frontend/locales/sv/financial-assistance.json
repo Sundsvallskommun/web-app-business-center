@@ -372,6 +372,5 @@
     "submitConfirm": "Signera och skicka in (mock)"
   },
   "submitSuccess": "Din ansökan har skickats in!",
-  "submitError": "Något gick fel när ansökan skulle skickas in. Försök igen senare.",
-  "attachmentsError": "Ansökan skickades in, men bilagorna kunde inte laddas upp. Du kan komplettera via meddelandefunktionen på Mina sidor."
+  "submitError": "Något gick fel när ansökan skulle skickas in. Försök igen senare."
 }

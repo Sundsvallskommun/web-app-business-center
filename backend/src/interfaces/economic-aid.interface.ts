@@ -241,6 +241,18 @@ export interface EligibilitySuggestion {
  * Result of resolving which financial assistance application(s) to offer.
  * Returned to the frontend after the civilstånd step.
  */
+/** A child from the most recent Lifecare normberäkning, suggested for återansökan-prefill. */
+export interface PrefilledChild {
+  partyId: string | null;
+  name: string | null;
+}
+
+export interface PrefillResult {
+  children: PrefilledChild[];
+  /** False when the Lifecare lookup was degraded (empty children). */
+  lifecareChecked: boolean;
+}
+
 export interface EligibilityResult {
   /** Suggested applications, recommended one first. Empty when nothing can be offered automatically. */
   suggestions: EligibilitySuggestion[];

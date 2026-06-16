@@ -23,6 +23,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
   const { control, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
 
   const showRecipient = watch('maritalStatus') === 'COHABITING';
+  const ni = showRecipient ? { context: 'ni' } : undefined;
 
   const incomes = useFieldArray({ control, name: 'incomes' });
   const pendingBenefits = useFieldArray({ control, name: 'pendingBenefits' });
@@ -90,7 +91,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
         {renderGate(
           'hasIncomes',
           hasIncomes,
-          t('financial-assistance:economy.hasIncomesLabel'),
+          t('financial-assistance:economy.hasIncomesLabel', ni),
           t('financial-assistance:income.incomesInfo'),
           'fa-has-incomes',
         )}
@@ -123,7 +124,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
         {renderGate(
           'hasPendingBenefits',
           hasPendingBenefits,
-          t('financial-assistance:economy.hasPendingBenefitsLabel'),
+          t('financial-assistance:economy.hasPendingBenefitsLabel', ni),
           t('financial-assistance:income.pendingBenefitsInfo'),
           'fa-has-pending-benefits',
         )}
@@ -151,7 +152,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
         {renderGate(
           'hasAssets',
           hasAssets,
-          t('financial-assistance:economy.hasAssetsLabel'),
+          t('financial-assistance:economy.hasAssetsLabel', ni),
           t('financial-assistance:income.assetsInfo'),
           'fa-has-assets',
         )}

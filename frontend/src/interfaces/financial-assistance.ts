@@ -1,3 +1,5 @@
+import type { UploadFile } from '@sk-web-gui/react';
+
 /**
  * Domain model for the caremanagement `financial-assistance` type module.
  *
@@ -78,6 +80,8 @@ export type SfiCourse = 'A' | 'B' | 'C' | 'D';
 
 // --- Nested item shapes (form-level; amounts/counts as numbers, '' = unset for enums/text) ---
 export interface ChildForm {
+  /** Set for children prefilled from Lifecare (identified by partyId); empty for manual entries. */
+  partyId: string;
   personalNumber: string;
   firstName: string;
   lastName: string;
@@ -126,8 +130,6 @@ export interface PlanningForm {
   workExtent: WorkExtent | '';
   workDescription: string;
   sickLeaveLevel: SickLeaveLevel | '';
-  sickFrom: string;
-  sickTo: string;
   sfiStudyPath: SfiStudyPath | '';
   sfiCourse: SfiCourse | '';
   otherDescription: string;
@@ -175,8 +177,7 @@ export interface FinancialAssistanceFormData {
   childrenResidenceChanged: boolean | null;
   childrenResidenceChangeDescription: string;
   housingForm: HousingForm | '';
-  housingAdultsCount: number | null;
-  housingChildrenCount: number | null;
+  housingPersonCount: number | null;
   housingRoomsPlusKitchen: number | null;
   housingDescription: string;
   housingChanged: boolean | null;
@@ -195,12 +196,20 @@ export interface FinancialAssistanceFormData {
   staysInMunicipality: boolean | null;
   stayDescription: string;
   attestation: boolean;
-  /** Kontaktuppgifter — förifylls från contactsettings men kan redigeras. */
+  /** Kontaktuppgifter (sökande) — förifylls från Mina sidor men kan redigeras. */
   contactEmail: string;
   contactPhone: string;
-  /** Vilka kanaler den sökande vill ha notiser till (minst en krävs). */
+  /** Vilka kanaler sökanden vill ha notiser till (minst en krävs). */
   notifyByEmail: boolean;
   notifyBySms: boolean;
+  /** Kontaktuppgifter + notisval för medsökande (endast gift/sambo). */
+  coApplicantEmail: string;
+  coApplicantPhone: string;
+  coNotifyByEmail: boolean;
+  coNotifyBySms: boolean;
+  /** Bilagor — laddas upp till errandet efter att det skapats (ingår inte i `data`). */
+  needsAttachments: boolean;
+  attachments: UploadFile[];
 }
 
 export interface FinancialAssistancePrefill {
@@ -232,8 +241,7 @@ export const emptyFinancialAssistanceFormData = (
     childrenResidenceChanged: null,
     childrenResidenceChangeDescription: '',
     housingForm: '',
-    housingAdultsCount: null,
-    housingChildrenCount: null,
+    housingPersonCount: null,
     housingRoomsPlusKitchen: null,
     housingDescription: '',
     housingChanged: null,
@@ -256,10 +264,17 @@ export const emptyFinancialAssistanceFormData = (
     contactPhone: '',
     notifyByEmail: true,
     notifyBySms: true,
+    coApplicantEmail: '',
+    coApplicantPhone: '',
+    coNotifyByEmail: true,
+    coNotifyBySms: true,
+    needsAttachments: false,
+    attachments: [],
   };
 };
 
 export const emptyChild = (): ChildForm => ({
+  partyId: '',
   personalNumber: '',
   firstName: '',
   lastName: '',
@@ -308,8 +323,6 @@ export const emptyPlanning = (): PlanningForm => ({
   workExtent: '',
   workDescription: '',
   sickLeaveLevel: '',
-  sickFrom: '',
-  sickTo: '',
   sfiStudyPath: '',
   sfiCourse: '',
   otherDescription: '',
@@ -347,6 +360,18 @@ export const emptyPerson = (role: PersonRole, personalNumber: string): PersonFor
 // 'household-housing' now leads with civilstånd + ansökningsperiod; 'economy' leads with norm
 // then costs; incomes/benefits/assets are their own 'income' group.
 export type FaGroupKey = 'household-housing' | 'economy' | 'income' | 'planning' | 'payment' | 'review';
+
+/** A child suggested from the most recent Lifecare normberäkning (återansökan-prefill). */
+export interface PrefilledChild {
+  partyId: string | null;
+  name: string | null;
+}
+
+export interface PrefillResult {
+  children: PrefilledChild[];
+  /** False when the Lifecare lookup was degraded (empty children). */
+  lifecareChecked: boolean;
+}
 
 export const FA_GROUPS_BY_TYPE: Record<ApplicationType, FaGroupKey[]> = {
   NEW: ['household-housing', 'economy', 'income', 'planning', 'payment', 'review'],

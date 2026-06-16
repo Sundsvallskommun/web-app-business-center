@@ -18,6 +18,7 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
 
   const isNew = applicationType === 'NEW';
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
+  const ni = watch('maritalStatus') === 'COHABITING' ? { context: 'ni' } : undefined;
   const periodChoice = watch('periodChoice');
   const periodMonth = watch('periodMonth');
   const periodYear = watch('periodYear');
@@ -75,7 +76,7 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
 
       {/* Norm — som en fråga besvarad med Riksnorm / Annan norm */}
       <FormControl data-cy="fa-norm-type">
-        <FormLabel className="font-bold">{t('financial-assistance:periodNorm.normTypeLabel')}</FormLabel>
+        <FormLabel className="font-bold">{t('financial-assistance:periodNorm.normTypeLabel', ni)}</FormLabel>
         <div className="flex flex-col gap-12">
           {NORM_TYPES.map((type) => (
             <div key={type} className="flex flex-col">
@@ -98,7 +99,7 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
 
       {/* Kostnader */}
       <section className="flex flex-col gap-16" data-cy="fa-costs">
-        <h3 className="text-h4-md font-bold">{t('financial-assistance:economy.costsHeading')}</h3>
+        <h3 className="text-h4-md font-bold">{t('financial-assistance:economy.costsHeading', ni)}</h3>
         <p className="text-small text-dark-secondary">{t('financial-assistance:economy.costsInfo')}</p>
         {costs.fields.map((field, index) => (
           <FaCostCard

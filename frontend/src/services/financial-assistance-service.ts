@@ -80,9 +80,11 @@ const assignGatedList = (
 
 const buildChild = (child: ChildForm): Record<string, unknown> =>
   compact({
+    // partyId för prefyllda barn; annars personnummer som backend slår upp till partyId.
+    partyId: child.partyId,
+    personalNumber: child.personalNumber.trim(),
     firstName: child.firstName.trim(),
     lastName: child.lastName.trim(),
-    personalNumber: child.personalNumber.trim(),
     schoolName: child.schoolName.trim(),
     residenceExtent: child.residenceExtent,
     // Antal dagar samlas bara in när boendet är "Annat".
@@ -238,19 +240,19 @@ export const buildFinancialAssistanceData = (
       );
     }
 
-    // Housing details: always for NEW; for RENEWAL only when housing changed.
+    // Full boendeform: nyansökan, eller återansökan när boendet ändrats.
     if (applicationType === 'NEW' || form.housingChanged === true) {
       Object.assign(
         data,
         compact({
           housingForm: form.housingForm,
-          housingAdultsCount: form.housingAdultsCount,
-          housingChildrenCount: form.housingChildrenCount,
           housingRoomsPlusKitchen: form.housingRoomsPlusKitchen,
           housingDescription: form.housingDescription.trim(),
         }),
       );
     }
+    // Antal personer i hushållet — i full boendeform och vid återansökan utan boendeförändring.
+    Object.assign(data, compact({ housingPersonCount: form.housingPersonCount }));
   }
 
   // Economy — costs apply to all types; incomes/benefits/assets exclude supplementary.

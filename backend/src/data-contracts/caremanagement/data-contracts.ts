@@ -90,8 +90,8 @@ export interface Asset {
 
 /** A child included in the financial assistance application. */
 export interface Child {
-  /** Personal number of the child */
-  personalNumber?: string;
+  /** Party id (personId GUID) of the child */
+  partyId?: string;
   /** First name */
   firstName?: string;
   /** Last name */
@@ -154,15 +154,10 @@ export interface FinancialAssistanceData {
   /** The household's housing form */
   housingForm?: FinancialAssistanceDataHousingFormEnum;
   /**
-   * Number of adults in the housing
+   * Total number of persons (adults and children) living in the housing
    * @format int32
    */
-  housingAdultsCount?: number;
-  /**
-   * Number of children in the housing
-   * @format int32
-   */
-  housingChildrenCount?: number;
+  housingPersonCount?: number;
   /**
    * Number of rooms plus kitchen
    * @format int32
@@ -253,8 +248,8 @@ export interface PendingBenefit {
 export interface Person {
   /** Role of the person */
   role?: PersonRoleEnum;
-  /** Personal number */
-  personalNumber?: string;
+  /** Party id (personId GUID) of the person */
+  partyId?: string;
   /** Whether the person needs an interpreter */
   needsInterpreter?: boolean;
   /** Language the interpreter should use */
@@ -305,16 +300,6 @@ export interface Planning {
   workDescription?: string;
   /** Level of sick leave (percent) */
   sickLeaveLevel?: PlanningSickLeaveLevelEnum;
-  /**
-   * Sick leave from date
-   * @format date
-   */
-  sickFrom?: string;
-  /**
-   * Sick leave to date
-   * @format date
-   */
-  sickTo?: string;
   /** SFI study path */
   sfiStudyPath?: PlanningSfiStudyPathEnum;
   /** SFI course */
@@ -660,17 +645,38 @@ export interface Decision {
   created?: string;
 }
 
-/** Request to evaluate which financial assistance application a citizen should be offered. */
-export interface EligibilityRequest {
-  /** The applicant's personal number (12 digits) */
+/** Request to build and post the SSBTEK-driven normberäkning for an application month. */
+export interface NormberakningRequest {
+  /** The applicant's partyId (personId GUID) */
   applicant: string;
-  /** The co-applicant's (medsökande) personal number (12 digits), when applying together with a partner */
+  /** The co-applicant's (medsökande) partyId (personId GUID), when applying together with a partner */
   coApplicant?: string;
   /**
-   * Override for the duplicate-application window in days. Defaults to the server-configured value when omitted.
+   * The application month (ISO year-month, yyyy-MM)
+   * @pattern ^\d{4}-(0[1-9]|1[0-2])$
+   */
+  applicationMonth: string;
+}
+
+/** The created Lifecare normberäkning id plus the income warnings to review. */
+export interface NormberakningResponse {
+  /**
+   * The id of the normberäkning created in Lifecare FC
    * @format int32
    */
-  withinDays?: number;
+  calculationId?: number;
+  /** SSBTEK incomes that could not be auto-transferred and must be reviewed */
+  unhandledIncomes?: string[];
+  /** Förmåner whose net income changed beyond the threshold between the periods */
+  changeWarnings?: string[];
+}
+
+/** Request to evaluate which financial assistance application a citizen should be offered. */
+export interface EligibilityRequest {
+  /** The applicant's partyId (personId GUID) */
+  applicant: string;
+  /** The co-applicant's (medsökande) partyId (personId GUID), when applying together with a partner */
+  coApplicant?: string;
 }
 
 /** A suggested application the citizen can submit, with its target period. */
@@ -953,6 +959,22 @@ export interface FinancialAssistanceView {
   data?: FinancialAssistanceData;
 }
 
+/** A child pre-filled from Lifecare for a financial assistance renewal. Carries only what Lifecare provides — personnummer and name; the citizen completes residence, school etc. on the form. */
+export interface PrefilledChild {
+  /** Party id (personId GUID) of the child */
+  partyId?: string;
+  /** Name as registered in Lifecare */
+  name?: string;
+}
+
+/** Pre-fill data for a financial assistance renewal (återansökan): household children read from Lifecare. */
+export interface RenewalPrefill {
+  /** Children in the household from the most recent normberäkning */
+  children?: PrefilledChild[];
+  /** True when the Lifecare lookup succeeded. False means the answer is degraded (empty children). */
+  lifecareChecked?: boolean;
+}
+
 /** The category of asset */
 export enum AssetAssetCategoryEnum {
   BANK_SAVINGS = "BANK_SAVINGS",
@@ -977,6 +999,7 @@ export enum AssetVehicleTypeEnum {
   HUSVAGN = "HUSVAGN",
   MOPED = "MOPED",
   SNOSKOTER = "SNOSKOTER",
+  ANNAT = "ANNAT",
 }
 
 /** Extent of residence in the home */
@@ -1176,6 +1199,7 @@ export enum EligibilityResponseReasonCodeEnum {
   NO_EXISTING_CASE = "NO_EXISTING_CASE",
   CIVILSTAND_CHANGED = "CIVILSTAND_CHANGED",
   EXISTING_CASE = "EXISTING_CASE",
+  ALL_TYPES_TEST = "ALL_TYPES_TEST",
 }
 
 /** Direction */

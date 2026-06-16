@@ -4,6 +4,7 @@ import {
   CreateFinancialAssistanceRequest,
   EligibilityRequest,
   EligibilityResponse,
+  RenewalPrefill,
 } from '@/data-contracts/caremanagement/data-contracts';
 import { CitizenAddress, CitizenExtended, PersonGuidBatch } from '@/data-contracts/citizen/data-contracts';
 import {
@@ -19,6 +20,7 @@ import {
   Civilstand,
   EconomicAidApplicationV1,
   EligibilityResult,
+  PrefillResult,
   SubmitApplicationResponse,
 } from '@/interfaces/economic-aid.interface';
 import { ApiResponse } from '@/interfaces/service';
@@ -27,10 +29,11 @@ import ApiService from '@/services/api.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
 import { makeClientContactSetting } from '@/services/contact-setting.service';
 import { caremanagementUrl } from '@/utils/caremanagement-url';
+import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
 import authMiddleware from '@middlewares/auth.middleware';
 import { logger } from '@utils/logger';
-import { Body, Controller, Get, Param, Post, Req, UseBefore } from 'routing-controllers';
+import { Body, Controller, Get, Param, Post, QueryParam, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
 // Citizen-API:t taggar folkbokföringsadressen med addressType. Värdet
@@ -179,49 +182,89 @@ export class EconomicAidController {
   @UseBefore(authMiddleware)
   async getApplicantProfile(@Req() req: RequestWithUser): Promise<ApiResponse<ApplicantProfile>> {
     const { partyId, personNumber } = req.user ?? {};
-
     if (!partyId) {
       throw new HttpException(401, 'Unauthorized');
     }
 
-    const citizenUrl = `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}`;
-    const citizenRes = await this.apiService.get<CitizenExtended>({ url: citizenUrl }, req.user).catch(err => {
-      logger.warn(`[economic-aid] failed to fetch citizen for partyId=${partyId}: ${err?.message ?? err}`);
-      return null;
-    });
+    const profile = await this.buildProfile(
+      partyId,
+      personNumber ?? '',
+      { fornamn: req.user.givenName, efternamn: req.user.surname },
+      req,
+    );
+    return { data: profile, message: 'success' };
+  }
+
+  @Get('/economic-aid/co-applicant-profile')
+  @OpenAPI({ summary: 'Return citizen-derived profile (name, address, contact) for a co-applicant by personnummer' })
+  @UseBefore(authMiddleware)
+  async getCoApplicantProfile(
+    @Req() req: RequestWithUser,
+    @QueryParam('personnummer') personnummer?: string,
+  ): Promise<ApiResponse<ApplicantProfile>> {
+    if (!req.user?.partyId) {
+      throw new HttpException(401, 'Unauthorized');
+    }
+    const clean = onlyDigits(personnummer);
+    const emptyProfile: ApplicantProfile = {
+      fornamn: '',
+      efternamn: '',
+      personnummer: clean,
+      folkbokforingsadress: null,
+      andraAdresser: [],
+      epost: null,
+      telefon: null,
+      medborgarskap: null,
+      uppehallstillstand: null,
+    };
+
+    const partyId = clean ? await this.resolvePartyId(clean, req) : null;
+    if (!partyId) {
+      return { data: emptyProfile, message: 'success' };
+    }
+
+    const profile = await this.buildProfile(partyId, clean, {}, req);
+    return { data: profile, message: 'success' };
+  }
+
+  /** Builds a citizen-derived profile (name, folkbokföringsadress, e-post, telefon) for a partyId. */
+  private async buildProfile(
+    partyId: string,
+    personnummer: string,
+    fallback: { fornamn?: string; efternamn?: string },
+    req: RequestWithUser,
+  ): Promise<ApplicantProfile> {
+    const citizenRes = await this.apiService
+      .get<CitizenExtended>({ url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/${partyId}` }, req.user)
+      .catch(err => {
+        logger.warn(`[economic-aid] failed to fetch citizen for partyId=${partyId}: ${err?.message ?? err}`);
+        return null;
+      });
 
     const citizen = citizenRes?.data ?? null;
     const addresses = citizen?.addresses ?? [];
 
     const populationAddress = addresses.find(isPopulationRegistration);
-    // Fallback: om ingen adress är taggad som folkbokföring, ta första
-    // som har en gatuadress alls. Bättre att visa något än tomt.
     const folkbokforingsadress = populationAddress
       ? toApplicantAddress(populationAddress)
       : addresses.find(hasStreet)
       ? toApplicantAddress(addresses.find(hasStreet)!)
       : null;
-
     const andraAdresser = addresses.filter(a => a !== populationAddress && hasStreet(a)).map(toApplicantAddress);
 
-    // E-post och telefon hämtas från contactsettings (kontaktinställningar) för partyId.
     const { epost, telefon } = await this.fetchContactDetails(partyId, req);
 
-    const profile: ApplicantProfile = {
-      fornamn: citizen?.givenname?.trim() || req.user.givenName || '',
-      efternamn: citizen?.lastname?.trim() || req.user.surname || '',
-      personnummer: personNumber ?? '',
+    return {
+      fornamn: citizen?.givenname?.trim() || fallback.fornamn || '',
+      efternamn: citizen?.lastname?.trim() || fallback.efternamn || '',
+      personnummer,
       folkbokforingsadress,
       andraAdresser,
       epost,
       telefon,
-      // Inte tillgängliga i nuvarande Citizen-data-contract — TODO när
-      // Migrationsverket-integration finns.
       medborgarskap: null,
       uppehallstillstand: null,
     };
-
-    return { data: profile, message: 'success' };
   }
 
   @Post('/economic-aid/eligibility')
@@ -233,16 +276,19 @@ export class EconomicAidController {
     // @Body is typed; routing-controllers does not auto-validate, so validate explicitly.
     await validateRequestBody(EligibilityRequestDto, body);
 
-    // The applicant's personnummer ALWAYS comes from the authenticated session — never from
-    // the request body — so a citizen cannot probe eligibility for an arbitrary person.
-    const applicant = onlyDigits(req.user?.personNumber);
+    // eligibility keys on partyId (UUID), not personnummer. The applicant's partyId ALWAYS
+    // comes from the authenticated session so a citizen cannot probe eligibility for someone else.
+    const applicant = req.user?.partyId;
     if (!applicant) {
       throw new HttpException(401, 'Unauthorized');
     }
 
-    // For gift/sambo a co-applicant is involved — the partner's personnummer comes from the
-    // request (entered by the citizen) so eligibility is checked for both parties.
-    const coApplicant = PARTNER_CIVILSTAND.has(body.civilstand) ? onlyDigits(body.medsokandePersonnummer) : undefined;
+    // For gift/sambo a co-applicant is involved — resolve the partner's personnummer (entered by
+    // the citizen) to a partyId via Citizen so eligibility can be checked for both parties.
+    let coApplicant: string | undefined;
+    if (PARTNER_CIVILSTAND.has(body.civilstand) && body.medsokandePersonnummer) {
+      coApplicant = (await this.resolvePartyId(onlyDigits(body.medsokandePersonnummer), req)) ?? undefined;
+    }
 
     const eligibilityRequest: EligibilityRequest = { applicant, ...(coApplicant ? { coApplicant } : {}) };
     logger.info(`[economic-aid] eligibility check (civilstånd=${body.civilstand}, coApplicant=${coApplicant ? 'yes' : 'no'})`);
@@ -269,6 +315,33 @@ export class EconomicAidController {
     return { data: result, message: 'success' };
   }
 
+  @Get('/economic-aid/prefill')
+  @OpenAPI({
+    summary: 'Prefill household children from the applicant\'s most recent Lifecare normberäkning (återansökan)',
+  })
+  @UseBefore(authMiddleware)
+  async getPrefill(@Req() req: RequestWithUser): Promise<ApiResponse<PrefillResult>> {
+    if (!req.user?.partyId) {
+      throw new HttpException(401, 'Unauthorized');
+    }
+
+    const response = await this.caremanagementApiService.get<RenewalPrefill>({
+      url: caremanagementUrl('errands', 'financial-assistance', 'prefill'),
+      params: { partyId: req.user.partyId },
+    });
+
+    const prefill = response.data ?? {};
+    const result: PrefillResult = {
+      children: (prefill.children ?? []).map(child => ({
+        partyId: child.partyId ?? null,
+        name: child.name ?? null,
+      })),
+      lifecareChecked: prefill.lifecareChecked ?? false,
+    };
+
+    return { data: result, message: 'success' };
+  }
+
   @Post('/economic-aid/applications/:slug')
   @OpenAPI({
     summary: 'Create a financial assistance errand of the given typeSlug (new/renewal/supplementary)',
@@ -287,14 +360,10 @@ export class EconomicAidController {
       throw new HttpException(401, 'Unauthorized');
     }
 
-    // The applicant's personnummer is set from the authenticated session, never trusted from
-    // the client. Co-applicant pnr stays as entered by the citizen.
-    const applicantPersonalNumber = onlyDigits(req.user.personNumber);
-    const persons = body.data?.persons as Array<Record<string, unknown>> | undefined;
-    if (applicantPersonalNumber && Array.isArray(persons)) {
-      const applicant = persons.find(person => person?.role === 'APPLICANT');
-      if (applicant) applicant.personalNumber = applicantPersonalNumber;
-    }
+    // The EB API identifies persons/children by partyId. The frontend collects personnummer,
+    // so resolve those to partyId here (applicant comes straight from the session) and drop the
+    // raw personnummer before forwarding.
+    await this.resolvePartyIdsOnPayload(body.data, req);
 
     // applicationType is derived server-side from the slug by caremanagement — we never send it.
     const request: CreateFinancialAssistanceRequest = {
@@ -318,6 +387,35 @@ export class EconomicAidController {
 
     logger.info(`[economic-aid] created ${slug} errand ${errandId} for partyId=${req.user.partyId}`);
     return { data: { errandId }, message: 'success' };
+  }
+
+  @Post('/economic-aid/applications/:errandId/attachments')
+  @OpenAPI({ summary: 'Upload one or more attachments to a financial assistance errand' })
+  @UseBefore(authMiddleware)
+  async uploadAttachments(
+    @Req() req: RequestWithUser,
+    @Param('errandId') errandId: string,
+    @UploadedFiles('files', { options: fileUploadOptions, required: false }) files?: Express.Multer.File[],
+  ): Promise<ApiResponse<{ uploaded: number }>> {
+    if (!req.user?.partyId) {
+      throw new HttpException(401, 'Unauthorized');
+    }
+    if (!files || files.length === 0) {
+      return { data: { uploaded: 0 }, message: 'success' };
+    }
+
+    // caremanagement takes one file per request under the field name "file".
+    const url = caremanagementUrl('errands', errandId, 'attachments');
+    let uploaded = 0;
+    for (const file of files) {
+      const form = new FormData();
+      form.append('file', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
+      await this.caremanagementApiService.postForm({ url, data: form });
+      uploaded += 1;
+    }
+
+    logger.info(`[economic-aid] uploaded ${uploaded} attachment(s) to errand ${errandId}`);
+    return { data: { uploaded }, message: 'success' };
   }
 
   @Post('/economic-aid/applications')
@@ -353,6 +451,72 @@ export class EconomicAidController {
       data: { errandId: `stub-${Date.now()}` },
       message: 'success',
     };
+  }
+
+  /** Resolves a batch of personnummer to their partyIds (UUID) via Citizen. */
+  private async resolvePartyIds(personalNumbers: string[], req: RequestWithUser): Promise<Map<string, string>> {
+    const result = new Map<string, string>();
+    const clean = Array.from(new Set(personalNumbers.map(onlyDigits).filter(Boolean)));
+    if (clean.length === 0) return result;
+    try {
+      const res = await this.apiService.post<PersonGuidBatch[], string[]>(
+        { url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/guid/batch`, data: clean },
+        req.user,
+      );
+      (res?.data ?? []).forEach(entry => {
+        if (entry?.success && entry.personId && entry.personNumber) {
+          result.set(onlyDigits(entry.personNumber), entry.personId);
+        }
+      });
+    } catch (err) {
+      logger.warn(`[economic-aid] failed to resolve partyIds via Citizen: ${(err as Error)?.message ?? err}`);
+    }
+    return result;
+  }
+
+  /** Resolves a single personnummer to its partyId (UUID) via Citizen. Null when not found. */
+  private async resolvePartyId(personalNumber: string, req: RequestWithUser): Promise<string | null> {
+    if (!personalNumber) return null;
+    const map = await this.resolvePartyIds([personalNumber], req);
+    return map.get(onlyDigits(personalNumber)) ?? null;
+  }
+
+  /**
+   * Translates the typed payload's persons[]/children[] from personnummer to partyId in place.
+   * The applicant uses the session partyId; everyone else is resolved via Citizen. The raw
+   * personnummer is removed so it never reaches caremanagement (which keys on partyId).
+   */
+  private async resolvePartyIdsOnPayload(data: Record<string, unknown>, req: RequestWithUser): Promise<void> {
+    const persons = Array.isArray(data?.persons) ? (data.persons as Array<Record<string, unknown>>) : [];
+    const children = Array.isArray(data?.children) ? (data.children as Array<Record<string, unknown>>) : [];
+
+    const toResolve: string[] = [];
+    persons.forEach(person => {
+      if (person?.role !== 'APPLICANT' && typeof person?.personalNumber === 'string') toResolve.push(person.personalNumber);
+    });
+    children.forEach(child => {
+      if (!child?.partyId && typeof child?.personalNumber === 'string') toResolve.push(child.personalNumber);
+    });
+
+    const map = toResolve.length > 0 ? await this.resolvePartyIds(toResolve, req) : new Map<string, string>();
+
+    persons.forEach(person => {
+      if (person?.role === 'APPLICANT') {
+        person.partyId = req.user.partyId;
+      } else if (typeof person?.personalNumber === 'string') {
+        const partyId = map.get(onlyDigits(person.personalNumber));
+        if (partyId) person.partyId = partyId;
+      }
+      delete person.personalNumber;
+    });
+
+    children.forEach(child => {
+      if (!child?.partyId && typeof child?.personalNumber === 'string') {
+        const partyId = map.get(onlyDigits(child.personalNumber));
+        if (partyId) child.partyId = partyId;
+      }
+      delete child.personalNumber;
+    });
   }
 
   /** Reads the applicant's e-post + telefon from contactsettings (best-effort). */

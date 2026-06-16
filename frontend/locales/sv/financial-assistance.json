@@ -41,7 +41,7 @@
   "residenceExtent": {
     "FULL_TIME": "Heltid",
     "HALF_TIME": "Växelvis / halvtid",
-    "OTHER": "Annat"
+    "OTHER": "Annat (ange antal dagar)"
   },
   "housingForm": {
     "NO_HOUSING_OR_INSTITUTION": "Utan bostad eller på institution",
@@ -61,32 +61,43 @@
     "personalNumber": "Personnummer",
     "personalNumberPlaceholder": "ÅÅÅÅMMDD-XXXX",
     "schoolName": "Skola (frivilligt)",
-    "residenceExtent": "Bor i hemmet",
-    "daysInHome": "Antal dagar per månad i hemmet",
+    "residenceExtent": "Hur mycket bor barnet i hemmet under aktuell ansökningsmånad?",
+    "daysInHome": "Ange antal dagar för aktuell månad (1-31)",
     "select": "Välj …"
   },
   "personuppgifter": {
     "heading": "Personuppgifter",
+    "applicantHeading": "Sökande",
+    "coApplicantHeading": "Medsökande",
+    "personnummerLabel": "Personnummer",
     "addressLabel": "Folkbokföringsadress",
     "emailLabel": "E-post",
     "phoneLabel": "Telefon",
-    "notifyLabel": "Hur vill du få notiser?",
-    "notifyInfo": "Välj minst en kanal som vi får skicka notiser till om din ansökan.",
+    "notifyLabel": "Hur vill du få notiser om din ansökan?",
+    "notifyLabelCoApplicant": "Hur vill medsökande få notiser om sin ansökan?",
+    "notifyInfo": "Välj minst ett alternativ.",
     "notifyEmail": "E-post",
     "notifySms": "SMS",
-    "notifyRequired": "Välj minst en kanal för notiser."
+    "notifyRequired": "Välj minst en kanal för notiser.",
+    "contactInfo": "Om du ändrar dina kontaktuppgifter ändras de på hela Mina sidor."
   },
   "householdHousing": {
     "heading": "Hushåll och boende",
     "hasChildrenLabel": "Har du barn under 21 år som bor helt eller delvis i hemmet?",
+    "hasChildrenLabel_ni": "Har ni barn under 21 år som bor helt eller delvis i hemmet?",
+    "hasChildrenInfo": "Du ska bara fylla i barn under 18 år och/eller barn som är 18–20 år som studerar grundskola, gymnasium eller annan jämförlig utbildning.",
+    "hasChildrenInfo_ni": "Ni ska bara fylla i barn under 18 år och/eller barn som är 18–20 år som studerar grundskola, gymnasium eller annan jämförlig utbildning.",
     "addChild": "Lägg till barn",
+    "prefillHeading": "Barn från föregående beräkning",
+    "prefillAdd": "Lägg till",
     "childrenChangedLabel": "Har barnens boende ändrats sedan senaste ansökan?",
+    "childrenChangedLabel_ni": "Har barnens boende ändrats sedan senaste ansökan?",
     "changeDescriptionPlaceholder": "Beskriv förändringen",
-    "housingChangedLabel": "Har ditt boende ändrats sedan senaste ansökan?",
-    "housingHeading": "Boende",
-    "housingFormLabel": "Boendeform",
-    "adultsLabel": "Antal vuxna i boendet",
-    "childrenCountLabel": "Antal barn i boendet",
+    "housingChangedLabel": "Har din boendesituation förändrats sedan senaste ansökan eller kommer den förändras under aktuell ansökningsmånad?",
+    "housingChangedLabel_ni": "Har er boendesituation förändrats sedan senaste ansökan eller kommer den förändras under aktuell ansökningsmånad?",
+    "housingFormLabel": "Välj boendeform",
+    "housingFormLabelChanged": "Välj ny boendeform",
+    "personCountLabel": "Uppge hur många vuxna och barn som bor helt eller delvis i bostaden",
     "roomsLabel": "Antal rum + kök",
     "housingDescriptionLabel": "Beskriv din boendesituation"
   },
@@ -147,16 +158,20 @@
     "remove": "Ta bort",
     "recipientLabel": "Avser",
     "costsHeading": "Kostnader du ansöker om",
+    "costsHeading_ni": "Kostnader ni ansöker om",
     "costsInfo": "Fyll endast i för de utgifter du faktiskt har och ansöker om. Inte obligatoriskt.",
     "addCost": "Lägg till kostnad",
     "incomesHeading": "Inkomster",
-    "hasIncomesLabel": "Har du eller din medsökande några inkomster?",
+    "hasIncomesLabel": "Har du några inkomster?",
+    "hasIncomesLabel_ni": "Har ni några inkomster?",
     "addIncome": "Lägg till inkomst",
     "pendingBenefitsHeading": "Väntande ersättningar",
     "hasPendingBenefitsLabel": "Väntar du på beslut om någon ersättning?",
+    "hasPendingBenefitsLabel_ni": "Väntar ni på beslut om någon ersättning?",
     "addPendingBenefit": "Lägg till ersättning",
     "assetsHeading": "Tillgångar",
-    "hasAssetsLabel": "Har du eller din medsökande några tillgångar?",
+    "hasAssetsLabel": "Har du några tillgångar?",
+    "hasAssetsLabel_ni": "Har ni några tillgångar?",
     "addAsset": "Lägg till tillgång",
     "cost": {
       "heading": "Kostnad {{number}}",
@@ -276,7 +291,8 @@
     "otherBenefitPlaceholder": "Beskriv vilket annat bistånd ansökan avser",
     "periodLabel": "Ansökningsperiod",
     "periodValue": "{{month}} {{year}}",
-    "normTypeLabel": "Vilken norm ansöker du bistånd för?"
+    "normTypeLabel": "Vilken norm ansöker du bistånd för?",
+    "normTypeLabel_ni": "Vilken norm ansöker ni bistånd för?"
   },
   "review": {
     "heading": "Granska och skicka",
@@ -284,6 +300,7 @@
     "attestationHeading": "Försäkran",
     "attestationInfo": "Om du lämnar felaktiga uppgifter eller inte meddelar förändringar som rör din ekonomiska situation kan en polisanmälan om misstänkt bidragsbrott göras och du kan bli återbetalningsskyldig. Socialtjänsten kan inhämta och kontrollera uppgifter från berörda myndigheter, även bakåt i tiden.",
     "staysLabel": "Vistas du i kommunen under ansökningsmånaden?",
+    "staysLabel_ni": "Vistas ni i kommunen under ansökningsmånaden?",
     "stayDescriptionPlaceholder": "Beskriv varför",
     "attestation": "Jag intygar på heder och samvete att uppgifterna jag lämnat är riktiga och fullständiga.",
     "submit": "Skicka in ansökan"
@@ -291,6 +308,29 @@
   "placeholder": {
     "body": "Den här delen av formuläret byggs i nästa steg."
   },
+  "attachments": {
+    "heading": "Bilagor",
+    "requiredHeading": "Du behöver bifoga följande:",
+    "needLabel": "Behöver du bifoga några bilagor?",
+    "needLabel_ni": "Behöver ni bifoga några bilagor?",
+    "no": "Nej",
+    "yes": "Ja, det har skett förändringar eller min socialsekreterare har informerat mig att jag behöver lämna in underlag",
+    "dropHint": "Dra och släpp filer här, eller klicka för att välja filer",
+    "maxSize": "Maximal filstorlek: 25 MB per fil.",
+    "docs": {
+      "sickCertificate": "Läkarintyg för aktuell period",
+      "assetStatements": "Underlag för dina tillgångar (t.ex. kontoutdrag eller engagemangsbesked)",
+      "acuteDental": "Faktura eller kvitto för akut tandvård"
+    }
+  },
+  "bankid": {
+    "cancel": "Avbryt",
+    "submitLabel": "Signera och skicka in",
+    "submitDescription": "Väntar på att du signerar ansökan med BankID. (Mockad signering — klicka för att skicka in.)",
+    "submitDescriptionBoth": "Väntar på att du och din medsökande signerar ansökan med BankID. (Mockad signering — klicka för att skicka in.)",
+    "submitConfirm": "Signera och skicka in (mock)"
+  },
   "submitSuccess": "Din ansökan har skickats in!",
-  "submitError": "Något gick fel när ansökan skulle skickas in. Försök igen senare."
+  "submitError": "Något gick fel när ansökan skulle skickas in. Försök igen senare.",
+  "attachmentsError": "Ansökan skickades in, men bilagorna kunde inte laddas upp. Du kan komplettera via meddelandefunktionen på Mina sidor."
 }

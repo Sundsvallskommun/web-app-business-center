@@ -3,6 +3,7 @@ import { Checkbox, Divider, FormControl, FormLabel, RadioButton, Textarea } from
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { StepNavigation } from '../../components/step-navigation.component';
+import { FaAttachments } from '../components/fa-attachments.component';
 import { FaPersonPaymentCard } from '../components/fa-person-payment-card.component';
 import { FaStepProps } from './fa-step-registry';
 
@@ -29,12 +30,19 @@ export const StepPayment: React.FC<FaStepProps> = ({ applicationType, onBack, on
         <FaPersonPaymentCard key={field.id} index={index} role={field.role} applicationType={applicationType} />
       ))}
 
+      <Divider />
+
+      {/* Bilagor — före vistelse. */}
+      <FaAttachments />
+
       {/* Vistelse under ansökningsmånaden — flyttad hit från granska-steget. */}
       {showStay ? (
         <>
           <Divider />
           <FormControl data-cy="fa-stays">
-            <FormLabel className="font-bold">{t('financial-assistance:review.staysLabel')}</FormLabel>
+            <FormLabel className="font-bold">
+              {t('financial-assistance:review.staysLabel', isCohabiting ? { context: 'ni' } : undefined)}
+            </FormLabel>
             <RadioButton.Group inline>
               <RadioButton
                 size="sm"

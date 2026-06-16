@@ -56,7 +56,12 @@
       "personnummerHelper": "Den du ansöker tillsammans med. Anges som ÅÅÅÅMMDD-XXXX.",
       "personnummerPlaceholder": "ÅÅÅÅMMDD-XXXX",
       "personnummerRequired": "Personnummer på medsökande krävs",
-      "personnummerFormat": "Personnummer måste anges som ÅÅÅÅMMDD-XXXX"
+      "personnummerFormat": "Personnummer måste anges som ÅÅÅÅMMDD-XXXX",
+      "checking": "Kontrollerar personnumret …",
+      "notFound": "Ingen person hittades på det personnumret. Kontrollera och försök igen.",
+      "signLabel": "Signering med BankID",
+      "signDescription": "Medsökande behöver signera med BankID för att gå vidare. (Mockad signering — klicka för att fortsätta.)",
+      "signConfirm": "Jag har signerat (mock)"
     }
   },
   "formular": {

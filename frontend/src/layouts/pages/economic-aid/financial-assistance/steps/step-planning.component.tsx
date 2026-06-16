@@ -156,7 +156,8 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
 
       {renderPersonSection(
         'APPLICANT',
-        applicantName
+        // Söker man själv står det "du"; finns en medsökande används namnet för att skilja dem åt.
+        showPerson && applicantName
           ? t('financial-assistance:planning.personPlanning', { name: applicantName })
           : t('financial-assistance:planning.planningsHeading'),
       )}

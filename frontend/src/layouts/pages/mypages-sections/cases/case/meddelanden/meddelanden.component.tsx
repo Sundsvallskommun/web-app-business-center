@@ -1,13 +1,19 @@
 'use client';
 
-import { useContext } from 'react';
+import { FrontendMessageResponse } from '@interfaces/case';
+import { useContext, useState } from 'react';
 import { CaseContext } from '../case-layout.component';
 import CaseMessages from './case-messages.component';
 import CaseNewMessage from './case-new-message.component';
 
+// Systems whose message API carries a reply reference (see backend inReplyToId plumbing).
+const REPLY_SYSTEMS = ['CARE_MANAGEMENT', 'CASE_DATA', 'SUPPORT_MANAGEMENT'];
+
 export default function CaseMeddelanden() {
-  const { caseMessages } = useContext(CaseContext);
+  const { caseData, caseMessages } = useContext(CaseContext);
+  const [replyTo, setReplyTo] = useState<FrontendMessageResponse | undefined>(undefined);
   const count = caseMessages?.length ?? 0;
+  const supportsReply = !!caseData?.system && REPLY_SYSTEMS.includes(caseData.system);
 
   return (
     <div className="flex flex-col gap-y-24">
@@ -24,10 +30,10 @@ export default function CaseMeddelanden() {
           </div>
         </div>
 
-        <CaseMessages />
+        <CaseMessages canReply={supportsReply} onReply={setReplyTo} />
 
         <div className="border-t-1 border-divider bg-background-content px-20 py-16 desktop:px-32">
-          <CaseNewMessage />
+          <CaseNewMessage replyTo={replyTo} onCancelReply={() => setReplyTo(undefined)} />
         </div>
       </div>
     </div>

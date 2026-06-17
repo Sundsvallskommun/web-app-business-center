@@ -1,3 +1,5 @@
+import { FrontendMessageResponse } from '@interfaces/case';
+import { User } from '@interfaces/user';
 import { useApi } from '@services/api-service';
 import {
   Button,
@@ -12,10 +14,11 @@ import {
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
 import dayjs from 'dayjs';
-import { Info } from 'lucide-react';
-import { useContext, useMemo, useState } from 'react';
+import { Info, Reply, X } from 'lucide-react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { CaseContext } from '../case-layout.component';
+import { messagePreview, senderLabel } from './utils';
 
 interface NewMessage {
   files: UploadFile[];
@@ -24,11 +27,20 @@ interface NewMessage {
 
 const MESSAGE_CHARACTER_LIMIT = 10000;
 
-export default function CaseNewMessage() {
+export default function CaseNewMessage(props: { replyTo?: FrontendMessageResponse; onCancelReply?: () => void }) {
+  const { replyTo, onCancelReply } = props;
   const { isMinDesktop } = useThemeQueries();
   const context = useForm<NewMessage>({ defaultValues: { files: [], message: '' }, mode: 'onChange' });
   const { caseData, refetchMessages } = useContext(CaseContext);
+  const { data: user } = useApi<User>({ url: '/me', method: 'get' });
   const [showModal, setShowModal] = useState<boolean>(false);
+
+  // Move focus into the textarea when the user picks a message to reply to.
+  useEffect(() => {
+    if (replyTo) {
+      context.setFocus('message');
+    }
+  }, [replyTo, context]);
 
   const files = context.watch('files');
   const messageValue = context.watch('message') ?? '';
@@ -77,6 +89,9 @@ export default function CaseNewMessage() {
   const handleOnSubmit: SubmitHandler<NewMessage> = async (values) => {
     const formData = new FormData();
     formData.append('message', values.message);
+    if (replyTo?.messageId) {
+      formData.append('inReplyToId', replyTo.messageId);
+    }
 
     if (values.files.length) {
       try {
@@ -102,6 +117,7 @@ export default function CaseNewMessage() {
       if (!res.error) {
         context.reset();
         refetchMessages?.();
+        onCancelReply?.();
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -125,6 +141,27 @@ export default function CaseNewMessage() {
         <FormProvider {...context}>
           <form className="flex flex-col gap-lg" onSubmit={context.handleSubmit(handleOnSubmit)}>
             <div className="flex flex-col gap-y-24">
+              {replyTo ? (
+                <div className="flex items-start gap-8 rounded-12 border-l-4 border-vattjom-surface-primary bg-background-200 px-12 py-8">
+                  <Reply size={16} className="shrink-0 mt-2 text-secondary" />
+                  <div className="flex flex-col gap-y-2 min-w-0 grow">
+                    <span className="text-small font-bold">Svarar på {senderLabel(replyTo, user?.name)}</span>
+                    <span className="text-small text-secondary line-clamp-2 break-words">
+                      {messagePreview(replyTo)}
+                    </span>
+                  </div>
+                  <Button
+                    variant="tertiary"
+                    size="sm"
+                    iconButton
+                    className="shrink-0"
+                    aria-label="Avbryt svar"
+                    onClick={onCancelReply}
+                  >
+                    <X size={18} />
+                  </Button>
+                </div>
+              ) : null}
               <div className="flex flex-col">
                 <p className="font-bold mb-[1.2rem]">
                   Skicka ett meddelande för att kontakta handläggaren för ditt ärende
@@ -132,7 +169,7 @@ export default function CaseNewMessage() {
                 <FormControl className="w-full">
                   <Textarea
                     {...messageRegister}
-                    placeholder="Skriv ett meddelande"
+                    placeholder={replyTo ? 'Skriv ett svar' : 'Skriv ett meddelande'}
                     className="w-full min-h-72"
                     readOnly={postMessageMutation.isPending}
                   />
@@ -189,7 +226,7 @@ export default function CaseNewMessage() {
                 loading={postMessageMutation.isPending}
                 disabled={isMessageOverLimit}
               >
-                Skicka meddelande
+                {replyTo ? 'Skicka svar' : 'Skicka meddelande'}
               </Button>
               {context.formState.errors.root && (
                 <FormErrorMessage className="text-small text-error" role="alert">

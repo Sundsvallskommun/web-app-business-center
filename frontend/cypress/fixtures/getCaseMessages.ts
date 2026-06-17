@@ -16,6 +16,7 @@ export const getCaseMessages: () => ApiResponse<FrontendMessageResponse[]> = () 
       conversationId: '12345678-1234-1234-1234-123456789012',
       messageId: '22222222-2222-2222-2222-222222222222',
       direction: 'OUTBOUND',
+      inReplyToId: '11111111-1111-1111-1111-111111111111',
       message: 'This is a longer test message to simulate a different scenario.',
       sent: '2024-05-15 14:30:00',
       sender: 'Jane Smith',

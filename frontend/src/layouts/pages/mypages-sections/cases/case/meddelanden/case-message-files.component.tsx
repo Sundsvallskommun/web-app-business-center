@@ -45,8 +45,8 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
       className={cx(
         'flex flex-col gap-10 rounded-12 border-1 p-12 shadow-sm',
         mine
-          ? 'border-vattjom-background-300 bg-white text-[#222226] dark:border-divider dark:bg-background-content dark:text-body'
-          : 'border-divider bg-background-200 text-body dark:bg-background-content'
+          ? 'border-vattjom-background-300 bg-background-content text-body'
+          : 'border-divider bg-background-200 text-body'
       )}
       aria-label="Bilagor"
     >
@@ -57,7 +57,7 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
           </span>
           <span>Bilagor</span>
         </div>
-        <span className={cx('shrink-0', mine ? 'text-[#51515c] dark:text-secondary' : 'text-secondary')}>
+        <span className="shrink-0 text-secondary">
           {count} {count === 1 ? 'fil' : 'filer'}
         </span>
       </div>
@@ -72,17 +72,13 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
               className={cx(
                 'flex w-full min-w-0 items-center gap-8 rounded-8 border-1 px-10 py-8 text-small transition disabled:opacity-60',
                 mine
-                  ? 'border-vattjom-background-300 bg-background-content text-[#222226] hover:bg-vattjom-background-100 dark:border-divider dark:bg-background-100 dark:text-body dark:hover:bg-background-200'
-                  : 'border-divider bg-background-content text-body hover:bg-background-100 dark:bg-background-100 dark:hover:brightness-110'
+                  ? 'border-divider bg-background-200 text-body hover:bg-background-100'
+                  : 'border-divider bg-background-content text-body hover:bg-background-100'
               )}
               onClick={handleOpenFile(file)}
             >
               <span className="min-w-0 flex-1 truncate text-left">{file.name}</span>
-              {isDownloading ? (
-                <Spinner size={2} className="shrink-0" />
-              ) : (
-                <Download size={18} className="shrink-0" />
-              )}
+              {isDownloading ? <Spinner size={2} className="shrink-0" /> : <Download size={18} className="shrink-0" />}
             </button>
           );
         })}

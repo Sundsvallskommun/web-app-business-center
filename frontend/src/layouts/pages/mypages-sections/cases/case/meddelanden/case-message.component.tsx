@@ -74,8 +74,8 @@ export default function CaseMessage(props: { message: FrontendMessageResponse; i
           className={cx(
             'flex flex-col gap-y-14 rounded-16 border-1 px-16 py-14 max-w-full shadow-sm',
             mine
-              ? 'border-vattjom-surface-primary bg-vattjom-surface-primary text-white dark:border-vattjom-background-300 dark:bg-vattjom-background-200 dark:text-vattjom-text-primary'
-              : 'border-divider bg-background-content text-body dark:bg-background-200'
+              ? 'border-vattjom-background-300 bg-vattjom-surface-accent text-vattjom-text-primary'
+              : 'border-divider bg-background-content text-body'
           )}
         >
           <span

@@ -3,6 +3,7 @@
 import { AppWrapper } from '@contexts/app.context';
 import { ConfirmationDialogContextProvider, GuiProvider, defaultTheme } from '@sk-web-gui/react';
 import { MatomoWrapper } from '@utils/matomo-wrapper';
+import { useLocalStorage } from '@utils/use-localstorage.hook';
 import dayjs from 'dayjs';
 import 'dayjs/locale/se';
 import updateLocale from 'dayjs/plugin/updateLocale';
@@ -36,10 +37,12 @@ dayjs.updateLocale('se', {
  const theme = {...defaultTheme, screens: {...defaultTheme.screens, 'desktop-min': '1024px'}};
 
 export default function MyAppLayout({ children }) {
+  const colorScheme = useLocalStorage((state) => state.colorScheme);
+
   return (
     <html lang={i18nConfig.defaultLocale}>
       <body>
-        <GuiProvider theme={theme}>
+        <GuiProvider theme={theme} colorScheme={colorScheme}>
           <ConfirmationDialogContextProvider>
             <AppWrapper>
               <LoginGuard>

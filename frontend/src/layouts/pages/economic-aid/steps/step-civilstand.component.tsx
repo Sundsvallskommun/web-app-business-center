@@ -9,7 +9,9 @@ import { FaBankidMock } from '../financial-assistance/components/fa-bankid-mock.
 import { StepNavigation } from '../components/step-navigation.component';
 import { StepProps } from './step-registry';
 
-const PERSONNUMMER_PATTERN = /^\d{8}-\d{4}$/;
+// Accepterar 12 siffror med eller utan bindestreck (ÅÅÅÅMMDD-XXXX eller ÅÅÅÅMMDDXXXX) — backend
+// normaliserar ändå bort allt utom siffror vid uppslag/inskick.
+const PERSONNUMMER_PATTERN = /^\d{8}-?\d{4}$/;
 const CIVILSTAND_WITH_PARTNER: ReadonlySet<Civilstand> = new Set(['gift', 'sambo']);
 
 const cardClass = (checked: boolean): string =>

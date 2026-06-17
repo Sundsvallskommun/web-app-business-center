@@ -6,6 +6,7 @@ import React from 'react';
 import { RepresentingMode } from '../../interfaces/app';
 import { titleCase } from '../../utils/title-caser';
 import { useAppContext } from '../../contexts/app.context';
+import { ColorSchemeSelect } from './color-scheme-select.component';
 
 export const UserMenu = () => {
   const { t } = useTranslation('common');
@@ -48,6 +49,12 @@ export const UserMenu = () => {
                   {t('common:profile')}
                   <Icon icon={<ArrowRight />} />
                 </Button>
+              </PopupMenu.Item>
+              <Divider />
+              <PopupMenu.Item>
+                <div className="px-12 py-8 w-full" data-cy="user-menu-color-scheme">
+                  <ColorSchemeSelect />
+                </div>
               </PopupMenu.Item>
               <Divider />
               <PopupMenu.Item>

@@ -33,6 +33,12 @@
     "title": "Du är nu utloggad",
     "loginAgain": "Logga in igen"
   },
+  "colorScheme": {
+    "title": "Färgläge",
+    "light": "Ljust",
+    "dark": "Mörkt",
+    "system": "System"
+  },
   "noRepresent": {
     "title": "Hoppsan, vi hittade inget företag som är registrerat på dig",
     "description": "När du loggar in gör vi en kontroll mot Bolagsverket och Skatteverket, men vi fick ingen träff på ditt personnummer.",

@@ -10,6 +10,7 @@ import { RepresentingMode } from '../../interfaces/app';
 import { getSwitchedRepresentingMode, newRepresentingModePathname } from '../../utils/representingModeRoute';
 import { useBannerMenuItems } from '../banner-menu/banner-menu-items';
 import { MyPagesBusinessSwitch } from '../site-menu/site-menu-items';
+import { ColorSchemeSelect } from '../user-menu/color-scheme-select.component';
 
 export const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -96,6 +97,8 @@ export const MobileMenu = () => {
                 {t('common:eServices')}
               </Link>
             </Button>
+          <Divider className="m-0 grow-0" />
+          <ColorSchemeSelect />
         </Modal.Content>
         <Modal.Footer>
           <Button

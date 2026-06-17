@@ -84,7 +84,7 @@
     "notifyEmail": "E-post",
     "notifySms": "SMS",
     "notifyRequired": "Välj minst en kanal för notiser.",
-    "contactInfo": "Om du ändrar dina kontaktuppgifter ändras de på hela Mina sidor."
+    "contactInfo": "Om du ändrar din e-postadress eller telefonnummer ändras de på hela Mina sidor."
   },
   "householdHousing": {
     "heading": "Hushåll och boende",

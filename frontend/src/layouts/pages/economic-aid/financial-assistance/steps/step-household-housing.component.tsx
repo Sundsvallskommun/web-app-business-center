@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { StepNavigation } from '../../components/step-navigation.component';
 import { FaChildCard } from '../components/fa-child-card.component';
 import { FaContactSection } from '../components/fa-contact-section.component';
+import { compactFieldClass } from '../components/fa-form-helpers';
 import { FaStepProps } from './fa-step-registry';
 
 const HOUSING_FORMS: HousingForm[] = [
@@ -310,12 +311,13 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
 
               {/* "Utan bostad/institution" har ingen följdfråga. */}
               {housingForm && housingForm !== 'NO_HOUSING_OR_INSTITUTION' ? (
-                <FormControl className="w-full max-w-[28rem]">
+                <FormControl className="w-full">
                   <FormLabel htmlFor="fa-housing-person-count">
                     {t('financial-assistance:householdHousing.personCountLabel')}
                   </FormLabel>
                   <Input
                     id="fa-housing-person-count"
+                    className={compactFieldClass}
                     type="number"
                     min={0}
                     {...register('housingPersonCount', numberFieldOptions)}
@@ -324,12 +326,13 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
               ) : null}
 
               {housingForm === 'LODGER' ? (
-                <FormControl className="w-full max-w-[20rem]">
+                <FormControl className="w-full">
                   <FormLabel htmlFor="fa-housing-rooms">
                     {t('financial-assistance:householdHousing.roomsLabel')}
                   </FormLabel>
                   <Input
                     id="fa-housing-rooms"
+                    className={compactFieldClass}
                     type="number"
                     min={0}
                     {...register('housingRoomsPlusKitchen', numberFieldOptions)}
@@ -341,12 +344,13 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
 
           {/* Boendet oförändrat (återansökan) → ange ändå antal i hushållet. */}
           {showHouseholdCountsOnly ? (
-            <FormControl className="w-full max-w-[28rem]" data-cy="fa-household-counts">
+            <FormControl className="w-full" data-cy="fa-household-counts">
               <FormLabel htmlFor="fa-housing-person-count-only">
                 {t('financial-assistance:householdHousing.personCountLabel')}
               </FormLabel>
               <Input
                 id="fa-housing-person-count-only"
+                className={compactFieldClass}
                 type="number"
                 min={0}
                 {...register('housingPersonCount', numberFieldOptions)}

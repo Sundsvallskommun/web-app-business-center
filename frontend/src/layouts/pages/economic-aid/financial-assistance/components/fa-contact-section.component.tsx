@@ -92,13 +92,13 @@ export const FaContactSection: React.FC<FaContactSectionProps> = ({
 
       {/* Kontaktuppgifter (redigerbara) */}
       <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
-        <FormControl className="w-full">
+        <FormControl className="w-full" disabled={!notifyByEmail}>
           <FormLabel htmlFor={`fa-${emailField}`}>{t('financial-assistance:personuppgifter.emailLabel')}</FormLabel>
-          <Input id={`fa-${emailField}`} type="email" {...register(emailField)} />
+          <Input id={`fa-${emailField}`} type="email" disabled={!notifyByEmail} {...register(emailField)} />
         </FormControl>
-        <FormControl className="w-full">
+        <FormControl className="w-full" disabled={!notifyBySms}>
           <FormLabel htmlFor={`fa-${phoneField}`}>{t('financial-assistance:personuppgifter.phoneLabel')}</FormLabel>
-          <Input id={`fa-${phoneField}`} inputMode="tel" {...register(phoneField)} />
+          <Input id={`fa-${phoneField}`} inputMode="tel" disabled={!notifyBySms} {...register(phoneField)} />
         </FormControl>
       </div>
       <p className="text-small text-dark-secondary">{t('financial-assistance:personuppgifter.contactInfo')}</p>

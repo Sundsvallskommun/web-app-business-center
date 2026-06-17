@@ -27,7 +27,7 @@ const MESSAGE_CHARACTER_LIMIT = 10000;
 export default function CaseNewMessage() {
   const { isMinDesktop } = useThemeQueries();
   const context = useForm<NewMessage>({ defaultValues: { files: [], message: '' }, mode: 'onChange' });
-  const { caseData } = useContext(CaseContext);
+  const { caseData, refetchMessages } = useContext(CaseContext);
   const [showModal, setShowModal] = useState<boolean>(false);
 
   const files = context.watch('files');
@@ -59,7 +59,7 @@ export default function CaseNewMessage() {
 
   if (isNewMessagesDisabled) {
     return (
-      <div className="self-stretch flex flex-col gap-y-24 mx-20 desktop:mx-32">
+      <div className="self-stretch flex flex-col gap-y-24">
         <div
           role="status"
           className="flex items-center gap-x-12 rounded-xl border p-16 mb-16 bg-background-200 border-info-surface-accent-DEFAULT "
@@ -99,7 +99,10 @@ export default function CaseNewMessage() {
 
     try {
       const res = await postMessageMutation.mutateAsync(formData);
-      if (!res.error) context.reset();
+      if (!res.error) {
+        context.reset();
+        refetchMessages?.();
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       context.setError('root', {
@@ -118,7 +121,7 @@ export default function CaseNewMessage() {
 
   return (
     <>
-      <div className="self-stretch flex flex-col gap-y-24 mx-20 desktop:mx-32">
+      <div className="self-stretch flex flex-col gap-y-24">
         <FormProvider {...context}>
           <form className="flex flex-col gap-lg" onSubmit={context.handleSubmit(handleOnSubmit)}>
             <div className="flex flex-col gap-y-24">

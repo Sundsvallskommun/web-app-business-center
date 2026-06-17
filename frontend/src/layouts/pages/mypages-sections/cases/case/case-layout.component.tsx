@@ -14,7 +14,11 @@ import NextLink from 'next/link';
 import { redirect } from 'next/navigation';
 import { createContext, useEffect } from 'react';
 
-export const CaseContext = createContext<{ caseData?: ICaseStatusResponse; caseMessages?: FrontendMessageResponse[] }>(
+export const CaseContext = createContext<{
+  caseData?: ICaseStatusResponse;
+  caseMessages?: FrontendMessageResponse[];
+  refetchMessages?: () => void;
+}>(
   /** @ts-expect-error is set on mount */
   null
 );
@@ -73,6 +77,7 @@ export default function CaseLayout(props: { caseId: string; children: React.Reac
         value={{
           caseData: caseData,
           caseMessages: caseMessages,
+          refetchMessages: refetchMessages,
         }}
       >
         {children}

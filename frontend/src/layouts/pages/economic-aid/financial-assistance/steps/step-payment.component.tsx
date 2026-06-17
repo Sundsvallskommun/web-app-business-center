@@ -45,9 +45,9 @@ export const StepPayment: React.FC<FaStepProps> = ({ applicationType, onBack, on
       {showStay ? (
         <>
           <Divider />
-          <FormControl data-cy="fa-stays">
-            <FormLabel className="font-bold">{t('financial-assistance:review.staysHeading')}</FormLabel>
-            <p className="text-small text-dark-secondary mb-8">
+          <FormControl data-cy="fa-stays" className="w-full">
+            <FormLabel className="text-h4-md font-bold">{t('financial-assistance:review.staysHeading')}</FormLabel>
+            <p className="font-bold mb-8">
               {t('financial-assistance:review.staysInfo', isCohabiting ? { context: 'ni' } : undefined)}
             </p>
             <RadioButton.Group inline>

@@ -196,7 +196,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
       {/* Barn + boende ingår inte i tilläggsansökan */}
       {!isSupplementary ? (
         <>
-          <FormControl data-cy="fa-has-children">
+          <FormControl data-cy="fa-has-children" className="w-full">
             <FormLabel className="font-bold">{t('financial-assistance:householdHousing.hasChildrenLabel', ni)}</FormLabel>
             <p className="text-small text-dark-secondary mb-8">
               {t('financial-assistance:householdHousing.hasChildrenInfo', ni)}
@@ -246,7 +246,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
           ) : null}
 
           {isRenewal && hasChildren === true ? (
-            <FormControl data-cy="fa-children-changed">
+            <FormControl data-cy="fa-children-changed" className="w-full">
               <FormLabel className="font-bold">
                 {t('financial-assistance:householdHousing.childrenChangedLabel', ni)}
               </FormLabel>
@@ -265,7 +265,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
           ) : null}
 
           {isRenewal ? (
-            <FormControl data-cy="fa-housing-changed">
+            <FormControl data-cy="fa-housing-changed" className="w-full">
               <FormLabel className="font-bold">
                 {t('financial-assistance:householdHousing.housingChangedLabel', ni)}
               </FormLabel>

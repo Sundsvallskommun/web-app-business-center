@@ -103,7 +103,8 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
     const data = buildFinancialAssistanceData(values, applicationType);
 
     const formData = new FormData();
-    formData.append('payload', JSON.stringify({ title: t('financial-assistance:header.title'), data }));
+    // Titeln sätts server-side utifrån vald slug — skicka bara med data.
+    formData.append('payload', JSON.stringify({ data }));
     values.attachments.forEach((file) => {
       if (file.file instanceof Blob) {
         formData.append('files', file.file, `${file.meta.name}.${file.meta.ending}`);

@@ -72,12 +72,18 @@ const managedChannelsUnchanged = (existing: ContactSettingChannel[] | undefined,
   return existingKeys.length === desiredKeys.length && existingKeys.every((value, index) => value === desiredKeys[index]);
 };
 
-/** The three financial-assistance typeSlugs the create endpoint accepts (path-constrained). */
-const FINANCIAL_ASSISTANCE_SLUGS: ReadonlySet<string> = new Set([
-  'financial-assistance-new',
-  'financial-assistance-renewal',
-  'financial-assistance-supplementary',
-]);
+/**
+ * Tydligt displayname per typeSlug — blir ärendets titel så handläggaren direkt ser vilken sorts
+ * ansökan det är (ny/åter/tillägg). Nycklarna är även de slugs create-endpointen accepterar
+ * (path-constrained), så slug-setet deriveras från dem och hålls i synk.
+ */
+const FINANCIAL_ASSISTANCE_TITLES: Record<string, string> = {
+  'financial-assistance-new': 'Nyansökan om ekonomiskt bistånd',
+  'financial-assistance-renewal': 'Återansökan om ekonomiskt bistånd',
+  'financial-assistance-supplementary': 'Tilläggsansökan om ekonomiskt bistånd',
+};
+
+const FINANCIAL_ASSISTANCE_SLUGS: ReadonlySet<string> = new Set(Object.keys(FINANCIAL_ASSISTANCE_TITLES));
 
 /**
  * caremanagement returns 201 Created with an empty body and the new resource in the Location
@@ -426,7 +432,8 @@ export class EconomicAidController {
 
     // applicationType is derived server-side from the slug by caremanagement — we never send it.
     const request: CreateFinancialAssistanceRequest = {
-      title: body.title?.trim() || 'Ansökan om ekonomiskt bistånd',
+      // Titel = tydligt displayname utifrån vald slug (auktoritativ — slug är redan validerad ovan).
+      title: FINANCIAL_ASSISTANCE_TITLES[slug] ?? 'Ansökan om ekonomiskt bistånd',
       description: body.description,
       // Registrerade ärenden får prioritet MEDEL som standard (caremanagement: LOW/MEDIUM/HIGH).
       priority: body.priority || 'MEDIUM',

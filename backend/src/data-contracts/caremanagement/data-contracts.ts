@@ -632,6 +632,8 @@ export interface CreateMessage {
    * @maxLength 64
    */
   author?: string;
+  /** Id of the message this one replies to. Optional; when set it must reference a message on the same errand. */
+  inReplyToId?: string;
 }
 
 /** Decision recorded against an errand. Both system-generated decisions (e.g. a DMN-evaluated recommendation produced by a BPMN process) and human decisions (e.g. a handläggare approving a payment) are stored here, distinguished by `decisionType`. The list on the errand grows over time and is the audit trail of every decision made on the case. */
@@ -653,6 +655,25 @@ export interface Decision {
   created?: string;
 }
 
+/** Request to read whether the Lifecare utbetalning for an application month has been effectuated. */
+export interface PaymentStatusRequest {
+  /** The applicant's partyId (personId GUID) */
+  applicant: string;
+  /**
+   * The application month (ISO year-month, yyyy-MM) the payment concerns
+   * @pattern ^\d{4}-(0[1-9]|1[0-2])$
+   */
+  applicationMonth: string;
+}
+
+/** Whether the Lifecare utbetalning for the application month has been effectuated. */
+export interface PaymentStatusResponse {
+  /** True when a Lifecare utbetalning concerning the application month has been registered */
+  effectuated?: boolean;
+  /** The date the utbetalning was made (Lifecare PayDate), when effectuated */
+  paymentDate?: string;
+}
+
 /** Request to build and post the SSBTEK-driven normberäkning for an application month. */
 export interface NormberakningRequest {
   /** The applicant's partyId (personId GUID) */
@@ -666,6 +687,12 @@ export interface NormberakningRequest {
   applicationMonth: string;
   /** The id of the caremanagement errand the normberäkning concerns. When present, a Decision(RECOMMENDATION) summarising the income warnings is recorded on the errand for the handläggare to review; when omitted, the normberäkning is built without recording a recommendation. */
   errandId?: string;
+  /** The incomes classified by the operaton regelverk (the evaluate-income-regelverk worker output), as JSON. When present, caremanagement maps these to FC income rows instead of fetching SSBTEK and evaluating the rålista itself. */
+  classifiedIncomes?: string;
+  /** The unhandled-income warnings from the operaton regelverk, recorded on the errand recommendation */
+  unhandledIncomes?: string[];
+  /** The period-over-period change warnings from the operaton regelverk, recorded on the errand recommendation */
+  changeWarnings?: string[];
 }
 
 /** The created Lifecare normberäkning id plus the income warnings to review. */
@@ -752,6 +779,28 @@ export interface EligibilityResponse {
   lifecareChecked?: boolean;
   /** True when the request included a co-applicant (medsökande) */
   hasCoApplicant?: boolean;
+}
+
+/** Request to create the Lifecare aktualisering (case intake) for an application month. */
+export interface ActualisationRequest {
+  /** The applicant's partyId (personId GUID) */
+  applicant: string;
+  /**
+   * The application month (ISO year-month, yyyy-MM); the aktualisering's intake date is the first day of this month
+   * @pattern ^\d{4}-(0[1-9]|1[0-2])$
+   */
+  applicationMonth: string;
+  /** The id of the caremanagement errand the aktualisering concerns. When present, a Decision(ACTUALISATION) recording the created Lifecare aktualisering id is added to the errand's audit trail; when omitted, the aktualisering is created without recording anything on an errand. */
+  errandId?: string;
+}
+
+/** The created Lifecare aktualisering id. */
+export interface ActualisationResponse {
+  /**
+   * The id of the aktualisering created in Lifecare FC
+   * @format int32
+   */
+  actualisationId?: number;
 }
 
 /** PatchErrand model — patchable envelope fields only */
@@ -917,6 +966,8 @@ export interface Message {
   body?: string;
   /** Author id */
   author?: string;
+  /** Id of the message this one replies to, when it is a reply (same errand) */
+  inReplyToId?: string;
   /**
    * Created timestamp
    * @format date-time

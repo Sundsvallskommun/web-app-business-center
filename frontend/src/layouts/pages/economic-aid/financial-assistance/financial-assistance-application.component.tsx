@@ -18,7 +18,7 @@ import { ProgressBar } from '@sk-web-gui/progress-bar';
 import { ProgressStepper } from '@sk-web-gui/progress-stepper';
 import { useSnackbar } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FaBankidMock } from './components/fa-bankid-mock.component';
@@ -60,6 +60,17 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
   const applicationType: ApplicationType = applicationTypeFromSlug(slug);
   const groups = FA_GROUPS_BY_TYPE[applicationType];
   const [current, setCurrent] = useState(0);
+
+  // Scrolla upp till formulärets topp vid stegbyte (Nästa/Tillbaka), men inte vid första render.
+  const topRef = useRef<HTMLElement>(null);
+  const isInitialRender = useRef(true);
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+    topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [current]);
 
   const form = useForm<FinancialAssistanceFormData>({
     defaultValues: emptyFinancialAssistanceFormData({
@@ -137,7 +148,7 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
   return (
     <FormProvider {...form}>
       <form className="flex flex-col gap-32" onSubmit={openSign} data-cy="financial-assistance-form">
-        <header className="text-content">
+        <header ref={topRef} className="text-content">
           <h1>{t('financial-assistance:header.title')}</h1>
           <p>{t(`financial-assistance:type.${applicationType}`)}</p>
         </header>

@@ -483,7 +483,12 @@ export class CaseController {
     if (_case.system === CARE_MANAGEMENT_SYSTEM) {
       const errandId = _case.caseId ?? caseId;
       const form = new FormData();
-      const message = { direction: 'INBOUND', body: body.message, author: req.user.partyId };
+      const message = {
+        direction: 'INBOUND',
+        body: body.message,
+        author: req.user.partyId,
+        ...(body.inReplyToId ? { inReplyToId: body.inReplyToId } : {}),
+      };
       form.append('message', new Blob([JSON.stringify(message)], { type: 'application/json' }));
       (files ?? []).forEach(file => {
         form.append('attachments', new Blob([file.buffer as BlobPart], { type: file.mimetype }), file.originalname);
@@ -531,6 +536,7 @@ export class CaseController {
 
       const messageData = {
         content: body.message,
+        ...(body.inReplyToId ? { inReplyToMessageId: body.inReplyToId } : {}),
       };
 
       const formData = new FormData();

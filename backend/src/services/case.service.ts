@@ -61,6 +61,7 @@ export const mapCareManagementMessage = (msg: CareManagementMessage, senderName:
   message: msg.body ?? '',
   sent: msg.created ?? '',
   sender: senderName,
+  inReplyToId: msg.inReplyToId,
   attachments: (msg.attachments ?? []).map(attachment => ({
     attachmentId: attachment.id ?? '',
     name: attachment.fileName ?? '',
@@ -143,6 +144,7 @@ export const toFrontendMessage = (msg: MessageWithConversationId<Message>, nameM
     sent: msg.created,
     sender,
     direction: citizenCreatedKeys.includes(msg?.createdBy?.type ?? '') ? 'INBOUND' : 'OUTBOUND',
+    inReplyToId: msg.inReplyToMessageId,
     attachments: msg.attachments?.map(attachment => ({
       attachmentId: attachment.id?.toString() ?? '',
       name: attachment.fileName,

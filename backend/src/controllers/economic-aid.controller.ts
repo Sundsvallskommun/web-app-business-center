@@ -5,6 +5,7 @@ import {
   EligibilityRequest,
   EligibilityResponse,
   RenewalPrefill,
+  Stakeholder,
 } from '@/data-contracts/caremanagement/data-contracts';
 import { CitizenAddress, CitizenExtended, PersonGuidBatch } from '@/data-contracts/citizen/data-contracts';
 import { CreateFinancialAssistanceDto, EconomicAidApplicationDto, EligibilityRequestDto } from '@/dtos/economic-aid.dto';
@@ -24,7 +25,7 @@ import { ContactSetting, ContactSettingChannel, NewContactSettings, UpdateContac
 import { ContactMethod } from '@/data-contracts/contactsettings/data-contracts';
 import ApiService from '@/services/api.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
-import { getCitizenPersonnumber } from '@/services/citizen.service';
+import { getCitizen, getCitizenPersonnumber } from '@/services/citizen.service';
 import { makeClientContactSetting } from '@/services/contact-setting.service';
 import { caremanagementUrl } from '@/utils/caremanagement-url';
 import { economicAidUploadOptions } from '@/utils/files/economicAidUploadOptions';
@@ -427,7 +428,8 @@ export class EconomicAidController {
     const request: CreateFinancialAssistanceRequest = {
       title: body.title?.trim() || 'Ansökan om ekonomiskt bistånd',
       description: body.description,
-      priority: body.priority,
+      // Registrerade ärenden får prioritet MEDEL som standard (caremanagement: LOW/MEDIUM/HIGH).
+      priority: body.priority || 'MEDIUM',
       reporterUserId: req.user.partyId,
       data: body.data,
     };
@@ -455,11 +457,72 @@ export class EconomicAidController {
       `[economic-aid] created ${slug} errand ${errandId} with ${files?.length ?? 0} attachment(s) for partyId=${req.user.partyId}`,
     );
 
+    // Populate name/address on the auto-created stakeholders from Citizen so the handläggning UI
+    // has them. Resolved server-side from partyId (the authoritative source), not sent from the
+    // client. Best-effort — a failure here must never undo a created errand.
+    await this.enrichStakeholdersFromCitizen(errandId, req);
+
     // Mirror any edited contact details/notification preferences back to each person's
     // contactsettings. Best-effort — a failure here must never undo a created errand.
     await this.syncContactSettings(body.data, req);
 
     return { data: { errandId }, message: 'success' };
+  }
+
+  /**
+   * Berikar de stakeholders caremanagement auto-skapar (sökande/medsökande, identifierade med
+   * partyId som PRIVATE externalId) med namn och folkbokföringsadress från Citizen. Görs i
+   * inskicksflödet direkt efter create så handläggningsgränssnittet har uppgifterna. PATCH:ar in
+   * fälten och bevarar övrigt (roll, externalId, kontaktkanaler). Best-effort: fel per stakeholder
+   * loggas men fäller varken övriga eller själva inskicket.
+   */
+  private async enrichStakeholdersFromCitizen(errandId: string, req: RequestWithUser): Promise<void> {
+    let stakeholders: Stakeholder[] = [];
+    try {
+      const res = await this.caremanagementApiService.get<Stakeholder[]>({
+        url: caremanagementUrl('errands', errandId, 'stakeholders'),
+      });
+      stakeholders = Array.isArray(res.data) ? res.data : [];
+    } catch (err) {
+      logger.warn(`[economic-aid] could not read stakeholders for errand ${errandId}: ${(err as Error)?.message ?? err}`);
+      return;
+    }
+
+    for (const stakeholder of stakeholders) {
+      // Bara privatpersoner (sökande/medsökande) identifieras via partyId i PRIVATE externalId.
+      const partyId = stakeholder.externalIdType === 'PRIVATE' ? stakeholder.externalId : undefined;
+      if (!partyId || !stakeholder.id) continue;
+
+      try {
+        const citizen = await getCitizen(partyId, req);
+        const address = (citizen.addresses ?? []).find(isPopulationRegistration) ?? (citizen.addresses ?? []).find(hasStreet);
+
+        const enriched: Stakeholder = {
+          ...stakeholder,
+          firstName: citizen.givenname?.trim() || stakeholder.firstName,
+          lastName: citizen.lastname?.trim() || stakeholder.lastName,
+          ...(address
+            ? {
+                address: buildStreetLine(address),
+                careOf: address.co?.trim() ?? '',
+                zipCode: formatPostnummer(address.postalCode),
+                city: address.city?.trim() ?? '',
+                country: address.country?.trim() ?? '',
+              }
+            : {}),
+        };
+
+        await this.caremanagementApiService.patch({
+          url: caremanagementUrl('errands', errandId, 'stakeholders', stakeholder.id),
+          data: enriched,
+        });
+        logger.info(`[economic-aid] enriched stakeholder ${stakeholder.id} (role=${stakeholder.role}) on errand ${errandId}`);
+      } catch (err) {
+        logger.warn(
+          `[economic-aid] failed to enrich stakeholder ${stakeholder.id} on errand ${errandId}: ${(err as Error)?.message ?? err}`,
+        );
+      }
+    }
   }
 
   @Post('/economic-aid/applications')

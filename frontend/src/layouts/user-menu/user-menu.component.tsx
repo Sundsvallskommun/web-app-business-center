@@ -1,4 +1,4 @@
-import { Button, Divider, Icon, PopupMenu } from '@sk-web-gui/react';
+import { Button, Divider, Icon, PopupMenu, RadioButton } from '@sk-web-gui/react';
 import { ArrowRight, ChevronDown, LogOut, User2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -6,13 +6,14 @@ import React from 'react';
 import { RepresentingMode } from '../../interfaces/app';
 import { titleCase } from '../../utils/title-caser';
 import { useAppContext } from '../../contexts/app.context';
-import { ColorSchemeSelect } from './color-scheme-select.component';
+import { useColorSchemeOptions } from './color-scheme-select.component';
 
 export const UserMenu = () => {
   const { t } = useTranslation('common');
 
   const router = useRouter();
   const { representingMode, representingName: representingLabel } = useAppContext();
+  const { colorScheme, setColorScheme, options: colorSchemeOptions } = useColorSchemeOptions();
 
   return (
     <div className="flex" data-cy="user-menu">
@@ -51,11 +52,25 @@ export const UserMenu = () => {
                 </Button>
               </PopupMenu.Item>
               <Divider />
-              <PopupMenu.Item>
-                <div className="px-12 py-8 w-full" data-cy="user-menu-color-scheme">
-                  <ColorSchemeSelect />
-                </div>
-              </PopupMenu.Item>
+              <div className="px-8 pt-4 pb-2 text-small font-bold" data-cy="user-menu-color-scheme">
+                {t('common:colorScheme.title')}
+              </div>
+              {colorSchemeOptions.map((option) => (
+                <PopupMenu.Item key={option.value} closeOnClick={false}>
+                  <RadioButton
+                    name="color-scheme"
+                    value={option.value}
+                    checked={colorScheme === option.value}
+                    onClick={() => setColorScheme(option.value)}
+                    onChange={() => setColorScheme(option.value)}
+                  >
+                    <span className="inline-flex items-center gap-12">
+                      {option.icon}
+                      {option.label}
+                    </span>
+                  </RadioButton>
+                </PopupMenu.Item>
+              ))}
               <Divider />
               <PopupMenu.Item>
                 <Button

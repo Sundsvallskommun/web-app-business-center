@@ -2,6 +2,7 @@
 
 import { FrontendMessageResponse } from '@interfaces/case';
 import { useContext, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CaseContext } from '../case-layout.component';
 import CaseMessages from './case-messages.component';
 import CaseNewMessage from './case-new-message.component';
@@ -10,6 +11,7 @@ import CaseNewMessage from './case-new-message.component';
 const REPLY_SYSTEMS = ['CARE_MANAGEMENT', 'CASE_DATA', 'SUPPORT_MANAGEMENT'];
 
 export default function CaseMeddelanden() {
+  const { t } = useTranslation('cases');
   const { caseData, caseMessages } = useContext(CaseContext);
   const [replyTo, setReplyTo] = useState<FrontendMessageResponse | undefined>(undefined);
   const count = caseMessages?.length ?? 0;
@@ -21,12 +23,14 @@ export default function CaseMeddelanden() {
         <div className="border-b-1 border-divider px-20 py-16 desktop:px-32">
           <div className="flex flex-col gap-8 desktop:flex-row desktop:items-center desktop:justify-between">
             <div>
-              <h2 className="text-large font-bold m-0">Meddelanden</h2>
+              <h2 className="text-large font-bold m-0">{t('cases:messages.heading')}</h2>
               <p className="text-small text-secondary m-0">
-                {count ? `${count} ${count === 1 ? 'meddelande' : 'meddelanden'}` : 'Inga meddelanden'}
+                {count
+                  ? t(count === 1 ? 'cases:messages.countSingular' : 'cases:messages.countPlural', { count })
+                  : t('cases:messages.none')}
               </p>
             </div>
-            <span className="text-small text-secondary">Äldst överst, senaste längst ned</span>
+            <span className="text-small text-secondary">{t('cases:messages.order')}</span>
           </div>
         </div>
 

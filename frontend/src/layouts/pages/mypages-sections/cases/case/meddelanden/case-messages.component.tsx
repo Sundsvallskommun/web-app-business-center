@@ -4,6 +4,7 @@ import { FrontendMessageResponse } from '@interfaces/case';
 import { Button, Divider, Spinner } from '@sk-web-gui/react';
 import { ArrowDown, MessageSquare } from 'lucide-react';
 import { UIEvent, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CaseContext } from '../case-layout.component';
 import CaseMessage from './case-message.component';
 import { formatDateDivider } from './utils';
@@ -18,6 +19,7 @@ export default function CaseMessages(props: {
   onReply?: (message: FrontendMessageResponse) => void;
 }) {
   const { canReply, onReply } = props;
+  const { t } = useTranslation('cases');
   const { caseMessages } = useContext(CaseContext);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -90,13 +92,13 @@ export default function CaseMessages(props: {
           className="max-h-[min(62vh,600px)] overflow-y-auto px-16 py-20 desktop:px-32"
           onScroll={updateScrollButton}
           role="log"
-          aria-label="Ärendemeddelanden"
+          aria-label={t('cases:messages.threadLabel')}
           aria-live="polite"
         >
           {hasMore ? (
             <div className="flex justify-center pb-16">
               <Button size="sm" variant="secondary" onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}>
-                Visa äldre meddelanden
+                {t('cases:messages.showOlder')}
               </Button>
             </div>
           ) : null}
@@ -107,11 +109,12 @@ export default function CaseMessages(props: {
                 key={message.messageId ?? index}
                 className="flex flex-col gap-y-12 scroll-mt-16"
               >
-                {index === 0 || formatDateDivider(message.sent) !== formatDateDivider(visible[index - 1]?.sent) ? (
+                {index === 0 ||
+                formatDateDivider(message.sent, t) !== formatDateDivider(visible[index - 1]?.sent, t) ? (
                   <div className="flex items-center gap-12">
                     <Divider className="m-0 grow" />
                     <span className="text-small text-secondary whitespace-nowrap">
-                      {formatDateDivider(message.sent)}
+                      {formatDateDivider(message.sent, t)}
                     </span>
                     <Divider className="m-0 grow" />
                   </div>
@@ -133,8 +136,8 @@ export default function CaseMessages(props: {
         <div className="min-h-[260px] flex flex-col items-center justify-center gap-12 text-center text-secondary px-20">
           <MessageSquare size={42} />
           <div>
-            <p className="font-bold text-body m-0">Inga meddelanden än</p>
-            <p className="m-0 text-small">Skriv ett meddelande nedan för att starta dialogen.</p>
+            <p className="font-bold text-body m-0">{t('cases:messages.emptyTitle')}</p>
+            <p className="m-0 text-small">{t('cases:messages.emptyBody')}</p>
           </div>
         </div>
       )}
@@ -144,7 +147,7 @@ export default function CaseMessages(props: {
           size="sm"
           color="vattjom"
           iconButton
-          aria-label="Gå till senaste meddelandet"
+          aria-label={t('cases:messages.scrollToLatest')}
           leftIcon={<ArrowDown />}
           onClick={() => scrollToBottom()}
         />

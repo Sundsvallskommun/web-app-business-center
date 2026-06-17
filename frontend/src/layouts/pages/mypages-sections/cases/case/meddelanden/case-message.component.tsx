@@ -8,6 +8,7 @@ import localeSv from 'dayjs/locale/sv';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { CornerUpLeft, Reply, UserRound } from 'lucide-react';
 import { JSX } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MessageAvatar } from './case-message-avatar.component';
 import CaseMessageFiles from './case-message-files.component';
 import { SkSymbol } from './sk-symbol';
@@ -37,13 +38,14 @@ export default function CaseMessage(props: {
   onReply?: (message: FrontendMessageResponse) => void;
   onJumpTo?: (messageId: string) => void;
 }) {
+  const { t } = useTranslation('cases');
   const { data: user } = useApi<User>({ url: '/me', method: 'get' });
   const { message, isLatest, canReply, repliedMessage, isHighlighted, onReply, onJumpTo } = props;
 
   // Citizen's own messages (INBOUND) are "mine" → right/blue; handläggare (OUTBOUND) → left/neutral.
   // This mirrors drakel's handläggare view, where the perspective is reversed.
   const mine = message.direction === 'INBOUND';
-  const sender = senderLabel(message, user?.name);
+  const sender = senderLabel(message, user?.name, t);
 
   const avatarSettings: { color: AvatarProps['color']; logo: JSX.Element } =
     message.direction === 'OUTBOUND'
@@ -63,13 +65,13 @@ export default function CaseMessage(props: {
           <span className="font-bold text-body text-small truncate">{sender}</span>
           {message.sent ? (
             <time dateTime={message.sent} title={formatAbsolute(message.sent)} className="text-small text-secondary">
-              <span className="sr-only">Skickat </span>
+              <span className="sr-only">{t('cases:messages.sentSr')}</span>
               {formatTimeLabel(message.sent)}
             </time>
           ) : null}
           {isLatest ? (
             <Label rounded inverted color="vattjom" className="text-small">
-              Senaste
+              {t('cases:messages.latest')}
             </Label>
           ) : null}
           {canReply ? (
@@ -78,10 +80,10 @@ export default function CaseMessage(props: {
               size="sm"
               leftIcon={<Reply size={16} />}
               className="shrink-0"
-              aria-label={`Svara på meddelande från ${sender}`}
+              aria-label={t('cases:messages.replyAria', { sender })}
               onClick={() => onReply?.(message)}
             >
-              Svara
+              {t('cases:messages.reply')}
             </Button>
           ) : null}
         </div>
@@ -106,7 +108,7 @@ export default function CaseMessage(props: {
                     ? 'border-vattjom-background-300 bg-background-content text-body hover:bg-background-100'
                     : 'border-divider bg-background-200 text-body hover:bg-background-100'
                 )}
-                aria-label="Hoppa till det citerade meddelandet"
+                aria-label={t('cases:messages.jumpToQuoted')}
                 onClick={() => {
                   if (repliedMessage.messageId) {
                     onJumpTo?.(repliedMessage.messageId);
@@ -117,10 +119,12 @@ export default function CaseMessage(props: {
                 <span className="flex min-w-0 flex-1 flex-col gap-y-4 px-12 py-10">
                   <span className="flex items-center gap-6 text-small font-bold text-body">
                     <CornerUpLeft size={16} className="shrink-0 text-vattjom-surface-primary" />
-                    <span>Svarar på {senderLabel(repliedMessage, user?.name)}</span>
+                    <span>
+                      {t('cases:messages.replyingTo', { sender: senderLabel(repliedMessage, user?.name, t) })}
+                    </span>
                   </span>
                   <span className="text-small line-clamp-2 break-words text-secondary">
-                    {messagePreview(repliedMessage)}
+                    {messagePreview(repliedMessage, t)}
                   </span>
                 </span>
               </button>
@@ -134,7 +138,7 @@ export default function CaseMessage(props: {
                 )}
               >
                 <CornerUpLeft size={16} className="shrink-0 text-vattjom-surface-primary" />
-                Svar på ett tidigare meddelande
+                {t('cases:messages.replyToEarlier')}
               </div>
             )
           ) : null}

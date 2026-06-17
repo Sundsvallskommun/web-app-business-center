@@ -17,6 +17,7 @@ import dayjs from 'dayjs';
 import { Info, Reply, X } from 'lucide-react';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { CaseContext } from '../case-layout.component';
 import { messagePreview, senderLabel } from './utils';
 
@@ -26,9 +27,11 @@ interface NewMessage {
 }
 
 const MESSAGE_CHARACTER_LIMIT = 10000;
+const MAX_FILE_SIZE_MB = 25;
 
 export default function CaseNewMessage(props: { replyTo?: FrontendMessageResponse; onCancelReply?: () => void }) {
   const { replyTo, onCancelReply } = props;
+  const { t } = useTranslation('cases');
   const { isMinDesktop } = useThemeQueries();
   const context = useForm<NewMessage>({ defaultValues: { files: [], message: '' }, mode: 'onChange' });
   const { caseData, refetchMessages } = useContext(CaseContext);
@@ -45,9 +48,10 @@ export default function CaseNewMessage(props: { replyTo?: FrontendMessageRespons
   const files = context.watch('files');
   const messageValue = context.watch('message') ?? '';
   const messageRegister = context.register('message', {
-    required: 'Skriv ett meddelande',
+    required: t('cases:messages.validationRequired'),
     validate: (value) =>
-      value.length <= MESSAGE_CHARACTER_LIMIT || `Du får skriva max ${MESSAGE_CHARACTER_LIMIT} tecken.`,
+      value.length <= MESSAGE_CHARACTER_LIMIT ||
+      t('cases:messages.validationTooLong', { limit: MESSAGE_CHARACTER_LIMIT }),
   });
   const messageLength = messageValue.length;
   const isMessageOverLimit = messageLength > MESSAGE_CHARACTER_LIMIT;
@@ -78,8 +82,8 @@ export default function CaseNewMessage(props: { replyTo?: FrontendMessageRespons
         >
           <Info className="w-20 h-20 shrink-0" aria-hidden="true" />
           <p className="text-small">
-            15 dagar från att ditt ärende är avslutat kan du inte längre skicka meddelanden till din handläggare. Har du
-            frågor om ditt ärende kan du ringa kontaktcenter på <Link href="tel:+466012312">060-123 12</Link>
+            {t('cases:messages.disabledNotice')}
+            <Link href="tel:+466012312">060-123 12</Link>
           </p>
         </div>
       </div>
@@ -123,7 +127,7 @@ export default function CaseNewMessage(props: { replyTo?: FrontendMessageRespons
       console.error('Error sending message:', error);
       context.setError('root', {
         type: 'manual',
-        message: 'Något gick fel när meddelandet skickades, försök igen senare',
+        message: t('cases:messages.sendError'),
       });
     }
   };
@@ -145,9 +149,11 @@ export default function CaseNewMessage(props: { replyTo?: FrontendMessageRespons
                 <div className="flex items-start gap-8 rounded-12 border-l-4 border-vattjom-surface-primary bg-background-200 px-12 py-8">
                   <Reply size={16} className="shrink-0 mt-2 text-secondary" />
                   <div className="flex flex-col gap-y-2 min-w-0 grow">
-                    <span className="text-small font-bold">Svarar på {senderLabel(replyTo, user?.name)}</span>
+                    <span className="text-small font-bold">
+                      {t('cases:messages.replyingTo', { sender: senderLabel(replyTo, user?.name, t) })}
+                    </span>
                     <span className="text-small text-secondary line-clamp-2 break-words">
-                      {messagePreview(replyTo)}
+                      {messagePreview(replyTo, t)}
                     </span>
                   </div>
                   <Button
@@ -155,7 +161,7 @@ export default function CaseNewMessage(props: { replyTo?: FrontendMessageRespons
                     size="sm"
                     iconButton
                     className="shrink-0"
-                    aria-label="Avbryt svar"
+                    aria-label={t('cases:messages.cancelReply')}
                     onClick={onCancelReply}
                   >
                     <X size={18} />
@@ -163,18 +169,20 @@ export default function CaseNewMessage(props: { replyTo?: FrontendMessageRespons
                 </div>
               ) : null}
               <div className="flex flex-col">
-                <p className="font-bold mb-[1.2rem]">
-                  Skicka ett meddelande för att kontakta handläggaren för ditt ärende
-                </p>
+                <p className="font-bold mb-[1.2rem]">{t('cases:messages.composerIntro')}</p>
                 <FormControl className="w-full">
                   <Textarea
                     {...messageRegister}
-                    placeholder={replyTo ? 'Skriv ett svar' : 'Skriv ett meddelande'}
+                    placeholder={
+                      replyTo ? t('cases:messages.placeholderReply') : t('cases:messages.placeholderMessage')
+                    }
                     className="w-full min-h-72"
                     readOnly={postMessageMutation.isPending}
                   />
                   <div className="flex justify-between text-small mt-8">
-                    <span className="text-dark-secondary">Max {MESSAGE_CHARACTER_LIMIT} tecken.</span>
+                    <span className="text-dark-secondary">
+                      {t('cases:messages.charLimit', { limit: MESSAGE_CHARACTER_LIMIT })}
+                    </span>
                     <span className={isMessageOverLimit ? 'text-error' : 'text-dark-secondary'}>
                       {messageLength}/{MESSAGE_CHARACTER_LIMIT}
                     </span>
@@ -188,20 +196,22 @@ export default function CaseNewMessage(props: { replyTo?: FrontendMessageRespons
                 <FileUpload.Button
                   appendFiles={files}
                   className="mt-16"
-                  maxFileSizeMB={25}
+                  maxFileSizeMB={MAX_FILE_SIZE_MB}
                   {...context.register('files')}
                 />
                 <div className="flex items-row text-small gap-5 mt-10">
-                  <span className="text-dark-secondary">Maximal filstorlek: 25 MB.</span>{' '}
+                  <span className="text-dark-secondary">
+                    {t('cases:messages.maxFileSize', { size: MAX_FILE_SIZE_MB })}
+                  </span>{' '}
                   <Button variant="link" onClick={() => setShowModal(true)}>
-                    Visa tillåtna filtyper
+                    {t('cases:messages.showFileTypes')}
                   </Button>
                 </div>
               </div>
 
               {files.length ? (
                 <div className="flex flex-col py-16 gap-y-16">
-                  <h3 className="text-large font-normal font-[Arial]">Valda filer</h3>
+                  <h3 className="text-large font-normal font-[Arial]">{t('cases:messages.selectedFiles')}</h3>
                   <FileUpload.List name="files" showBorder>
                     {files?.map((file, i) => (
                       <FileUpload.ListItem
@@ -226,7 +236,7 @@ export default function CaseNewMessage(props: { replyTo?: FrontendMessageRespons
                 loading={postMessageMutation.isPending}
                 disabled={isMessageOverLimit}
               >
-                {replyTo ? 'Skicka svar' : 'Skicka meddelande'}
+                {replyTo ? t('cases:messages.sendReply') : t('cases:messages.send')}
               </Button>
               {context.formState.errors.root && (
                 <FormErrorMessage className="text-small text-error" role="alert">
@@ -241,7 +251,7 @@ export default function CaseNewMessage(props: { replyTo?: FrontendMessageRespons
         className="w-full max-w-[433px]"
         show={showModal}
         onClose={() => setShowModal(false)}
-        label="Tillåtna filtyper"
+        label={t('cases:messages.allowedFileTypes')}
       >
         <Modal.Content>
           <ul className="text-dark-secondary space-y-3">

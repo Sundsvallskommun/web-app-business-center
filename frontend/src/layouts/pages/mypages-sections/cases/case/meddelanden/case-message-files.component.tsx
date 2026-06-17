@@ -5,10 +5,12 @@ import { downloadBlob } from '@utils/download-blob';
 import { cx, Spinner } from '@sk-web-gui/react';
 import { Download, Paperclip } from 'lucide-react';
 import { useCallback, useContext, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CaseContext } from '../case-layout.component';
 
 export default function CaseMessageFiles(props: { message: FrontendMessageResponse; mine?: boolean }) {
   const { message, mine } = props;
+  const { t } = useTranslation('cases');
   const { caseData } = useContext(CaseContext);
   const [downloadingId, setDownloadingId] = useState<string | undefined>(undefined);
 
@@ -48,17 +50,17 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
           ? 'border-vattjom-background-300 bg-background-content text-body'
           : 'border-divider bg-background-200 text-body'
       )}
-      aria-label="Bilagor"
+      aria-label={t('cases:messages.attachments')}
     >
       <div className="flex items-center justify-between gap-12 text-small">
         <div className="flex items-center gap-8 font-bold">
           <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-vattjom-background-100 text-vattjom-surface-primary">
             <Paperclip size={15} />
           </span>
-          <span>Bilagor</span>
+          <span>{t('cases:messages.attachments')}</span>
         </div>
         <span className="shrink-0 text-secondary">
-          {count} {count === 1 ? 'fil' : 'filer'}
+          {t(count === 1 ? 'cases:messages.fileCountSingular' : 'cases:messages.fileCountPlural', { count })}
         </span>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

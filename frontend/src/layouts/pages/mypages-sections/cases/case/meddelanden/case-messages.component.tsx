@@ -2,6 +2,7 @@
 
 import { FrontendMessageResponse } from '@interfaces/case';
 import { Button, Divider, Spinner } from '@sk-web-gui/react';
+import dayjs from 'dayjs';
 import { ArrowDown, MessageSquare } from 'lucide-react';
 import { UIEvent, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +27,16 @@ export default function CaseMessages(props: {
   const [highlightId, setHighlightId] = useState<string>();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const messages = useMemo(() => caseMessages ?? [], [caseMessages]);
+  // Normalize to oldest-first regardless of the order the backend returns per case system,
+  // so the thread reads top→bottom = oldest→newest (header: "Äldst överst, senaste längst ned").
+  const messages = useMemo(() => {
+    const list = caseMessages ?? [];
+    const ms = (sent?: string) => {
+      const value = dayjs(sent).valueOf();
+      return Number.isNaN(value) ? 0 : value;
+    };
+    return [...list].sort((a, b) => ms(a.sent) - ms(b.sent));
+  }, [caseMessages]);
   const isLoading = caseMessages === undefined;
   // Reveal from the end so the newest messages are visible first; "Visa äldre" pages backwards.
   const visible = messages.slice(Math.max(messages.length - visibleCount, 0));

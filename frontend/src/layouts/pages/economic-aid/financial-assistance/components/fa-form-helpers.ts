@@ -4,6 +4,12 @@ export const numberFieldOptions = {
     value === '' || value === null ? null : Number(value),
 };
 
+/**
+ * Smalare bredd för ett input-/select-fält i kryssrutekorten. Sätts på själva fältet (inte på
+ * FormControl) så att etiketten ovanför går full bredd och bryter först vid kortets marginal.
+ */
+export const compactFieldClass = 'max-w-[12rem] w-full';
+
 /** Klassen för en valbar ruta (checkbox-kort) — markerad ruta får blå ram + ljus bakgrund. */
 export const selectableBoxClass = (checked: boolean): string =>
   [

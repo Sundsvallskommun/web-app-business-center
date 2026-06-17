@@ -8,13 +8,13 @@
     "SUPPLEMENTARY": "Tilläggsansökan"
   },
   "groups": {
-    "period-norm": "Period & norm",
+    "period-norm": "Period och norm",
     "household-housing": "Personuppgifter",
-    "economy": "Ansökan",
-    "income": "Inkomster & tillgångar",
+    "economy": "Kostnader",
+    "income": "Inkomster och tillgångar",
     "planning": "Planering",
-    "payment": "Utbetalning",
-    "review": "Granska & skicka"
+    "payment": "Utbetalning och försäkran",
+    "review": "Granska och skicka in"
   },
   "stepOf": "Steg {{current}} av {{total}}",
   "common": {
@@ -192,7 +192,7 @@
     "ANNAT": "Annat"
   },
   "economy": {
-    "heading": "Ansökan",
+    "heading": "Kostnader",
     "select": "Välj …",
     "remove": "Ta bort",
     "recipientLabel": "Avser",
@@ -316,7 +316,7 @@
     }
   },
   "payment": {
-    "heading": "Utbetalning",
+    "heading": "Utbetalning och försäkran",
     "payoutQuestion": "Hur vill du ha eventuellt bistånd utbetalt?",
     "payoutQuestion_ni": "Hur vill ni ha eventuellt bistånd utbetalt?",
     "payoutInfoCohabiting": "Biståndet delas lika till er båda.",
@@ -342,7 +342,7 @@
     "normTypeLabel_ni": "Vilken norm ansöker ni bistånd för?"
   },
   "review": {
-    "heading": "Granska och skicka",
+    "heading": "Granska och skicka in",
     "summaryHeading": "Kontrollera att uppgifterna stämmer innan du skickar in.",
     "attestationHeading": "Försäkran",
     "attestationInfo": [

@@ -3,7 +3,7 @@ import { Button, Checkbox, FormControl, FormLabel, Icon, Input, Select } from '@
 import { Plus, X } from 'lucide-react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { numberFieldOptions, selectableBoxClass } from './fa-form-helpers';
+import { compactFieldClass, numberFieldOptions, selectableBoxClass } from './fa-form-helpers';
 import { useApplicantNames } from './use-applicant-names';
 
 const INCOME_TYPES: IncomeType[] = [
@@ -96,13 +96,13 @@ export const FaIncomeSelector: React.FC<FaIncomeSelectorProps> = ({ showRecipien
                       </div>
 
                       {showRecipient ? (
-                        <FormControl className="w-full max-w-[28rem]">
+                        <FormControl className="w-full">
                           <FormLabel htmlFor={`${fieldId}-recipient`}>
                             {t('financial-assistance:economy.recipientLabel')}
                           </FormLabel>
                           <Select
                             id={`${fieldId}-recipient`}
-                            className="w-full"
+                            className={compactFieldClass}
                             value={watch(`incomes.${index}.recipient` as const) || ''}
                             onSelectValue={(next) =>
                               setValue(`incomes.${index}.recipient` as const, (next as Recipient | '') || '', {

@@ -8,7 +8,7 @@ import { Button, Card, FormControl, FormLabel, Icon, Input, Select } from '@sk-w
 import { X } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { numberFieldOptions } from './fa-form-helpers';
+import { compactFieldClass, numberFieldOptions } from './fa-form-helpers';
 
 const ASSET_CATEGORIES: AssetCategory[] = ['BANK_SAVINGS', 'REAL_ESTATE', 'COMPANY', 'VEHICLE', 'OTHER'];
 const PROPERTY_TYPES: PropertyType[] = ['BOSTADSRATT', 'VILLA', 'FASTIGHET', 'FRITIDSHUS'];
@@ -44,13 +44,13 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
         </Button>
       </header>
 
-      <FormControl className="w-full max-w-[28rem]">
+      <FormControl className="w-full">
         <FormLabel htmlFor={`fa-asset-${index}-category`}>
           {t('financial-assistance:economy.asset.categoryLabel')}
         </FormLabel>
         <Select
           id={`fa-asset-${index}-category`}
-          className="w-full"
+          className={compactFieldClass}
           value={category || ''}
           onSelectValue={(next) =>
             setValue(`assets.${index}.assetCategory` as const, (next as AssetCategory | '') || '', {

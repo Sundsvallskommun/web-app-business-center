@@ -14,11 +14,10 @@ import {
 } from '@services/economic-aid-service';
 import { useSnackbar } from '@sk-web-gui/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { MaritalStatus, isFinancialAssistanceSlug } from '@interfaces/financial-assistance';
-import { ApplicationProgressStepper } from './components/application-progress-stepper.component';
 import { FinancialAssistanceApplication } from './financial-assistance/financial-assistance-application.component';
 import { STEP_COMPONENTS } from './steps/step-registry';
 
@@ -34,6 +33,18 @@ export const EconomicAidApplication: React.FC = () => {
   const toastMessage = useSnackbar();
   const { t } = useTranslation('economic-aid');
   const [currentStep, setCurrentStep] = useState(FIRST_STEP);
+
+  // Scrolla upp till formulärets topp vid stegbyte (Påbörja ansökan/Nästa/Tillbaka), men inte vid
+  // första render.
+  const topRef = useRef<HTMLElement>(null);
+  const isInitialRender = useRef(true);
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+    topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [currentStep]);
 
   const form = useForm<EconomicAidApplicationV1>({
     defaultValues: emptyEconomicAidApplication(),
@@ -120,12 +131,10 @@ export const EconomicAidApplication: React.FC = () => {
   return (
     <FormProvider {...form}>
       <form className="flex flex-col gap-32" onSubmit={handleSubmit} data-cy="economic-aid-form">
-        <header className="text-content">
+        <header ref={topRef} className="text-content">
           <h1>{t('economic-aid:header.title')}</h1>
           <p>{t('economic-aid:header.subtitle')}</p>
         </header>
-
-        <ApplicationProgressStepper current={currentStep} />
 
         <CardElevated className="w-full max-w-[80rem] mx-auto p-24 desktop:p-32">
           <StepComponent

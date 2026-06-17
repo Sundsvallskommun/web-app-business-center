@@ -3,7 +3,7 @@ import { Button, Checkbox, FormControl, FormLabel, Icon, Input, Select } from '@
 import { Plus, X } from 'lucide-react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { numberFieldOptions } from './fa-form-helpers';
+import { compactFieldClass, numberFieldOptions } from './fa-form-helpers';
 
 interface CostGroup {
   category: string;
@@ -75,10 +75,11 @@ export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ showRecipientOrP
         {checked ? (
           <div className="flex flex-col gap-12 mt-12 ml-32">
             <p className="text-small text-dark-secondary">{t(`financial-assistance:costInfo.${type}`)}</p>
-            <FormControl className="w-full max-w-[28rem]">
+            <FormControl className="w-full">
               <FormLabel htmlFor={`${fieldId}-amount`}>{t(`financial-assistance:costAmount.${type}`)}</FormLabel>
               <Input
                 id={`${fieldId}-amount`}
+                className={compactFieldClass}
                 type="number"
                 min={0}
                 {...register(`costs.${index}.appliedAmount` as const, numberFieldOptions)}
@@ -132,13 +133,13 @@ export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ showRecipientOrP
                     </div>
                   ) : null}
 
-                  <FormControl className="w-full max-w-[28rem]">
+                  <FormControl className="w-full">
                     <FormLabel htmlFor={`${fieldId}-subtype`}>
                       {t('financial-assistance:economy.cost.subTypeLabel')}
                     </FormLabel>
                     <Select
                       id={`${fieldId}-subtype`}
-                      className="w-full"
+                      className={compactFieldClass}
                       value={watch(`costs.${index}.otherSubType` as const) || ''}
                       onSelectValue={(next) =>
                         setValue(`costs.${index}.otherSubType` as const, (next as CostOtherSubType | '') || '', {
@@ -164,10 +165,11 @@ export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ showRecipientOrP
                     <Input id={`${fieldId}-specification`} {...register(`costs.${index}.specification` as const)} />
                   </FormControl>
 
-                  <FormControl className="w-full max-w-[28rem]">
+                  <FormControl className="w-full">
                     <FormLabel htmlFor={`${fieldId}-amount`}>{t('financial-assistance:costAmount.OTHER')}</FormLabel>
                     <Input
                       id={`${fieldId}-amount`}
+                      className={compactFieldClass}
                       type="number"
                       min={0}
                       {...register(`costs.${index}.appliedAmount` as const, numberFieldOptions)}

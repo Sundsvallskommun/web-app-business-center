@@ -22,12 +22,11 @@ export default function CaseMessages() {
       </div>
       {caseMessages?.length ? (
         <>
-          <ul aria-label="Ärendemeddelanden" className="case-messages flex flex-col self-stretch gap-y-8">
+          <ul aria-label="Ärendemeddelanden" className="case-messages flex flex-col self-stretch gap-y-16">
             {caseMessages?.slice(0, visibleMessages).map((message, index) => {
               return (
-                <li key={index} className="flex flex-col gap-y-8">
-                  <CaseMessage message={message} />
-                  {index !== caseMessages.length - 1 ? <Divider className="m-0" /> : null}
+                <li key={index} className="flex flex-col">
+                  <CaseMessage message={message} isLatest={index === caseMessages.length - 1} />
                 </li>
               );
             })}

@@ -369,6 +369,8 @@ export type FaGroupKey = 'household-housing' | 'economy' | 'income' | 'planning'
 export interface PrefilledChild {
   partyId: string | null;
   name: string | null;
+  /** Personnummer (YYYYMMDD-XXXX) resolved from Citizen by partyId — used to prefill the field. */
+  personnummer: string | null;
 }
 
 export interface PrefillResult {

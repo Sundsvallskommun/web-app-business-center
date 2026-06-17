@@ -40,7 +40,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
   const { t } = useTranslation('financial-assistance');
   const { control, register, watch, setValue, getValues } = useFormContext<FinancialAssistanceFormData>();
 
-  const { fields, append, remove } = useFieldArray({ control, name: 'children' });
+  const { fields, append, remove, update } = useFieldArray({ control, name: 'children' });
 
   const maritalStatus = watch('maritalStatus');
   const civilstandChoice = watch('civilstandChoice');
@@ -74,6 +74,17 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
   });
   const prefilledChildren = prefillApi.data?.children ?? [];
 
+  // Dölj barn som redan lagts till ur förslagslistan. Matchas på partyId, med personnummer som
+  // reserv if Lifecare inte gav något partyId (båda räknas som unik nyckel för ett barn).
+  const addedChildKeys = new Set(
+    watch('children').flatMap((entry) => [entry.partyId, entry.personalNumber].filter(Boolean)),
+  );
+  const prefillChildKey = (child: PrefilledChild) => child.partyId || child.personnummer || '';
+  const availablePrefilledChildren = prefilledChildren.filter((child) => {
+    const key = prefillChildKey(child);
+    return !key || !addedChildKeys.has(key);
+  });
+
   useEffect(() => {
     if (hasChildren === true && fields.length === 0) {
       append(emptyChild(), { shouldFocus: false });
@@ -85,14 +96,35 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
   const setBool = (name: 'hasChildrenUnder21' | 'childrenResidenceChanged' | 'housingChanged', value: boolean) =>
     setValue(name, value, { shouldDirty: true });
 
-  // Lägg till ett föreslaget barn (från Lifecare, identifierat med partyId) om det inte redan finns.
+  // Lägg till ett föreslaget barn (från Lifecare, identifierat med partyId). Fyller första tomma
+  // barnkortet (t.ex. det som läggs till automatiskt) så att förslaget hamnar på position 1 i
+  // stället för efter ett tomt kort — annars läggs det till sist. Personnumret är uppslaget i
+  // backend och förifylls i fältet.
   const addPrefilledChild = (child: PrefilledChild) => {
     const partyId = child.partyId ?? '';
-    if (partyId && getValues('children').some((entry) => entry.partyId === partyId)) return;
+    const current = getValues('children');
+    const key = prefillChildKey(child);
+    if (key && current.some((entry) => entry.partyId === key || entry.personalNumber === key)) return;
+
     const parts = (child.name ?? '').trim().split(/\s+/).filter(Boolean);
     const lastName = parts.length > 1 ? parts[parts.length - 1] : '';
     const firstName = parts.length > 1 ? parts.slice(0, -1).join(' ') : (parts[0] ?? '');
-    append({ ...emptyChild(), partyId, firstName, lastName });
+    const newChild = {
+      ...emptyChild(),
+      partyId,
+      firstName,
+      lastName,
+      personalNumber: child.personnummer ?? '',
+    };
+
+    const emptyIndex = current.findIndex(
+      (entry) => !entry.partyId && !entry.firstName && !entry.lastName && !entry.personalNumber,
+    );
+    if (emptyIndex >= 0) {
+      update(emptyIndex, newChild);
+    } else {
+      append(newChild);
+    }
   };
 
   const yesNo = (
@@ -174,13 +206,13 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
 
           {hasChildren === true ? (
             <section className="flex flex-col gap-16" data-cy="fa-children">
-              {prefilledChildren.length > 0 ? (
+              {availablePrefilledChildren.length > 0 ? (
                 <div
                   className="rounded-12 border-2 border-divider bg-background-content p-16 flex flex-col gap-8"
                   data-cy="fa-prefill-children"
                 >
                   <span className="font-bold">{t('financial-assistance:householdHousing.prefillHeading')}</span>
-                  {prefilledChildren.map((child) => (
+                  {availablePrefilledChildren.map((child) => (
                     <div key={child.partyId ?? child.name ?? ''} className="flex items-center justify-between gap-8">
                       <span>{child.name}</span>
                       <Button

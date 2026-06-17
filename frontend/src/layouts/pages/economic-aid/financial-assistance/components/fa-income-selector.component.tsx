@@ -4,6 +4,7 @@ import { Plus, X } from 'lucide-react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { numberFieldOptions, selectableBoxClass } from './fa-form-helpers';
+import { useApplicantNames } from './use-applicant-names';
 
 const INCOME_TYPES: IncomeType[] = [
   'SALARY',
@@ -31,6 +32,7 @@ export const FaIncomeSelector: React.FC<FaIncomeSelectorProps> = ({ showRecipien
   const { control, register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
   const { fields, append, remove } = useFieldArray({ control, name: 'incomes' });
   const incomes = watch('incomes');
+  const { nameForRole } = useApplicantNames();
 
   const indicesOf = (type: IncomeType): number[] =>
     incomes.reduce<number[]>((acc, income, index) => (income.incomeType === type ? [...acc, index] : acc), []);
@@ -113,7 +115,7 @@ export const FaIncomeSelector: React.FC<FaIncomeSelectorProps> = ({ showRecipien
                             </Select.Option>
                             {RECIPIENTS.map((value) => (
                               <Select.Option key={value} value={value}>
-                                {t(`financial-assistance:recipient.${value}`)}
+                                {nameForRole(value) ?? t(`financial-assistance:recipient.${value}`)}
                               </Select.Option>
                             ))}
                           </Select>

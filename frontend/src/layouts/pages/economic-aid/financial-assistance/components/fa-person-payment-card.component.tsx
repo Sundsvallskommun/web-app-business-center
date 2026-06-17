@@ -2,6 +2,7 @@ import { ApplicationType, FinancialAssistanceFormData, PaymentMethod, PersonRole
 import { Card, FormControl, FormLabel, Input, RadioButton, Select } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useApplicantNames } from './use-applicant-names';
 
 const PAYMENT_METHODS: PaymentMethod[] = ['BANK_ACCOUNT', 'OTHER'];
 
@@ -15,6 +16,11 @@ interface FaPersonPaymentCardProps {
 export const FaPersonPaymentCard: React.FC<FaPersonPaymentCardProps> = ({ index, role, applicationType }) => {
   const { t } = useTranslation('financial-assistance');
   const { register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
+
+  // När man ansöker tillsammans (medsökande) visar vi personens namn istället för
+  // "Sökande"/"Medsökande" för att skilja korten åt.
+  const { nameForRole } = useApplicantNames();
+  const heading = nameForRole(role) ?? t(`financial-assistance:recipient.${role}`);
 
   const paymentMethod = watch(`persons.${index}.paymentMethod` as const);
   const needsInterpreter = watch(`persons.${index}.needsInterpreter` as const);
@@ -66,7 +72,7 @@ export const FaPersonPaymentCard: React.FC<FaPersonPaymentCardProps> = ({ index,
 
   return (
     <Card data-cy={`fa-person-${index}`} className="flex flex-col gap-16 p-24">
-      <h4 className="text-h5-md font-bold">{t(`financial-assistance:recipient.${role}`)}</h4>
+      <h4 className="text-h5-md font-bold">{heading}</h4>
 
       {/* Renewal/supplementary: "samma konto som föregående?" först. */}
       {!isNew

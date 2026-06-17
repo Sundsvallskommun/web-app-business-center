@@ -24,6 +24,7 @@ import { ContactSetting, ContactSettingChannel, NewContactSettings, UpdateContac
 import { ContactMethod } from '@/data-contracts/contactsettings/data-contracts';
 import ApiService from '@/services/api.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
+import { getCitizenPersonnumber } from '@/services/citizen.service';
 import { makeClientContactSetting } from '@/services/contact-setting.service';
 import { caremanagementUrl } from '@/utils/caremanagement-url';
 import { economicAidUploadOptions } from '@/utils/files/economicAidUploadOptions';
@@ -355,14 +356,35 @@ export class EconomicAidController {
 
     const prefill = response.data ?? {};
     const result: PrefillResult = {
-      children: (prefill.children ?? []).map(child => ({
-        partyId: child.partyId ?? null,
-        name: child.name ?? null,
-      })),
+      // Lifecare identifierar barnen med partyId; vi slår upp personnumret via Citizen så att
+      // formuläret kan förifylla fältet. Sker parallellt och påverkar inte partyId-mappningen.
+      children: await Promise.all(
+        (prefill.children ?? []).map(async child => ({
+          partyId: child.partyId ?? null,
+          name: child.name ?? null,
+          personnummer: child.partyId ? await this.resolveChildPersonnummer(child.partyId, req) : null,
+        })),
+      ),
       lifecareChecked: prefill.lifecareChecked ?? false,
     };
 
     return { data: result, message: 'success' };
+  }
+
+  /**
+   * Resolves a child's personnummer (YYYYMMDD-XXXX) from Citizen by partyId for the prefill form.
+   * Best-effort — a failed lookup yields null and never fails the whole prefill request.
+   */
+  private async resolveChildPersonnummer(partyId: string, req: RequestWithUser): Promise<string | null> {
+    try {
+      const response = await getCitizenPersonnumber(partyId, req);
+      const digits = onlyDigits(typeof response === 'string' ? response : String(response ?? ''));
+      if (!digits) return null;
+      return digits.length === 12 ? `${digits.slice(0, 8)}-${digits.slice(8)}` : digits;
+    } catch (err) {
+      logger.warn(`[economic-aid] failed to resolve personnummer for child partyId=${partyId}: ${(err as Error)?.message ?? err}`);
+      return null;
+    }
   }
 
   @Post('/economic-aid/applications/:slug')

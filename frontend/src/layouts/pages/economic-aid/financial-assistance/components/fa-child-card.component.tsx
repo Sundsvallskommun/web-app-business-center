@@ -24,6 +24,9 @@ export const FaChildCard: React.FC<FaChildCardProps> = ({ index, applicationType
 
   return (
     <Card data-cy={`fa-child-${index}`} className="flex flex-col gap-16 p-24">
+      {/* partyId har ingen synlig input — registreras dolt så React Hook Form behåller värdet
+          (krävs för dedup/filtrering av prefill-förslag och som auktoritativ id vid inskick). */}
+      <input type="hidden" {...register(`children.${index}.partyId` as const)} />
       <header className="flex items-center justify-between gap-8">
         <h4 className="text-h5-md font-bold">{t('financial-assistance:child.heading', { number: index + 1 })}</h4>
         <Button
@@ -70,7 +73,9 @@ export const FaChildCard: React.FC<FaChildCardProps> = ({ index, applicationType
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
+      {/* items-end botten-justerar fälten så de linjerar även när vänster etikett radbryts till
+          två rader och höger etikett bara tar en. */}
+      <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16 items-end">
         <FormControl className="w-full">
           <FormLabel htmlFor={`fa-child-${index}-residenceExtent`}>
             {t('financial-assistance:child.residenceExtent')}

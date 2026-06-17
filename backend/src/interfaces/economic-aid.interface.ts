@@ -223,6 +223,11 @@ export interface EligibilitySuggestion {
 export interface PrefilledChild {
   partyId: string | null;
   name: string | null;
+  /**
+   * Personnummer (YYYYMMDD-XXXX) resolved from Citizen by partyId so the form can prefill the
+   * field. Display-only — partyId stays authoritative on submit. Null when the lookup failed.
+   */
+  personnummer: string | null;
 }
 
 export interface PrefillResult {

@@ -36,7 +36,7 @@ export type MaritalStatus = 'SINGLE' | 'COHABITING';
 /** Det exakta civilstånd användaren valde (visas i UI; maritalStatus skickas till API:t). */
 export type CivilstandChoice = 'gift' | 'sambo' | 'ensamstaende';
 export type PeriodChoice = 'CURRENT_MONTH' | 'NEXT_MONTH' | 'OTHER_BENEFIT';
-export type NormType = 'RIKSNORM' | 'OTHER_NORM';
+export type NormType = 'NATIONAL_NORM' | 'OTHER_NORM';
 export type HousingForm =
   | 'NO_HOUSING_OR_INSTITUTION'
   | 'RENTAL'
@@ -69,8 +69,8 @@ export type IncomeType =
   | 'RENT_SHARE_FROM_CHILD';
 export type Recipient = 'APPLICANT' | 'CO_APPLICANT';
 export type AssetCategory = 'BANK_SAVINGS' | 'REAL_ESTATE' | 'COMPANY' | 'VEHICLE' | 'OTHER';
-export type PropertyType = 'BOSTADSRATT' | 'VILLA' | 'FASTIGHET' | 'FRITIDSHUS';
-export type VehicleType = 'BIL' | 'BAT' | 'MC' | 'HUSVAGN' | 'MOPED' | 'SNOSKOTER' | 'ANNAT';
+export type PropertyType = 'CONDOMINIUM' | 'HOUSE' | 'PROPERTY' | 'HOLIDAY_HOME';
+export type VehicleType = 'CAR' | 'BOAT' | 'MOTORCYCLE' | 'CARAVAN' | 'MOPED' | 'SNOWMOBILE' | 'OTHER';
 export type ResidenceExtent = 'FULL_TIME' | 'HALF_TIME' | 'OTHER';
 export type PersonRole = 'APPLICANT' | 'CO_APPLICANT';
 export type PaymentMethod = 'BANK_ACCOUNT' | 'OTHER';

@@ -8,7 +8,7 @@ import { FaCostSelector } from '../components/fa-cost-selector.component';
 import { FaStepProps } from './fa-step-registry';
 
 const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
-const NORM_TYPES: NormType[] = ['RIKSNORM', 'OTHER_NORM'];
+const NORM_TYPES: NormType[] = ['NATIONAL_NORM', 'OTHER_NORM'];
 
 /** Grupp "Ansökan" — ansökningsperiod, norm och kostnader (alla ansökningstyper). */
 export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, onNext }) => {

@@ -4,8 +4,8 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { numberFieldOptions } from './fa-form-helpers';
 
-const PROPERTY_TYPES: PropertyType[] = ['BOSTADSRATT', 'VILLA', 'FASTIGHET', 'FRITIDSHUS'];
-const VEHICLE_TYPES: VehicleType[] = ['BIL', 'BAT', 'MC', 'HUSVAGN', 'MOPED', 'SNOSKOTER', 'ANNAT'];
+const PROPERTY_TYPES: PropertyType[] = ['CONDOMINIUM', 'HOUSE', 'PROPERTY', 'HOLIDAY_HOME'];
+const VEHICLE_TYPES: VehicleType[] = ['CAR', 'BOAT', 'MOTORCYCLE', 'CARAVAN', 'MOPED', 'SNOWMOBILE', 'OTHER'];
 
 interface FaAssetFieldsProps {
   index: number;

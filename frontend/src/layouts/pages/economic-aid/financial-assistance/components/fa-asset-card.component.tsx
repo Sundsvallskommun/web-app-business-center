@@ -11,8 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { compactFieldClass, numberFieldOptions } from './fa-form-helpers';
 
 const ASSET_CATEGORIES: AssetCategory[] = ['BANK_SAVINGS', 'REAL_ESTATE', 'COMPANY', 'VEHICLE', 'OTHER'];
-const PROPERTY_TYPES: PropertyType[] = ['BOSTADSRATT', 'VILLA', 'FASTIGHET', 'FRITIDSHUS'];
-const VEHICLE_TYPES: VehicleType[] = ['BIL', 'BAT', 'MC', 'HUSVAGN', 'MOPED', 'SNOSKOTER', 'ANNAT'];
+const PROPERTY_TYPES: PropertyType[] = ['CONDOMINIUM', 'HOUSE', 'PROPERTY', 'HOLIDAY_HOME'];
+const VEHICLE_TYPES: VehicleType[] = ['CAR', 'BOAT', 'MOTORCYCLE', 'CARAVAN', 'MOPED', 'SNOWMOBILE', 'OTHER'];
 
 interface FaAssetCardProps {
   index: number;
@@ -99,7 +99,7 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
             <FormLabel htmlFor={`fa-asset-${index}-description`}>
               {t('financial-assistance:economy.asset.whatLabel')}
             </FormLabel>
-            <Input id={`fa-asset-${index}-description`} {...register(`assets.${index}.description` as const)} />
+            <Input className="w-full" id={`fa-asset-${index}-description`} {...register(`assets.${index}.description` as const)} />
           </FormControl>
           <FormControl className="w-full">
             <FormLabel htmlFor={`fa-asset-${index}-value`}>

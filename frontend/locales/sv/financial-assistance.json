@@ -36,11 +36,11 @@
     "OTHER_BENEFIT": "Annat bistånd"
   },
   "normType": {
-    "RIKSNORM": "Riksnorm",
+    "NATIONAL_NORM": "Riksnorm",
     "OTHER_NORM": "Annan norm"
   },
   "normInfo": {
-    "RIKSNORM": "Exempelvis mat, kläder/skor, fritid/lek och hygienartiklar.",
+    "NATIONAL_NORM": "Exempelvis mat, kläder/skor, fritid/lek och hygienartiklar.",
     "OTHER_NORM": "Exempelvis kläder/skor, fritid/lek och hygienartiklar om du bor på exempelvis behandlingshem, Klippangården, Rättspsykiatriska regionkliniken eller HVB."
   },
   "residenceExtent": {
@@ -177,19 +177,19 @@
     "OTHER": "Konst, smycken eller andra övriga tillgångar"
   },
   "propertyType": {
-    "BOSTADSRATT": "Bostadsrätt",
-    "VILLA": "Villa",
-    "FASTIGHET": "Fastighet",
-    "FRITIDSHUS": "Fritidshus"
+    "CONDOMINIUM": "Bostadsrätt",
+    "HOUSE": "Villa",
+    "PROPERTY": "Fastighet",
+    "HOLIDAY_HOME": "Fritidshus"
   },
   "vehicleType": {
-    "BIL": "Bil",
-    "BAT": "Båt",
-    "MC": "MC",
-    "HUSVAGN": "Husvagn",
+    "CAR": "Bil",
+    "BOAT": "Båt",
+    "MOTORCYCLE": "MC",
+    "CARAVAN": "Husvagn",
     "MOPED": "Moped",
-    "SNOSKOTER": "Snöskoter",
-    "ANNAT": "Annat"
+    "SNOWMOBILE": "Snöskoter",
+    "OTHER": "Annat"
   },
   "economy": {
     "heading": "Kostnader",

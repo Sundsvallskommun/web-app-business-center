@@ -139,7 +139,6 @@ export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ showRecipientOrP
                     </FormLabel>
                     <Select
                       id={`${fieldId}-subtype`}
-                      className={compactFieldClass}
                       value={watch(`costs.${index}.otherSubType` as const) || ''}
                       onSelectValue={(next) =>
                         setValue(`costs.${index}.otherSubType` as const, (next as CostOtherSubType | '') || '', {

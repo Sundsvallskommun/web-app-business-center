@@ -475,13 +475,18 @@ export class EconomicAidController {
         if (!section.role) continue;
         const identity = identityByRole.get(section.role);
         if (!identity) continue;
-        section.heading = section.heading ? `${section.heading} – ${identity.name}` : identity.name;
         if (section.identity) {
+          // Group 1 contact section: namn + personnummer + folkbokföringsadress as the first rows
+          // (same order as the form's personuppgifter step).
           const identityRows = [
+            ...(identity.name ? [{ label: 'Namn', value: identity.name }] : []),
             ...(identity.personnummer ? [{ label: 'Personnummer', value: identity.personnummer }] : []),
             ...(identity.folkbokforing ? [{ label: 'Folkbokföringsadress', value: identity.folkbokforing }] : []),
           ];
           section.rows = [...identityRows, ...section.rows];
+        } else {
+          // Other person sections (e.g. payment): name in the heading to identify the person.
+          section.heading = section.heading ? `${section.heading} – ${identity.name}` : identity.name;
         }
       }
     }

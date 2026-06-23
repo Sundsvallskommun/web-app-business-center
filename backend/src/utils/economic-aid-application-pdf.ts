@@ -49,7 +49,7 @@ const renderHeader = (title: string, subtitle?: string): string => {
 };
 
 const renderSection = (section: ApplicationPdfSection): string => {
-  const rows = section.rows
+  const rows = (section.rows ?? [])
     .map(
       row => `
         <div class="row">

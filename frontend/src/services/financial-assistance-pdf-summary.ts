@@ -1,4 +1,4 @@
-import { ApplicationType, FinancialAssistanceFormData, PersonForm } from '@interfaces/financial-assistance';
+import { ApplicationType, AssetForm, FinancialAssistanceFormData, PersonForm, PlanningForm } from '@interfaces/financial-assistance';
 import { swedishMonthName } from '@utils/swedish-month';
 
 /**
@@ -43,6 +43,20 @@ export interface ApplicationPdfDocument {
   groups: ApplicationPdfGroup[];
 }
 
+/** Citizen-derived identity for a person, shown at the top of their section. */
+export interface PersonIdentity {
+  /** Förnamn efternamn. */
+  name: string;
+  personnummer: string;
+  /** Formatted folkbokföringsadress, e.g. "Storgatan 1, 852 30 Sundsvall". */
+  folkbokforing: string;
+}
+/**
+ * Person identities by role. Supplied for the on-screen preview (fetched from the citizen profiles);
+ * omitted for the submit payload, where the backend adds the authoritative identity from Citizen.
+ */
+export type ApplicantIdentities = Partial<Record<'APPLICANT' | 'CO_APPLICANT', PersonIdentity>>;
+
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 type RawRow = [label: string, value: string | null | undefined, info?: string | null];
 
@@ -69,6 +83,7 @@ export const buildApplicationPdfSummary = (
   form: FinancialAssistanceFormData,
   applicationType: ApplicationType,
   t: Translate,
+  identities?: ApplicantIdentities,
 ): ApplicationPdfDocument => {
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
   const isNew = applicationType === 'NEW';
@@ -120,18 +135,28 @@ export const buildApplicationPdfSummary = (
       contact.byEmail && t(fa('personuppgifter.notifyEmail')),
       contact.bySms && t(fa('personuppgifter.notifySms')),
     ]);
+    // Identity (Namn + personnummer + folkbokföringsadress) shown first. Supplied for the preview;
+    // for the submit payload the backend adds it (the `identity` flag marks this section).
+    const identity = identities?.[person.role];
     return {
       heading: t(fa(`recipient.${person.role}`)),
       role: person.role,
       identity: true,
       rows: toRows([
-        [t(fa('personuppgifter.phoneLabel')), contact.phone],
-        [t(fa('personuppgifter.emailLabel')), contact.email],
+        ...(identity
+          ? ([
+              [t(fa('personuppgifter.nameLabel')), identity.name],
+              [t(fa('personuppgifter.personnummerLabel')), identity.personnummer],
+              [t(fa('personuppgifter.addressLabel')), identity.folkbokforing],
+            ] as RawRow[])
+          : []),
         [
           t(fa(isCo ? 'personuppgifter.notifyLabelCoApplicant' : 'personuppgifter.notifyLabel')),
           notify,
           t(fa('personuppgifter.notifyInfo')),
         ],
+        [t(fa('personuppgifter.emailLabel')), contact.email],
+        [t(fa('personuppgifter.phoneLabel')), contact.phone],
       ]),
     };
   };
@@ -155,13 +180,8 @@ export const buildApplicationPdfSummary = (
         ]),
       );
 
-  const personalGroup = group('1. ' + t(fa('personuppgifter.heading')), [
-    ...form.persons.map(contactSection),
-    householdSection,
-    ...childrenSections,
-  ]);
-
-  // ── 2. Boendesituation ──────────────────────────────────────────────────────────────────────
+  // Boende ligger i personuppgiftssteget i formuläret — samla det under Personuppgifter (inte en
+  // egen Boendesituation-grupp).
   const housingFormLabel = isRenewal ? q('householdHousing.housingFormLabelChanged') : q('householdHousing.housingFormLabel');
   const housingSection = isSupplementary
     ? null
@@ -175,9 +195,16 @@ export const buildApplicationPdfSummary = (
         [t(fa('householdHousing.roomsLabel')), form.housingRoomsPlusKitchen != null ? String(form.housingRoomsPlusKitchen) : ''],
         [t(fa('householdHousing.housingDescriptionLabel')), form.housingDescription],
       ]);
-  const housingGroup = group('2. Boendesituation', [housingSection]);
 
-  // ── 3. Utgifter (ansökningsperiod + norm + kostnader) ──────────────────────────────────────────
+  // ── 1. Personuppgifter (personer, civilstånd, barn, boende) ──────────────────────────────────
+  const personalGroup = group('1. ' + t(fa('groups.household-housing')), [
+    ...form.persons.map(contactSection),
+    householdSection,
+    ...childrenSections,
+    housingSection,
+  ]);
+
+  // ── 2. Kostnader (ansökningsperiod + norm + kostnader) ─────────────────────────────────────────
   const period =
     form.periodMonth && form.periodYear
       ? t(fa('periodNorm.periodValue'), { month: swedishMonthName(form.periodMonth), year: form.periodYear })
@@ -204,107 +231,152 @@ export const buildApplicationPdfSummary = (
         return [label, joinParts([kr(cost.appliedAmount), cost.specification, cost.recipientOrPeriod]), t(fa(`costInfo.${cost.costType}`))];
       }),
   );
-  const expensesGroup = group('3. Utgifter', [periodNormSection, costsSection]);
+  const expensesGroup = group('2. ' + t(fa('groups.economy')), [periodNormSection, costsSection]);
 
-  // ── 4. Inkomster och tillgångar ─────────────────────────────────────────────────────────────
-  const incomesSection = isSupplementary
-    ? null
-    : section(t(fa('economy.incomesHeading')), [
-        [q('economy.hasIncomesLabel'), yesNo(form.hasIncomes), q('income.incomesInfo')],
-        ...form.incomes
-          .filter((income) => income.incomeType)
-          .map(
-            (income): RawRow => [
-              t(fa(`incomeType.${income.incomeType}`)),
-              joinParts([kr(income.amount), income.incomeDate, income.recipient && t(fa(`recipient.${income.recipient}`))]),
-            ],
-          ),
-      ]);
-  const pendingBenefitsSection = isSupplementary
-    ? null
-    : section(t(fa('economy.pendingBenefitsHeading')), [
-        [q('economy.hasPendingBenefitsLabel'), yesNo(form.hasPendingBenefits), q('income.pendingBenefitsInfo')],
-        ...form.pendingBenefits.map((benefit): RawRow => [benefit.benefitName, benefit.applicantName]),
-      ]);
-  const assetsSection = isSupplementary
-    ? null
-    : section(t(fa('economy.assetsHeading')), [
-        [q('economy.hasAssetsLabel'), yesNo(form.hasAssets), q('income.assetsInfo')],
-        ...form.assets
-          .filter((asset) => asset.assetCategory)
-          .map(
-            (asset): RawRow => [
-              t(fa(`assetCategory.${asset.assetCategory}`)),
-              joinParts([
-                asset.description,
-                kr(asset.value),
-                asset.propertyType && t(fa(`propertyType.${asset.propertyType}`)),
-                asset.purchaseYear != null ? String(asset.purchaseYear) : '',
-                asset.purchasePrice != null ? kr(asset.purchasePrice) : '',
-                asset.companyName,
-                asset.companyAssetSum != null ? kr(asset.companyAssetSum) : '',
-                asset.vehicleType && t(fa(`vehicleType.${asset.vehicleType}`)),
-                asset.registrationNumber,
-                asset.purchaseDate,
+  // ── 3. Inkomster och tillgångar ──────────────────────────────────────────────────────────────
+  // Varje inkomst/ersättning/tillgång blir en egen sektion med formulärets fältetiketter
+  // (Belopp, Datum, Typ av fordon, Registreringsnummer …) i stället för ett ihopslaget värde.
+  const assetRows = (asset: AssetForm): RawRow[] => {
+    const value = asset.value != null ? String(asset.value) : '';
+    const purchasePrice = asset.purchasePrice != null ? String(asset.purchasePrice) : '';
+    switch (asset.assetCategory) {
+      case 'BANK_SAVINGS':
+        return [
+          [t(fa('economy.asset.descriptionLabel')), asset.description],
+          [t(fa('economy.asset.valueLabel')), value],
+        ];
+      case 'OTHER':
+        return [
+          [t(fa('economy.asset.whatLabel')), asset.description],
+          [t(fa('economy.asset.valueLabel')), value],
+        ];
+      case 'REAL_ESTATE':
+        return [
+          [t(fa('economy.asset.propertyTypeLabel')), asset.propertyType ? t(fa(`propertyType.${asset.propertyType}`)) : ''],
+          [t(fa('economy.asset.purchaseYearLabel')), asset.purchaseYear != null ? String(asset.purchaseYear) : ''],
+          [t(fa('economy.asset.purchasePriceLabel')), purchasePrice],
+        ];
+      case 'COMPANY':
+        return [
+          [t(fa('economy.asset.companyNameLabel')), asset.companyName],
+          [t(fa('economy.asset.companyAssetSumLabel')), asset.companyAssetSum != null ? String(asset.companyAssetSum) : ''],
+        ];
+      case 'VEHICLE':
+        return [
+          [t(fa('economy.asset.vehicleTypeLabel')), asset.vehicleType ? t(fa(`vehicleType.${asset.vehicleType}`)) : ''],
+          [t(fa('economy.asset.registrationNumberLabel')), asset.registrationNumber],
+          [t(fa('economy.asset.purchaseDateLabel')), asset.purchaseDate],
+          [t(fa('economy.asset.purchasePriceLabel')), purchasePrice],
+          [t(fa('economy.asset.valueLabel')), value],
+        ];
+      default:
+        return [];
+    }
+  };
+  const incomeSections: (ApplicationPdfSection | null)[] = isSupplementary
+    ? []
+    : [
+        section(t(fa('economy.incomesHeading')), [[q('economy.hasIncomesLabel'), yesNo(form.hasIncomes), q('income.incomesInfo')]]),
+        ...(form.hasIncomes === true
+          ? form.incomes
+              .filter((income) => income.incomeType)
+              .map((income) =>
+                section(t(fa(`incomeType.${income.incomeType}`)), [
+                  [t(fa('economy.income.amountLabel')), income.amount != null ? String(income.amount) : ''],
+                  [t(fa('economy.income.dateLabel')), income.incomeDate],
+                  ...(isCohabiting
+                    ? ([[t(fa('economy.recipientLabel')), income.recipient ? t(fa(`recipient.${income.recipient}`)) : '']] as RawRow[])
+                    : []),
+                ]),
+              )
+          : []),
+        section(t(fa('economy.pendingBenefitsHeading')), [
+          [q('economy.hasPendingBenefitsLabel'), yesNo(form.hasPendingBenefits), q('income.pendingBenefitsInfo')],
+        ]),
+        ...(form.hasPendingBenefits === true
+          ? form.pendingBenefits.map((benefit, index) =>
+              section(t(fa('economy.pendingBenefit.heading'), { number: index + 1 }), [
+                [t(fa('economy.pendingBenefit.benefitNameLabel')), benefit.benefitName],
+                [t(fa('economy.pendingBenefit.applicantNameLabel')), benefit.applicantName],
               ]),
-            ],
-          ),
-      ]);
-  const incomeGroup = group('4. ' + t(fa('groups.income')), [incomesSection, pendingBenefitsSection, assetsSection]);
+            )
+          : []),
+        section(t(fa('economy.assetsHeading')), [[q('economy.hasAssetsLabel'), yesNo(form.hasAssets), q('income.assetsInfo')]]),
+        ...(form.hasAssets === true
+          ? form.assets
+              .filter((asset) => asset.assetCategory)
+              .map((asset) => section(t(fa(`assetCategory.${asset.assetCategory}`)), assetRows(asset)))
+          : []),
+      ];
+  const incomeGroup = group('3. ' + t(fa('groups.income')), incomeSections);
 
-  // ── 5. Planering ────────────────────────────────────────────────────────────────────────────
+  // ── 4. Planering — generell info + fråga, och egna fält per planering ────────────────────────
   const planningInfoKey: Record<string, string> = { JOBSEEKING: 'jobseeking', SICK_LEAVE: 'sickLeave', SFI: 'sfi' };
-  const planningSection = isSupplementary
-    ? null
-    : section(undefined, [
+  const recipientRow = (person: string): RawRow[] =>
+    isCohabiting && person ? ([[t(fa('economy.recipientLabel')), t(fa(`recipient.${person}`))]] as RawRow[]) : [];
+  const planningTypeRows = (planning: PlanningForm): RawRow[] => {
+    switch (planning.planningType) {
+      case 'WORK':
+        return [
+          [t(fa('planning.workExtentLabel')), planning.workExtent ? t(fa(`workExtent.${planning.workExtent}`)) : ''],
+          [t(fa('planning.workDescriptionLabel')), planning.workDescription],
+        ];
+      case 'SICK_LEAVE':
+        return [[t(fa('planning.sickLeaveLevelLabel')), planning.sickLeaveLevel ? `${planning.sickLeaveLevel}%` : '']];
+      case 'SFI':
+        return [
+          [t(fa('planning.sfiStudyPathLabel')), planning.sfiStudyPath],
+          [t(fa('planning.sfiCourseLabel')), planning.sfiCourse],
+        ];
+      case 'OTHER':
+        return [[t(fa('planning.otherDescriptionLabel')), planning.otherDescription]];
+      default:
+        return [];
+    }
+  };
+  const planningSections: (ApplicationPdfSection | null)[] = isSupplementary
+    ? []
+    : [
+        section(t(fa('planning.planningsHeading')), [], { info: t(fa('planning.planningIntro')) }),
         ...form.plannings
           .filter((planning) => planning.planningType)
-          .map(
-            (planning): RawRow => [
-              t(fa(`planningType.${planning.planningType}`)),
-              joinParts([
-                planning.person && t(fa(`recipient.${planning.person}`)),
-                planning.workExtent && t(fa(`workExtent.${planning.workExtent}`)),
-                planning.workDescription,
-                planning.sickLeaveLevel && `${planning.sickLeaveLevel}%`,
-                planning.sfiStudyPath,
-                planning.sfiCourse,
-                planning.otherDescription,
-              ]),
-              planningInfoKey[planning.planningType] ? t(fa(`planning.info.${planningInfoKey[planning.planningType]}`)) : undefined,
-            ],
+          .map((planning) =>
+            section(t(fa(`planningType.${planning.planningType}`)), [...recipientRow(planning.person), ...planningTypeRows(planning)], {
+              info: planningInfoKey[planning.planningType] ? t(fa(`planning.info.${planningInfoKey[planning.planningType]}`)) : undefined,
+            }),
           ),
         ...(isNew
-          ? form.plannedActivities.map(
-              (activity): RawRow => [
-                t(fa('planning.activity.activityLabel')),
-                joinParts([activity.person && t(fa(`recipient.${activity.person}`)), activity.activity, activity.periodFrom, activity.periodTo]),
-              ],
+          ? form.plannedActivities.map((activity, index) =>
+              section(t(fa('planning.activity.heading'), { number: index + 1 }), [
+                ...recipientRow(activity.person),
+                [t(fa('planning.activity.activityLabel')), activity.activity],
+                [t(fa('planning.activity.fromLabel')), activity.periodFrom],
+                [t(fa('planning.activity.toLabel')), activity.periodTo],
+              ]),
             )
           : []),
         ...(isNew
-          ? form.jobApplications.map(
-              (application): RawRow => [
-                t(fa('planning.jobApplication.jobTitleLabel')),
-                joinParts([
-                  application.person && t(fa(`recipient.${application.person}`)),
-                  application.jobTitle,
-                  application.employerAndPlace,
-                  application.applicationDate,
-                ]),
-              ],
+          ? form.jobApplications.map((application, index) =>
+              section(t(fa('planning.jobApplication.heading'), { number: index + 1 }), [
+                ...recipientRow(application.person),
+                [t(fa('planning.jobApplication.jobTitleLabel')), application.jobTitle],
+                [t(fa('planning.jobApplication.employerLabel')), application.employerAndPlace],
+                [t(fa('planning.jobApplication.dateLabel')), application.applicationDate],
+              ]),
             )
           : []),
-      ]);
-  const planningGroup = group('5. ' + t(fa('planning.heading')), [planningSection]);
+      ];
+  const planningGroup = group('4. ' + t(fa('groups.planning')), planningSections);
 
-  // ── 6. Utbetalning och försäkran ────────────────────────────────────────────────────────────
+  // ── 5. Utbetalning och försäkran ────────────────────────────────────────────────────────────
   // Per-person payment section (no identity rows — those live in group 1).
   const paymentSection = (person: PersonForm): ApplicationPdfSection | null => {
     const methodAnswer = person.paymentMethod ? t(fa(`paymentMethod.${person.paymentMethod}`)) : '';
     const showPayoutMethod = isNew || person.paymentSameAsPrevious === false;
+    const roleLabel = t(fa(`recipient.${person.role}`));
+    const identity = identities?.[person.role];
     return section(
-      t(fa(`recipient.${person.role}`)),
+      identity ? `${roleLabel} – ${identity.name}` : roleLabel,
       [
         ...(!isNew ? ([[t(fa('payment.sameAsPreviousLabel')), yesNo(person.paymentSameAsPrevious)]] as RawRow[]) : []),
         ...(showPayoutMethod ? ([[q('payment.payoutQuestion'), methodAnswer]] as RawRow[]) : []),
@@ -332,13 +404,13 @@ export const buildApplicationPdfSummary = (
     [[t(fa('review.attestation')), form.attestation ? '✓' : '']],
     { info: infoArray('review.attestationInfo') },
   );
-  const paymentGroup = group('6. ' + t(fa('payment.heading')), [
+  const paymentGroup = group('5. ' + t(fa('groups.payment')), [
     ...form.persons.map(paymentSection),
     staysSection,
     attestationSection,
   ]);
 
-  const groups = [personalGroup, housingGroup, expensesGroup, incomeGroup, planningGroup, paymentGroup].filter(
+  const groups = [personalGroup, expensesGroup, incomeGroup, planningGroup, paymentGroup].filter(
     (g): g is ApplicationPdfGroup => g !== null,
   );
 

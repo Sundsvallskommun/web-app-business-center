@@ -60,6 +60,11 @@ export const FaContactSection: React.FC<FaContactSectionProps> = ({
       <h3 className="text-h4-md font-bold">{heading}</h3>
 
       <div className="flex flex-col">
+        <span className="text-small text-dark-secondary">{t('financial-assistance:personuppgifter.nameLabel')}</span>
+        <span className="font-bold">{[profile?.fornamn, profile?.efternamn].filter(Boolean).join(' ') || '—'}</span>
+      </div>
+
+      <div className="flex flex-col">
         <span className="text-small text-dark-secondary">{t('financial-assistance:personuppgifter.personnummerLabel')}</span>
         <span className="font-bold">{profile?.personnummer || '—'}</span>
       </div>

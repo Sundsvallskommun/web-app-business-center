@@ -58,6 +58,10 @@ export interface Violation {
 
 /** Request to create or replace an EB monitoring on an errand. */
 export interface MonitoringRequest {
+  /** Provenance, defaults to CASEWORKER when omitted. RPA POSTs LIFECARE (with lifecareId) to surface a monitoring read out of Lifecare onto the errand. */
+  source?: MonitoringRequestSourceEnum;
+  /** The monitoring's id in Lifecare. Set by RPA when surfacing a LIFECARE-sourced monitoring (the idempotency key) or when stamping back the id of a mirrored caseworker monitoring. */
+  lifecareId?: string;
   /**
    * Short headline for the monitoring
    * @minLength 1
@@ -83,6 +87,10 @@ export interface MonitoringRequest {
 export interface Monitoring {
   /** The monitoring id */
   id?: string;
+  /** Provenance: CASEWORKER for one authored in Draken (RPA mirrors it onto the person in Lifecare), LIFECARE for one read out of Lifecare by RPA and surfaced here on the errand. */
+  source?: MonitoringSourceEnum;
+  /** The monitoring's id in Lifecare once it exists there — null until RPA has mirrored a caseworker-authored monitoring; always set for a LIFECARE-sourced one. */
+  lifecareId?: string;
   /** Short headline for the monitoring */
   title?: string;
   /** Free-text details of what to watch for */
@@ -511,6 +519,17 @@ export interface Stakeholder {
   contactChannels?: ContactChannel[];
 }
 
+/** Request to enqueue a UiPath RPA task on an errand. */
+export interface RpaTaskRequest {
+  /**
+   * The RPA action — selects the Lifecare flow the robot runs
+   * @minLength 1
+   */
+  action: RpaTaskRequestActionEnum;
+  /** Optional extra hints for the robot, merged into the queue item SpecificContent */
+  parameters?: Record<string, string>;
+}
+
 /** A referral/consultation on an errand, with the receiving authority, due date and status. */
 export interface Referral {
   /** Unique id */
@@ -691,6 +710,15 @@ export interface CreateMessage {
   inReplyToId?: string;
 }
 
+/** The messages the caller has read, to be marked as read for the calling side */
+export interface MarkMessagesRead {
+  /**
+   * Ids of the read messages. Must reference messages on the same errand.
+   * @minItems 1
+   */
+  messageIds: string[];
+}
+
 export interface CreateJournalEntry {
   /**
    * Journal entry type (Lifecare 'Typ'/Journaltyp)
@@ -807,6 +835,127 @@ export interface JournalEntry {
   lockedBy?: string;
   /**
    * Timestamp when the entry was locked (became an upprättad handling); null while WORKING
+   * @format date-time
+   */
+  locked?: string;
+}
+
+export interface CreateDocument {
+  /**
+   * Document type (Lifecare 'Typ'/Dokumenttyp)
+   * @minLength 0
+   * @maxLength 255
+   * @example "Brev"
+   */
+  type: string;
+  /**
+   * Heading (Lifecare 'Rubrik')
+   * @minLength 0
+   * @maxLength 255
+   * @example "Beslut om ekonomiskt bistånd 2025-05"
+   */
+  heading: string;
+  /**
+   * Free-text body of the document; optional
+   * @minLength 0
+   * @maxLength 1048576
+   * @example "Beslut har fattats enligt nedan ..."
+   */
+  text?: string;
+  /**
+   * Documented date (Lifecare 'Datum')
+   * @format date
+   * @example "2025-05-30"
+   */
+  documentDate: string;
+  /**
+   * Documented time (Lifecare 'Tid'); optional
+   * @example "14:30"
+   */
+  documentTime?: string;
+  /**
+   * User id of the author (Lifecare 'Upprättad av'); optional
+   * @minLength 0
+   * @maxLength 64
+   * @example "carola01winberg"
+   */
+  createdBy?: string;
+}
+
+export interface LockDocument {
+  /**
+   * User id of whoever locks the document; optional
+   * @minLength 0
+   * @maxLength 64
+   * @example "carola01winberg"
+   */
+  lockedBy?: string;
+}
+
+/** A Dokument (formal case document) attached to an errand */
+export interface Document {
+  /** Unique identifier */
+  id?: string;
+  /** Errand id this document belongs to */
+  errandId?: string;
+  /**
+   * Document type (Lifecare 'Typ'/Dokumenttyp). A municipality-configured value; see the metadata catalogue for a provisional set.
+   * @example "Brev"
+   */
+  type?: string;
+  /**
+   * Heading (Lifecare 'Rubrik')
+   * @example "Beslut om ekonomiskt bistånd 2025-05"
+   */
+  heading?: string;
+  /**
+   * Free-text body of the document
+   * @example "Beslut har fattats enligt nedan ..."
+   */
+  text?: string;
+  /**
+   * Documented date (Lifecare 'Datum'), distinct from the system created timestamp
+   * @format date
+   * @example "2025-05-30"
+   */
+  documentDate?: string;
+  /**
+   * Documented time (Lifecare 'Tid'); optional
+   * @example "14:30"
+   */
+  documentTime?: string;
+  /**
+   * Skrivskydd status — WORKING is an editable draft, LOCKED is an upprättad handling
+   * @example "WORKING"
+   */
+  status?: DocumentStatusEnum;
+  /**
+   * User id of the author (Lifecare 'Upprättad av'/'Ägare')
+   * @example "carola01winberg"
+   */
+  createdBy?: string;
+  /**
+   * Created timestamp
+   * @format date-time
+   */
+  created?: string;
+  /**
+   * User id of the last editor (Lifecare 'Ändrat av'); null until the document has been edited
+   * @example "ebb14eri"
+   */
+  modifiedBy?: string;
+  /**
+   * Last modified timestamp; null until the document has been edited
+   * @format date-time
+   */
+  modified?: string;
+  /**
+   * User id of whoever locked the document; null while WORKING
+   * @example "carola01winberg"
+   */
+  lockedBy?: string;
+  /**
+   * Timestamp when the document was locked (became an upprättad handling); null while WORKING
    * @format date-time
    */
   locked?: string;
@@ -1072,6 +1221,8 @@ export interface NormExpenseInput {
   otherSubType?: string;
   /** The cost specification */
   specification?: string;
+  /** The amount applied for (ansökt). Honoured only when creating a new row; ignored on a patch. */
+  appliedAmount?: number;
   /** The amount the caseworker decided */
   caseworkerAmount?: number;
   /** Free-text note */
@@ -1372,6 +1523,48 @@ export interface UpdateJournalEntry {
   modifiedBy?: string;
 }
 
+export interface UpdateDocument {
+  /**
+   * Document type (Lifecare 'Typ'/Dokumenttyp)
+   * @minLength 0
+   * @maxLength 255
+   * @example "Brev"
+   */
+  type: string;
+  /**
+   * Heading (Lifecare 'Rubrik')
+   * @minLength 0
+   * @maxLength 255
+   * @example "Beslut om ekonomiskt bistånd 2025-05"
+   */
+  heading: string;
+  /**
+   * Free-text body of the document; optional
+   * @minLength 0
+   * @maxLength 1048576
+   * @example "Beslut har fattats enligt nedan ..."
+   */
+  text?: string;
+  /**
+   * Documented date (Lifecare 'Datum')
+   * @format date
+   * @example "2025-05-30"
+   */
+  documentDate: string;
+  /**
+   * Documented time (Lifecare 'Tid'); optional
+   * @example "14:30"
+   */
+  documentTime?: string;
+  /**
+   * User id of the editor (Lifecare 'Ändrat av'); optional
+   * @minLength 0
+   * @maxLength 64
+   * @example "ebb14eri"
+   */
+  modifiedBy?: string;
+}
+
 /** Set the approval state of an EB view section. */
 export interface SectionApprovalRequest {
   /** Whether the section is approved (true) or its approval withdrawn (false) */
@@ -1623,6 +1816,35 @@ export interface MessageAttachment {
   created?: string;
 }
 
+/** The number of unread messages in the errand's conversation for the calling side */
+export interface UnreadCount {
+  /**
+   * Number of messages addressed to the caller that the caller has not yet marked as read
+   * @format int64
+   */
+  unreadCount?: number;
+}
+
+export interface ErrandEvent {
+  id?: string;
+  errandId?: string;
+  municipalityId?: string;
+  namespace?: string;
+  source?: string;
+  action?: string;
+  target?: string;
+  description?: string;
+  httpMethod?: string;
+  requestPath?: string;
+  actor?: string;
+  actorType?: string;
+  requestId?: string;
+  /** @format int32 */
+  statusCode?: number;
+  /** @format date-time */
+  created?: string;
+}
+
 /** Attachment model */
 export interface Attachment {
   /** Unique identifier */
@@ -1636,7 +1858,7 @@ export interface Attachment {
    * @format int32
    */
   fileSize?: number;
-  /** Where the file came from: APPLICATION (citizen's application files), CONVERSATION (sent in a message thread), GENERATED (a consolidated PDF produced by the platform) or ERRAND (uploaded directly to the errand) */
+  /** Where the file came from: APPLICATION (citizen's application files), CONVERSATION (sent in a message thread), GENERATED (a consolidated PDF produced by the platform), ERRAND (uploaded directly to the errand), CASE_DATA (ärendeuppgifter — a case-data document for the errand) or MESSAGE_HISTORY (meddelandehistorik — the archived conversation PDF for a closed errand) */
   origin?: AttachmentOriginEnum;
   /** Who the file came from: CLIENT (applicant) or CASEWORKER (caseworker). May be null for files predating the distinction or with no clear sender. */
   senderRole?: AttachmentSenderRoleEnum;
@@ -1747,6 +1969,48 @@ export interface RenewalPrefill {
   lifecareChecked?: boolean;
 }
 
+/** EB type catalogue for the frontend dropdowns: income and cost types with labels, groups and the citizen flag. */
+export interface FinancialAssistanceMetadata {
+  /** The income types (inkomster) */
+  incomeTypes?: TypeOption[];
+  /** The cost types (kostnader), grouped by their Mina-sidor form section */
+  costTypes?: TypeOption[];
+}
+
+/** A selectable EB income/cost type — the payload code plus its Mina-sidor + Lifecare labels, form group and citizen flag. */
+export interface TypeOption {
+  /** The type code, as stored on the payload (incomeType / costType) */
+  code?: string;
+  /** The citizen Mina-sidor label; null for handläggare-only types not on the citizen form */
+  externalDisplayName?: string;
+  /** The matching Lifecare handläggare-dropdown label, or null when there is no Lifecare counterpart */
+  internalDisplayName?: string;
+  /** Stable code for the Mina-sidor form section the type is shown under; null for income */
+  group?: TypeOptionGroupEnum;
+  /** Whether the type is offered on the citizen Mina-sidor form */
+  citizenReportable?: boolean;
+}
+
+/** Document metadata — the catalogue of selectable document types. */
+export interface DocumentMetadata {
+  /** Selectable document types */
+  types?: DocumentType[];
+}
+
+/** A selectable document type — the code and the Swedish Lifecare label. */
+export interface DocumentType {
+  /**
+   * The type code
+   * @example "LETTER"
+   */
+  code?: string;
+  /**
+   * Human-readable Swedish label (the Lifecare 'Typ' value)
+   * @example "Brev"
+   */
+  displayName?: string;
+}
+
 /** An allowed decision outcome (decision alternatives) for an errand type. */
 export interface DecisionOption {
   /** The decision outcome code, stored on the Decision row's value */
@@ -1801,6 +2065,18 @@ export interface RoleDefinition {
   /** @format int32 */
   maxOccurrences?: number;
   required?: boolean;
+}
+
+/** Provenance, defaults to CASEWORKER when omitted. RPA POSTs LIFECARE (with lifecareId) to surface a monitoring read out of Lifecare onto the errand. */
+export enum MonitoringRequestSourceEnum {
+  CASEWORKER = "CASEWORKER",
+  LIFECARE = "LIFECARE",
+}
+
+/** Provenance: CASEWORKER for one authored in Draken (RPA mirrors it onto the person in Lifecare), LIFECARE for one read out of Lifecare by RPA and surfaced here on the errand. */
+export enum MonitoringSourceEnum {
+  CASEWORKER = "CASEWORKER",
+  LIFECARE = "LIFECARE",
 }
 
 /** The category of asset */
@@ -1971,6 +2247,20 @@ export enum PlanningSfiCourseEnum {
   D = "D",
 }
 
+/**
+ * The RPA action — selects the Lifecare flow the robot runs
+ * @minLength 1
+ */
+export enum RpaTaskRequestActionEnum {
+  FETCH_SUPPLEMENTS = "FETCH_SUPPLEMENTS",
+  WRITE_NORMBERAKNING = "WRITE_NORMBERAKNING",
+  WRITE_DECISION = "WRITE_DECISION",
+  WRITE_JOURNAL = "WRITE_JOURNAL",
+  WRITE_DOCUMENT = "WRITE_DOCUMENT",
+  WRITE_MONITORING = "WRITE_MONITORING",
+  REGISTER_PAYMENT = "REGISTER_PAYMENT",
+}
+
 /** Status */
 export enum ReferralStatusEnum {
   SENT = "SENT",
@@ -2014,6 +2304,15 @@ export enum CreateMessageDirectionEnum {
  * @example "WORKING"
  */
 export enum JournalEntryStatusEnum {
+  WORKING = "WORKING",
+  LOCKED = "LOCKED",
+}
+
+/**
+ * Skrivskydd status — WORKING is an editable draft, LOCKED is an upprättad handling
+ * @example "WORKING"
+ */
+export enum DocumentStatusEnum {
   WORKING = "WORKING",
   LOCKED = "LOCKED",
 }
@@ -2139,18 +2438,28 @@ export enum MessageAttachmentSenderRoleEnum {
   CASEWORKER = "CASEWORKER",
 }
 
-/** Where the file came from: APPLICATION (citizen's application files), CONVERSATION (sent in a message thread), GENERATED (a consolidated PDF produced by the platform) or ERRAND (uploaded directly to the errand) */
+/** Where the file came from: APPLICATION (citizen's application files), CONVERSATION (sent in a message thread), GENERATED (a consolidated PDF produced by the platform), ERRAND (uploaded directly to the errand), CASE_DATA (ärendeuppgifter — a case-data document for the errand) or MESSAGE_HISTORY (meddelandehistorik — the archived conversation PDF for a closed errand) */
 export enum AttachmentOriginEnum {
   APPLICATION = "APPLICATION",
   CONVERSATION = "CONVERSATION",
   GENERATED = "GENERATED",
   ERRAND = "ERRAND",
+  CASE_DATA = "CASE_DATA",
+  MESSAGE_HISTORY = "MESSAGE_HISTORY",
 }
 
 /** Who the file came from: CLIENT (applicant) or CASEWORKER (caseworker). May be null for files predating the distinction or with no clear sender. */
 export enum AttachmentSenderRoleEnum {
   CLIENT = "CLIENT",
   CASEWORKER = "CASEWORKER",
+}
+
+/** Stable code for the Mina-sidor form section the type is shown under; null for income */
+export enum TypeOptionGroupEnum {
+  HOUSING = "HOUSING",
+  WORK_AND_STUDIES = "WORK_AND_STUDIES",
+  HEALTH = "HEALTH",
+  OTHER = "OTHER",
 }
 
 /** The field kind */
@@ -2172,6 +2481,7 @@ export enum ReadLookupsParamsKindEnum {
   ROLE = "ROLE",
   CONTACT_REASON = "CONTACT_REASON",
   JOURNAL_ENTRY_TYPE = "JOURNAL_ENTRY_TYPE",
+  DOCUMENT_TYPE = "DOCUMENT_TYPE",
 }
 
 /** Lookup kind */
@@ -2182,6 +2492,7 @@ export enum CreateLookupParamsKindEnum {
   ROLE = "ROLE",
   CONTACT_REASON = "CONTACT_REASON",
   JOURNAL_ENTRY_TYPE = "JOURNAL_ENTRY_TYPE",
+  DOCUMENT_TYPE = "DOCUMENT_TYPE",
 }
 
 /** Only return attachments with this origin */
@@ -2190,12 +2501,19 @@ export enum ReadAttachmentsParamsOriginEnum {
   CONVERSATION = "CONVERSATION",
   GENERATED = "GENERATED",
   ERRAND = "ERRAND",
+  CASE_DATA = "CASE_DATA",
 }
 
 /** Only return attachments from this sender */
 export enum ReadAttachmentsParamsSenderRoleEnum {
   CLIENT = "CLIENT",
   CASEWORKER = "CASEWORKER",
+}
+
+/** What the uploaded file is: ERRAND (a plain manual upload, the default) or CASE_DATA (ärendeuppgifter — a case-data document). Defaults to ERRAND when omitted. */
+export enum CreateAttachmentParamsOriginEnum {
+  ERRAND = "ERRAND",
+  CASE_DATA = "CASE_DATA",
 }
 
 /** Lookup kind */
@@ -2206,6 +2524,7 @@ export enum ReadLookupParamsKindEnum {
   ROLE = "ROLE",
   CONTACT_REASON = "CONTACT_REASON",
   JOURNAL_ENTRY_TYPE = "JOURNAL_ENTRY_TYPE",
+  DOCUMENT_TYPE = "DOCUMENT_TYPE",
 }
 
 /** Lookup kind */
@@ -2216,6 +2535,7 @@ export enum DeleteLookupParamsKindEnum {
   ROLE = "ROLE",
   CONTACT_REASON = "CONTACT_REASON",
   JOURNAL_ENTRY_TYPE = "JOURNAL_ENTRY_TYPE",
+  DOCUMENT_TYPE = "DOCUMENT_TYPE",
 }
 
 /** Lookup kind */
@@ -2226,6 +2546,7 @@ export enum UpdateLookupParamsKindEnum {
   ROLE = "ROLE",
   CONTACT_REASON = "CONTACT_REASON",
   JOURNAL_ENTRY_TYPE = "JOURNAL_ENTRY_TYPE",
+  DOCUMENT_TYPE = "DOCUMENT_TYPE",
 }
 
 /** The target status */

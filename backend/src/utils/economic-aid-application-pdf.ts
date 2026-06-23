@@ -1,9 +1,10 @@
-import { ApplicationPdfDocument, ApplicationPdfSection, ApplicationPdfSignature } from '@/interfaces/application-pdf.interface';
+import { ApplicationPdfDocument, ApplicationPdfGroup, ApplicationPdfSection, ApplicationPdfSignature } from '@/interfaces/application-pdf.interface';
 
 /**
  * Builds a finished, print-ready HTML document from an {@link ApplicationPdfDocument}. The HTML is
  * self-contained (inline CSS) so the templating service only has to convert it to PDF — no template
- * variables are used. The frontend supplies all labels/values; this module only lays them out.
+ * variables are used. The frontend supplies all labels/values; this module only lays them out as
+ * numbered groups (1. Personuppgifter, 2. Boendesituation, …) with sub-sections and a signature block.
  */
 
 const escapeHtml = (value: string): string =>
@@ -14,7 +15,7 @@ const escapeHtml = (value: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-// Preserve line breaks entered in free-text answers.
+// Preserve line breaks entered in free-text answers / multi-paragraph help texts.
 const formatValue = (value: string): string => escapeHtml(value).replace(/\r?\n/g, '<br />');
 
 /**
@@ -62,17 +63,23 @@ const renderSection = (section: ApplicationPdfSection): string => {
     .join('');
   return `
     <section class="section">
-      <h2>${escapeHtml(section.heading)}</h2>
+      ${section.heading ? `<h3>${escapeHtml(section.heading)}</h3>` : ''}
       ${section.info ? `<p class="section-info">${formatValue(section.info)}</p>` : ''}
-      <dl class="rows">${rows}</dl>
+      ${rows ? `<dl class="rows">${rows}</dl>` : ''}
     </section>`;
 };
 
+const renderGroup = (group: ApplicationPdfGroup): string => `
+    <div class="group">
+      <h2 class="group-heading">${escapeHtml(group.heading)}</h2>
+      ${group.sections.map(renderSection).join('')}
+    </div>`;
+
 /**
  * MOCK: BankID-signering. Renderar de mockade signaturerna längst ner. När riktig BankID-signering
- * införs ska name/personnummer/checksum komma från BankID-svaret (completionData.user.name,
- * .personalNumber och kontrollsumman av signaturen/ocspResponse). Byt ut mock-genereringen i
- * controllern (buildMockSignatures) — den här layouten kan behållas.
+ * införs ska name/personnummer/checksum/signedAt komma från BankID-svaret (completionData.user.name,
+ * .personalNumber, kontrollsumman av signaturen/ocspResponse och signeringstidpunkten). Byt ut
+ * mock-genereringen i controllern (buildMockSignature) — den här layouten kan behållas.
  */
 const renderSignatures = (signatures: ApplicationPdfSignature[] | undefined): string => {
   if (!signatures?.length) return '';
@@ -98,15 +105,6 @@ const renderSignatures = (signatures: ApplicationPdfSignature[] | undefined): st
     </div>`;
 };
 
-const renderGroup = (heading: string, sections: ApplicationPdfSection[]): string => {
-  if (!sections.length) return '';
-  return `
-    <div class="group">
-      <h2 class="group-heading">${escapeHtml(heading)}</h2>
-      ${sections.map(renderSection).join('')}
-    </div>`;
-};
-
 const STYLES = `
   * { box-sizing: border-box; }
   body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; font-size: 12px; margin: 32px; }
@@ -115,10 +113,10 @@ const STYLES = `
   .brand-wordmark { font-size: 18px; font-weight: 700; color: #0a5564; }
   .doc-title h1 { font-size: 20px; margin: 0; }
   .doc-subtitle { margin: 4px 0 0; color: #555; font-size: 12px; }
-  .group { margin-bottom: 20px; }
-  .group-heading { font-size: 15px; color: #0a5564; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin: 0 0 8px; }
+  .group { margin-bottom: 22px; }
+  .group-heading { font-size: 16px; color: #0a5564; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin: 0 0 10px; }
   .section { margin-bottom: 14px; page-break-inside: avoid; }
-  .section h2 { font-size: 13px; margin: 0 0 6px; }
+  .section h3 { font-size: 13px; margin: 0 0 6px; }
   .section-info { margin: 0 0 8px; color: #555; font-size: 11px; font-style: italic; }
   .rows { margin: 0; }
   .row { display: flex; gap: 12px; padding: 3px 0; border-bottom: 1px solid #eee; align-items: flex-start; }
@@ -134,13 +132,7 @@ const STYLES = `
 `;
 
 export const buildApplicationPdfHtml = (doc: ApplicationPdfDocument): string => {
-  const body = [
-    renderHeader(doc.title, doc.subtitle),
-    renderGroup('Sökande', doc.persons),
-    ...doc.sections.map(renderSection),
-    renderGroup('Barn', doc.children),
-    renderSignatures(doc.signatures),
-  ].join('\n');
+  const body = [renderHeader(doc.title, doc.subtitle), ...doc.groups.map(renderGroup), renderSignatures(doc.signatures)].join('\n');
 
   return `<!doctype html>
 <html lang="sv">

@@ -298,10 +298,12 @@ export class ApplicationPdfRowDto {
   info?: string;
 }
 
-/** A titled group of question/answer rows. */
+/** A titled group of question/answer rows (a sub-section within a numbered group). */
 export class ApplicationPdfSectionDto {
+  // Optional sub-heading within a group.
+  @IsOptional()
   @IsString()
-  heading!: string;
+  heading?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -313,10 +315,26 @@ export class ApplicationPdfSectionDto {
   @IsString()
   info?: string;
 
-  // Person sections carry the role so the backend can attach Citizen-derived identity.
+  // Person sections carry the role so the backend can attach the right person.
   @IsOptional()
   @IsIn(['APPLICANT', 'CO_APPLICANT'])
   role?: 'APPLICANT' | 'CO_APPLICANT';
+
+  // When true, the backend prepends this person's personnummer + folkbokföringsadress (Citizen).
+  @IsOptional()
+  @IsBoolean()
+  identity?: boolean;
+}
+
+/** A numbered group, e.g. "1. Personuppgifter". */
+export class ApplicationPdfGroupDto {
+  @IsString()
+  heading!: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ApplicationPdfSectionDto)
+  sections!: ApplicationPdfSectionDto[];
 }
 
 /** A signer's BankID signature shown at the bottom of the PDF. Backend-populated; currently mocked. */
@@ -348,18 +366,8 @@ export class ApplicationPdfSummaryDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ApplicationPdfSectionDto)
-  persons!: ApplicationPdfSectionDto[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ApplicationPdfSectionDto)
-  sections!: ApplicationPdfSectionDto[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ApplicationPdfSectionDto)
-  children!: ApplicationPdfSectionDto[];
+  @Type(() => ApplicationPdfGroupDto)
+  groups!: ApplicationPdfGroupDto[];
 
   // Backend-populated (mocked BankID signatures); not sent by the client.
   @IsOptional()

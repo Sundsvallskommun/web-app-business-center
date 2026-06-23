@@ -1,7 +1,8 @@
 /**
- * Human-readable representation of a submitted application, used to render the
- * sammanställning-PDF attached to the errand. Built on the frontend (which owns the form
- * questions and their Swedish labels) and rendered to HTML/PDF on the backend.
+ * Human-readable representation of a submitted application, used to render the sammanställning-PDF
+ * attached to the errand. Built on the frontend (which owns the form questions and their Swedish
+ * labels) and rendered to HTML/PDF on the backend. Organised as numbered groups (1. Personuppgifter,
+ * 2. Boendesituation, …) in wizard order, each with one or more sections.
  */
 
 export interface ApplicationPdfRow {
@@ -14,15 +15,21 @@ export interface ApplicationPdfRow {
 }
 
 export interface ApplicationPdfSection {
-  heading: string;
+  /** Optional sub-heading within a group (e.g. "Sökande", "Vilka kostnader söker du bistånd för?"). */
+  heading?: string;
   rows: ApplicationPdfRow[];
   /** The form's help text for this section, when it has one. */
   info?: string;
-  /**
-   * Person sections only — lets the backend attach Citizen-derived identity
-   * (personnummer + folkbokföringsadress) to the right person.
-   */
+  /** Person sections — lets the backend attach the right person (name appended to heading). */
   role?: 'APPLICANT' | 'CO_APPLICANT';
+  /** When true, the backend prepends this person's personnummer + folkbokföringsadress (Citizen). */
+  identity?: boolean;
+}
+
+export interface ApplicationPdfGroup {
+  /** Numbered group heading, e.g. "1. Personuppgifter". */
+  heading: string;
+  sections: ApplicationPdfSection[];
 }
 
 /** A signer's BankID signature shown at the bottom of the document. Currently mocked. */
@@ -40,14 +47,10 @@ export interface ApplicationPdfSignature {
 export interface ApplicationPdfDocument {
   /** Document title (e.g. "Ansökan om ekonomiskt bistånd"). */
   title: string;
-  /** Optional sub-line under the title (e.g. application type / period). */
+  /** Optional sub-line under the title (e.g. application type). */
   subtitle?: string;
-  /** Applicant and co-applicant, rendered at the top. */
-  persons: ApplicationPdfSection[];
-  /** All questions and answers from the application, in form order. */
-  sections: ApplicationPdfSection[];
-  /** Children, rendered as their own section (not tied to a person). */
-  children: ApplicationPdfSection[];
+  /** Numbered groups in wizard order. */
+  groups: ApplicationPdfGroup[];
   /** BankID signatures, rendered at the bottom. Backend-populated and currently mocked. */
   signatures?: ApplicationPdfSignature[];
 }

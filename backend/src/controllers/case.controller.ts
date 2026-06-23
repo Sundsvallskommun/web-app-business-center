@@ -28,6 +28,7 @@ import {
 import { getCitizen } from '@/services/citizen.service';
 import { getUserData } from '@/services/user.service';
 import { caremanagementUrl } from '@/utils/caremanagement-url';
+import { sentByPartyId } from '@/utils/sent-by';
 import { logger } from '@utils/logger';
 import { filterExternalConversation, findExternalConversation } from '@/utils/conversation-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
@@ -70,6 +71,7 @@ export class CaseController {
         const res = await this.caremanagementApiService.get<FindErrandsResponse>({
           url: caremanagementUrl('errands'),
           params: { filter: `reporterUserId:'${partyId}'`, page, size },
+          headers: sentByPartyId(partyId),
         });
         errands.push(...(res.data?.errands ?? []));
         totalPages = res.data?._meta?.totalPages ?? page + 1;
@@ -390,7 +392,10 @@ export class CaseController {
         // caremanagement keeps the thread on the errand itself (no conversation grouping). Address it
         // by the resolved errand id, not the URL reference (which may be the human errandNumber).
         const errandId = _case.caseId ?? caseId;
-        const res = await this.caremanagementApiService.get<CareManagementMessage[]>({ url: caremanagementUrl('errands', errandId, 'messages') });
+        const res = await this.caremanagementApiService.get<CareManagementMessage[]>({
+          url: caremanagementUrl('errands', errandId, 'messages'),
+          headers: sentByPartyId(req.user.partyId),
+        });
         const careMessages = res.data ?? [];
         // OUTBOUND messages are authored by a handläggare (AD username) — resolve their names; INBOUND
         // messages are the citizen's own, so they carry the logged-in user's name (shown as "Jag").
@@ -493,7 +498,11 @@ export class CaseController {
       (files ?? []).forEach(file => {
         form.append('attachments', new Blob([file.buffer as BlobPart], { type: file.mimetype }), file.originalname);
       });
-      await this.caremanagementApiService.postForm<void>({ url: caremanagementUrl('errands', errandId, 'messages'), data: form });
+      await this.caremanagementApiService.postForm<void>({
+        url: caremanagementUrl('errands', errandId, 'messages'),
+        data: form,
+        headers: sentByPartyId(req.user.partyId),
+      });
       const messages = (await this.getCaseMessages(req, caseId)).data;
       return { data: messages, message: 'success' };
     }
@@ -668,7 +677,11 @@ export class CaseController {
     const errandId = _case.caseId ?? caseId;
     const url = caremanagementUrl('errands', errandId, 'messages', messageId, 'attachments', attachmentId, 'file');
     try {
-      const res = await this.caremanagementApiService.get<ArrayBuffer>({ url, responseType: 'arraybuffer' });
+      const res = await this.caremanagementApiService.get<ArrayBuffer>({
+        url,
+        responseType: 'arraybuffer',
+        headers: sentByPartyId(req.user.partyId),
+      });
       if (!res.data) {
         return { data: null, message: 'error' };
       }

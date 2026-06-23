@@ -36,6 +36,7 @@ import { buildApplicationPdfHtml } from '@/utils/economic-aid-application-pdf';
 import { getCitizen, getCitizenPersonnumber } from '@/services/citizen.service';
 import { makeClientContactSetting } from '@/services/contact-setting.service';
 import { caremanagementUrl } from '@/utils/caremanagement-url';
+import { sentByPartyId } from '@/utils/sent-by';
 import { economicAidUploadOptions } from '@/utils/files/economicAidUploadOptions';
 import { validateRequestBody } from '@/utils/validate';
 import authMiddleware from '@middlewares/auth.middleware';
@@ -336,6 +337,7 @@ export class EconomicAidController {
     const response = await this.caremanagementApiService.post<EligibilityResponse>({
       url: caremanagementUrl('errands', 'financial-assistance', 'eligibility'),
       data: eligibilityRequest,
+      headers: sentByPartyId(req.user.partyId),
     });
 
     const eligibility = response.data ?? {};
@@ -368,6 +370,7 @@ export class EconomicAidController {
     const response = await this.caremanagementApiService.get<RenewalPrefill>({
       url: caremanagementUrl('errands', 'financial-assistance', 'prefill'),
       params: { partyId: req.user.partyId },
+      headers: sentByPartyId(req.user.partyId),
     });
 
     const prefill = response.data ?? {};
@@ -452,36 +455,44 @@ export class EconomicAidController {
       if (typeof person?.role === 'string' && typeof person?.partyId === 'string') partyIdByRole.set(person.role, person.partyId);
     });
 
-    // MOCK: alla (mockade) signaturer stämplas med inskickstidpunkten. Vid riktig BankID-signering
-    // ska tidsstämpeln komma från BankID-svaret (completionData) per signerare.
-    const signedAt = new Date().toLocaleString('sv-SE');
-    const signatures: ApplicationPdfSignatureDto[] = [];
-    for (const section of summary.persons ?? []) {
-      const partyId = section.role ? partyIdByRole.get(section.role) : undefined;
-      if (!partyId) continue;
-
-      const { name, personnummer, folkbokforing } = await this.fetchPersonCitizenData(partyId, req);
-
-      // Varje persons identitet (namn + personnummer) är obligatorisk i sammanställningen — kan den
-      // inte hämtas från Citizen för någon person (sökande eller medsökande) blockeras inskicket.
-      // Körs FÖRE create-anropet, så inget ärende skapas: en ofullständig sammanställning ska aldrig
-      // nå ett ärende.
-      if (!name || !personnummer) {
-        const roll = section.role === 'CO_APPLICANT' ? 'medsökandes' : 'sökandes';
+    // Fetch each person's Citizen identity once. Every person's identity (name + personnummer) is
+    // REQUIRED: if it cannot be fetched the submission is blocked here — before the create call, so
+    // no errand is created. An incomplete sammanställning must never reach an errand.
+    const identityByRole = new Map<string, { name: string; personnummer: string; folkbokforing: string }>();
+    for (const [role, partyId] of partyIdByRole) {
+      const identity = await this.fetchPersonCitizenData(partyId, req);
+      if (!identity.name || !identity.personnummer) {
+        const roll = role === 'CO_APPLICANT' ? 'medsökandes' : 'sökandes';
         throw new HttpException(502, `Kunde inte hämta ${roll} uppgifter från Citizen — ansökan kunde inte skickas in`);
       }
+      identityByRole.set(role, identity);
+    }
 
-      // Namnet sätts i sektionsrubriken (t.ex. "Sökande – Anna Andersson") i stället för en egen
-      // Namn-rad, så rubriken inte bara upprepar gruppen "Sökande" men ändå behåller rollen.
-      if (name) section.heading = `${section.heading} – ${name}`;
+    // Enrich every person section (in any group): append the name to the heading, and for the
+    // identity-flagged section (group 1) prepend personnummer + folkbokföringsadress.
+    for (const group of summary.groups ?? []) {
+      for (const section of group.sections ?? []) {
+        if (!section.role) continue;
+        const identity = identityByRole.get(section.role);
+        if (!identity) continue;
+        section.heading = section.heading ? `${section.heading} – ${identity.name}` : identity.name;
+        if (section.identity) {
+          const identityRows = [
+            ...(identity.personnummer ? [{ label: 'Personnummer', value: identity.personnummer }] : []),
+            ...(identity.folkbokforing ? [{ label: 'Folkbokföringsadress', value: identity.folkbokforing }] : []),
+          ];
+          section.rows = [...identityRows, ...section.rows];
+        }
+      }
+    }
 
-      const identityRows = [
-        ...(personnummer ? [{ label: 'Personnummer', value: personnummer }] : []),
-        ...(folkbokforing ? [{ label: 'Folkbokföringsadress', value: folkbokforing }] : []),
-      ];
-      section.rows = [...identityRows, ...section.rows];
-
-      signatures.push(this.buildMockSignature(partyId, name, personnummer, signedAt));
+    // Mocked BankID signatures — one per signer (applicant + any co-applicant), stamped with the
+    // submit time. Replace with the real BankID signing response when implemented.
+    const signedAt = new Date().toLocaleString('sv-SE');
+    const signatures: ApplicationPdfSignatureDto[] = [];
+    for (const [role, partyId] of partyIdByRole) {
+      const identity = identityByRole.get(role);
+      if (identity) signatures.push(this.buildMockSignature(partyId, identity.name, identity.personnummer, signedAt));
     }
     if (signatures.length) summary.signatures = signatures;
   }
@@ -571,6 +582,7 @@ export class EconomicAidController {
     const created = await this.caremanagementApiService.postForm<unknown>({
       url: caremanagementUrl('errands', slug),
       data: form,
+      headers: sentByPartyId(req.user.partyId),
     });
 
     const errandId = errandIdFromLocation(created.location);
@@ -607,6 +619,7 @@ export class EconomicAidController {
     try {
       const res = await this.caremanagementApiService.get<Stakeholder[]>({
         url: caremanagementUrl('errands', errandId, 'stakeholders'),
+        headers: sentByPartyId(req.user.partyId),
       });
       stakeholders = Array.isArray(res.data) ? res.data : [];
     } catch (err) {
@@ -641,6 +654,7 @@ export class EconomicAidController {
         await this.caremanagementApiService.patch({
           url: caremanagementUrl('errands', errandId, 'stakeholders', stakeholder.id),
           data: enriched,
+          headers: sentByPartyId(req.user.partyId),
         });
         logger.info(`[economic-aid] enriched stakeholder ${stakeholder.id} (role=${stakeholder.role}) on errand ${errandId}`);
       } catch (err) {

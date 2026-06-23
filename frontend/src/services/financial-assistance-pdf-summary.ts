@@ -105,28 +105,30 @@ export const buildApplicationPdfSummary = (
       contact.byEmail && t(fa('personuppgifter.notifyEmail')),
       contact.bySms && t(fa('personuppgifter.notifySms')),
     ]);
-    const payment =
-      person.paymentSameAsPrevious === true
-        ? t(fa('payment.sameAsPreviousLabel'))
-        : person.paymentMethod
-          ? t(fa(`paymentMethod.${person.paymentMethod}`))
-          : '';
+    const methodAnswer = person.paymentMethod ? t(fa(`paymentMethod.${person.paymentMethod}`)) : '';
+    // Återansökan/tillägg: först "samma som föregående?"; utbetalningssätt visas bara vid nyansökan
+    // eller när svaret är "nej" — precis som i utbetalningssteget.
+    const showPayoutMethod = isNew || person.paymentSameAsPrevious === false;
 
     return {
       heading: t(fa(`recipient.${person.role}`)),
       role: person.role,
       rows: toRows([
+        // Kontakt (frågas i hushållssteget)
+        [t(fa('personuppgifter.emailLabel')), contact.email],
+        [t(fa('personuppgifter.phoneLabel')), contact.phone],
+        [t(fa('personuppgifter.notifyLabel')), notify, t(fa('personuppgifter.notifyInfo'))],
+        // Utbetalning (utbetalningssteget)
+        ...(!isNew ? ([[t(fa('payment.sameAsPreviousLabel')), yesNo(person.paymentSameAsPrevious)]] as RawRow[]) : []),
+        ...(showPayoutMethod ? ([[t(fa('payment.payoutQuestion')), methodAnswer]] as RawRow[]) : []),
+        [t(fa('payment.clearingLabel')), person.clearingNumber],
+        [t(fa('payment.accountLabel')), person.accountNumber],
+        [t(fa('payment.otherDescriptionLabel')), person.otherPaymentDescription],
+        // Tolk + arbete (utbetalningssteget, endast nyansökan)
         [t(fa('payment.needsInterpreterLabel')), yesNo(person.needsInterpreter)],
         [t(fa('payment.interpreterLanguageLabel')), person.interpreterLanguage],
         [t(fa('payment.hadWorkLabel')), yesNo(person.hadWorkLast12Months)],
         [t(fa('payment.hadWorkDescriptionLabel')), person.hadWorkDescription],
-        [t(fa('payment.methodLabel')), payment],
-        [t(fa('payment.clearingLabel')), person.clearingNumber],
-        [t(fa('payment.accountLabel')), person.accountNumber],
-        [t(fa('payment.otherDescriptionLabel')), person.otherPaymentDescription],
-        [t(fa('personuppgifter.emailLabel')), contact.email],
-        [t(fa('personuppgifter.phoneLabel')), contact.phone],
-        [t(fa('personuppgifter.notifyLabel')), notify, t(fa('personuppgifter.notifyInfo'))],
       ]),
     };
   };
@@ -141,8 +143,8 @@ export const buildApplicationPdfSummary = (
         ? t(fa(`periodChoice.${form.periodChoice}`))
         : '';
 
+  // --- Period & norm (economy step leads with these, after household) ---
   const periodNormSection = toSection(t(fa('periodNorm.heading')), [
-    [t(fa('periodNorm.maritalStatusLabel')), form.civilstandChoice ? t(fa(`civilstand.${form.civilstandChoice}`)) : ''],
     [t(fa('periodNorm.periodLabel')), period],
     [
       t(fa('periodNorm.normTypeLabel')),
@@ -152,23 +154,28 @@ export const buildApplicationPdfSummary = (
     [t(fa('periodNorm.otherBenefitPlaceholder')), form.otherBenefitDescription],
   ]);
 
-  // --- Household & housing (not supplementary) ---
+  // --- Household & housing — civilstånd shows for all types; children-gate + housing only when
+  // they are part of the form (not supplementary), matching the household-housing step. ---
   const housingFormLabel = isRenewal
     ? q('householdHousing.housingFormLabelChanged')
     : q('householdHousing.housingFormLabel');
-  const householdSection = isSupplementary
-    ? null
-    : toSection(t(fa('householdHousing.heading')), [
-        [q('householdHousing.hasChildrenLabel'), yesNo(form.hasChildrenUnder21), q('householdHousing.hasChildrenInfo')],
-        [q('householdHousing.childrenChangedLabel'), yesNo(form.childrenResidenceChanged)],
-        [t(fa('householdHousing.changeDescriptionPlaceholder')), form.childrenResidenceChangeDescription],
-        [q('householdHousing.housingChangedLabel'), yesNo(form.housingChanged)],
-        [t(fa('householdHousing.changeDescriptionPlaceholder')), form.housingChangeDescription],
-        [housingFormLabel, form.housingForm ? t(fa(`housingForm.${form.housingForm}`)) : ''],
-        [t(fa('householdHousing.roomsLabel')), form.housingRoomsPlusKitchen != null ? String(form.housingRoomsPlusKitchen) : ''],
-        [t(fa('householdHousing.personCountLabel')), form.housingPersonCount != null ? String(form.housingPersonCount) : ''],
-        [t(fa('householdHousing.housingDescriptionLabel')), form.housingDescription],
-      ]);
+  const householdRows: RawRow[] = [
+    [t(fa('periodNorm.maritalStatusLabel')), form.civilstandChoice ? t(fa(`civilstand.${form.civilstandChoice}`)) : ''],
+  ];
+  if (!isSupplementary) {
+    householdRows.push(
+      [q('householdHousing.hasChildrenLabel'), yesNo(form.hasChildrenUnder21), q('householdHousing.hasChildrenInfo')],
+      [q('householdHousing.childrenChangedLabel'), yesNo(form.childrenResidenceChanged)],
+      [t(fa('householdHousing.changeDescriptionPlaceholder')), form.childrenResidenceChangeDescription],
+      [q('householdHousing.housingChangedLabel'), yesNo(form.housingChanged)],
+      [t(fa('householdHousing.changeDescriptionPlaceholder')), form.housingChangeDescription],
+      [housingFormLabel, form.housingForm ? t(fa(`housingForm.${form.housingForm}`)) : ''],
+      [t(fa('householdHousing.roomsLabel')), form.housingRoomsPlusKitchen != null ? String(form.housingRoomsPlusKitchen) : ''],
+      [t(fa('householdHousing.personCountLabel')), form.housingPersonCount != null ? String(form.housingPersonCount) : ''],
+      [t(fa('householdHousing.housingDescriptionLabel')), form.housingDescription],
+    );
+  }
+  const householdSection = toSection(t(fa('householdHousing.heading')), householdRows);
 
   // --- Costs (all types) ---
   const costRows: RawRow[] = form.costs
@@ -286,30 +293,22 @@ export const buildApplicationPdfSummary = (
       ];
   const planningSection = toSection(t(fa('planning.heading')), planningRows);
 
-  // --- Stay & attestation ---
-  const reviewSection = toSection(
-    t(fa('review.staysHeading')),
-    [
-      [q('review.staysInfo'), yesNo(form.staysInMunicipality)],
-      [t(fa('review.stayDescriptionPlaceholder')), form.stayDescription],
-      [t(fa('review.attestationHeading')), form.attestation ? t(fa('common.yes')) : '', t(fa('review.attestation'))],
-    ],
+  // --- Vistelse under ansökningsmånaden (egen sektion) ---
+  const staysSection = toSection(t(fa('review.staysHeading')), [
+    [q('review.staysInfo'), yesNo(form.staysInMunicipality)],
+    [t(fa('review.stayDescriptionPlaceholder')), form.stayDescription],
+  ]);
+
+  // --- Försäkran (egen sektion) — lagtexterna som hjälptext, och en bock (✓) i stället för "Ja". ---
+  const attestationSection = toSection(
+    t(fa('review.attestationHeading')),
+    [[t(fa('review.attestation')), form.attestation ? '✓' : '']],
     infoArray('review.attestationInfo'),
   );
 
-  const sections = compact([
-    periodNormSection,
-    householdSection,
-    costsSection,
-    incomesSection,
-    pendingBenefitsSection,
-    assetsSection,
-    planningSection,
-    reviewSection,
-  ]);
-
-  // --- Children (own section, not tied to a person) ---
-  const children = isSupplementary
+  // --- Children — their own sections (not tied to a person), placed right after household to
+  // match the household-housing step where the children are entered. ---
+  const childrenSections = isSupplementary
     ? []
     : compact(
         form.children.map((child, index) =>
@@ -323,11 +322,28 @@ export const buildApplicationPdfSummary = (
         ),
       );
 
+  // Sections in the same order as the wizard: household → children → period/norm → costs →
+  // incomes → pending benefits → assets → planning → review. Persons stay at the top (their
+  // payment/contact details live in the persons block), so they are not repeated here.
+  const sections = compact([
+    householdSection,
+    ...childrenSections,
+    periodNormSection,
+    costsSection,
+    incomesSection,
+    pendingBenefitsSection,
+    assetsSection,
+    planningSection,
+    staysSection,
+    attestationSection,
+  ]);
+
   return {
     title: t(fa('header.title')),
     subtitle: t(fa(`type.${applicationType}`)),
     persons,
     sections,
-    children,
+    // Children are rendered inline above (in form order), so no separate children group.
+    children: [],
   };
 };

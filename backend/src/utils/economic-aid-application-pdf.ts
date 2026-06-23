@@ -18,6 +18,16 @@ const escapeHtml = (value: string): string =>
 const formatValue = (value: string): string => escapeHtml(value).replace(/\r?\n/g, '<br />');
 
 /**
+ * Sentinel the serializer uses for a ticked checkbox (e.g. försäkran). Rendered as a CSS-drawn
+ * checkmark rather than the "✓" glyph, which does not render reliably in the PDF font.
+ */
+const CHECKMARK = '✓';
+const renderAnswer = (value: string): string => {
+  if (value === CHECKMARK) return '<span class="bock" role="img" aria-label="Ja"></span>';
+  return formatValue(value);
+};
+
+/**
  * Optional logo as a data URI (e.g. "data:image/png;base64,...."). Left empty for now — the header
  * falls back to a styled wordmark. Drop a base64 logo here to brand the PDF without other changes.
  */
@@ -46,7 +56,7 @@ const renderSection = (section: ApplicationPdfSection): string => {
             <span class="label">${escapeHtml(row.label)}</span>
             ${row.info ? `<span class="row-info">${formatValue(row.info)}</span>` : ''}
           </dt>
-          <dd><span class="answer">${formatValue(row.value)}</span></dd>
+          <dd><span class="answer">${renderAnswer(row.value)}</span></dd>
         </div>`,
     )
     .join('');
@@ -74,6 +84,7 @@ const renderSignatures = (signatures: ApplicationPdfSignature[] | undefined): st
         <dl class="rows">
           <div class="row"><dt>Personnummer</dt><dd><span class="answer">${escapeHtml(signature.personnummer)}</span></dd></div>
           <div class="row"><dt>Signerad med BankID</dt><dd><span class="answer">Ja</span></dd></div>
+          <div class="row"><dt>Datum och tid</dt><dd><span class="answer">${escapeHtml(signature.signedAt)}</span></dd></div>
           <div class="row"><dt>Kontrollsumma (BankID-svar)</dt><dd><span class="answer checksum">${escapeHtml(signature.checksum)}</span></dd></div>
         </dl>
       </div>`,
@@ -115,6 +126,7 @@ const STYLES = `
   .row dd { flex: 1 1 55%; margin: 0; }
   .row dd .answer { font-weight: 600; }
   .row-info { color: #777; font-size: 10px; font-style: italic; margin-top: 2px; }
+  .bock { display: inline-block; width: 7px; height: 12px; border: solid #0a5564; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
   .signatures { margin-top: 24px; border-top: 2px solid #0a5564; padding-top: 16px; }
   .signature { margin-bottom: 12px; }
   .sig-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; }

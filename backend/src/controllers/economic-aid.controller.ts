@@ -452,6 +452,9 @@ export class EconomicAidController {
       if (typeof person?.role === 'string' && typeof person?.partyId === 'string') partyIdByRole.set(person.role, person.partyId);
     });
 
+    // MOCK: alla (mockade) signaturer stämplas med inskickstidpunkten. Vid riktig BankID-signering
+    // ska tidsstämpeln komma från BankID-svaret (completionData) per signerare.
+    const signedAt = new Date().toLocaleString('sv-SE');
     const signatures: ApplicationPdfSignatureDto[] = [];
     for (const section of summary.persons ?? []) {
       const partyId = section.role ? partyIdByRole.get(section.role) : undefined;
@@ -478,7 +481,7 @@ export class EconomicAidController {
       ];
       section.rows = [...identityRows, ...section.rows];
 
-      signatures.push(this.buildMockSignature(partyId, name, personnummer));
+      signatures.push(this.buildMockSignature(partyId, name, personnummer, signedAt));
     }
     if (signatures.length) summary.signatures = signatures;
   }
@@ -487,11 +490,12 @@ export class EconomicAidController {
    * MOCK: builds a placeholder BankID signature for a signer. There is NO real BankID signing yet —
    * the checksum is just a deterministic hash, not a real BankID signature/ocspResponse checksum.
    * When real BankID signing is implemented, replace this with the actual signing response:
-   * name + personalNumber from completionData.user and the checksum of the signature/ocspResponse.
+   * name + personalNumber from completionData.user, the checksum of the signature/ocspResponse and
+   * the actual signing timestamp.
    */
-  private buildMockSignature(partyId: string, name: string, personnummer: string): ApplicationPdfSignatureDto {
+  private buildMockSignature(partyId: string, name: string, personnummer: string, signedAt: string): ApplicationPdfSignatureDto {
     const checksum = createHash('sha256').update(`MOCK_BANKID:${partyId}:${personnummer}`).digest('hex');
-    return { name: name || 'Okänd', personnummer, checksum };
+    return { name: name || 'Okänd', personnummer, checksum, signedAt };
   }
 
   @Post('/economic-aid/applications/:slug')

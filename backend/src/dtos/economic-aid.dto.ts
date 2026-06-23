@@ -329,6 +329,9 @@ export class ApplicationPdfSignatureDto {
 
   @IsString()
   checksum!: string;
+
+  @IsString()
+  signedAt!: string;
 }
 
 /**

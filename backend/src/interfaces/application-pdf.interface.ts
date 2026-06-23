@@ -33,6 +33,8 @@ export interface ApplicationPdfSignature {
   personnummer: string;
   /** Checksum of the BankID signing response (currently mocked). */
   checksum: string;
+  /** Date and time the signature was made (currently mocked — set at submit time). */
+  signedAt: string;
 }
 
 export interface ApplicationPdfDocument {

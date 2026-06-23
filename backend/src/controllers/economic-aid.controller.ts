@@ -8,7 +8,13 @@ import {
   Stakeholder,
 } from '@/data-contracts/caremanagement/data-contracts';
 import { CitizenAddress, CitizenExtended, PersonGuidBatch } from '@/data-contracts/citizen/data-contracts';
-import { CreateFinancialAssistanceDto, EconomicAidApplicationDto, EligibilityRequestDto } from '@/dtos/economic-aid.dto';
+import {
+  ApplicationPdfSignatureDto,
+  ApplicationPdfSummaryDto,
+  CreateFinancialAssistanceDto,
+  EconomicAidApplicationDto,
+  EligibilityRequestDto,
+} from '@/dtos/economic-aid.dto';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import {
@@ -25,6 +31,8 @@ import { ContactSetting, ContactSettingChannel, NewContactSettings, UpdateContac
 import { ContactMethod } from '@/data-contracts/contactsettings/data-contracts';
 import ApiService from '@/services/api.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
+import { renderPdfFromHtml } from '@/services/templating.service';
+import { buildApplicationPdfHtml } from '@/utils/economic-aid-application-pdf';
 import { getCitizen, getCitizenPersonnumber } from '@/services/citizen.service';
 import { makeClientContactSetting } from '@/services/contact-setting.service';
 import { caremanagementUrl } from '@/utils/caremanagement-url';
@@ -32,6 +40,7 @@ import { economicAidUploadOptions } from '@/utils/files/economicAidUploadOptions
 import { validateRequestBody } from '@/utils/validate';
 import authMiddleware from '@middlewares/auth.middleware';
 import { logger } from '@utils/logger';
+import { createHash } from 'crypto';
 import { Body, Controller, Get, Param, Post, QueryParam, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
@@ -394,6 +403,97 @@ export class EconomicAidController {
     }
   }
 
+  /**
+   * Fetches a person's Citizen data (name, personnummer, folkbokföringsadress) by partyId for the
+   * PDF. Best-effort — missing pieces come back empty and it never throws.
+   */
+  private async fetchPersonCitizenData(
+    partyId: string,
+    req: RequestWithUser,
+  ): Promise<{ name: string; personnummer: string; folkbokforing: string }> {
+    let name = '';
+    let folkbokforing = '';
+    try {
+      const citizen = await getCitizen(partyId, req);
+      name = [citizen.givenname?.trim(), citizen.lastname?.trim()].filter(Boolean).join(' ');
+      const address = (citizen.addresses ?? []).find(isPopulationRegistration) ?? (citizen.addresses ?? []).find(hasStreet);
+      if (address) {
+        const cityLine = `${formatPostnummer(address.postalCode)} ${address.city?.trim() ?? ''}`.trim();
+        folkbokforing = [buildStreetLine(address), cityLine].filter(Boolean).join(', ');
+      }
+    } catch (err) {
+      logger.warn(`[economic-aid] kunde inte hämta Citizen-data för partyId=${partyId}: ${(err as Error)?.message ?? err}`);
+    }
+    let personnummer = '';
+    try {
+      const response = await getCitizenPersonnumber(partyId, req);
+      const digits = onlyDigits(typeof response === 'string' ? response : String(response ?? ''));
+      personnummer = digits.length === 12 ? `${digits.slice(0, 8)}-${digits.slice(8)}` : digits;
+    } catch (err) {
+      logger.warn(`[economic-aid] kunde inte hämta personnummer för partyId=${partyId}: ${(err as Error)?.message ?? err}`);
+    }
+    return { name, personnummer, folkbokforing };
+  }
+
+  /**
+   * Enriches the PDF summary with Citizen-derived identity and the (mocked) BankID signatures.
+   * Identity (name in the heading + personnummer + folkbokföringsadress) is added to each person
+   * section, matched on role → partyId (applicant = session, co-applicant resolved onto the payload).
+   * Every signer (applicant + any co-applicant) also gets a signature block at the bottom.
+   *
+   * Every person's identity is REQUIRED: if name + personnummer cannot be fetched from Citizen for
+   * any person (applicant or co-applicant) this throws and — since it runs before the create call —
+   * no errand is created. An incomplete sammanställning must never reach an errand. Mutates in place.
+   */
+  private async attachPersonIdentities(summary: ApplicationPdfSummaryDto, data: Record<string, unknown>, req: RequestWithUser): Promise<void> {
+    const partyIdByRole = new Map<string, string>();
+    const persons = Array.isArray(data?.persons) ? (data.persons as Array<Record<string, unknown>>) : [];
+    persons.forEach(person => {
+      if (typeof person?.role === 'string' && typeof person?.partyId === 'string') partyIdByRole.set(person.role, person.partyId);
+    });
+
+    const signatures: ApplicationPdfSignatureDto[] = [];
+    for (const section of summary.persons ?? []) {
+      const partyId = section.role ? partyIdByRole.get(section.role) : undefined;
+      if (!partyId) continue;
+
+      const { name, personnummer, folkbokforing } = await this.fetchPersonCitizenData(partyId, req);
+
+      // Varje persons identitet (namn + personnummer) är obligatorisk i sammanställningen — kan den
+      // inte hämtas från Citizen för någon person (sökande eller medsökande) blockeras inskicket.
+      // Körs FÖRE create-anropet, så inget ärende skapas: en ofullständig sammanställning ska aldrig
+      // nå ett ärende.
+      if (!name || !personnummer) {
+        const roll = section.role === 'CO_APPLICANT' ? 'medsökandes' : 'sökandes';
+        throw new HttpException(502, `Kunde inte hämta ${roll} uppgifter från Citizen — ansökan kunde inte skickas in`);
+      }
+
+      // Namnet sätts i sektionsrubriken (t.ex. "Sökande – Anna Andersson") i stället för en egen
+      // Namn-rad, så rubriken inte bara upprepar gruppen "Sökande" men ändå behåller rollen.
+      if (name) section.heading = `${section.heading} – ${name}`;
+
+      const identityRows = [
+        ...(personnummer ? [{ label: 'Personnummer', value: personnummer }] : []),
+        ...(folkbokforing ? [{ label: 'Folkbokföringsadress', value: folkbokforing }] : []),
+      ];
+      section.rows = [...identityRows, ...section.rows];
+
+      signatures.push(this.buildMockSignature(partyId, name, personnummer));
+    }
+    if (signatures.length) summary.signatures = signatures;
+  }
+
+  /**
+   * MOCK: builds a placeholder BankID signature for a signer. There is NO real BankID signing yet —
+   * the checksum is just a deterministic hash, not a real BankID signature/ocspResponse checksum.
+   * When real BankID signing is implemented, replace this with the actual signing response:
+   * name + personalNumber from completionData.user and the checksum of the signature/ocspResponse.
+   */
+  private buildMockSignature(partyId: string, name: string, personnummer: string): ApplicationPdfSignatureDto {
+    const checksum = createHash('sha256').update(`MOCK_BANKID:${partyId}:${personnummer}`).digest('hex');
+    return { name: name || 'Okänd', personnummer, checksum };
+  }
+
   @Post('/economic-aid/applications/:slug')
   @OpenAPI({
     summary: 'Create a financial assistance errand (multipart: a JSON "payload" field + optional "files")',
@@ -430,6 +530,12 @@ export class EconomicAidController {
     // raw personnummer before forwarding.
     await this.resolvePartyIdsOnPayload(body.data, req);
 
+    // Berika PDF-sammanställningens personsektioner med personnummer + folkbokföringsadress från
+    // Citizen. Frontend skickar bara ifyllda uppgifter (sökandes personnummer finns t.ex. inte i
+    // formuläret); identiteten ägs av backend och slås upp per roll via partyId (sökande = sessionen,
+    // medsökande resolvad ovan). Best-effort per person.
+    await this.attachPersonIdentities(body.summary, body.data, req);
+
     // applicationType is derived server-side from the slug by caremanagement — we never send it.
     const request: CreateFinancialAssistanceRequest = {
       // Titel = tydligt displayname utifrån vald slug (auktoritativ — slug är redan validerad ovan).
@@ -441,10 +547,19 @@ export class EconomicAidController {
       data: body.data,
     };
 
-    // caremanagement create is multipart: a JSON "request" part + an optional "attachments" file list.
-    // It stores each file as its own attachment and also generates a combined sammanstallning.pdf.
+    // Render the application sammanställning (all questions/answers + persons + children) to a PDF
+    // via templating and attach it. Generated BEFORE the errand is created and intentionally NOT
+    // wrapped in a try/catch — if the PDF cannot be produced the whole submission fails (the errand
+    // must always carry the sammanställning).
+    const summaryPdf = await renderPdfFromHtml(buildApplicationPdfHtml(body.summary));
+
+    // caremanagement create is multipart: a JSON "request" part, the citizen's own "attachments"
+    // (origin ERRAND) and an optional "caseData" part. The sammanställning goes in caseData — it is
+    // stored as the single CASE_DATA attachment (ärendeuppgifter) and renamed to {errandNumber}.pdf,
+    // so the errand and its snapshot are created in one call.
     const form = new FormData();
     form.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+    form.append('caseData', new Blob([summaryPdf], { type: 'application/pdf' }), 'sammanstallning.pdf');
     (files ?? []).forEach(file => {
       form.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
     });

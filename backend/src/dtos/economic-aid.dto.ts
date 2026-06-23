@@ -284,6 +284,88 @@ export class EligibilityRequestDto {
  * financial-assistance payload — caremanagement owns the deep validation of `data`
  * (@OneOf enums etc.), so here we only require that `data` is present.
  */
+/** One question/answer row in the application sammanställning-PDF. */
+export class ApplicationPdfRowDto {
+  @IsString()
+  label!: string;
+
+  @IsString()
+  value!: string;
+
+  // The form's help text for this question, when it has one.
+  @IsOptional()
+  @IsString()
+  info?: string;
+}
+
+/** A titled group of question/answer rows. */
+export class ApplicationPdfSectionDto {
+  @IsString()
+  heading!: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ApplicationPdfRowDto)
+  rows!: ApplicationPdfRowDto[];
+
+  // The form's help text for this section, when it has one.
+  @IsOptional()
+  @IsString()
+  info?: string;
+
+  // Person sections carry the role so the backend can attach Citizen-derived identity.
+  @IsOptional()
+  @IsIn(['APPLICANT', 'CO_APPLICANT'])
+  role?: 'APPLICANT' | 'CO_APPLICANT';
+}
+
+/** A signer's BankID signature shown at the bottom of the PDF. Backend-populated; currently mocked. */
+export class ApplicationPdfSignatureDto {
+  @IsString()
+  name!: string;
+
+  @IsString()
+  personnummer!: string;
+
+  @IsString()
+  checksum!: string;
+}
+
+/**
+ * Human-readable application summary used to render the attached PDF. Built on the frontend (which
+ * owns the form labels); the backend only lays it out. Required — the PDF is mandatory on submit.
+ */
+export class ApplicationPdfSummaryDto {
+  @IsString()
+  title!: string;
+
+  @IsOptional()
+  @IsString()
+  subtitle?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ApplicationPdfSectionDto)
+  persons!: ApplicationPdfSectionDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ApplicationPdfSectionDto)
+  sections!: ApplicationPdfSectionDto[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ApplicationPdfSectionDto)
+  children!: ApplicationPdfSectionDto[];
+
+  // Backend-populated (mocked BankID signatures); not sent by the client.
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ApplicationPdfSignatureDto)
+  signatures?: ApplicationPdfSignatureDto[];
+}
+
 export class CreateFinancialAssistanceDto {
   @IsOptional()
   @IsString()
@@ -299,6 +381,10 @@ export class CreateFinancialAssistanceDto {
 
   @IsObject({ message: 'data (ansökningspayload) krävs' })
   data!: Record<string, unknown>;
+
+  @ValidateNested()
+  @Type(() => ApplicationPdfSummaryDto)
+  summary!: ApplicationPdfSummaryDto;
 }
 
 export class EconomicAidApplicationDto implements EconomicAidApplicationV1 {

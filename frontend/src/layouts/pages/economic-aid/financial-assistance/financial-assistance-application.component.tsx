@@ -14,6 +14,7 @@ import {
 import { apiService } from '@services/api-service';
 import { clearEconomicAidDraft } from '@services/economic-aid-service';
 import { buildFinancialAssistanceData } from '@services/financial-assistance-service';
+import { buildApplicationPdfSummary } from '@services/financial-assistance-pdf-summary';
 import { ProgressBar } from '@sk-web-gui/progress-bar';
 import { ProgressStepper } from '@sk-web-gui/progress-stepper';
 import { useSnackbar } from '@sk-web-gui/react';
@@ -101,10 +102,12 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
   const runCreate = async () => {
     const values = form.getValues();
     const data = buildFinancialAssistanceData(values, applicationType);
+    // Läsbar sammanställning (frågor/svar + personer + barn) som backend renderar till en PDF-bilaga.
+    const summary = buildApplicationPdfSummary(values, applicationType, t);
 
     const formData = new FormData();
-    // Titeln sätts server-side utifrån vald slug — skicka bara med data.
-    formData.append('payload', JSON.stringify({ data }));
+    // Titeln sätts server-side utifrån vald slug — skicka bara med data + sammanställning.
+    formData.append('payload', JSON.stringify({ data, summary }));
     values.attachments.forEach((file) => {
       if (file.file instanceof Blob) {
         formData.append('files', file.file, `${file.meta.name}.${file.meta.ending}`);

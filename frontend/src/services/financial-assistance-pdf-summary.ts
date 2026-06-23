@@ -117,10 +117,14 @@ export const buildApplicationPdfSummary = (
         // Kontakt (frågas i hushållssteget)
         [t(fa('personuppgifter.emailLabel')), contact.email],
         [t(fa('personuppgifter.phoneLabel')), contact.phone],
-        [t(fa('personuppgifter.notifyLabel')), notify, t(fa('personuppgifter.notifyInfo'))],
+        [
+          t(fa(isCo ? 'personuppgifter.notifyLabelCoApplicant' : 'personuppgifter.notifyLabel')),
+          notify,
+          t(fa('personuppgifter.notifyInfo')),
+        ],
         // Utbetalning (utbetalningssteget)
         ...(!isNew ? ([[t(fa('payment.sameAsPreviousLabel')), yesNo(person.paymentSameAsPrevious)]] as RawRow[]) : []),
-        ...(showPayoutMethod ? ([[t(fa('payment.payoutQuestion')), methodAnswer]] as RawRow[]) : []),
+        ...(showPayoutMethod ? ([[q('payment.payoutQuestion'), methodAnswer]] as RawRow[]) : []),
         [t(fa('payment.clearingLabel')), person.clearingNumber],
         [t(fa('payment.accountLabel')), person.accountNumber],
         [t(fa('payment.otherDescriptionLabel')), person.otherPaymentDescription],
@@ -147,7 +151,7 @@ export const buildApplicationPdfSummary = (
   const periodNormSection = toSection(t(fa('periodNorm.heading')), [
     [t(fa('periodNorm.periodLabel')), period],
     [
-      t(fa('periodNorm.normTypeLabel')),
+      q('periodNorm.normTypeLabel'),
       form.normType ? t(fa(`normType.${form.normType}`)) : '',
       form.normType ? t(fa(`normInfo.${form.normType}`)) : undefined,
     ],

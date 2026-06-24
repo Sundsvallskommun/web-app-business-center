@@ -10,6 +10,37 @@ import { FaStepProps } from './fa-step-registry';
 const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
 const NORM_TYPES: NormType[] = ['NATIONAL_NORM', 'OTHER_NORM'];
 
+/** Norm-valet (Riksnorm / Annan norm) med infotext per alternativ. Etiketten skiljer sig mellan
+ *  ny-/återansökan ("Vilken norm…") och tilläggsansökan (under "Övrigt"). */
+const NormChoice: React.FC<{ label: string }> = ({ label }) => {
+  const { t } = useTranslation('financial-assistance');
+  const { watch, setValue } = useFormContext<FinancialAssistanceFormData>();
+  const normType = watch('normType');
+  return (
+    <FormControl data-cy="fa-norm-type">
+      <FormLabel className="font-bold">{label}</FormLabel>
+      <div className="flex flex-col gap-12">
+        {NORM_TYPES.map((type) => (
+          <div key={type} className="flex flex-col">
+            <RadioButton
+              size="sm"
+              name="fa-norm-type"
+              id={`fa-norm-type-${type}`}
+              data-cy={`fa-norm-type-${type}`}
+              checked={normType === type}
+              onChange={() => {}}
+              onClick={() => setValue('normType', type, { shouldDirty: true })}
+            >
+              {t(`financial-assistance:normType.${type}`)}
+            </RadioButton>
+            <span className="text-small text-dark-secondary ml-32">{t(`financial-assistance:normInfo.${type}`)}</span>
+          </div>
+        ))}
+      </div>
+    </FormControl>
+  );
+};
+
 /** Grupp "Ansökan" — ansökningsperiod, norm och kostnader (alla ansökningstyper). */
 export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, onNext }) => {
   const { t } = useTranslation('financial-assistance');
@@ -21,7 +52,6 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
   const periodChoice = watch('periodChoice');
   const periodMonth = watch('periodMonth');
   const periodYear = watch('periodYear');
-  const normType = watch('normType');
 
   return (
     <section className="flex flex-col gap-32" data-cy="fa-step-economy">
@@ -72,37 +102,36 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
         </div>
       )}
 
-      {/* Norm — som en fråga besvarad med Riksnorm / Annan norm */}
-      <FormControl data-cy="fa-norm-type">
-        <FormLabel className="font-bold">{t('financial-assistance:periodNorm.normTypeLabel', ni)}</FormLabel>
-        <div className="flex flex-col gap-12">
-          {NORM_TYPES.map((type) => (
-            <div key={type} className="flex flex-col">
-              <RadioButton
-                size="sm"
-                name="fa-norm-type"
-                id={`fa-norm-type-${type}`}
-                data-cy={`fa-norm-type-${type}`}
-                checked={normType === type}
-                onChange={() => {}}
-                onClick={() => setValue('normType', type, { shouldDirty: true })}
-              >
-                {t(`financial-assistance:normType.${type}`)}
-              </RadioButton>
-              <span className="text-small text-dark-secondary ml-32">{t(`financial-assistance:normInfo.${type}`)}</span>
-            </div>
-          ))}
-        </div>
-      </FormControl>
+      {/* Norm — som en fråga besvarad med Riksnorm / Annan norm. Vid tilläggsansökan flyttad till
+          "Övrigt" längst ner; här visas den bara för ny-/återansökan. */}
+      {!isSupplementary ? <NormChoice label={t('financial-assistance:periodNorm.normTypeLabel', ni)} /> : null}
 
       {/* Kostnader — markera en eller flera (rutor med checkboxar) */}
       <section className="flex flex-col gap-16" data-cy="fa-costs">
         <div className="text-content flex flex-col gap-4">
-          <h3 className="text-h4-md font-bold">{t('financial-assistance:economy.costsHeading', ni)}</h3>
+          <h3 className="text-h4-md font-bold">
+            {t(isSupplementary ? 'financial-assistance:economy.costsHeadingSupplementary' : 'financial-assistance:economy.costsHeading', ni)}
+          </h3>
           <p className="text-small text-dark-secondary">{t('financial-assistance:economy.costsInfo')}</p>
         </div>
-        <FaCostSelector showRecipientOrPeriod={isSupplementary} />
+        <FaCostSelector />
       </section>
+
+      {/* Övrigt (endast tilläggsansökan) — norm + specifikation längst ner. */}
+      {isSupplementary ? (
+        <section className="flex flex-col gap-16" data-cy="fa-other">
+          <h3 className="text-h4-md font-bold">{t('financial-assistance:economy.otherHeading')}</h3>
+          <NormChoice label={t('financial-assistance:economy.normLabel')} />
+          <FormControl className="w-full" data-cy="fa-norm-specification">
+            <FormLabel className="font-bold">{t('financial-assistance:economy.normSpecificationLabel')}</FormLabel>
+            <Textarea
+              className="w-full min-h-72"
+              value={watch('normSpecification')}
+              onChange={(event) => setValue('normSpecification', event.target.value, { shouldDirty: true })}
+            />
+          </FormControl>
+        </section>
+      ) : null}
 
       <StepNavigation onBack={onBack} onNext={onNext} />
     </section>

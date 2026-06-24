@@ -238,28 +238,40 @@ export const buildFormSnapshot = (
           : {}),
       })
     : staticField('period', t(fa('periodNorm.periodLabel')), period);
+  // Norm-valet (Riksnorm/Annan norm). Ny-/återansökan: "Vilken norm…" före kostnaderna.
+  // Tilläggsansökan: flyttad till "Övrigt" efter kostnaderna, med en specifikationsfråga.
+  const normField = choice(
+    'normType',
+    isSupplementary ? t(fa('economy.normLabel')) : q('periodNorm.normTypeLabel'),
+    'RADIO',
+    NORM_TYPES,
+    'normType',
+    form.normType,
+    { infoTexts: form.normType ? [t(fa(`normInfo.${form.normType}`))] : undefined },
+  );
+  const costsField = field({
+    name: 'costs',
+    label: t(fa(isSupplementary ? 'economy.costsHeadingSupplementary' : 'economy.costsHeading'), niCtx),
+    inputType: 'REPEATING_GROUP',
+    items: form.costs
+      .filter((cost) => cost.costType)
+      .map((cost) => [
+        staticField('costType', t(fa('economy.cost.typeLabel')), t(fa(`costType.${cost.costType}`))),
+        ...(cost.costType === 'OTHER'
+          ? [choice('otherSubType', t(fa('economy.cost.subTypeLabel')), 'SELECT', COST_OTHER_SUBTYPES, 'costOtherSubType', cost.otherSubType)]
+          : []),
+        ...(cost.costType === 'OTHER' ? [textField('specification', t(fa('economy.cost.specificationLabel')), cost.specification)] : []),
+        numberField('appliedAmount', t(fa('economy.cost.amountLabel')), cost.appliedAmount),
+      ]),
+  });
   const economyFields: FormSnapshotField[] = [
     periodField,
     textField('otherBenefitDescription', t(fa('periodNorm.otherBenefitPlaceholder')), form.otherBenefitDescription, 'TEXTAREA'),
-    choice('normType', q('periodNorm.normTypeLabel'), 'RADIO', NORM_TYPES, 'normType', form.normType, {
-      infoTexts: form.normType ? [t(fa(`normInfo.${form.normType}`))] : undefined,
-    }),
-    field({
-      name: 'costs',
-      label: q('economy.costsHeading'),
-      inputType: 'REPEATING_GROUP',
-      items: form.costs
-        .filter((cost) => cost.costType)
-        .map((cost) => [
-          staticField('costType', t(fa('economy.cost.typeLabel')), t(fa(`costType.${cost.costType}`))),
-          ...(cost.costType === 'OTHER'
-            ? [choice('otherSubType', t(fa('economy.cost.subTypeLabel')), 'SELECT', COST_OTHER_SUBTYPES, 'costOtherSubType', cost.otherSubType)]
-            : []),
-          ...(cost.costType === 'OTHER' ? [textField('specification', t(fa('economy.cost.specificationLabel')), cost.specification)] : []),
-          numberField('appliedAmount', t(fa('economy.cost.amountLabel')), cost.appliedAmount),
-          ...(cost.recipientOrPeriod ? [textField('recipientOrPeriod', t(fa('economy.cost.recipientOrPeriodLabel')), cost.recipientOrPeriod)] : []),
-        ]),
-    }),
+    ...(!isSupplementary ? [normField] : []),
+    costsField,
+    ...(isSupplementary
+      ? [normField, textField('normSpecification', t(fa('economy.normSpecificationLabel')), form.normSpecification, 'TEXTAREA')]
+      : []),
   ];
 
   // ── 3. Inkomster och tillgångar ─────────────────────────────────────────────────────────────
@@ -404,7 +416,8 @@ export const buildFormSnapshot = (
     const identity = identities[person.role];
     const showMethod = isNew || person.paymentSameAsPrevious === false;
     return [
-      staticField('role', t(fa(`recipient.${person.role}`)), identity ? `${t(fa(`recipient.${person.role}`))} – ${identity.name}` : t(fa(`recipient.${person.role}`))),
+      // Inget "Sökande" — bara namnet, och bara när det finns en medsökande (för att skilja personerna åt).
+      ...(isCohabiting && identity ? [staticField('name', t(fa('personuppgifter.nameLabel')), identity.name)] : []),
       ...(!isNew ? [radio('paymentSameAsPrevious', t(fa('payment.sameAsPreviousLabel')), person.paymentSameAsPrevious)] : []),
       ...(showMethod ? [choice('paymentMethod', q('payment.payoutQuestion'), 'SELECT', PAYMENT_METHODS, 'paymentMethod', person.paymentMethod)] : []),
       textField('clearingNumber', t(fa('payment.clearingLabel')), person.clearingNumber),

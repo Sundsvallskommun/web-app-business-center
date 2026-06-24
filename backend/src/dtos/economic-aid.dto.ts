@@ -47,10 +47,10 @@ import {
 
 // Postnummer i form NNN NN (med mellanslag).
 const POSTNUMMER_PATTERN = /^\d{3} \d{2}$/;
-// Personnummer i form YYYYMMDD-XXXX. Bara mönsterkontroll här —
-// kontrollsiffran (Luhn) valideras inte; det görs när uppgiften
-// matchas mot folkbokföringen.
-const PERSONNUMMER_PATTERN = /^\d{8}-\d{4}$/;
+// Personnummer i form YYYYMMDD-XXXX. Bindestrecket är frivilligt (matchar frontend-fälten och
+// backend normaliserar ändå med onlyDigits). Bara mönsterkontroll här — kontrollsiffran (Luhn)
+// valideras inte; det görs när uppgiften matchas mot folkbokföringen.
+const PERSONNUMMER_PATTERN = /^\d{8}-?\d{4}$/;
 // Belopp anges som hela kronor (string av siffror, max 7 siffror).
 const AMOUNT_PATTERN = /^\d{1,7}$/;
 const FORANDRING_BESKRIVNING_MAX = 500;

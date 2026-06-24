@@ -5,6 +5,9 @@ import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { compactFieldClass, numberFieldOptions } from './fa-form-helpers';
 
+// "För vem / vilken period" har tagits bort från alla kostnader — den frågan ställs numera bara
+// för normen (under rubriken Övrigt på tilläggsansökan).
+
 interface CostGroup {
   category: string;
   types: CostType[];
@@ -27,18 +30,13 @@ const boxClass = (checked: boolean): string =>
     checked ? 'border-vattjom-surface-primary bg-vattjom-background-100' : 'border-divider bg-background-content',
   ].join(' ');
 
-interface FaCostSelectorProps {
-  /** Tilläggsansökan: visa även "för vem / vilken period" per vald kostnad. */
-  showRecipientOrPeriod: boolean;
-}
-
 /**
  * Kostnadsväljare — markera en eller flera kostnader (errand_fa_cost). Varje kostnadstyp är en
  * ruta med checkbox; ikryssad ruta expanderar och visar hjälptext + belopp. "Övrigt bistånd" kan
  * läggas till på flera rader (egen undertyp/specifikation/belopp per rad). Varje rad blir en post
  * i `costs`.
  */
-export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ showRecipientOrPeriod }) => {
+export const FaCostSelector: React.FC = () => {
   const { t } = useTranslation('financial-assistance');
   const { control, register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
   const { fields, append, remove } = useFieldArray({ control, name: 'costs' });
@@ -46,16 +44,6 @@ export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ showRecipientOrP
 
   const indicesOf = (type: CostType): number[] =>
     costs.reduce<number[]>((acc, cost, index) => (cost.costType === type ? [...acc, index] : acc), []);
-
-  const recipientOrPeriodField = (index: number, fieldId: string) =>
-    showRecipientOrPeriod ? (
-      <FormControl className="w-full">
-        <FormLabel htmlFor={`${fieldId}-recipient-period`}>
-          {t('financial-assistance:economy.cost.recipientOrPeriodLabel')}
-        </FormLabel>
-        <Input id={`${fieldId}-recipient-period`} {...register(`costs.${index}.recipientOrPeriod` as const)} />
-      </FormControl>
-    ) : null;
 
   // En vanlig kostnadsruta (allt utom "Övrigt bistånd"): en checkbox, en post i `costs`.
   const renderStandardBox = (type: CostType) => {
@@ -85,7 +73,6 @@ export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ showRecipientOrP
                 {...register(`costs.${index}.appliedAmount` as const, numberFieldOptions)}
               />
             </FormControl>
-            {recipientOrPeriodField(index, fieldId)}
           </div>
         ) : null}
       </div>
@@ -174,8 +161,6 @@ export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ showRecipientOrP
                       {...register(`costs.${index}.appliedAmount` as const, numberFieldOptions)}
                     />
                   </FormControl>
-
-                  {recipientOrPeriodField(index, fieldId)}
                 </div>
               );
             })}

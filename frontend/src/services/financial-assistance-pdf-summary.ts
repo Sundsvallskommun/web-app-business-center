@@ -211,27 +211,44 @@ export const buildApplicationPdfSummary = (
       : form.periodChoice
         ? t(fa(`periodChoice.${form.periodChoice}`))
         : '';
+  // Norm visas på "Ansökan"-steget för ny-/återansökan, men på tilläggsansökan är den flyttad till
+  // "Övrigt" längst ner (egen sektion nedan).
   const periodNormSection = section(undefined, [
     [t(fa('periodNorm.periodLabel')), period],
-    [
-      q('periodNorm.normTypeLabel'),
-      form.normType ? t(fa(`normType.${form.normType}`)) : '',
-      form.normType ? t(fa(`normInfo.${form.normType}`)) : undefined,
-    ],
+    ...(!isSupplementary
+      ? ([
+          [
+            q('periodNorm.normTypeLabel'),
+            form.normType ? t(fa(`normType.${form.normType}`)) : '',
+            form.normType ? t(fa(`normInfo.${form.normType}`)) : undefined,
+          ],
+        ] as RawRow[])
+      : []),
     [t(fa('periodNorm.otherBenefitPlaceholder')), form.otherBenefitDescription],
   ]);
   const costsSection = section(
-    q('economy.costsHeading'),
+    t(fa(isSupplementary ? 'economy.costsHeadingSupplementary' : 'economy.costsHeading'), niCtx),
     form.costs
       .filter((cost) => cost.costType)
       .map((cost): RawRow => {
         const base = t(fa(`costType.${cost.costType}`));
         const label =
           cost.costType === 'OTHER' && cost.otherSubType ? `${base} – ${t(fa(`costOtherSubType.${cost.otherSubType}`))}` : base;
-        return [label, joinParts([kr(cost.appliedAmount), cost.specification, cost.recipientOrPeriod]), t(fa(`costInfo.${cost.costType}`))];
+        return [label, joinParts([kr(cost.appliedAmount), cost.specification]), t(fa(`costInfo.${cost.costType}`))];
       }),
   );
-  const expensesGroup = group('2. ' + t(fa('groups.economy')), [periodNormSection, costsSection]);
+  // Tilläggsansökan: norm + specifikation under rubriken "Övrigt" sist i gruppen.
+  const otherSection = isSupplementary
+    ? section(t(fa('economy.otherHeading')), [
+        [
+          t(fa('economy.normLabel')),
+          form.normType ? t(fa(`normType.${form.normType}`)) : '',
+          form.normType ? t(fa(`normInfo.${form.normType}`)) : undefined,
+        ],
+        [t(fa('economy.normSpecificationLabel')), form.normSpecification],
+      ])
+    : null;
+  const expensesGroup = group('2. ' + t(fa('groups.economy')), [periodNormSection, costsSection, otherSection]);
 
   // ── 3. Inkomster och tillgångar ──────────────────────────────────────────────────────────────
   // Varje inkomst/ersättning/tillgång blir en egen sektion med formulärets fältetiketter
@@ -373,10 +390,13 @@ export const buildApplicationPdfSummary = (
   const paymentSection = (person: PersonForm): ApplicationPdfSection | null => {
     const methodAnswer = person.paymentMethod ? t(fa(`paymentMethod.${person.paymentMethod}`)) : '';
     const showPayoutMethod = isNew || person.paymentSameAsPrevious === false;
-    const roleLabel = t(fa(`recipient.${person.role}`));
     const identity = identities?.[person.role];
+    // Inget "Sökande" — bara namnet, och bara när det finns en medsökande (för att skilja korten åt).
+    // Ensam sökande får ingen rubrik. För submit-payloaden (utan identities) sätter backend namnet
+    // på samma villkor.
+    const heading = isCohabiting && identity ? identity.name : undefined;
     return section(
-      identity ? `${roleLabel} – ${identity.name}` : roleLabel,
+      heading,
       [
         ...(!isNew ? ([[t(fa('payment.sameAsPreviousLabel')), yesNo(person.paymentSameAsPrevious)]] as RawRow[]) : []),
         ...(showPayoutMethod ? ([[q('payment.payoutQuestion'), methodAnswer]] as RawRow[]) : []),

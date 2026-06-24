@@ -22,7 +22,8 @@ import { StepNavigation } from '../components/step-navigation.component';
 import { TolkSprakPicker } from '../components/tolk-sprak-picker.component';
 import { StepProps } from './step-registry';
 
-const PERSONNUMMER_PATTERN = /^\d{8}-\d{4}$/;
+// Bindestrecket är frivilligt (samma som civilstånds-steget) — backend normaliserar ändå formatet.
+const PERSONNUMMER_PATTERN = /^\d{8}-?\d{4}$/;
 const FORANDRING_BESKRIVNING_MAX = 500;
 
 const CIVILSTAND_LABELS: Record<Civilstand, string> = {

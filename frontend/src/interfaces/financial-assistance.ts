@@ -97,7 +97,6 @@ export interface CostForm {
   appliedAmount: number | null;
   otherSubType: CostOtherSubType | '';
   specification: string;
-  recipientOrPeriod: string;
 }
 
 export interface IncomeForm {
@@ -174,6 +173,8 @@ export interface FinancialAssistanceFormData {
   periodYear: number | null;
   periodChoice: PeriodChoice | '';
   normType: NormType | '';
+  /** Tilläggsansökan: fritext "för vem/vilka och vilken period" som normen avser. */
+  normSpecification: string;
   otherBenefitDescription: string;
   livelihoodDescription: string;
   hasChildrenUnder21: boolean | null;
@@ -238,6 +239,7 @@ export const emptyFinancialAssistanceFormData = (prefill: FinancialAssistancePre
     periodYear: prefill.periodYear,
     periodChoice: '',
     normType: '',
+    normSpecification: '',
     otherBenefitDescription: '',
     livelihoodDescription: '',
     hasChildrenUnder21: null,
@@ -292,7 +294,6 @@ export const emptyCost = (): CostForm => ({
   appliedAmount: null,
   otherSubType: '',
   specification: '',
-  recipientOrPeriod: '',
 });
 
 export const emptyIncome = (): IncomeForm => ({

@@ -102,7 +102,6 @@ const buildCost = (cost: CostForm): Record<string, unknown> =>
     otherSubType: cost.costType === 'OTHER' ? cost.otherSubType : '',
     // "Vad avser kostnaden" visas/skickas bara för övrigt bistånd.
     specification: cost.costType === 'OTHER' ? cost.specification.trim() : '',
-    recipientOrPeriod: cost.recipientOrPeriod.trim(),
   });
 
 const buildIncome = (income: IncomeForm): Record<string, unknown> =>

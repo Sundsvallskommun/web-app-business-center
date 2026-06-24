@@ -468,8 +468,13 @@ export class EconomicAidController {
       identityByRole.set(role, identity);
     }
 
-    // Enrich every person section (in any group): append the name to the heading, and for the
-    // identity-flagged section (group 1) prepend personnummer + folkbokföringsadress.
+    // Bara när det finns en medsökande visar vi namn på personsektioner (t.ex. utbetalning) — för
+    // att skilja personerna åt. Ensam sökande får ingen "Sökande"-rubrik.
+    const hasCoApplicant = partyIdByRole.size > 1;
+
+    // Enrich every person section (in any group): for the identity-flagged section (group 1)
+    // prepend namn + personnummer + folkbokföringsadress; for other person sections (e.g. payment)
+    // set the name as the heading, but only when applying together.
     for (const group of summary.groups ?? []) {
       for (const section of group.sections ?? []) {
         if (!section.role) continue;
@@ -484,7 +489,7 @@ export class EconomicAidController {
             ...(identity.folkbokforing ? [{ label: 'Folkbokföringsadress', value: identity.folkbokforing }] : []),
           ];
           section.rows = [...identityRows, ...section.rows];
-        } else {
+        } else if (hasCoApplicant) {
           // Other person sections (e.g. payment): name in the heading to identify the person.
           section.heading = section.heading ? `${section.heading} – ${identity.name}` : identity.name;
         }
@@ -601,9 +606,7 @@ export class EconomicAidController {
       throw new HttpException(502, 'Errand was created but no id was returned from caremanagement');
     }
 
-    logger.info(
-      `[economic-aid] created ${slug} errand ${errandId} with ${files?.length ?? 0} attachment(s) for partyId=${req.user.partyId}`,
-    );
+    logger.info(`[economic-aid] created ${slug} errand ${errandId} with ${files?.length ?? 0} attachment(s) for partyId=${req.user.partyId}`);
 
     // Populate name/address on the auto-created stakeholders from Citizen so the handläggning UI
     // has them. Resolved server-side from partyId (the authoritative source), not sent from the
@@ -668,9 +671,7 @@ export class EconomicAidController {
         });
         logger.info(`[economic-aid] enriched stakeholder ${stakeholder.id} (role=${stakeholder.role}) on errand ${errandId}`);
       } catch (err) {
-        logger.warn(
-          `[economic-aid] failed to enrich stakeholder ${stakeholder.id} on errand ${errandId}: ${(err as Error)?.message ?? err}`,
-        );
+        logger.warn(`[economic-aid] failed to enrich stakeholder ${stakeholder.id} on errand ${errandId}: ${(err as Error)?.message ?? err}`);
       }
     }
   }
@@ -715,9 +716,12 @@ export class EconomicAidController {
     const result = new Map<string, string>();
     const clean = Array.from(new Set(personalNumbers.map(onlyDigits).filter(Boolean)));
     if (clean.length === 0) return result;
+    // Citizen förväntar sig personnummer på formen YYYYMMDD-XXXX (samma som de enskilda guid-/
+    // personnummer-anropen). Skickar vi enbart siffror hittas inte medsökande och ärendet blockeras.
+    const formatted = clean.map(pnr => (pnr.length === 12 ? `${pnr.slice(0, 8)}-${pnr.slice(8)}` : pnr));
     try {
       const res = await this.apiService.post<PersonGuidBatch[], string[]>(
-        { url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/guid/batch`, data: clean },
+        { url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/guid/batch`, data: formatted },
         req.user,
       );
       (res?.data ?? []).forEach(entry => {

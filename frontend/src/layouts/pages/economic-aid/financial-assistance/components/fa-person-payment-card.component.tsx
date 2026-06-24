@@ -17,10 +17,10 @@ export const FaPersonPaymentCard: React.FC<FaPersonPaymentCardProps> = ({ index,
   const { t } = useTranslation('financial-assistance');
   const { register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
 
-  // När man ansöker tillsammans (medsökande) visar vi personens namn istället för
-  // "Sökande"/"Medsökande" för att skilja korten åt.
+  // Vi visar bara ett namn när man ansöker tillsammans (medsökande) — för att skilja korten åt.
+  // Ensam sökande får inget "Sökande"-namn över sitt kort.
   const { nameForRole } = useApplicantNames();
-  const heading = nameForRole(role) ?? t(`financial-assistance:recipient.${role}`);
+  const heading = nameForRole(role);
 
   const paymentMethod = watch(`persons.${index}.paymentMethod` as const);
   const needsInterpreter = watch(`persons.${index}.needsInterpreter` as const);
@@ -72,7 +72,7 @@ export const FaPersonPaymentCard: React.FC<FaPersonPaymentCardProps> = ({ index,
 
   return (
     <Card data-cy={`fa-person-${index}`} className="flex flex-col gap-16 p-24">
-      <h4 className="text-h5-md font-bold">{heading}</h4>
+      {heading ? <h4 className="text-h5-md font-bold">{heading}</h4> : null}
 
       {/* Renewal/supplementary: "samma konto som föregående?" först. */}
       {!isNew

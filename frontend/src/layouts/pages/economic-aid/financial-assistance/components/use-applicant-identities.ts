@@ -1,8 +1,6 @@
 import { ApplicantAddress, ApplicantProfile } from '@interfaces/economic-aid';
-import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
 import { useApi } from '@services/api-service';
 import { ApplicantIdentities, PersonIdentity } from '@services/financial-assistance-pdf-summary';
-import { useFormContext } from 'react-hook-form';
 
 const formatAddress = (address: ApplicantAddress | null): string => {
   if (!address) return '';
@@ -22,19 +20,26 @@ const toIdentity = (profile?: ApplicantProfile): PersonIdentity | undefined => {
 /**
  * Citizen-derived identities (name + personnummer + folkbokföringsadress) for the applicant and,
  * when cohabiting, the co-applicant — used to show the same person details in the on-screen preview
- * that the backend adds to the PDF. Reuses the same profile endpoints as the contact step, so
- * react-query serves them from cache (no extra requests).
+ * and the form snapshot that the backend also adds to the PDF. Reuses the same profile endpoints as
+ * the contact step, so react-query serves them from cache (no extra requests).
+ *
+ * Takes the marital state and co-applicant personnummer as arguments (not via useFormContext) so it
+ * also works in the wizard shell component that *provides* the form context.
  */
-export const useApplicantIdentities = (): ApplicantIdentities => {
-  const { watch } = useFormContext<FinancialAssistanceFormData>();
-  const isCohabiting = watch('maritalStatus') === 'COHABITING';
-  const coApplicantPersonalNumber = (watch('persons').find((person) => person.role === 'CO_APPLICANT')?.personalNumber ?? '').trim();
+export const useApplicantIdentities = ({
+  isCohabiting,
+  coApplicantPersonalNumber,
+}: {
+  isCohabiting: boolean;
+  coApplicantPersonalNumber: string;
+}): ApplicantIdentities => {
+  const coPnr = coApplicantPersonalNumber.trim();
 
   const applicantApi = useApi<ApplicantProfile>({ url: '/economic-aid/applicant-profile', method: 'get' });
   const coApplicantApi = useApi<ApplicantProfile>({
-    url: `/economic-aid/co-applicant-profile?personnummer=${encodeURIComponent(coApplicantPersonalNumber)}`,
+    url: `/economic-aid/co-applicant-profile?personnummer=${encodeURIComponent(coPnr)}`,
     method: 'get',
-    queryOptions: { enabled: isCohabiting && coApplicantPersonalNumber !== '' },
+    queryOptions: { enabled: isCohabiting && coPnr !== '' },
   });
 
   const identities: ApplicantIdentities = {};

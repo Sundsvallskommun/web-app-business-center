@@ -1771,6 +1771,15 @@ export interface StatusHistoryEntry {
   changedAt?: string;
 }
 
+/** The number of notes on the errand */
+export interface NoteCount {
+  /**
+   * Number of notes attached to the errand
+   * @format int64
+   */
+  count?: number;
+}
+
 /** A message in the errand's conversation */
 export interface Message {
   /** Unique identifier */
@@ -1843,6 +1852,15 @@ export interface ErrandEvent {
   statusCode?: number;
   /** @format date-time */
   created?: string;
+}
+
+/** The number of activity events on the errand matching the given filters */
+export interface ErrandEventCount {
+  /**
+   * Number of matching events
+   * @format int64
+   */
+  count?: number;
 }
 
 /** Attachment model */
@@ -1951,6 +1969,131 @@ export interface SectionApprovals {
   payment?: SectionApproval;
   /** Approval of the decision (decision) section */
   decision?: SectionApproval;
+}
+
+/** The number of active (OPEN/ACKNOWLEDGED) income warnings on the errand */
+export interface WarningCount {
+  /**
+   * Number of active warnings — closed ones are not counted
+   * @format int64
+   */
+  count?: number;
+}
+
+/** The number of monitorings on the errand */
+export interface MonitoringCount {
+  /**
+   * Number of monitorings on the errand
+   * @format int64
+   */
+  count?: number;
+}
+
+/** Self-describing snapshot of the form as it was rendered and answered. */
+export interface FormSnapshot {
+  /**
+   * The snapshot envelope contract version (server-owned)
+   * @minLength 1
+   */
+  schemaVersion: string;
+  /** The frontend form / i18n bundle version that produced this snapshot */
+  formDefinitionVersion?: string;
+  /** The errand type slug the form belongs to */
+  typeSlug?: string;
+  /** The locale the form was rendered in */
+  locale?: string;
+  /**
+   * When the form was rendered/submitted, per the client clock
+   * @format date-time
+   */
+  capturedAt?: string;
+  /** The form title the applicant saw */
+  title?: string;
+  /**
+   * The sections of the form, in render order
+   * @minItems 1
+   */
+  sections: FormSnapshotSection[];
+  /** The attestation the applicant accepted, if any */
+  attestation?: FormSnapshotAttestation;
+}
+
+/** The answer given to a field, as it was presented to the applicant. */
+export interface FormSnapshotAnswer {
+  /** The option code, when the answer is an enum/option value; null otherwise */
+  code?: string;
+  /** The raw value, when the answer is free text / number / boolean; null otherwise */
+  value?: string;
+  /** The human-readable answer text the applicant saw */
+  display?: string;
+}
+
+/** The attestation the applicant accepted at submission. */
+export interface FormSnapshotAttestation {
+  /** The attestation text the applicant accepted */
+  label?: string;
+  /** The answer given to the attestation */
+  answer?: FormSnapshotAnswer;
+}
+
+/** A single form field as it was rendered and answered. */
+export interface FormSnapshotField {
+  /** The field name (matches the typed application data field) */
+  name?: string;
+  /** The field label the applicant saw */
+  label?: string;
+  /** The input kind as rendered */
+  inputType?: FormSnapshotFieldInputTypeEnum;
+  /** The help text shown for the field, if any */
+  helpText?: string;
+  /** Info texts shown for the field, in order */
+  infoTexts?: string[];
+  /** Info / warning / error notices rendered for the field, in order */
+  notices?: FormSnapshotNotice[];
+  /** All options as presented (for RADIO/CHECKBOX/SELECT), in order */
+  options?: FormSnapshotOption[];
+  /** The answer given, when the field has a single answer */
+  answer?: FormSnapshotAnswer;
+  /** For REPEATING_GROUP fields, one entry per repeated instance; each is the list of nested fields */
+  items?: FormSnapshotField[][];
+  /** Whether the field was required as rendered */
+  required?: boolean;
+  /** Whether the field was visible to the applicant */
+  visible?: boolean;
+  /** The visibility rule that was active, human-readable */
+  condition?: string;
+}
+
+/** An info / warning / error notice shown to the applicant. */
+export interface FormSnapshotNotice {
+  /** The notice level */
+  level?: FormSnapshotNoticeLevelEnum;
+  /** The notice text the applicant saw */
+  text?: string;
+}
+
+/** An option as presented to the applicant. */
+export interface FormSnapshotOption {
+  /** The option code (machine value) */
+  code?: string;
+  /** The option label the applicant saw */
+  label?: string;
+  /** Whether the applicant selected this option */
+  selected?: boolean;
+}
+
+/** A section of the form as it was rendered. */
+export interface FormSnapshotSection {
+  /** A stable section id */
+  id?: string;
+  /** The section title the applicant saw */
+  title?: string;
+  /** The section-level description / info text, if any */
+  description?: string;
+  /** Whether the section was visible to the applicant */
+  visible?: boolean;
+  /** The fields in the section, in render order */
+  fields?: FormSnapshotField[];
 }
 
 /** A child pre-filled from Lifecare for a financial assistance renewal. Carries only what Lifecare provides — personnummer and name; the citizen completes residence, school etc. on the form. */
@@ -2287,6 +2430,7 @@ export enum NotificationSubTypeEnum {
   ATTACHMENT = "ATTACHMENT",
   STAKEHOLDER = "STAKEHOLDER",
   PARAMETER = "PARAMETER",
+  MESSAGE = "MESSAGE",
   SYSTEM = "SYSTEM",
 }
 
@@ -2452,6 +2596,27 @@ export enum AttachmentOriginEnum {
 export enum AttachmentSenderRoleEnum {
   CLIENT = "CLIENT",
   CASEWORKER = "CASEWORKER",
+}
+
+/** The input kind as rendered */
+export enum FormSnapshotFieldInputTypeEnum {
+  RADIO = "RADIO",
+  CHECKBOX = "CHECKBOX",
+  SELECT = "SELECT",
+  TEXT = "TEXT",
+  TEXTAREA = "TEXTAREA",
+  NUMBER = "NUMBER",
+  DATE = "DATE",
+  BOOLEAN_TOGGLE = "BOOLEAN_TOGGLE",
+  REPEATING_GROUP = "REPEATING_GROUP",
+  STATIC = "STATIC",
+}
+
+/** The notice level */
+export enum FormSnapshotNoticeLevelEnum {
+  INFO = "INFO",
+  WARNING = "WARNING",
+  ERROR = "ERROR",
 }
 
 /** Stable code for the Mina-sidor form section the type is shown under; null for income */

@@ -15,6 +15,8 @@ import { apiService } from '@services/api-service';
 import { clearEconomicAidDraft } from '@services/economic-aid-service';
 import { buildFinancialAssistanceData } from '@services/financial-assistance-service';
 import { buildApplicationPdfSummary } from '@services/financial-assistance-pdf-summary';
+import { buildFormSnapshot } from '@services/financial-assistance-form-snapshot';
+import { useApplicantIdentities } from './components/use-applicant-identities';
 import { ProgressBar } from '@sk-web-gui/progress-bar';
 import { ProgressStepper } from '@sk-web-gui/progress-stepper';
 import { useSnackbar } from '@sk-web-gui/react';
@@ -86,6 +88,8 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
   });
 
   const isCohabiting = maritalStatus === 'COHABITING';
+  // Person identities (name/personnummer/folkbokföringsadress from Citizen) for the form snapshot.
+  const identities = useApplicantIdentities({ isCohabiting, coApplicantPersonalNumber });
   const [signOpen, setSignOpen] = useState(false);
   const [creating, setCreating] = useState(false);
 
@@ -104,10 +108,16 @@ export const FinancialAssistanceApplication: React.FC<FinancialAssistanceApplica
     const data = buildFinancialAssistanceData(values, applicationType);
     // Läsbar sammanställning (frågor/svar + personer + barn) som backend renderar till en PDF-bilaga.
     const summary = buildApplicationPdfSummary(values, applicationType, t);
+    // Immutabel, åter-renderbar JSON-snapshot av hela formuläret som det fylldes i (formSnapshot-delen).
+    const formSnapshot = buildFormSnapshot(values, applicationType, t, {
+      typeSlug: slug,
+      capturedAt: new Date().toISOString(),
+      identities,
+    });
 
     const formData = new FormData();
-    // Titeln sätts server-side utifrån vald slug — skicka bara med data + sammanställning.
-    formData.append('payload', JSON.stringify({ data, summary }));
+    // Titeln sätts server-side utifrån vald slug — skicka bara med data + sammanställning + snapshot.
+    formData.append('payload', JSON.stringify({ data, summary, formSnapshot }));
     values.attachments.forEach((file) => {
       if (file.file instanceof Blob) {
         formData.append('files', file.file, `${file.meta.name}.${file.meta.ending}`);

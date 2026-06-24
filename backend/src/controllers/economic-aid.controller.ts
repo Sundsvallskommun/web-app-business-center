@@ -580,6 +580,11 @@ export class EconomicAidController {
     const form = new FormData();
     form.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }));
     form.append('caseData', new Blob([summaryPdf], { type: 'application/pdf' }), 'sammanstallning.pdf');
+    // Immutable, re-renderable JSON snapshot of the form as the applicant filled it in. Built by the
+    // client (only it knows the rendered labels/texts); forwarded verbatim. Captured write-once per errand.
+    if (body.formSnapshot) {
+      form.append('formSnapshot', new Blob([JSON.stringify(body.formSnapshot)], { type: 'application/json' }));
+    }
     (files ?? []).forEach(file => {
       form.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
     });

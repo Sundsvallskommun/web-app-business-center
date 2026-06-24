@@ -46,8 +46,11 @@ const SummarySection: React.FC<{ section: ApplicationPdfSection }> = ({ section 
 export const FaReviewSummary: React.FC<FaReviewSummaryProps> = ({ applicationType }) => {
   const { t } = useTranslation('financial-assistance');
   const { watch } = useFormContext<FinancialAssistanceFormData>();
-  const identities = useApplicantIdentities();
-  const summary = buildApplicationPdfSummary(watch(), applicationType, t, identities);
+  const values = watch();
+  const isCohabiting = values.maritalStatus === 'COHABITING';
+  const coApplicantPersonalNumber = values.persons.find((person) => person.role === 'CO_APPLICANT')?.personalNumber ?? '';
+  const identities = useApplicantIdentities({ isCohabiting, coApplicantPersonalNumber });
+  const summary = buildApplicationPdfSummary(values, applicationType, t, identities);
 
   return (
     <div className="flex flex-col gap-24 text-content" data-cy="fa-review-summary">

@@ -396,6 +396,12 @@ export class CreateFinancialAssistanceDto {
   @ValidateNested()
   @Type(() => ApplicationPdfSummaryDto)
   summary!: ApplicationPdfSummaryDto;
+
+  // Immutable, re-renderable form snapshot built by the client (FormSnapshot envelope). Forwarded
+  // as-is to caremanagement's formSnapshot part — the backend does not inspect its inner shape.
+  @IsOptional()
+  @IsObject()
+  formSnapshot?: Record<string, unknown>;
 }
 
 export class EconomicAidApplicationDto implements EconomicAidApplicationV1 {

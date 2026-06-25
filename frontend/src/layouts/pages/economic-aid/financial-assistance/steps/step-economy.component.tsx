@@ -173,10 +173,13 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
           <h3 className="text-h4-md font-bold">
             {t(isSupplementary ? 'financial-assistance:economy.costsHeadingSupplementary' : 'financial-assistance:economy.costsHeading', ni)}
           </h3>
-          {/* "Sök endast …"-texten visas inte på tilläggsansökan (minst en utgift krävs ändå). */}
-          {!isSupplementary ? (
-            <p className="text-small text-dark-secondary">{t('financial-assistance:economy.costsInfo')}</p>
-          ) : null}
+          {/* "Sök endast …"-texten finns bara på nyansökan. Återansökan visar enbart "Inte
+              obligatoriskt …"; tilläggsansökan visar ingen hjälptext (minst en utgift krävs ändå). */}
+          {isSupplementary ? null : (
+            <p className="text-small text-dark-secondary">
+              {t(isNew ? 'financial-assistance:economy.costsInfo' : 'financial-assistance:economy.costsInfoRenewal')}
+            </p>
+          )}
         </div>
         <FaCostSelector />
       </section>

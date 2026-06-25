@@ -208,6 +208,7 @@
     "normLabel": "Norm",
     "normSpecificationLabel": "Specificera för vem eller vilka ansökan om norm avser samt för vilken period",
     "costsInfo": "Sök endast i för de utgifter som du faktiskt har och ansöker om. Inte obligatoriskt att fylla i.",
+    "costsInfoRenewal": "Inte obligatoriskt att fylla i.",
     "addCost": "Lägg till kostnad",
     "addRow": "Lägg till ny rad",
     "incomesHeading": "Inkomster",

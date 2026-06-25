@@ -7,7 +7,7 @@ import {
   RenewalPrefill,
   Stakeholder,
 } from '@/data-contracts/caremanagement/data-contracts';
-import { CitizenAddress, CitizenExtended, PersonGuidBatch } from '@/data-contracts/citizen/data-contracts';
+import { CitizenAddress, CitizenExtended, CustodyChild, PersonGuidBatch } from '@/data-contracts/citizen/data-contracts';
 import {
   ApplicationPdfSignatureDto,
   ApplicationPdfSummaryDto,
@@ -23,6 +23,7 @@ import {
   Civilstand,
   EconomicAidApplicationV1,
   EligibilityResult,
+  PrefilledChild,
   PrefillResult,
   SubmitApplicationResponse,
 } from '@/interfaces/economic-aid.interface';
@@ -404,6 +405,58 @@ export class EconomicAidController {
       logger.warn(`[economic-aid] failed to resolve personnummer for child partyId=${partyId}: ${(err as Error)?.message ?? err}`);
       return null;
     }
+  }
+
+  @Get('/economic-aid/applicant-children')
+  @OpenAPI({ summary: 'Children the logged-in applicant is custodian for (Citizen), for the children suggestion list' })
+  @UseBefore(authMiddleware)
+  async getApplicantChildren(@Req() req: RequestWithUser): Promise<ApiResponse<PrefilledChild[]>> {
+    if (!req.user?.partyId) {
+      throw new HttpException(401, 'Unauthorized');
+    }
+    const children = await this.fetchCustodyChildren(req.user.personNumber ?? '', req);
+    return { data: children.map(child => this.custodyChildToPrefill(child)), message: 'success' };
+  }
+
+  @Get('/economic-aid/co-applicant-children')
+  @OpenAPI({ summary: 'Children a co-applicant is custodian for (Citizen), by personnummer' })
+  @UseBefore(authMiddleware)
+  async getCoApplicantChildren(
+    @Req() req: RequestWithUser,
+    @QueryParam('personnummer') personnummer?: string,
+  ): Promise<ApiResponse<PrefilledChild[]>> {
+    if (!req.user?.partyId) {
+      throw new HttpException(401, 'Unauthorized');
+    }
+    const children = await this.fetchCustodyChildren(onlyDigits(personnummer), req);
+    return { data: children.map(child => this.custodyChildToPrefill(child)), message: 'success' };
+  }
+
+  /**
+   * Fetches the children a person is custodian for from Citizen (keyed on personnummer). Best-effort
+   * — a failed/empty lookup (incl. 204 No Content) yields an empty list and never fails the request.
+   */
+  private async fetchCustodyChildren(personNumber: string, req: RequestWithUser): Promise<CustodyChild[]> {
+    const clean = onlyDigits(personNumber);
+    if (!clean) return [];
+    const response = await this.apiService
+      .get<CustodyChild[]>({ url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/${clean}/custodychildren` }, req.user)
+      .catch(err => {
+        logger.warn(`[economic-aid] failed to fetch custody children: ${(err as Error)?.message ?? err}`);
+        return null;
+      });
+    return Array.isArray(response?.data) ? response.data : [];
+  }
+
+  /** Maps a Citizen CustodyChild to the PrefilledChild shape the children suggestion list consumes. */
+  private custodyChildToPrefill(child: CustodyChild): PrefilledChild {
+    const name = [child.givenname, child.middlename, child.lastname]
+      .map(part => part?.trim())
+      .filter(Boolean)
+      .join(' ');
+    const digits = onlyDigits(child.personNumber ?? '');
+    const personnummer = digits.length === 12 ? `${digits.slice(0, 8)}-${digits.slice(8)}` : digits || null;
+    return { partyId: child.personId ?? null, name: name || null, personnummer };
   }
 
   /**

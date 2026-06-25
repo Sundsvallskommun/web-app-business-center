@@ -79,15 +79,36 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
     method: 'get',
     queryOptions: { enabled: isRenewal },
   });
-  const prefilledChildren = prefillApi.data?.children ?? [];
+  // Barn som sökande/medsökande är vårdnadshavare för (Citizen). Hämtas för båda när barn efterfrågas
+  // (ej tilläggsansökan); medsökandes lista bara när man ansöker tillsammans.
+  const applicantChildrenApi = useApi<PrefilledChild[]>({
+    url: '/economic-aid/applicant-children',
+    method: 'get',
+    queryOptions: { enabled: !isSupplementary },
+  });
+  const coApplicantChildrenApi = useApi<PrefilledChild[]>({
+    url: `/economic-aid/co-applicant-children?personnummer=${encodeURIComponent(coApplicantPnr)}`,
+    method: 'get',
+    queryOptions: { enabled: !isSupplementary && isCohabiting && coApplicantPnr !== '' },
+  });
+
+  const prefillChildKey = (child: PrefilledChild) => child.partyId || child.personnummer || '';
+  // Slå ihop förslagen (Lifecare + vårdnadsbarn för båda) och deduplicera på partyId/personnummer.
+  const suggestedChildren = [
+    ...(prefillApi.data?.children ?? []),
+    ...(applicantChildrenApi.data ?? []),
+    ...(coApplicantChildrenApi.data ?? []),
+  ].filter((child, index, all) => {
+    const key = prefillChildKey(child);
+    return !key || all.findIndex((other) => prefillChildKey(other) === key) === index;
+  });
 
   // Dölj barn som redan lagts till ur förslagslistan. Matchas på partyId, med personnummer som
-  // reserv if Lifecare inte gav något partyId (båda räknas som unik nyckel för ett barn).
+  // reserv if Citizen/Lifecare inte gav något partyId (båda räknas som unik nyckel för ett barn).
   const addedChildKeys = new Set(
     watch('children').flatMap((entry) => [entry.partyId, entry.personalNumber].filter(Boolean)),
   );
-  const prefillChildKey = (child: PrefilledChild) => child.partyId || child.personnummer || '';
-  const availablePrefilledChildren = prefilledChildren.filter((child) => {
+  const availablePrefilledChildren = suggestedChildren.filter((child) => {
     const key = prefillChildKey(child);
     return !key || !addedChildKeys.has(key);
   });

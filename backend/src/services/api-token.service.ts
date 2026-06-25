@@ -10,31 +10,32 @@ export interface Token {
   expires_in: number;
 }
 
-// NOTE: save token in memory only for now
-let c_access_token = '';
-let c_token_expires = 0;
+interface CachedToken {
+  accessToken: string;
+  expiresAt: number;
+}
+
+// Tokens cachas i minnet per scope. Standardtoken (utan scope) ligger under nyckeln '' och används
+// av alla vanliga gateway-anrop. Scope-specifika tokens (t.ex. CitizenRelationAccess) cachas separat
+// så att ett extra scope för en enskild resurs aldrig påverkar de andra anropen.
+const tokenCache = new Map<string, CachedToken>();
 
 class ApiTokenService {
-  public async getToken(): Promise<string> {
-    if (Date.now() >= c_token_expires) {
-      logger.info('Getting oauth API token');
-      await this.fetchToken();
+  public async getToken(scope?: string): Promise<string> {
+    const key = scope ?? '';
+    const cached = tokenCache.get(key);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.accessToken;
     }
-    return c_access_token;
+    logger.info(`Getting oauth API token${scope ? ` (scope: ${scope})` : ''}`);
+    return this.fetchToken(scope);
   }
 
-  public async setToken(token: Token) {
-    c_access_token = token.access_token;
-    // NOTE: Set timestamp for when we need to refresh minus 10 seconds for margin
-    c_token_expires = Date.now() + (token.expires_in * 1000 - 10000);
-
-    logger.info(`Token valid for: ${token.expires_in}`);
-    logger.info(`Current time: ${new Date()}`);
-    logger.info(`Token expires at: ${new Date(c_token_expires)}`);
-  }
-
-  public async fetchToken(): Promise<string> {
+  public async fetchToken(scope?: string): Promise<string> {
     const authString = Buffer.from(`${CLIENT_KEY}:${CLIENT_SECRET}`, 'utf-8').toString('base64');
+    // Begär scope bara när det uttryckligen efterfrågas — standardtoken förblir oförändrad.
+    const requestBody: Record<string, string> = { grant_type: 'client_credentials' };
+    if (scope) requestBody.scope = scope;
 
     try {
       const { data } = await axios({
@@ -44,17 +45,19 @@ class ApiTokenService {
           Authorization: 'Basic ' + authString,
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        data: qs.stringify({
-          grant_type: 'client_credentials',
-        }),
+        data: qs.stringify(requestBody),
         url: `${API_BASE_URL}/token`,
       });
       const token = data as Token;
 
-      if (!token) throw new HttpException(502, 'Bad Gateway');
-      this.setToken(token);
+      if (!token?.access_token) throw new HttpException(502, 'Bad Gateway');
 
-      return this.getToken();
+      // Förnya 10 sekunder före utgång som marginal.
+      const expiresAt = Date.now() + (token.expires_in * 1000 - 10000);
+      tokenCache.set(scope ?? '', { accessToken: token.access_token, expiresAt });
+      logger.info(`Token${scope ? ` (scope: ${scope})` : ''} valid for ${token.expires_in}s, expires at ${new Date(expiresAt)}`);
+
+      return token.access_token;
     } catch (error) {
       logger.error(`Failed to fetch JWT access token: ${JSON.stringify(error)}`);
       throw new HttpException(502, 'Bad Gateway');

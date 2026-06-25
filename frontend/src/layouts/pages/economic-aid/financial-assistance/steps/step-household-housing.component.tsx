@@ -6,7 +6,7 @@ import {
   emptyChild,
 } from '@interfaces/financial-assistance';
 import { useApi } from '@services/api-service';
-import { Button, Divider, FormControl, FormLabel, Icon, Input, RadioButton, Select, Textarea } from '@sk-web-gui/react';
+import { Button, FormControl, FormLabel, Icon, Input, RadioButton, Select, Textarea } from '@sk-web-gui/react';
 import { Plus } from 'lucide-react';
 import { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { StepNavigation } from '../../components/step-navigation.component';
 import { FaChildCard } from '../components/fa-child-card.component';
 import { FaContactSection } from '../components/fa-contact-section.component';
+import { FaInterpreterQuestion } from '../components/fa-interpreter-question.component';
 import { compactFieldClass } from '../components/fa-form-helpers';
 import { FaStepProps } from './fa-step-registry';
 
@@ -52,7 +53,12 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
 
   const isRenewal = applicationType === 'RENEWAL';
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
+  const isNew = applicationType === 'NEW';
   const isCohabiting = maritalStatus === 'COHABITING';
+  // Tolk-frågan (steg 1) ställs per person; persons[0] = sökande, persons[1] = ev. medsökande.
+  const persons = watch('persons');
+  const applicantIndex = persons.findIndex((person) => person.role === 'APPLICANT');
+  const coApplicantIndex = persons.findIndex((person) => person.role === 'CO_APPLICANT');
   // i18next-kontext för du→ni-växling när det finns en medsökande.
   const ni = isCohabiting ? { context: 'ni' } : undefined;
 
@@ -181,6 +187,8 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
         notifyEmailField="notifyByEmail"
         notifySmsField="notifyBySms"
       />
+      {/* "Behöver du tolk?" direkt efter notisvalet (nyansökan), per person. */}
+      {isNew && applicantIndex >= 0 ? <FaInterpreterQuestion index={applicantIndex} /> : null}
 
       {isCohabiting && coApplicantPnr ? (
         <FaContactSection
@@ -192,6 +200,9 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
           notifyEmailField="coNotifyByEmail"
           notifySmsField="coNotifyBySms"
         />
+      ) : null}
+      {isNew && isCohabiting && coApplicantPnr && coApplicantIndex >= 0 ? (
+        <FaInterpreterQuestion index={coApplicantIndex} />
       ) : null}
 
       {/* Barn + boende ingår inte i tilläggsansökan */}
@@ -309,7 +320,21 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
                 </Select>
               </FormControl>
 
-              {/* "Utan bostad/institution" har ingen följdfråga. */}
+              {/* "Utan bostad/institution" → fritext om boendesituationen; övriga former → antal personer. */}
+              {housingForm === 'NO_HOUSING_OR_INSTITUTION' ? (
+                <FormControl className="w-full">
+                  <FormLabel htmlFor="fa-housing-description">
+                    {t('financial-assistance:householdHousing.noHousingDescriptionLabel')}
+                  </FormLabel>
+                  <Textarea
+                    id="fa-housing-description"
+                    className="w-full min-h-72"
+                    value={watch('housingDescription')}
+                    onChange={(event) => setValue('housingDescription', event.target.value, { shouldDirty: true })}
+                  />
+                </FormControl>
+              ) : null}
+
               {housingForm && housingForm !== 'NO_HOUSING_OR_INSTITUTION' ? (
                 <FormControl className="w-full">
                   <FormLabel htmlFor="fa-housing-person-count">

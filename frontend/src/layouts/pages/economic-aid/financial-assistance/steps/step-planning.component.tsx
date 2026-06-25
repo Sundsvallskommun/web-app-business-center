@@ -17,6 +17,7 @@ import { StepNavigation } from '../../components/step-navigation.component';
 import { FaJobApplicationFields } from '../components/fa-job-application-fields.component';
 import { FaPlannedActivityFields } from '../components/fa-planned-activity-fields.component';
 import { FaPlanningFields } from '../components/fa-planning-fields.component';
+import { FaWorkHistoryQuestion } from '../components/fa-work-history-question.component';
 import { selectableBoxClass } from '../components/fa-form-helpers';
 import { FaStepProps } from './fa-step-registry';
 
@@ -91,6 +92,24 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
     });
 
   const personIsJobseeking = (person: PersonRole): boolean => planningIndexFor(person, 'JOBSEEKING') >= 0;
+  const personHasWork = (person: PersonRole): boolean => planningIndexFor(person, 'WORK') >= 0;
+
+  // Persons i formuläret (sökande + ev. medsökande) och deras index — för tolk/arbete-frågorna.
+  const persons = watch('persons');
+  const personIndexOf = (person: PersonRole): number => persons.findIndex((entry) => entry.role === person);
+  const personRoles: PersonRole[] = showPerson ? ['APPLICANT', 'CO_APPLICANT'] : ['APPLICANT'];
+
+  // Arbetssökande kräver (nyansökan) minst en ifylld aktivitet och ett sökt jobb per person.
+  const jobseekingIncomplete =
+    isNew &&
+    personRoles.some((person) => {
+      if (!personIsJobseeking(person)) return false;
+      const acts = entriesForPerson(activities.fields, watchedActivities, person);
+      const jobs = entriesForPerson(jobApplications.fields, watchedJobApplications, person);
+      const hasActivity = acts.some(({ index }) => (watchedActivities?.[index]?.activity ?? '').trim() !== '');
+      const hasJob = jobs.some(({ index }) => (watchedJobApplications?.[index]?.jobTitle ?? '').trim() !== '');
+      return !hasActivity || !hasJob;
+    });
 
   // Rensar aktiviteter/sökta jobb för en person som inte längre är arbetssökande (eller när det
   // inte är en nyansökan) så att dolda poster aldrig följer med vid inskick.
@@ -167,8 +186,23 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
     const index = planningIndexFor(person, type);
     const checked = index >= 0;
     const label = t(`financial-assistance:planningType.${type}`);
-    const toggle = () =>
-      checked ? plannings.remove(index) : plannings.append({ ...emptyPlanning(), person, planningType: type });
+    const toggle = () => {
+      if (checked) {
+        plannings.remove(index);
+        return;
+      }
+      plannings.append({ ...emptyPlanning(), person, planningType: type });
+      // Arbetssökande: visa direkt en rad för planerad aktivitet och ett sökt jobb (obligatoriska),
+      // så användaren inte behöver lägga till dem manuellt.
+      if (type === 'JOBSEEKING' && isNew) {
+        if (entriesForPerson(activities.fields, watchedActivities, person).length === 0) {
+          activities.append({ ...emptyPlannedActivity(), person });
+        }
+        if (entriesForPerson(jobApplications.fields, watchedJobApplications, person).length === 0) {
+          jobApplications.append({ ...emptyJobApplication(), person });
+        }
+      }
+    };
 
     return (
       <div key={type} className={selectableBoxClass(checked)} data-cy={`fa-planning-box-${person}-${type}`}>
@@ -193,6 +227,11 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
         <p className="text-small text-dark-secondary">{t('financial-assistance:planning.planningIntro')}</p>
       </div>
       <div className="flex flex-col gap-12">{PLANNING_TYPES.map((type) => renderPlanningBox(person, type))}</div>
+
+      {/* Har personen inte valt "Arbete" som planering → fråga om arbete senaste 12 mån (nyansökan). */}
+      {isNew && !personHasWork(person) && personIndexOf(person) >= 0 ? (
+        <FaWorkHistoryQuestion index={personIndexOf(person)} />
+      ) : null}
     </section>
   );
 
@@ -221,7 +260,7 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
         </>
       ) : null}
 
-      <StepNavigation onBack={onBack} onNext={onNext} />
+      <StepNavigation onBack={onBack} onNext={onNext} forwardDisabled={jobseekingIncomplete} />
     </section>
   );
 };

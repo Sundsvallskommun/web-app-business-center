@@ -174,6 +174,13 @@ export const buildFormSnapshot = (
       }),
       textField('email', t(fa('personuppgifter.emailLabel')), contact.email),
       textField('phone', t(fa('personuppgifter.phoneLabel')), contact.phone),
+      // Tolk-frågan ställs på personuppgifter (nyansökan).
+      ...(isNew
+        ? [
+            radio('needsInterpreter', t(fa('personuppgifter.needsInterpreterLabel')), person.needsInterpreter),
+            textField('interpreterLanguage', t(fa('personuppgifter.interpreterLanguageLabel')), person.interpreterLanguage),
+          ]
+        : []),
     ];
   };
 
@@ -226,21 +233,37 @@ export const buildFormSnapshot = (
     form.periodMonth && form.periodYear
       ? t(fa('periodNorm.periodValue'), { month: swedishMonthName(form.periodMonth), year: form.periodYear })
       : '';
-  // NEW: periodChoice (radio). Renewal/supplementary: the period is the prefilled month (read-only).
+  // "Denna/Nästa månad" visar månadens namn (samma logik som formuläret).
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
+  const periodChoiceLabel = (code: string): string => {
+    const base = t(fa(`periodChoice.${code}`));
+    if (code === 'CURRENT_MONTH') return `${base} (${swedishMonthName(currentMonth)})`;
+    if (code === 'NEXT_MONTH') return `${base} (${swedishMonthName(nextMonth)})`;
+    return base;
+  };
+  const selectedPeriods = form.periodChoices as string[];
+  const selectedNorms = form.normTypes as string[];
+  const hasMonthPeriod = selectedPeriods.includes('CURRENT_MONTH') || selectedPeriods.includes('NEXT_MONTH');
+  // NEW: "Vad avser ansökan?" som flerval. Renewal/supplementary: prefilled month (read-only).
   const periodField: FormSnapshotField = isNew
     ? field({
-        name: 'periodChoice',
-        label: t(fa('periodNorm.periodChoiceLabel')),
-        inputType: 'RADIO',
-        options: opt(PERIOD_CHOICES, 'periodChoice', form.periodChoice),
-        ...(form.periodChoice
-          ? { answer: { code: form.periodChoice, value: form.periodChoice, display: period || t(fa(`periodChoice.${form.periodChoice}`)) } }
-          : {}),
+        name: 'periodChoices',
+        label: q('periodNorm.periodChoiceLabel'),
+        inputType: 'CHECKBOX',
+        options: PERIOD_CHOICES.map((code) => ({ code, label: periodChoiceLabel(code), selected: selectedPeriods.includes(code) })),
       })
     : staticField('period', t(fa('periodNorm.periodLabel')), period);
-  // Norm-valet (Riksnorm/Annan norm). Ny-/återansökan: "Vilken norm…" före kostnaderna.
-  // Tilläggsansökan: flyttad till "Övrigt" efter kostnaderna, med en specifikationsfråga.
-  const normField = choice(
+  // NEW: norm är flerval och visas bara vid denna/nästa månad. Renewal/supplementary: enkelval.
+  const normMultiField = field({
+    name: 'normTypes',
+    label: q('periodNorm.normTypeLabel'),
+    inputType: 'CHECKBOX',
+    options: NORM_TYPES.map((code) => ({ code, label: t(fa(`normType.${code}`)), selected: selectedNorms.includes(code) })),
+    infoTexts: NORM_TYPES.filter((code) => selectedNorms.includes(code)).map((code) => t(fa(`normInfo.${code}`))),
+  });
+  const normSingleField = choice(
     'normType',
     isSupplementary ? t(fa('economy.normLabel')) : q('periodNorm.normTypeLabel'),
     'RADIO',
@@ -264,15 +287,18 @@ export const buildFormSnapshot = (
         numberField('appliedAmount', t(fa('economy.cost.amountLabel')), cost.appliedAmount),
       ]),
   });
-  const economyFields: FormSnapshotField[] = [
-    periodField,
-    textField('otherBenefitDescription', t(fa('periodNorm.otherBenefitPlaceholder')), form.otherBenefitDescription, 'TEXTAREA'),
-    ...(!isSupplementary ? [normField] : []),
-    costsField,
-    ...(isSupplementary
-      ? [normField, textField('normSpecification', t(fa('economy.normSpecificationLabel')), form.normSpecification, 'TEXTAREA')]
-      : []),
-  ];
+  const economyFields: FormSnapshotField[] = isNew
+    ? [
+        periodField,
+        ...(selectedPeriods.includes('OTHER_BENEFIT')
+          ? [textField('otherBenefitDescription', t(fa('periodNorm.otherBenefitPlaceholder')), form.otherBenefitDescription, 'TEXTAREA')]
+          : []),
+        ...(hasMonthPeriod ? [normMultiField] : []),
+        costsField,
+      ]
+    : isSupplementary
+      ? [periodField, costsField, normSingleField, textField('normSpecification', t(fa('economy.normSpecificationLabel')), form.normSpecification, 'TEXTAREA')]
+      : [periodField, normSingleField, costsField];
 
   // ── 3. Inkomster och tillgångar ─────────────────────────────────────────────────────────────
   const assetItem = (asset: FinancialAssistanceFormData['assets'][number]): FormSnapshotField[] => {
@@ -307,6 +333,8 @@ export const buildFormSnapshot = (
   const incomeFields: FormSnapshotField[] = isSupplementary
     ? []
     : [
+        // Nyansökan: obligatorisk fritext om försörjning, först i gruppen.
+        ...(isNew ? [textField('livelihoodDescription', t(fa('income.livelihoodLabel')), form.livelihoodDescription, 'TEXTAREA')] : []),
         radio('hasIncomes', q('economy.hasIncomesLabel'), form.hasIncomes, { helpText: q('income.incomesInfo') }),
         field({
           name: 'incomes',
@@ -409,6 +437,25 @@ export const buildFormSnapshot = (
               }),
             ]
           : []),
+        // Arbete senaste 12 mån — frågan ställs (nyansökan) för den som inte valt "Arbete" som planering.
+        ...(isNew
+          ? form.persons
+              .filter(
+                (person) =>
+                  !form.plannings.some(
+                    (planning) =>
+                      (planning.person === 'CO_APPLICANT' ? 'CO_APPLICANT' : 'APPLICANT') === person.role &&
+                      planning.planningType === 'WORK',
+                  ),
+              )
+              .flatMap((person) => {
+                const suffix = isCohabiting ? ` – ${t(fa(`recipient.${person.role}`))}` : '';
+                return [
+                  radio('hadWorkLast12Months', `${t(fa('planning.hadWorkLabel'))}${suffix}`, person.hadWorkLast12Months),
+                  textField('hadWorkDescription', `${t(fa('planning.hadWorkDescriptionLabel'))}${suffix}`, person.hadWorkDescription),
+                ];
+              })
+          : []),
       ];
 
   // ── 5. Utbetalning och försäkran ────────────────────────────────────────────────────────────
@@ -423,14 +470,6 @@ export const buildFormSnapshot = (
       textField('clearingNumber', t(fa('payment.clearingLabel')), person.clearingNumber),
       textField('accountNumber', t(fa('payment.accountLabel')), person.accountNumber),
       ...(person.paymentMethod === 'OTHER' ? [textField('otherPaymentDescription', t(fa('payment.otherDescriptionLabel')), person.otherPaymentDescription)] : []),
-      ...(isNew
-        ? [
-            radio('needsInterpreter', t(fa('payment.needsInterpreterLabel')), person.needsInterpreter),
-            textField('interpreterLanguage', t(fa('payment.interpreterLanguageLabel')), person.interpreterLanguage),
-            radio('hadWorkLast12Months', t(fa('payment.hadWorkLabel')), person.hadWorkLast12Months),
-            textField('hadWorkDescription', t(fa('payment.hadWorkDescriptionLabel')), person.hadWorkDescription),
-          ]
-        : []),
     ];
   };
   const paymentFields: FormSnapshotField[] = [

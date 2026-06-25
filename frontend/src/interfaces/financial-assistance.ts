@@ -171,8 +171,12 @@ export interface FinancialAssistanceFormData {
   civilstandChoice: CivilstandChoice;
   periodMonth: number | null;
   periodYear: number | null;
-  periodChoice: PeriodChoice | '';
+  /** Nyansökan: "Vad avser ansökan?" — flerval (denna/nästa månad och/eller annat bistånd). */
+  periodChoices: PeriodChoice[];
+  /** Återansökan/tilläggsansökan: enkelt normval. */
   normType: NormType | '';
+  /** Nyansökan: normval (flerval) — visas bara när denna/nästa månad valts, minst ett krävs. */
+  normTypes: NormType[];
   /** Tilläggsansökan: fritext "för vem/vilka och vilken period" som normen avser. */
   normSpecification: string;
   otherBenefitDescription: string;
@@ -237,8 +241,9 @@ export const emptyFinancialAssistanceFormData = (prefill: FinancialAssistancePre
     civilstandChoice: prefill.civilstandChoice,
     periodMonth: prefill.periodMonth,
     periodYear: prefill.periodYear,
-    periodChoice: '',
+    periodChoices: [],
     normType: '',
+    normTypes: [],
     normSpecification: '',
     otherBenefitDescription: '',
     livelihoodDescription: '',

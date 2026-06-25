@@ -1,5 +1,5 @@
 import { FinancialAssistanceFormData, emptyPendingBenefit } from '@interfaces/financial-assistance';
-import { Button, FormControl, FormLabel, Icon, RadioButton } from '@sk-web-gui/react';
+import { Button, FormControl, FormLabel, Icon, RadioButton, Textarea } from '@sk-web-gui/react';
 import { Plus } from 'lucide-react';
 import { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
@@ -13,12 +13,17 @@ import { FaStepProps } from './fa-step-registry';
 type GateField = 'hasIncomes' | 'hasPendingBenefits' | 'hasAssets';
 
 /** Grupp 3 — inkomster, väntande ersättningar och tillgångar (ej tilläggsansökan). */
-export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
+export const StepIncome: React.FC<FaStepProps> = ({ applicationType, onBack, onNext }) => {
   const { t } = useTranslation('financial-assistance');
   const { control, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
 
+  const isNew = applicationType === 'NEW';
   const showRecipient = watch('maritalStatus') === 'COHABITING';
   const ni = showRecipient ? { context: 'ni' } : undefined;
+  const livelihoodDescription = watch('livelihoodDescription');
+
+  // Nyansökan: obligatorisk fritext om försörjning innan man går vidare.
+  const forwardDisabled = isNew && livelihoodDescription.trim() === '';
 
   const pendingBenefits = useFieldArray({ control, name: 'pendingBenefits' });
 
@@ -82,6 +87,19 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
         <h2>{t('financial-assistance:income.heading')}</h2>
       </header>
 
+      {/* Nyansökan: obligatorisk fritext om anledning + försörjning de senaste månaderna. */}
+      {isNew ? (
+        <FormControl data-cy="fa-livelihood" className="w-full">
+          <FormLabel className="font-bold">{t('financial-assistance:income.livelihoodLabel')}</FormLabel>
+          <Textarea
+            className="w-full min-h-96"
+            data-cy="fa-livelihood-description"
+            value={livelihoodDescription}
+            onChange={(event) => setValue('livelihoodDescription', event.target.value, { shouldDirty: true })}
+          />
+        </FormControl>
+      ) : null}
+
       <section className="flex flex-col gap-16" data-cy="fa-incomes">
         {renderGate(
           'hasIncomes',
@@ -132,7 +150,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ onBack, onNext }) => {
         {hasAssets === true ? <FaAssetSelector /> : null}
       </section>
 
-      <StepNavigation onBack={onBack} onNext={onNext} />
+      <StepNavigation onBack={onBack} onNext={onNext} forwardDisabled={forwardDisabled} />
     </section>
   );
 };

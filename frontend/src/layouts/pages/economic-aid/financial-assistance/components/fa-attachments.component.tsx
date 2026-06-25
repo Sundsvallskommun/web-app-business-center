@@ -1,4 +1,4 @@
-import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
+import { ApplicationType, FinancialAssistanceFormData } from '@interfaces/financial-assistance';
 import { getRequiredDocuments } from '@services/financial-assistance-required-documents';
 import {
   CustomOnChangeEventUploadFile,
@@ -28,7 +28,11 @@ const ACCEPTED_MIME_TYPES = [
  * ger klick-för-att-bläddra. Fältet hanteras via onChange + setValue (samma mönster som
  * den delade komponenten i katla) — inte register, som inte ger Area:n filerna.
  */
-export const FaAttachments: React.FC = () => {
+interface FaAttachmentsProps {
+  applicationType: ApplicationType;
+}
+
+export const FaAttachments: React.FC<FaAttachmentsProps> = ({ applicationType }) => {
   const { t } = useTranslation('financial-assistance');
   const toastMessage = useSnackbar();
   const { watch, setValue } = useFormContext<FinancialAssistanceFormData>();
@@ -36,8 +40,27 @@ export const FaAttachments: React.FC = () => {
   const requiredDocuments = getRequiredDocuments(watch());
   const attachments = watch('attachments');
   const needsAttachments = watch('needsAttachments');
-  const ni = watch('maritalStatus') === 'COHABITING' ? { context: 'ni' } : undefined;
+  const isCohabiting = watch('maritalStatus') === 'COHABITING';
+  const ni = isCohabiting ? { context: 'ni' } : undefined;
   const showUpload = requiredDocuments.length > 0 || needsAttachments === true;
+
+  // Nyansökan: generell referenslista över underlag som kan behöva bifogas. Informativ — inskick
+  // valideras inte mot den. Medsökandens lista visas bara när man ansöker tillsammans.
+  const isNew = applicationType === 'NEW';
+  const asList = (key: string): string[] => {
+    const value = t(`financial-assistance:attachments.${key}`, { returnObjects: true });
+    return Array.isArray(value) ? (value as string[]) : [];
+  };
+  const commonDocs = asList('newReferenceCommon');
+  const applicantDocs = asList('newReferenceApplicant');
+  const coApplicantDocs = asList('newReferenceCoApplicant');
+  const renderDocList = (items: string[]) => (
+    <ul className="list-disc flex flex-col gap-4 pl-20">
+      {items.map((item, index) => (
+        <li key={index}>{item}</li>
+      ))}
+    </ul>
+  );
 
   const handleChange = (event: CustomOnChangeEventUploadFile) => {
     if (event.target.value !== null) {
@@ -64,6 +87,35 @@ export const FaAttachments: React.FC = () => {
   return (
     <section className="flex flex-col gap-16" data-cy="fa-attachments">
       <h3 className="text-h4-md font-bold">{t('financial-assistance:attachments.heading')}</h3>
+
+      {/* Nyansökan: generell referenslista över underlag (du + ev. medsökande). */}
+      {isNew ? (
+        <div className="text-content flex flex-col gap-12" data-cy="fa-attachments-reference">
+          <p>{t('financial-assistance:attachments.newReferenceIntro')}</p>
+          <div className="flex flex-col gap-8">
+            <p className="font-bold">
+              {t(
+                isCohabiting
+                  ? 'financial-assistance:attachments.newReferenceHeadingCohabiting'
+                  : 'financial-assistance:attachments.newReferenceHeading',
+              )}
+            </p>
+            {renderDocList(isCohabiting ? commonDocs : [...commonDocs, ...applicantDocs])}
+          </div>
+          {isCohabiting ? (
+            <>
+              <div className="flex flex-col gap-8">
+                <p className="font-bold">{t('financial-assistance:attachments.newReferenceApplicantHeading')}</p>
+                {renderDocList(applicantDocs)}
+              </div>
+              <div className="flex flex-col gap-8">
+                <p className="font-bold">{t('financial-assistance:attachments.newReferenceCoApplicantHeading')}</p>
+                {renderDocList(coApplicantDocs)}
+              </div>
+            </>
+          ) : null}
+        </div>
+      ) : null}
 
       {requiredDocuments.length > 0 ? (
         <div className="text-content flex flex-col gap-8">

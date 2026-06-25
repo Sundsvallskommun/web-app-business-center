@@ -23,8 +23,6 @@ export const FaPersonPaymentCard: React.FC<FaPersonPaymentCardProps> = ({ index,
   const heading = nameForRole(role);
 
   const paymentMethod = watch(`persons.${index}.paymentMethod` as const);
-  const needsInterpreter = watch(`persons.${index}.needsInterpreter` as const);
-  const hadWork = watch(`persons.${index}.hadWorkLast12Months` as const);
   const sameAsPrevious = watch(`persons.${index}.paymentSameAsPrevious` as const);
   const isNew = applicationType === 'NEW';
   // For renewal/supplementary the citizen first answers "same account as previous?".
@@ -32,15 +30,10 @@ export const FaPersonPaymentCard: React.FC<FaPersonPaymentCardProps> = ({ index,
   // Vid återansökan/tillägg och "Nej" väljer man ett nytt utbetalningssätt — annars är det förstagångsval.
   const methodLabelKey = !isNew && sameAsPrevious === false ? 'payment.newMethodLabel' : 'payment.methodLabel';
 
-  const setBool = (field: 'needsInterpreter' | 'hadWorkLast12Months' | 'paymentSameAsPrevious', value: boolean) =>
+  const setBool = (field: 'paymentSameAsPrevious', value: boolean) =>
     setValue(`persons.${index}.${field}` as const, value, { shouldDirty: true });
 
-  const yesNo = (
-    field: 'needsInterpreter' | 'hadWorkLast12Months' | 'paymentSameAsPrevious',
-    current: boolean | null,
-    label: string,
-    cy: string,
-  ) => (
+  const yesNo = (field: 'paymentSameAsPrevious', current: boolean | null, label: string, cy: string) => (
     <FormControl data-cy={cy}>
       <FormLabel className="font-bold">{label}</FormLabel>
       <RadioButton.Group inline>
@@ -136,46 +129,6 @@ export const FaPersonPaymentCard: React.FC<FaPersonPaymentCardProps> = ({ index,
               <Input
                 id={`fa-person-${index}-other-payment`}
                 {...register(`persons.${index}.otherPaymentDescription` as const)}
-              />
-            </FormControl>
-          ) : null}
-        </>
-      ) : null}
-
-      {isNew ? (
-        <>
-          {yesNo(
-            'needsInterpreter',
-            needsInterpreter,
-            t('financial-assistance:payment.needsInterpreterLabel'),
-            `fa-person-${index}-needs-interpreter`,
-          )}
-          {needsInterpreter === true ? (
-            <FormControl className="w-full max-w-[24rem]">
-              <FormLabel htmlFor={`fa-person-${index}-interpreter-language`}>
-                {t('financial-assistance:payment.interpreterLanguageLabel')}
-              </FormLabel>
-              <Input
-                id={`fa-person-${index}-interpreter-language`}
-                {...register(`persons.${index}.interpreterLanguage` as const)}
-              />
-            </FormControl>
-          ) : null}
-
-          {yesNo(
-            'hadWorkLast12Months',
-            hadWork,
-            t('financial-assistance:payment.hadWorkLabel'),
-            `fa-person-${index}-had-work`,
-          )}
-          {hadWork === true ? (
-            <FormControl className="w-full">
-              <FormLabel htmlFor={`fa-person-${index}-had-work-description`}>
-                {t('financial-assistance:payment.hadWorkDescriptionLabel')}
-              </FormLabel>
-              <Input
-                id={`fa-person-${index}-had-work-description`}
-                {...register(`persons.${index}.hadWorkDescription` as const)}
               />
             </FormControl>
           ) : null}

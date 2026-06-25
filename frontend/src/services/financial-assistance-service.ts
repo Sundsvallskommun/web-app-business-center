@@ -30,8 +30,8 @@ interface Period {
   periodYear: number;
 }
 
-/** Derives the application period from a NEW application's periodChoice. */
-const derivePeriod = (choice: PeriodChoice): Period => {
+/** Derives the application period (month/year) from a NEW application's month choice. */
+const derivePeriod = (choice: 'CURRENT_MONTH' | 'NEXT_MONTH'): Period => {
   const now = new Date();
   let periodMonth = now.getMonth() + 1;
   let periodYear = now.getFullYear();
@@ -45,7 +45,14 @@ const derivePeriod = (choice: PeriodChoice): Period => {
   return { periodMonth, periodYear };
 };
 
-/** Builds and assigns the period fields onto `data` for the given application type. */
+// Prioritetsordning för det enkla periodChoice kontraktet bär (hela flervalet fångas i PDF + snapshot).
+const PERIOD_PRIORITY: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
+
+/**
+ * Builds and assigns the period fields onto `data`. Nyansökan tillåter flerval ("Vad avser
+ * ansökan?"); kontraktet bär ett enkelt periodChoice + månad, så vi skickar det främsta valet
+ * (Denna > Nästa > Annat bistånd) och härleder månaden därifrån. Hela urvalet visas i PDF/snapshot.
+ */
 const assignPeriod = (
   data: Record<string, unknown>,
   form: FinancialAssistanceFormData,
@@ -55,13 +62,15 @@ const assignPeriod = (
     Object.assign(data, compact({ periodMonth: form.periodMonth, periodYear: form.periodYear }));
     return;
   }
-  if (!form.periodChoice) return;
+  const primary = PERIOD_PRIORITY.find((choice) => form.periodChoices.includes(choice));
+  if (!primary) return;
   Object.assign(
     data,
     compact({
-      periodChoice: form.periodChoice,
-      ...derivePeriod(form.periodChoice),
-      otherBenefitDescription: form.periodChoice === 'OTHER_BENEFIT' ? form.otherBenefitDescription.trim() : '',
+      periodChoice: primary,
+      ...(primary === 'OTHER_BENEFIT' ? {} : derivePeriod(primary)),
+      // "Annat bistånd" kan vara valt vid sidan av en månad — skicka fritexten när det ingår i urvalet.
+      otherBenefitDescription: form.periodChoices.includes('OTHER_BENEFIT') ? form.otherBenefitDescription.trim() : '',
     })
   );
 };
@@ -244,10 +253,18 @@ export const buildFinancialAssistanceData = (
   applicationType: ApplicationType
 ): Record<string, unknown> => {
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
+  const isNew = applicationType === 'NEW';
+
+  // Nyansökan: norm är flerval och visas bara vid denna/nästa månad. Kontraktet bär ett enkelt
+  // normType, så vi skickar det första valda (hela urvalet fångas i PDF + snapshot).
+  const hasMonthPeriod = form.periodChoices.some((choice) => choice === 'CURRENT_MONTH' || choice === 'NEXT_MONTH');
+  const normTypeValue = isNew ? (hasMonthPeriod ? (form.normTypes[0] ?? '') : '') : form.normType;
 
   const data: Record<string, unknown> = compact({
     maritalStatus: form.maritalStatus,
-    normType: form.normType,
+    normType: normTypeValue,
+    // Nyansökan steg 3: obligatorisk fritext om försörjning.
+    livelihoodDescription: isNew ? form.livelihoodDescription.trim() : '',
     attestation: form.attestation,
     attestedAt: new Date().toISOString(),
     staysInMunicipality: form.staysInMunicipality,

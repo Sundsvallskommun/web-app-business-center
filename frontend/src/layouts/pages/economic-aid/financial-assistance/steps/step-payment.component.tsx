@@ -39,7 +39,7 @@ export const StepPayment: React.FC<FaStepProps> = ({ applicationType, onBack, on
       <Divider />
 
       {/* Bilagor — före vistelse. */}
-      <FaAttachments />
+      <FaAttachments applicationType={applicationType} />
 
       {/* Vistelse under ansökningsmånaden — flyttad hit från granska-steget. */}
       {showStay ? (

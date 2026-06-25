@@ -24,6 +24,9 @@ const COST_GROUPS: CostGroup[] = [
 
 const COST_OTHER_SUBTYPES: CostOtherSubType[] = ['OTHER', 'MUNICIPAL_FEES', 'ACUTE_DENTAL'];
 
+// Max antal tecken för "Vad avser kostnaden?" (med teckenräknare).
+const SPECIFICATION_MAX = 80;
+
 const boxClass = (checked: boolean): string =>
   [
     'rounded-12 border-2 p-16 transition',
@@ -148,7 +151,14 @@ export const FaCostSelector: React.FC = () => {
                     <FormLabel htmlFor={`${fieldId}-specification`}>
                       {t('financial-assistance:economy.cost.specificationLabel')}
                     </FormLabel>
-                    <Input id={`${fieldId}-specification`} {...register(`costs.${index}.specification` as const)} />
+                    <Input
+                      id={`${fieldId}-specification`}
+                      maxLength={SPECIFICATION_MAX}
+                      {...register(`costs.${index}.specification` as const)}
+                    />
+                    <p className="text-small text-dark-secondary mt-4" data-cy={`${fieldId}-specification-count`}>
+                      {(costs[index]?.specification?.length ?? 0)}/{SPECIFICATION_MAX}
+                    </p>
                   </FormControl>
 
                   <FormControl className="w-full">

@@ -175,10 +175,13 @@ export interface FinancialAssistanceFormData {
   periodChoices: PeriodChoice[];
   /** Återansökan/tilläggsansökan: enkelt normval. */
   normType: NormType | '';
-  /** Nyansökan: normval (flerval) — visas bara när denna/nästa månad valts, minst ett krävs. */
+  /**
+   * Nyansökan: normval (flerval) — visas bara när denna/nästa månad valts, minst ett krävs.
+   * Tilläggsansökan: normval (flerval) som boxar under "Övrigt".
+   */
   normTypes: NormType[];
-  /** Tilläggsansökan: fritext "för vem/vilka och vilken period" som normen avser. */
-  normSpecification: string;
+  /** Tilläggsansökan: fritext per norm ("för vem/vilka och vilken period") — en specifikation per vald norm. */
+  normSpecifications: Record<NormType, string>;
   otherBenefitDescription: string;
   livelihoodDescription: string;
   hasChildrenUnder21: boolean | null;
@@ -244,7 +247,7 @@ export const emptyFinancialAssistanceFormData = (prefill: FinancialAssistancePre
     periodChoices: [],
     normType: '',
     normTypes: [],
-    normSpecification: '',
+    normSpecifications: { NATIONAL_NORM: '', OTHER_NORM: '' },
     otherBenefitDescription: '',
     livelihoodDescription: '',
     hasChildrenUnder21: null,

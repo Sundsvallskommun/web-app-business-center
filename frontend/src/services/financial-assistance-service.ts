@@ -255,10 +255,16 @@ export const buildFinancialAssistanceData = (
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
   const isNew = applicationType === 'NEW';
 
-  // Nyansökan: norm är flerval och visas bara vid denna/nästa månad. Kontraktet bär ett enkelt
-  // normType, så vi skickar det första valda (hela urvalet fångas i PDF + snapshot).
+  // Norm är flerval för ny- och tilläggsansökan (återansökan har enkelval). Kontraktet bär ett
+  // enkelt normType, så vi skickar det första valda (hela urvalet + specifikationer fångas i PDF/snapshot).
   const hasMonthPeriod = form.periodChoices.some((choice) => choice === 'CURRENT_MONTH' || choice === 'NEXT_MONTH');
-  const normTypeValue = isNew ? (hasMonthPeriod ? (form.normTypes[0] ?? '') : '') : form.normType;
+  const normTypeValue = isNew
+    ? hasMonthPeriod
+      ? (form.normTypes[0] ?? '')
+      : ''
+    : isSupplementary
+      ? (form.normTypes[0] ?? '')
+      : form.normType;
 
   const data: Record<string, unknown> = compact({
     maritalStatus: form.maritalStatus,

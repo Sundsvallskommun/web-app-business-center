@@ -5,6 +5,7 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { StepNavigation } from '../../components/step-navigation.component';
 import { FaCostSelector } from '../components/fa-cost-selector.component';
+import { selectableBoxClass } from '../components/fa-form-helpers';
 import { FaStepProps } from './fa-step-registry';
 
 const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
@@ -98,13 +99,19 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
   // Norm-frågan visas bara när ansökan avser denna och/eller nästa månad.
   const showNorm = periodChoices.includes('CURRENT_MONTH') || periodChoices.includes('NEXT_MONTH');
 
-  // Obligatoriskt (endast nyansökan): minst en period; "Annat bistånd" kräver fritext;
-  // när norm-frågan visas krävs minst ett normval.
+  // Tilläggsansökan: man måste ange minst en utgift (en kostnad eller en norm) för att kunna ansöka.
+  const costs = watch('costs');
+  const supplementaryMissingExpense =
+    isSupplementary && costs.filter((cost) => cost.costType).length === 0 && normTypes.length === 0;
+
+  // Obligatoriskt: nyansökan kräver period (+ fritext för annat bistånd, + norm när den visas);
+  // tilläggsansökan kräver minst en utgift.
   const forwardDisabled =
-    isNew &&
-    (periodChoices.length === 0 ||
-      (periodChoices.includes('OTHER_BENEFIT') && otherBenefitDescription.trim() === '') ||
-      (showNorm && normTypes.length === 0));
+    (isNew &&
+      (periodChoices.length === 0 ||
+        (periodChoices.includes('OTHER_BENEFIT') && otherBenefitDescription.trim() === '') ||
+        (showNorm && normTypes.length === 0))) ||
+    supplementaryMissingExpense;
 
   return (
     <section className="flex flex-col gap-32" data-cy="fa-step-economy">
@@ -166,24 +173,49 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
           <h3 className="text-h4-md font-bold">
             {t(isSupplementary ? 'financial-assistance:economy.costsHeadingSupplementary' : 'financial-assistance:economy.costsHeading', ni)}
           </h3>
-          <p className="text-small text-dark-secondary">{t('financial-assistance:economy.costsInfo')}</p>
+          {/* Tilläggsansökan: ingen "Inte obligatoriskt"-text — minst en utgift krävs. */}
+          <p className="text-small text-dark-secondary">
+            {t(isSupplementary ? 'financial-assistance:economy.costsInfoSupplementary' : 'financial-assistance:economy.costsInfo')}
+          </p>
         </div>
         <FaCostSelector />
       </section>
 
-      {/* Övrigt (endast tilläggsansökan) — norm + specifikation längst ner. */}
+      {/* Övrigt (endast tilläggsansökan) — Riksnorm/Annan norm som utgiftsboxar med info + specifikation. */}
       {isSupplementary ? (
         <section className="flex flex-col gap-16" data-cy="fa-other">
           <h3 className="text-h4-md font-bold">{t('financial-assistance:economy.otherHeading')}</h3>
-          <NormChoiceSingle label={t('financial-assistance:economy.normLabel')} />
-          <FormControl className="w-full" data-cy="fa-norm-specification">
-            <FormLabel className="font-bold">{t('financial-assistance:economy.normSpecificationLabel')}</FormLabel>
-            <Textarea
-              className="w-full min-h-72"
-              value={watch('normSpecification')}
-              onChange={(event) => setValue('normSpecification', event.target.value, { shouldDirty: true })}
-            />
-          </FormControl>
+          <div className="flex flex-col gap-12">
+            {NORM_TYPES.map((type) => {
+              const checked = normTypes.includes(type);
+              return (
+                <div key={type} className={selectableBoxClass(checked)} data-cy={`fa-norm-box-${type}`}>
+                  <Checkbox
+                    checked={checked}
+                    data-cy={`fa-norm-toggle-${type}`}
+                    onChange={() => setValue('normTypes', toggle(normTypes, type), { shouldDirty: true })}
+                  >
+                    <span className="font-bold">{t(`financial-assistance:normType.${type}`)}</span>
+                  </Checkbox>
+                  {checked ? (
+                    <div className="flex flex-col gap-12 mt-12 ml-32">
+                      <span className="text-small text-dark-secondary">{t(`financial-assistance:normInfo.${type}`)}</span>
+                      <FormControl className="w-full" data-cy={`fa-norm-specification-${type}`}>
+                        <FormLabel className="font-bold">{t('financial-assistance:economy.normSpecificationLabel')}</FormLabel>
+                        <Textarea
+                          className="w-full min-h-72"
+                          value={watch(`normSpecifications.${type}` as const)}
+                          onChange={(event) =>
+                            setValue(`normSpecifications.${type}` as const, event.target.value, { shouldDirty: true })
+                          }
+                        />
+                      </FormControl>
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
         </section>
       ) : null}
 

@@ -297,7 +297,26 @@ export const buildFormSnapshot = (
         costsField,
       ]
     : isSupplementary
-      ? [periodField, costsField, normSingleField, textField('normSpecification', t(fa('economy.normSpecificationLabel')), form.normSpecification, 'TEXTAREA')]
+      ? [
+          periodField,
+          costsField,
+          // Övrigt: Riksnorm/Annan norm som flerval, med en specifikation per vald norm.
+          field({
+            name: 'normTypes',
+            label: t(fa('economy.normLabel')),
+            inputType: 'CHECKBOX',
+            options: NORM_TYPES.map((code) => ({ code, label: t(fa(`normType.${code}`)), selected: selectedNorms.includes(code) })),
+            infoTexts: NORM_TYPES.filter((code) => selectedNorms.includes(code)).map((code) => t(fa(`normInfo.${code}`))),
+          }),
+          ...NORM_TYPES.filter((code) => selectedNorms.includes(code)).map((code) =>
+            textField(
+              `normSpecification_${code}`,
+              `${t(fa(`normType.${code}`))} – ${t(fa('economy.normSpecificationLabel'))}`,
+              (form.normSpecifications as Record<string, string>)[code],
+              'TEXTAREA',
+            ),
+          ),
+        ]
       : [periodField, normSingleField, costsField];
 
   // ── 3. Inkomster och tillgångar ─────────────────────────────────────────────────────────────

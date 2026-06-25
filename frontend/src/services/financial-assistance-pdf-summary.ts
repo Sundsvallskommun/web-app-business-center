@@ -2,6 +2,7 @@ import { ApplicationType, AssetForm, FinancialAssistanceFormData, PeriodChoice, 
 import { swedishMonthName } from '@utils/swedish-month';
 
 const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
+const NORM_TYPE_ORDER = ['NATIONAL_NORM', 'OTHER_NORM'] as const;
 
 /**
  * Builds the human-readable application summary that the backend renders to the attached PDF.
@@ -266,16 +267,16 @@ export const buildApplicationPdfSummary = (
         return [label, joinParts([kr(cost.appliedAmount), cost.specification]), t(fa(`costInfo.${cost.costType}`))];
       }),
   );
-  // Tilläggsansökan: norm + specifikation under rubriken "Övrigt" sist i gruppen.
+  // Tilläggsansökan: Riksnorm/Annan norm som utgiftsboxar under "Övrigt" — varje vald norm visas med
+  // sin infotext och sin egen specifikation (för vem/vilka och vilken period).
   const otherSection = isSupplementary
-    ? section(t(fa('economy.otherHeading')), [
-        [
-          t(fa('economy.normLabel')),
-          form.normType ? t(fa(`normType.${form.normType}`)) : '',
-          form.normType ? t(fa(`normInfo.${form.normType}`)) : undefined,
-        ],
-        [t(fa('economy.normSpecificationLabel')), form.normSpecification],
-      ])
+    ? section(
+        t(fa('economy.otherHeading')),
+        NORM_TYPE_ORDER.filter((normType) => form.normTypes.includes(normType)).flatMap((normType): RawRow[] => [
+          [t(fa(`normType.${normType}`)), '✓', t(fa(`normInfo.${normType}`))],
+          [t(fa('economy.normSpecificationLabel')), form.normSpecifications[normType]],
+        ]),
+      )
     : null;
   const expensesGroup = group('2. ' + t(fa('groups.economy')), [periodNormSection, costsSection, otherSection]);
 

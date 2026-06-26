@@ -641,14 +641,13 @@ export class EconomicAidController {
     // (origin ERRAND) and an optional "caseData" part. The sammanställning goes in caseData — it is
     // stored as the single CASE_DATA attachment (ärendeuppgifter) and renamed to {errandNumber}.pdf,
     // so the errand and its snapshot are created in one call.
-    // Web FormData + Blob (axios derives the multipart boundary). Blob content is encoded as UTF-8,
-    // which matters for the JSON `request` part — its title contains å/ä/ö, and the form-data package
-    // mangled those bytes so cm rejected the part as invalid JSON. Each Blob carries its own
-    // Content-Type (application/json for `request`). The formSnapshot part is appended as a plain
-    // string (no Content-Type) because cm declares it as a String — a Blob/application/json part
-    // makes Spring try to map the JSON into a String and fail the whole request.
+    // cm reads the `request` and `formSnapshot` parts as plain Strings and parses the JSON itself
+    // (its 400 "The 'request' part is not valid JSON" is a manual parse error, not Spring's). So both
+    // are appended as plain string fields WITHOUT a Content-Type — a Blob/application/json part makes
+    // Spring run a message converter that mangles the value before cm parses it. axios encodes string
+    // parts as UTF-8, so å/ä/ö in the title survive. caseData/attachments stay binary Blobs (files).
     const form = new FormData();
-    form.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+    form.append('request', JSON.stringify(request));
     form.append('caseData', new Blob([summaryPdf], { type: 'application/pdf' }), 'sammanstallning.pdf');
     if (body.formSnapshot) {
       form.append('formSnapshot', JSON.stringify(body.formSnapshot));

@@ -15,6 +15,7 @@
   "logIn": "Logga in",
   "overview": "Översikt",
   "cases": "Ärenden",
+  "apply": "Ansök",
   "decisionsAndDocuments": "Beslut och dokument",
   "invoices": "Fakturor",
   "profile": "Profil och inställningar",
@@ -31,6 +32,12 @@
     "logout": "Logga ut",
     "title": "Du är nu utloggad",
     "loginAgain": "Logga in igen"
+  },
+  "colorScheme": {
+    "title": "Färgläge",
+    "light": "Ljust",
+    "dark": "Mörkt",
+    "system": "System"
   },
   "noRepresent": {
     "title": "Hoppsan, vi hittade inget företag som är registrerat på dig",

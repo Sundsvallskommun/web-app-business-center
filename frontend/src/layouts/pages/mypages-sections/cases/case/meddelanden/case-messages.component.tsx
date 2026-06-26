@@ -1,53 +1,166 @@
-import { Button, Divider } from '@sk-web-gui/react';
-import { useContext, useState } from 'react';
+'use client';
+
+import { FrontendMessageResponse } from '@interfaces/case';
+import { Button, Divider, Spinner } from '@sk-web-gui/react';
+import dayjs from 'dayjs';
+import { ArrowDown, MessageSquare } from 'lucide-react';
+import { UIEvent, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CaseContext } from '../case-layout.component';
 import CaseMessage from './case-message.component';
+import { formatDateDivider } from './utils';
 
-const PAGESIZE = 24;
+// Messages are revealed in pages so a long thread doesn't render all at once.
+const PAGE_SIZE = 24;
+// How long a jumped-to message stays highlighted after "Hoppa till".
+const HIGHLIGHT_DURATION_MS = 2000;
 
-export default function CaseMessages() {
+export default function CaseMessages(props: {
+  canReply?: boolean;
+  onReply?: (message: FrontendMessageResponse) => void;
+}) {
+  const { canReply, onReply } = props;
+  const { t } = useTranslation('cases');
   const { caseMessages } = useContext(CaseContext);
-  const [visibleMessages, setVisibleMessages] = useState(PAGESIZE);
-  const showMoreMessages = () => setVisibleMessages((prev) => prev + PAGESIZE);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [highlightId, setHighlightId] = useState<string>();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Normalize to oldest-first regardless of the order the backend returns per case system,
+  // so the thread reads top→bottom = oldest→newest (header: "Äldst överst, senaste längst ned").
+  const messages = useMemo(() => {
+    const list = caseMessages ?? [];
+    const ms = (sent?: string) => {
+      const value = dayjs(sent).valueOf();
+      return Number.isNaN(value) ? 0 : value;
+    };
+    return [...list].sort((a, b) => ms(a.sent) - ms(b.sent));
+  }, [caseMessages]);
+  const isLoading = caseMessages === undefined;
+  // Reveal from the end so the newest messages are visible first; "Visa äldre" pages backwards.
+  const visible = messages.slice(Math.max(messages.length - visibleCount, 0));
+  const hasMore = visibleCount < messages.length;
+  const latestId = messages.length ? messages[messages.length - 1].messageId : undefined;
+
+  // Resolve a reply's parent from the full thread (not just the revealed page), so quotes render
+  // even when the quoted message is still paged out.
+  const messagesById = useMemo(() => {
+    const map = new Map<string, FrontendMessageResponse>();
+    for (const message of messages) {
+      if (message.messageId) {
+        map.set(message.messageId, message);
+      }
+    }
+    return map;
+  }, [messages]);
+
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    const el = scrollAreaRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior });
+  };
+
+  const updateScrollButton = (event: UIEvent<HTMLDivElement>) => {
+    const el = event.currentTarget;
+    setShowScrollButton(el.scrollHeight - el.scrollTop - el.clientHeight > 80);
+  };
+
+  // Stick to the newest message whenever the thread grows (initial load + after sending).
+  useEffect(() => {
+    requestAnimationFrame(() => scrollToBottom('auto'));
+  }, [messages.length]);
+
+  // Scroll to (and briefly highlight) a jumped-to message once it is in the DOM. Re-runs when the
+  // revealed page grows, so a quote pointing at a paged-out message still lands.
+  useEffect(() => {
+    if (!highlightId) return;
+    const target = scrollAreaRef.current?.querySelector(`#message-${CSS.escape(highlightId)}`);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const timer = setTimeout(() => setHighlightId(undefined), HIGHLIGHT_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [highlightId, visibleCount]);
+
+  const jumpToMessage = (messageId: string) => {
+    const index = messages.findIndex((message) => message.messageId === messageId);
+    if (index === -1) return;
+    // Reveal enough of the thread for the target to exist before the scroll effect runs.
+    setVisibleCount((prev) => Math.max(prev, messages.length - index));
+    setHighlightId(messageId);
+  };
 
   return (
-    <div className="flex flex-col gap-y-16 items-start self-stretch mx-20 desktop:mx-32">
-      <div className="text-secondary w-full">
-        <span>
-          {caseMessages?.length
-            ? `${caseMessages.length} ${caseMessages.length === 1 ? 'meddelande' : 'meddelanden'}`
-            : 'Inga meddelanden'}
-        </span>
-        <Divider className="mx-0 mb-0 mt-16" />
-      </div>
-      {caseMessages?.length ? (
-        <>
-          <ul aria-label="Ärendemeddelanden" className="case-messages flex flex-col self-stretch gap-y-8">
-            {caseMessages?.slice(0, visibleMessages).map((message, index) => {
-              return (
-                <li key={index} className="flex flex-col gap-y-8">
-                  <CaseMessage message={message} />
-                  {index !== caseMessages.length - 1 ? <Divider className="m-0" /> : null}
-                </li>
-              );
-            })}
-          </ul>
-          <div className="w-full">
-            {!(visibleMessages < (caseMessages?.length || 0)) ? <Divider className="mb-16" /> : null}
-            <div className="flex flex-col gap-y-12 items-center self-stretch">
-              <div className="text-secondary text-small">
-                Visar {Math.min(visibleMessages, caseMessages?.length || 0)} av {caseMessages?.length}
-              </div>
-              <div>
-                {visibleMessages < (caseMessages?.length || 0) ? (
-                  <Button variant="secondary" onClick={showMoreMessages}>
-                    Visa fler
-                  </Button>
-                ) : null}
-              </div>
+    <div className="relative min-h-[260px] bg-background-100">
+      {isLoading ? (
+        <div className="min-h-[260px] flex items-center justify-center">
+          <Spinner size={3} />
+        </div>
+      ) : messages.length ? (
+        <div
+          ref={scrollAreaRef}
+          className="max-h-[min(62vh,600px)] overflow-y-auto px-16 py-20 desktop:px-32"
+          onScroll={updateScrollButton}
+          role="log"
+          aria-label={t('cases:messages.threadLabel')}
+          aria-live="polite"
+        >
+          {hasMore ? (
+            <div className="flex justify-center pb-16">
+              <Button size="sm" variant="secondary" onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}>
+                {t('cases:messages.showOlder')}
+              </Button>
             </div>
+          ) : null}
+          <ul className="case-messages flex flex-col gap-y-16">
+            {visible.map((message, index) => (
+              <li
+                id={message.messageId ? `message-${message.messageId}` : undefined}
+                key={message.messageId ?? index}
+                className="flex flex-col gap-y-12 scroll-mt-16"
+              >
+                {index === 0 ||
+                formatDateDivider(message.sent, t) !== formatDateDivider(visible[index - 1]?.sent, t) ? (
+                  <div className="flex items-center gap-12">
+                    <Divider className="m-0 grow" />
+                    <span className="text-small text-secondary whitespace-nowrap">
+                      {formatDateDivider(message.sent, t)}
+                    </span>
+                    <Divider className="m-0 grow" />
+                  </div>
+                ) : null}
+                <CaseMessage
+                  message={message}
+                  isLatest={message.messageId === latestId}
+                  canReply={canReply}
+                  isHighlighted={message.messageId === highlightId}
+                  repliedMessage={message.inReplyToId ? messagesById.get(message.inReplyToId) : undefined}
+                  onReply={onReply}
+                  onJumpTo={jumpToMessage}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <div className="min-h-[260px] flex flex-col items-center justify-center gap-12 text-center text-secondary px-20">
+          <MessageSquare size={42} />
+          <div>
+            <p className="font-bold text-body m-0">{t('cases:messages.emptyTitle')}</p>
+            <p className="m-0 text-small">{t('cases:messages.emptyBody')}</p>
           </div>
-        </>
+        </div>
+      )}
+      {showScrollButton ? (
+        <Button
+          className="absolute bottom-16 right-16 shadow-lg"
+          size="sm"
+          color="vattjom"
+          iconButton
+          aria-label={t('cases:messages.scrollToLatest')}
+          leftIcon={<ArrowDown />}
+          onClick={() => scrollToBottom()}
+        />
       ) : null}
     </div>
   );

@@ -1,4 +1,5 @@
 import { AttachmentResponse, Message, MessageResponseDirectionEnum, MessageTypeEnum } from '@/data-contracts/case-data/data-contracts';
+import { Errand, Message as CareManagementMessage } from '@/data-contracts/caremanagement/data-contracts';
 import { CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
@@ -19,9 +20,54 @@ const namespaceIsAllowed = (c: CaseStatusResponse): boolean => !!c?.namespace &&
 const allowedSystems: ReadonlySet<string> = new Set(['OPEN_E_PLATFORM', 'BYGGR']);
 const systemIsAllowed = (c: CaseStatusResponse): boolean => !!c?.system && allowedSystems.has(c.system);
 
-// A case is shown when its namespace is whitelisted, or — when it has no
-// namespace at all — when its originating system is whitelisted.
-export const caseIsAllowed = (c: CaseStatusResponse): boolean => namespaceIsAllowed(c) || (typeof c.namespace === 'undefined' && systemIsAllowed(c));
+// Synthetic system value for caremanagement errands. They are not produced by casestatus — this
+// backend fetches them directly and maps them onto the CaseStatusResponse shape (see
+// mapCareManagementErrandToCase) so they slot into the same case list / case page.
+export const CARE_MANAGEMENT_SYSTEM = 'CARE_MANAGEMENT';
+
+// A case is shown when its namespace is whitelisted, or — when it has no namespace at all — when
+// its originating system is whitelisted, or when it is one of our own caremanagement errands.
+export const caseIsAllowed = (c: CaseStatusResponse): boolean =>
+  namespaceIsAllowed(c) || (typeof c.namespace === 'undefined' && systemIsAllowed(c)) || c.system === CARE_MANAGEMENT_SYSTEM;
+
+// caremanagement financial-assistance statuses → the Swedish externalStatus labels the frontend
+// status map understands (see mapStatus in frontend case-service.ts). Unknown statuses fall back
+// to "Handläggning pågår" so the case still lands in the ongoing bucket with a sane colour.
+const CARE_MANAGEMENT_STATUS_LABELS: Readonly<Record<string, string>> = {
+  NEW: 'Inskickat',
+  INKOMMEN: 'Inskickat',
+  ONGOING: 'Handläggning pågår',
+  DECIDED: 'Avslutat',
+};
+
+/** Maps a caremanagement Errand onto the CaseStatusResponse shape the case list/page consume. */
+export const mapCareManagementErrandToCase = (errand: Errand): CaseStatusResponse => ({
+  caseId: errand.id,
+  caseType: errand.typeSlug,
+  status: errand.status,
+  externalStatus: CARE_MANAGEMENT_STATUS_LABELS[errand.status ?? ''] ?? 'Handläggning pågår',
+  firstSubmitted: errand.created,
+  lastStatusChange: errand.modified ?? errand.created,
+  system: CARE_MANAGEMENT_SYSTEM,
+  namespace: errand.namespace,
+  errandNumber: errand.errandNumber,
+});
+
+/** Maps a caremanagement conversation Message onto the frontend message shape. */
+export const mapCareManagementMessage = (msg: CareManagementMessage, senderName: string): FrontendMessageResponse => ({
+  conversationId: '',
+  messageId: msg.id ?? '',
+  direction: msg.direction === 'OUTBOUND' ? MessageResponseDirectionEnum.OUTBOUND : MessageResponseDirectionEnum.INBOUND,
+  message: msg.body ?? '',
+  sent: msg.created ?? '',
+  sender: senderName,
+  inReplyToId: msg.inReplyToId,
+  attachments: (msg.attachments ?? []).map(attachment => ({
+    attachmentId: attachment.id ?? '',
+    name: attachment.fileName ?? '',
+    contentType: attachment.mimeType,
+  })),
+});
 
 // --- Conversation / message payload builders ---------------------------------
 
@@ -98,6 +144,7 @@ export const toFrontendMessage = (msg: MessageWithConversationId<Message>, nameM
     sent: msg.created,
     sender,
     direction: citizenCreatedKeys.includes(msg?.createdBy?.type ?? '') ? 'INBOUND' : 'OUTBOUND',
+    inReplyToId: msg.inReplyToMessageId,
     attachments: msg.attachments?.map(attachment => ({
       attachmentId: attachment.id?.toString() ?? '',
       name: attachment.fileName,

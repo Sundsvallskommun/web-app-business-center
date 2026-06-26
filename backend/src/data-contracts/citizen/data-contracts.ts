@@ -71,6 +71,19 @@ export interface CustodyChildrenPupil {
   unRegDate?: string | null;
 }
 
+/** A child a person is custodian for — returned by GET /{municipalityId}/{personNumber}/custodychildren. */
+export interface CustodyChild {
+  /** @format uuid */
+  personId?: string;
+  personNumber?: string | null;
+  givenname?: string | null;
+  middlename?: string | null;
+  lastname?: string | null;
+  notNR?: string | null;
+  classified?: string | null;
+  protectedNR?: string | null;
+}
+
 export interface PersonGuidBatch {
   personNumber?: string | null;
   /** @format uuid */

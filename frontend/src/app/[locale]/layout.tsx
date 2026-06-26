@@ -13,6 +13,8 @@ const namespaces = [
   'confirmation',
   'cookies',
   'decisions',
+  'economic-aid',
+  'financial-assistance',
   'invoice',
   'layout',
   'login',

@@ -11,4 +11,8 @@ export class CaseMessageDto implements CaseMessage {
   @ValidateNested({ each: true })
   @Type(() => File)
   files?: File[];
+
+  @IsString()
+  @IsOptional()
+  inReplyToId?: string;
 }

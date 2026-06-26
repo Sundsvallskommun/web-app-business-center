@@ -25,4 +25,6 @@ export interface FrontendMessageResponse {
   sent: string;
   sender: string;
   attachments: AttachmentResponse[];
+  // Present when the message is a reply; points at the quoted message's id.
+  inReplyToId?: string;
 }

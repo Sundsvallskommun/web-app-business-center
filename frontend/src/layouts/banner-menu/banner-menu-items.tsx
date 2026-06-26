@@ -28,12 +28,19 @@ export const useBannerMenuItems = () => {
     <NextLink
       key={`banner-menu-item-2`}
       className="w-full flex items-center justify-center"
+      href={`${myPagesRoute}/ansok`}
+    >
+      {t('common:apply')}
+    </NextLink>,
+    <NextLink
+      key={`banner-menu-item-3`}
+      className="w-full flex items-center justify-center"
       href={`${myPagesRoute}/beslut-och-dokument`}
     >
       {t('common:decisionsAndDocuments')}
     </NextLink>,
     <NextLink
-      key={`banner-menu-item-3`}
+      key={`banner-menu-item-4`}
       className="w-full flex items-center justify-center"
       href={`${myPagesRoute}/fakturor`}
     >
@@ -44,7 +51,7 @@ export const useBannerMenuItems = () => {
   const mobileMenuItems = [
     ...bannerItems,
     <NextLink
-      key={`banner-menu-item-4`}
+      key={`banner-menu-item-5`}
       className="w-full flex items-center justify-center"
       href={`${myPagesRoute}/profil`}
     >

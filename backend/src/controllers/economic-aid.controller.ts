@@ -43,6 +43,7 @@ import { validateRequestBody } from '@/utils/validate';
 import authMiddleware from '@middlewares/auth.middleware';
 import { logger } from '@utils/logger';
 import { createHash } from 'crypto';
+import FormData from 'form-data';
 import { Body, Controller, Get, Param, Post, QueryParam, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
@@ -641,38 +642,31 @@ export class EconomicAidController {
     // (origin ERRAND) and an optional "caseData" part. The sammanställning goes in caseData — it is
     // stored as the single CASE_DATA attachment (ärendeuppgifter) and renamed to {errandNumber}.pdf,
     // so the errand and its snapshot are created in one call.
-    // The `request` part MUST declare charset=utf-8. Without it the servlet decodes the part bytes as
-    // ISO-8859-1, so the UTF-8 bytes for å/ä/ö in the title turn into stray/control characters and cm
-    // rejects the part as "not valid JSON". Sent as a Blob so axios emits the part Content-Type.
+    // Build the multipart with the form-data package so each part's framing is fully controlled:
+    //  - request/formSnapshot as Buffers (correct UTF-8) with a charset and NO filename. A Blob via
+    //    axios/undici gets filename="blob", which makes the server treat 'request' as a file upload
+    //    instead of the JSON field cm parses — a likely cause of its "not valid JSON".
+    //  - caseData/attachments as binary file parts (filename set).
+    // We send the materialised Buffer (form.getBuffer) so the debug log is byte-for-byte what cm gets.
     const form = new FormData();
-    form.append('request', new Blob([JSON.stringify(request)], { type: 'application/json; charset=utf-8' }));
-    form.append('caseData', new Blob([summaryPdf], { type: 'application/pdf' }), 'sammanstallning.pdf');
-    // cm reads formSnapshot as a String; send it as a text part with an explicit utf-8 charset so the
-    // Swedish labels survive (a application/json part would make Spring map JSON→String and fail).
+    form.append('request', Buffer.from(JSON.stringify(request), 'utf-8'), { contentType: 'application/json; charset=utf-8' });
+    form.append('caseData', summaryPdf, { filename: 'sammanstallning.pdf', contentType: 'application/pdf' });
     if (body.formSnapshot) {
-      form.append('formSnapshot', new Blob([JSON.stringify(body.formSnapshot)], { type: 'text/plain; charset=utf-8' }));
+      form.append('formSnapshot', Buffer.from(JSON.stringify(body.formSnapshot), 'utf-8'), { contentType: 'text/plain; charset=utf-8' });
     }
     (files ?? []).forEach(file => {
-      form.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
+      form.append('attachments', file.buffer, { filename: file.originalname, contentType: file.mimetype });
     });
 
-    // TEMP DEBUG (remove once create succeeds): dump the request JSON and how the multipart 'request'
-    // part is framed (Content-Disposition / Content-Type / body) so we can see what caremanagement
-    // actually receives for the part it rejects as "not valid JSON".
-    logger.info(`[economic-aid] cm create payload (${slug}): ${JSON.stringify(request)}`);
-    try {
-      const debugForm = new FormData();
-      debugForm.append('request', new Blob([JSON.stringify(request)], { type: 'application/json; charset=utf-8' }));
-      const framing = await new Response(debugForm).text();
-      logger.info(`[economic-aid] cm 'request' part framing:\n${framing}`);
-    } catch (debugErr) {
-      logger.warn(`[economic-aid] debug framing failed: ${(debugErr as Error)?.message ?? debugErr}`);
-    }
+    const multipartBody = form.getBuffer();
+    // TEMP DEBUG (remove once create succeeds): the first bytes cover the 'request' part exactly as
+    // sent — Content-Disposition (filename?), Content-Type (charset?) and the JSON body.
+    logger.info(`[economic-aid] cm request part as sent:\n${multipartBody.toString('utf8', 0, 2500)}`);
 
     const created = await this.caremanagementApiService.postForm<unknown>({
       url: caremanagementUrl('errands', slug),
-      data: form,
-      headers: sentByPartyId(req.user.partyId),
+      data: multipartBody,
+      headers: { ...sentByPartyId(req.user.partyId), ...form.getHeaders() },
     });
 
     const errandId = errandIdFromLocation(created.location);

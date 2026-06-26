@@ -31,6 +31,7 @@ import { ApiResponse } from '@/interfaces/service';
 import { ContactSetting, ContactSettingChannel, NewContactSettings, UpdateContactSettings } from '@/interfaces/contact-settings';
 import { ContactMethod } from '@/data-contracts/contactsettings/data-contracts';
 import ApiService from '@/services/api.service';
+import ApiTokenService from '@/services/api-token.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
 import { renderPdfFromHtml } from '@/services/templating.service';
 import { buildApplicationPdfHtml } from '@/utils/economic-aid-application-pdf';
@@ -217,9 +218,13 @@ const isProtectedIdentity = (citizen: CitizenExtended): boolean => {
   return !!(protectedNR && protectedNR.length > 0) || !!(classified && classified.length > 0 && classified !== '0');
 };
 
+// custodychildren-resursen i Citizen är skyddad av detta OAuth2-scope (roll SG_WSO2_API_CitizenRelation).
+const CITIZEN_RELATION_SCOPE = 'CitizenRelationAccess';
+
 @Controller()
 export class EconomicAidController {
   private apiService = new ApiService();
+  private apiTokenService = new ApiTokenService();
   private caremanagementApiService = new CaremanagementApiService();
   private citizenApiBase = getApiBase('citizen');
   private contactSettingsApiBase = getApiBase('contactsettings');
@@ -437,17 +442,26 @@ export class EconomicAidController {
    * Fetches the children a person is custodian for from Citizen (keyed on personnummer). Best-effort
    * — a failed/empty lookup (incl. 204 No Content) yields an empty list and never fails the request.
    *
-   * NOTE: this resource requires the CitizenRelationAccess scope. We previously fetched a separate
-   * scope-specific token for it, but maintaining a second client_credentials token (different scope)
-   * for the same client made WSO2 reject the client's default token (900901) on other gateway calls.
-   * Until the app's default token is authorized for the scope (platform side), this uses the shared
-   * default token and will return an empty list (no children suggestions) rather than risk the rest.
+   * This resource requires the CitizenRelationAccess scope, which the shared default token lacks. We
+   * fetch a separate scope-specific token and pass it only on this call (the request interceptor lets
+   * a per-request Authorization header override the default). NOTE: a second client_credentials token
+   * for the same client has previously made WSO2 reject the default token (900901) on other gateway
+   * calls — if that recurs, this is the change to revert.
    */
   private async fetchCustodyChildren(personNumber: string, req: RequestWithUser): Promise<CustodyChild[]> {
     const clean = onlyDigits(personNumber);
     if (!clean) return [];
-    const response = await this.apiService
-      .get<CustodyChild[]>({ url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/${clean}/custodychildren` }, req.user)
+    const response = await this.apiTokenService
+      .getToken(CITIZEN_RELATION_SCOPE)
+      .then(token =>
+        this.apiService.get<CustodyChild[]>(
+          {
+            url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/${clean}/custodychildren`,
+            headers: { Authorization: `Bearer ${token}` },
+          },
+          req.user,
+        ),
+      )
       .catch(err => {
         logger.warn(`[economic-aid] failed to fetch custody children: ${(err as Error)?.message ?? err}`);
         return null;

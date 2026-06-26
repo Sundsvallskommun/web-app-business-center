@@ -641,16 +641,16 @@ export class EconomicAidController {
     // (origin ERRAND) and an optional "caseData" part. The sammanställning goes in caseData — it is
     // stored as the single CASE_DATA attachment (ärendeuppgifter) and renamed to {errandNumber}.pdf,
     // so the errand and its snapshot are created in one call.
-    // cm reads the `request` and `formSnapshot` parts as plain Strings and parses the JSON itself
-    // (its 400 "The 'request' part is not valid JSON" is a manual parse error, not Spring's). So both
-    // are appended as plain string fields WITHOUT a Content-Type — a Blob/application/json part makes
-    // Spring run a message converter that mangles the value before cm parses it. axios encodes string
-    // parts as UTF-8, so å/ä/ö in the title survive. caseData/attachments stay binary Blobs (files).
+    // The `request` part MUST declare charset=utf-8. Without it the servlet decodes the part bytes as
+    // ISO-8859-1, so the UTF-8 bytes for å/ä/ö in the title turn into stray/control characters and cm
+    // rejects the part as "not valid JSON". Sent as a Blob so axios emits the part Content-Type.
     const form = new FormData();
-    form.append('request', JSON.stringify(request));
+    form.append('request', new Blob([JSON.stringify(request)], { type: 'application/json; charset=utf-8' }));
     form.append('caseData', new Blob([summaryPdf], { type: 'application/pdf' }), 'sammanstallning.pdf');
+    // cm reads formSnapshot as a String; send it as a text part with an explicit utf-8 charset so the
+    // Swedish labels survive (a application/json part would make Spring map JSON→String and fail).
     if (body.formSnapshot) {
-      form.append('formSnapshot', JSON.stringify(body.formSnapshot));
+      form.append('formSnapshot', new Blob([JSON.stringify(body.formSnapshot)], { type: 'text/plain; charset=utf-8' }));
     }
     (files ?? []).forEach(file => {
       form.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
@@ -662,7 +662,7 @@ export class EconomicAidController {
     logger.info(`[economic-aid] cm create payload (${slug}): ${JSON.stringify(request)}`);
     try {
       const debugForm = new FormData();
-      debugForm.append('request', JSON.stringify(request));
+      debugForm.append('request', new Blob([JSON.stringify(request)], { type: 'application/json; charset=utf-8' }));
       const framing = await new Response(debugForm).text();
       logger.info(`[economic-aid] cm 'request' part framing:\n${framing}`);
     } catch (debugErr) {

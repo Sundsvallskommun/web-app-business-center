@@ -649,13 +649,10 @@ export class EconomicAidController {
     //  - caseData/attachments as binary file parts (filename set).
     // We send the materialised Buffer (form.getBuffer) so the debug log is byte-for-byte what cm gets.
     const form = new FormData();
-    // Give the `request` part a filename so the server binds it as an uploaded file (MultipartFile)
-    // that cm reads and JSON-parses — without a filename it is treated as a plain field, cm's file is
-    // empty, and it reports "The 'request' part is not valid JSON" even though the bytes are valid.
-    form.append('request', Buffer.from(JSON.stringify(request), 'utf-8'), {
-      filename: 'request.json',
-      contentType: 'application/json; charset=utf-8',
-    });
+    // request as the plain object part the OpenAPI default describes: application/json, no charset
+    // parameter, no filename. Buffer.from(..., 'utf-8') keeps the bytes correct (JSON defaults to
+    // UTF-8 anyway). caseData/attachments are the binary file parts.
+    form.append('request', Buffer.from(JSON.stringify(request), 'utf-8'), { contentType: 'application/json' });
     form.append('caseData', summaryPdf, { filename: 'sammanstallning.pdf', contentType: 'application/pdf' });
     if (body.formSnapshot) {
       form.append('formSnapshot', Buffer.from(JSON.stringify(body.formSnapshot), 'utf-8'), { contentType: 'text/plain; charset=utf-8' });

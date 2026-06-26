@@ -1,14 +1,16 @@
 import { FinancialAssistanceFormData, NormType, PeriodChoice } from '@interfaces/financial-assistance';
 import { swedishMonthName } from '@utils/swedish-month';
-import { Checkbox, FormControl, FormLabel, RadioButton, Textarea } from '@sk-web-gui/react';
+import { Checkbox, FormControl, FormLabel, RadioButton } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { StepNavigation } from '../../components/step-navigation.component';
 import { FaCostSelector } from '../components/fa-cost-selector.component';
-import { selectableBoxClass } from '../components/fa-form-helpers';
+import { FaNormBoxes } from '../components/fa-norm-boxes.component';
 import { FaStepProps } from './fa-step-registry';
 
-const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
+// "Annat bistånd" är borttaget som periodval på nyansökan — det behovet täcks av kostnaden
+// "Övrigt bistånd", så vi har bara en "Övrigt"-ingång. Här erbjuds därför bara månadsvalen.
+const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH'];
 const NORM_TYPES: NormType[] = ['NATIONAL_NORM', 'OTHER_NORM'];
 
 /** Lägger till/tar bort ett värde ur en flervalslista. */
@@ -80,7 +82,6 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
   const ni = watch('maritalStatus') === 'COHABITING' ? { context: 'ni' } : undefined;
   const periodChoices = watch('periodChoices');
-  const otherBenefitDescription = watch('otherBenefitDescription');
   const normTypes = watch('normTypes');
   const periodMonth = watch('periodMonth');
   const periodYear = watch('periodYear');
@@ -104,13 +105,10 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
   const supplementaryMissingExpense =
     isSupplementary && costs.filter((cost) => cost.costType).length === 0 && normTypes.length === 0;
 
-  // Obligatoriskt: nyansökan kräver period (+ fritext för annat bistånd, + norm när den visas);
+  // Obligatoriskt: nyansökan kräver minst en period (+ norm när den visas);
   // tilläggsansökan kräver minst en utgift.
   const forwardDisabled =
-    (isNew &&
-      (periodChoices.length === 0 ||
-        (periodChoices.includes('OTHER_BENEFIT') && otherBenefitDescription.trim() === '') ||
-        (showNorm && normTypes.length === 0))) ||
+    (isNew && (periodChoices.length === 0 || (showNorm && normTypes.length === 0))) ||
     supplementaryMissingExpense;
 
   return (
@@ -136,15 +134,6 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
               </Checkbox>
             ))}
           </div>
-          {periodChoices.includes('OTHER_BENEFIT') ? (
-            <Textarea
-              className="w-full min-h-72 mt-12"
-              data-cy="fa-other-benefit"
-              placeholder={t('financial-assistance:periodNorm.otherBenefitPlaceholder')}
-              value={otherBenefitDescription}
-              onChange={(event) => setValue('otherBenefitDescription', event.target.value, { shouldDirty: true })}
-            />
-          ) : null}
         </FormControl>
       ) : (
         <div className="text-content">
@@ -181,46 +170,10 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
             </p>
           )}
         </div>
-        <FaCostSelector />
+        {/* Tilläggsansökan: norm-boxarna (Riksnorm/Annan norm) renderas inuti kostnadernas "Övrigt"
+            så att det bara finns en "Övrigt"-rubrik. */}
+        <FaCostSelector otherExtra={isSupplementary ? <FaNormBoxes /> : undefined} />
       </section>
-
-      {/* Övrigt (endast tilläggsansökan) — Riksnorm/Annan norm som utgiftsboxar med info + specifikation. */}
-      {isSupplementary ? (
-        <section className="flex flex-col gap-16" data-cy="fa-other">
-          <h3 className="text-h4-md font-bold">{t('financial-assistance:economy.otherHeading')}</h3>
-          <div className="flex flex-col gap-12">
-            {NORM_TYPES.map((type) => {
-              const checked = normTypes.includes(type);
-              return (
-                <div key={type} className={selectableBoxClass(checked)} data-cy={`fa-norm-box-${type}`}>
-                  <Checkbox
-                    checked={checked}
-                    data-cy={`fa-norm-toggle-${type}`}
-                    onChange={() => setValue('normTypes', toggle(normTypes, type), { shouldDirty: true })}
-                  >
-                    <span className="font-bold">{t(`financial-assistance:normType.${type}`)}</span>
-                  </Checkbox>
-                  {checked ? (
-                    <div className="flex flex-col gap-12 mt-12 ml-32">
-                      <span className="text-small text-dark-secondary">{t(`financial-assistance:normInfo.${type}`)}</span>
-                      <FormControl className="w-full" data-cy={`fa-norm-specification-${type}`}>
-                        <FormLabel className="font-bold">{t('financial-assistance:economy.normSpecificationLabel')}</FormLabel>
-                        <Textarea
-                          className="w-full min-h-72"
-                          value={watch(`normSpecifications.${type}` as const)}
-                          onChange={(event) =>
-                            setValue(`normSpecifications.${type}` as const, event.target.value, { shouldDirty: true })
-                          }
-                        />
-                      </FormControl>
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
 
       <StepNavigation onBack={onBack} onNext={onNext} forwardDisabled={forwardDisabled} />
     </section>

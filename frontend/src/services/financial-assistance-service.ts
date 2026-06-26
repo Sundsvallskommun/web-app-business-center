@@ -46,13 +46,13 @@ const derivePeriod = (choice: 'CURRENT_MONTH' | 'NEXT_MONTH'): Period => {
   return { periodMonth, periodYear };
 };
 
-// Prioritetsordning för det enkla periodChoice kontraktet bär (hela flervalet fångas i PDF + snapshot).
+// Prioritetsordning för att härleda månaden (periodMonth/Year) ur flervalet.
 const PERIOD_PRIORITY: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
 
 /**
  * Builds and assigns the period fields onto `data`. Nyansökan tillåter flerval ("Vad avser
- * ansökan?"); kontraktet bär ett enkelt periodChoice + månad, så vi skickar det främsta valet
- * (Denna > Nästa > Annat bistånd) och härleder månaden därifrån. Hela urvalet visas i PDF/snapshot.
+ * ansökan?"); cm:s periodChoice är en lista, så vi skickar hela urvalet som array. Månaden
+ * (periodMonth/Year) härleds från det främsta månadsvalet (Denna > Nästa).
  */
 const assignPeriod = (
   data: Record<string, unknown>,
@@ -63,14 +63,15 @@ const assignPeriod = (
     Object.assign(data, compact({ periodMonth: form.periodMonth, periodYear: form.periodYear }));
     return;
   }
-  const primary = PERIOD_PRIORITY.find((choice) => form.periodChoices.includes(choice));
-  if (!primary) return;
+  if (form.periodChoices.length === 0) return;
+  const monthChoice = PERIOD_PRIORITY.find(
+    (choice) => (choice === 'CURRENT_MONTH' || choice === 'NEXT_MONTH') && form.periodChoices.includes(choice)
+  ) as 'CURRENT_MONTH' | 'NEXT_MONTH' | undefined;
   Object.assign(
     data,
     compact({
-      periodChoice: primary,
-      ...(primary === 'OTHER_BENEFIT' ? {} : derivePeriod(primary)),
-      // "Annat bistånd" kan vara valt vid sidan av en månad — skicka fritexten när det ingår i urvalet.
+      periodChoice: form.periodChoices,
+      ...(monthChoice ? derivePeriod(monthChoice) : {}),
       otherBenefitDescription: form.periodChoices.includes('OTHER_BENEFIT') ? form.otherBenefitDescription.trim() : '',
     })
   );

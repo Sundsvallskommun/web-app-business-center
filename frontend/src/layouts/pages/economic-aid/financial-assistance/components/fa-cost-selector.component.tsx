@@ -39,7 +39,13 @@ const boxClass = (checked: boolean): string =>
  * läggas till på flera rader (egen undertyp/specifikation/belopp per rad). Varje rad blir en post
  * i `costs`.
  */
-export const FaCostSelector: React.FC = () => {
+interface FaCostSelectorProps {
+  /** Extra innehåll som renderas inuti "Övrigt"-kategorin (t.ex. norm-boxar på tilläggsansökan),
+   *  så att norm och kostnader delar en enda "Övrigt"-rubrik. */
+  otherExtra?: React.ReactNode;
+}
+
+export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ otherExtra }) => {
   const { t } = useTranslation('financial-assistance');
   const { control, register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
   const { fields, append, remove } = useFieldArray({ control, name: 'costs' });
@@ -198,6 +204,8 @@ export const FaCostSelector: React.FC = () => {
         <div key={group.category} className="flex flex-col gap-12">
           <p className="text-base font-bold">{t(`financial-assistance:costCategory.${group.category}`)}</p>
           {group.types.map((type) => (type === 'OTHER' ? renderOtherBox() : renderStandardBox(type)))}
+          {/* Norm-boxarna (tilläggsansökan) hör hemma under samma "Övrigt" som "Övrigt bistånd". */}
+          {group.category === 'other' ? otherExtra : null}
         </div>
       ))}
     </div>

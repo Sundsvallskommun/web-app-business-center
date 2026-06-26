@@ -74,7 +74,8 @@ export interface FormSnapshot {
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 // Option-code catalogues (machine values), in render order — labels resolved from i18n.
-const PERIOD_CHOICES = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
+// Nyansökans periodval erbjuder bara månaderna ("Annat bistånd" täcks numera av kostnaden "Övrigt bistånd").
+const PERIOD_CHOICES = ['CURRENT_MONTH', 'NEXT_MONTH'];
 const NORM_TYPES = ['NATIONAL_NORM', 'OTHER_NORM'];
 const HOUSING_FORMS = ['NO_HOUSING_OR_INSTITUTION', 'RENTAL', 'SUBLET', 'LODGER', 'CONDOMINIUM', 'OWNED_HOUSE', 'RENTED_HOUSE', 'LIVING_WITH_PARENTS'];
 const RESIDENCE_EXTENTS = ['FULL_TIME', 'HALF_TIME', 'OTHER'];

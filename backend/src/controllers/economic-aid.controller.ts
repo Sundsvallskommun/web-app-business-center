@@ -656,6 +656,19 @@ export class EconomicAidController {
       form.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
     });
 
+    // TEMP DEBUG (remove once create succeeds): dump the request JSON and how the multipart 'request'
+    // part is framed (Content-Disposition / Content-Type / body) so we can see what caremanagement
+    // actually receives for the part it rejects as "not valid JSON".
+    logger.info(`[economic-aid] cm create payload (${slug}): ${JSON.stringify(request)}`);
+    try {
+      const debugForm = new FormData();
+      debugForm.append('request', JSON.stringify(request));
+      const framing = await new Response(debugForm).text();
+      logger.info(`[economic-aid] cm 'request' part framing:\n${framing}`);
+    } catch (debugErr) {
+      logger.warn(`[economic-aid] debug framing failed: ${(debugErr as Error)?.message ?? debugErr}`);
+    }
+
     const created = await this.caremanagementApiService.postForm<unknown>({
       url: caremanagementUrl('errands', slug),
       data: form,

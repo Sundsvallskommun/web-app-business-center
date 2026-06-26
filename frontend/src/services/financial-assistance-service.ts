@@ -6,6 +6,7 @@ import {
   FinancialAssistanceFormData,
   IncomeForm,
   JobApplicationForm,
+  NormType,
   PendingBenefitForm,
   PeriodChoice,
   PersonForm,
@@ -255,20 +256,23 @@ export const buildFinancialAssistanceData = (
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
   const isNew = applicationType === 'NEW';
 
-  // Norm är flerval för ny- och tilläggsansökan (återansökan har enkelval). Kontraktet bär ett
-  // enkelt normType, så vi skickar det första valda (hela urvalet + specifikationer fångas i PDF/snapshot).
+  // cm:s normType är en lista. Skicka alla valda normer: nyansökan = flervalet (visas bara vid
+  // denna/nästa månad), tilläggsansökan = "Övrigt"-boxarna, återansökan = enkelvalet som 1-elementslista.
   const hasMonthPeriod = form.periodChoices.some((choice) => choice === 'CURRENT_MONTH' || choice === 'NEXT_MONTH');
-  const normTypeValue = isNew
+  const normTypesValue: NormType[] = isNew
     ? hasMonthPeriod
-      ? (form.normTypes[0] ?? '')
-      : ''
+      ? form.normTypes
+      : []
     : isSupplementary
-      ? (form.normTypes[0] ?? '')
-      : form.normType;
+      ? form.normTypes
+      : form.normType
+        ? [form.normType]
+        : [];
 
   const data: Record<string, unknown> = compact({
     maritalStatus: form.maritalStatus,
-    normType: normTypeValue,
+    // Skickas som lista (cm:s modell); utelämnas när inget norm-val gjorts.
+    normType: normTypesValue.length ? normTypesValue : undefined,
     // Nyansökan steg 3: obligatorisk fritext om försörjning.
     livelihoodDescription: isNew ? form.livelihoodDescription.trim() : '',
     attestation: form.attestation,

@@ -661,14 +661,9 @@ export class EconomicAidController {
       form.append('attachments', file.buffer, { filename: file.originalname, contentType: file.mimetype });
     });
 
-    const multipartBody = form.getBuffer();
-    // TEMP DEBUG (remove once create succeeds): the first bytes cover the 'request' part exactly as
-    // sent — Content-Disposition (filename?), Content-Type (charset?) and the JSON body.
-    logger.info(`[economic-aid] cm request part as sent:\n${multipartBody.toString('utf8', 0, 2500)}`);
-
     const created = await this.caremanagementApiService.postForm<unknown>({
       url: caremanagementUrl('errands', slug),
-      data: multipartBody,
+      data: form.getBuffer(),
       headers: { ...sentByPartyId(req.user.partyId), ...form.getHeaders() },
     });
 

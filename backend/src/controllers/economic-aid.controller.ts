@@ -31,7 +31,6 @@ import { ApiResponse } from '@/interfaces/service';
 import { ContactSetting, ContactSettingChannel, NewContactSettings, UpdateContactSettings } from '@/interfaces/contact-settings';
 import { ContactMethod } from '@/data-contracts/contactsettings/data-contracts';
 import ApiService from '@/services/api.service';
-import ApiTokenService from '@/services/api-token.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
 import { renderPdfFromHtml } from '@/services/templating.service';
 import { buildApplicationPdfHtml } from '@/utils/economic-aid-application-pdf';
@@ -217,13 +216,9 @@ const isProtectedIdentity = (citizen: CitizenExtended): boolean => {
   return !!(protectedNR && protectedNR.length > 0) || !!(classified && classified.length > 0 && classified !== '0');
 };
 
-// custodychildren-resursen i Citizen är skyddad av detta OAuth2-scope (roll SG_WSO2_API_CitizenRelation).
-const CITIZEN_RELATION_SCOPE = 'CitizenRelationAccess';
-
 @Controller()
 export class EconomicAidController {
   private apiService = new ApiService();
-  private apiTokenService = new ApiTokenService();
   private caremanagementApiService = new CaremanagementApiService();
   private citizenApiBase = getApiBase('citizen');
   private contactSettingsApiBase = getApiBase('contactsettings');
@@ -441,25 +436,17 @@ export class EconomicAidController {
    * Fetches the children a person is custodian for from Citizen (keyed on personnummer). Best-effort
    * — a failed/empty lookup (incl. 204 No Content) yields an empty list and never fails the request.
    *
-   * This resource requires the CitizenRelationAccess scope, which the shared default token does not
-   * carry. We fetch a separate scope-specific token and pass it only on this call (the request
-   * interceptor lets a per-request Authorization header override the default), so no other gateway
-   * call is affected by the extra scope.
+   * NOTE: this resource requires the CitizenRelationAccess scope. We previously fetched a separate
+   * scope-specific token for it, but maintaining a second client_credentials token (different scope)
+   * for the same client made WSO2 reject the client's default token (900901) on other gateway calls.
+   * Until the app's default token is authorized for the scope (platform side), this uses the shared
+   * default token and will return an empty list (no children suggestions) rather than risk the rest.
    */
   private async fetchCustodyChildren(personNumber: string, req: RequestWithUser): Promise<CustodyChild[]> {
     const clean = onlyDigits(personNumber);
     if (!clean) return [];
-    const response = await this.apiTokenService
-      .getToken(CITIZEN_RELATION_SCOPE)
-      .then(token =>
-        this.apiService.get<CustodyChild[]>(
-          {
-            url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/${clean}/custodychildren`,
-            headers: { Authorization: `Bearer ${token}` },
-          },
-          req.user,
-        ),
-      )
+    const response = await this.apiService
+      .get<CustodyChild[]>({ url: `${this.citizenApiBase}/${MUNICIPALITY_ID}/${clean}/custodychildren` }, req.user)
       .catch(err => {
         logger.warn(`[economic-aid] failed to fetch custody children: ${(err as Error)?.message ?? err}`);
         return null;
@@ -654,13 +641,17 @@ export class EconomicAidController {
     // (origin ERRAND) and an optional "caseData" part. The sammanställning goes in caseData — it is
     // stored as the single CASE_DATA attachment (ärendeuppgifter) and renamed to {errandNumber}.pdf,
     // so the errand and its snapshot are created in one call.
+    // Web FormData + Blob (axios derives the multipart boundary). Blob content is encoded as UTF-8,
+    // which matters for the JSON `request` part — its title contains å/ä/ö, and the form-data package
+    // mangled those bytes so cm rejected the part as invalid JSON. Each Blob carries its own
+    // Content-Type (application/json for `request`). The formSnapshot part is appended as a plain
+    // string (no Content-Type) because cm declares it as a String — a Blob/application/json part
+    // makes Spring try to map the JSON into a String and fail the whole request.
     const form = new FormData();
     form.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }));
     form.append('caseData', new Blob([summaryPdf], { type: 'application/pdf' }), 'sammanstallning.pdf');
-    // Immutable, re-renderable JSON snapshot of the form as the applicant filled it in. Built by the
-    // client (only it knows the rendered labels/texts); forwarded verbatim. Captured write-once per errand.
     if (body.formSnapshot) {
-      form.append('formSnapshot', new Blob([JSON.stringify(body.formSnapshot)], { type: 'application/json' }));
+      form.append('formSnapshot', JSON.stringify(body.formSnapshot));
     }
     (files ?? []).forEach(file => {
       form.append('attachments', new Blob([file.buffer], { type: file.mimetype }), file.originalname);

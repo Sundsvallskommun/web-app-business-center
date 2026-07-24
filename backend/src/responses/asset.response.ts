@@ -9,7 +9,7 @@ import { IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 // backend's OpenAPI and regenerated into the frontend via `generate:contracts`.
 // Fields not used by the frontend (jsonParameters, additionalParameters) are
 // intentionally omitted to avoid pulling in nested contract types.
-export class Asset implements AssetType {
+class Asset implements AssetType {
   @IsString()
   @IsOptional()
   id?: string;
@@ -48,7 +48,7 @@ export class Asset implements AssetType {
 export class AssetsApiResponse implements ApiResponse<AssetType[]> {
   @ValidateNested({ each: true })
   @Type(() => Asset)
-  data: AssetType[];
+  data!: AssetType[];
   @IsString()
-  message: string;
+  message!: string;
 }

@@ -9,11 +9,7 @@ type Handler = (config: { url: string; params?: Record<string, unknown> }) => Pr
  * If no pattern matches the request, the returned promise rejects so unrouted
  * URLs surface as obvious test failures instead of silent `undefined` results.
  */
-export const routeByUrl = (
-  api: MockApiService,
-  method: keyof MockApiService,
-  handlers: Record<string, Handler>,
-): void => {
+export const routeByUrl = (api: MockApiService, method: keyof MockApiService, handlers: Record<string, Handler>): void => {
   api[method].mockImplementation((config: { url: string; params?: Record<string, unknown> }) => {
     const match = Object.entries(handlers).find(([pattern]) => config.url.includes(pattern));
     if (!match) {

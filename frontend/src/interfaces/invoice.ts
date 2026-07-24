@@ -69,8 +69,3 @@ export interface InvoicePdf {
   fileName: string;
   file: string;
 }
-
-export interface InvoicePdfData {
-  pdf: InvoicePdf;
-  error?: boolean;
-}

@@ -1,13 +1,4 @@
-import {
-  IInvoice,
-  InvoicePdf,
-  InvoicePdfData,
-  InvoiceStatus,
-  InvoicesData,
-  InvoicesResponse,
-  InvoicesResponseData,
-} from '@interfaces/invoice';
-import { ApiResponse, apiService } from './api-service';
+import { IInvoice, InvoiceStatus, InvoicesData, InvoicesResponse, InvoicesResponseData } from '@interfaces/invoice';
 
 export const emptyInvoicesList: InvoicesData = {
   invoices: [],
@@ -40,7 +31,7 @@ export const statusMapInvoices = {
   DEBT_COLLECTION: { label: 'Förfallen', color: 'error' },
 };
 
-export const mapStatus = (s: InvoiceStatus) => {
+const mapStatus = (s: InvoiceStatus) => {
   return Object.keys(statusMapInvoices).includes(s as unknown as string)
     ? { code: s, color: statusMapInvoices[s].color, label: statusMapInvoices[s].label }
     : {
@@ -50,7 +41,7 @@ export const mapStatus = (s: InvoiceStatus) => {
       };
 };
 
-export const handleInvoiceResponse: (data: InvoicesResponse) => IInvoice[] = (data) =>
+const handleInvoiceResponse: (data: InvoicesResponse) => IInvoice[] = (data) =>
   data.invoices.map((n: InvoicesResponseData) => ({
     invoiceNumber: n.invoiceNumber,
     dueDate: n.dueDate,
@@ -66,7 +57,7 @@ export const invoicesHandler = (data: InvoicesResponse): InvoicesData => ({
   labels: invoicesLabels,
 });
 
-export const sortInvoices = (a, b, order: number = -1) => {
+export const sortInvoices = (a: IInvoice, b: IInvoice, order: number = -1) => {
   // if invoiceStatus color is same sort by dueDate
   if (a.invoiceStatus.color === b.invoiceStatus.color) {
     return order === -1
@@ -93,11 +84,3 @@ export const getNotHandledInvoices: (invoicesData: InvoicesData) => InvoicesData
   labels: invoicesLabels,
   invoices: invoicesData?.invoices.filter((x) => notHandledInvoices.includes(x.invoiceStatus.code)).sort(sortInvoices),
 });
-
-export const getInvoicePdf: (invoiceNumber: string) => Promise<InvoicePdfData> = (invoiceNumber) =>
-  apiService
-    .get<ApiResponse<InvoicePdf>>(`invoicepdf/${invoiceNumber}`)
-    .then((res) => ({ pdf: res.data.data }))
-    .catch(
-      (e) => ({ pdf: { fileName: '', file: '' }, error: e.response?.status ?? 'UNKNOWN ERROR' }) as InvoicePdfData
-    );

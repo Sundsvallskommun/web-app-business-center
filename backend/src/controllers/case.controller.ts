@@ -70,18 +70,34 @@ export class CaseController {
     req.session.cache.cases.PRIVATE = data;
   }
 
-  private setCasesCache(req: RequestWithUser, data: CaseStatusResponse[] | null) {
-    if (req.session.representing.mode === RepresentingMode.BUSINESS) {
-      this.setBusinesCasesCache(req, formatOrgNr(req.session.representing.BUSINESS.organizationNumber), data);
+  private setCasesCache(req: RequestWithUser, data: CaseStatusResponse[]) {
+    const { representing } = req.session;
+    if (!representing) {
+      throw new HttpException(400, 'Bad Request');
+    }
+    if (representing.mode === RepresentingMode.BUSINESS) {
+      const orgNumber = representing.BUSINESS && formatOrgNr(representing.BUSINESS.organizationNumber);
+      if (!orgNumber) {
+        throw new HttpException(400, 'Bad Request');
+      }
+      this.setBusinesCasesCache(req, orgNumber, data);
     } else {
       this.setPrivateCasesCache(req, data);
     }
   }
 
   private getCaseFromCache(req: RequestWithUser, caseId: string): CaseStatusResponse | null {
+    const { representing } = req.session;
+    if (!representing) {
+      throw new HttpException(400, 'Bad Request');
+    }
     let cases: CaseStatusResponse[] | null;
-    if (req.session.representing.mode === RepresentingMode.BUSINESS) {
-      cases = req.session.cache?.cases?.BUSINESS?.[formatOrgNr(req.session.representing.BUSINESS.organizationNumber)] ?? null;
+    if (representing.mode === RepresentingMode.BUSINESS) {
+      const orgNumber = representing.BUSINESS && formatOrgNr(representing.BUSINESS.organizationNumber);
+      if (!orgNumber) {
+        throw new HttpException(400, 'Bad Request');
+      }
+      cases = req.session.cache?.cases?.BUSINESS?.[orgNumber] ?? null;
     } else {
       cases = req.session.cache?.cases?.PRIVATE ?? null;
     }
@@ -97,7 +113,7 @@ export class CaseController {
     }
 
     const adUsernamePromises: Promise<NameMap>[] = adUsernames.map(async username => {
-      const userData = await getUserData(username, { user });
+      const userData = await getUserData(username, { user } as RequestWithUser);
       return {
         identifier: username,
         name: `${userData.givenname} ${userData.lastname}`,
@@ -134,7 +150,7 @@ export class CaseController {
       const base64 = Buffer.from(res.data).toString('base64');
 
       return { data: base64, message: 'success' };
-    } catch (error) {
+    } catch (error: any) {
       if (error.status === 404) {
         // handle 404 as empty´
         return { data: null, message: 'success' };
@@ -167,7 +183,7 @@ export class CaseController {
         this.setCasesCache(req, cases);
 
         return { data: cases, message: 'success' };
-      } catch (error) {
+      } catch (error: any) {
         if (error.status === 404) {
           this.setCasesCache(req, []);
           return { data: [], message: '404 from api, Assumed empty array' };
@@ -183,6 +199,9 @@ export class CaseController {
         throw new HttpException(400, 'Bad Request');
       }
       const orgNumber = formatOrgNr(representing.BUSINESS.organizationNumber);
+      if (!orgNumber) {
+        throw new HttpException(400, 'Bad Request');
+      }
       if (USE_CASES_CACHE && req.session.cache?.cases?.BUSINESS?.[orgNumber]) {
         return { data: req.session.cache.cases.BUSINESS[orgNumber], message: 'success' };
       }
@@ -226,7 +245,7 @@ export class CaseController {
       }
 
       return { data: _case, message: 'success' };
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       if (error.status === 404) {
         throw new HttpException(404, 'Case not found');
@@ -238,14 +257,14 @@ export class CaseController {
   @Get('/cases/:caseId/pdf')
   @OpenAPI({ summary: 'Return the base64 encoded pdf by case caseId' })
   @UseBefore(authMiddleware)
-  async getCasePdf(@Req() req: RequestWithUser, @Param('caseId') caseId: string): Promise<ApiResponse<string>> {
+  async getCasePdf(@Req() req: RequestWithUser, @Param('caseId') caseId: string): Promise<ApiResponse<string | null>> {
     if (!caseId) {
       throw new HttpException(400, 'Bad Request');
     }
 
     const _case = (await this.getCase(req, caseId))?.data;
 
-    if (_case === undefined) {
+    if (!_case) {
       throw new HttpException(400, 'Bad request');
     }
 
@@ -261,7 +280,7 @@ export class CaseController {
       return { data: null, message: 'error' };
     }
 
-    return { data: res.data.base64, message: 'success' };
+    return { data: res.data.base64 ?? null, message: 'success' };
   }
 
   // Messages
@@ -276,7 +295,7 @@ export class CaseController {
 
     const _case = (await this.getCase(req, caseId))?.data;
 
-    if (_case === undefined) {
+    if (!_case) {
       throw new HttpException(400, 'Bad request');
     }
 
@@ -295,7 +314,7 @@ export class CaseController {
           }/messages?page=0&size=9000`;
           const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req.user);
           if (resMessages.data) {
-            const messagesWithConversationId = filterNewUserMessages(messages, resMessages.data.content, conversation.id);
+            const messagesWithConversationId = filterNewUserMessages(messages, resMessages.data.content ?? [], conversation.id ?? '');
             messages.push(...messagesWithConversationId);
           }
         }
@@ -315,7 +334,7 @@ export class CaseController {
           }/errands/${caseId}/communication/conversations/${conversation.id}/messages?page=0&size=9000`;
           const resMessages = await this.apiService.get<PageMessage>({ url: messagesUrl }, req.user);
           if (resMessages.data) {
-            const messagesWithConversationId = filterNewUserMessages(messages, resMessages.data.content, conversation.id);
+            const messagesWithConversationId = filterNewUserMessages(messages, resMessages.data.content ?? [], conversation.id ?? '');
             messages.push(...messagesWithConversationId);
           }
         }
@@ -347,7 +366,7 @@ export class CaseController {
       const messages = sortMessagesBySentDesc(data);
 
       return { data: messages, message: 'success' };
-    } catch (error) {
+    } catch (error: any) {
       if (error.status === 404) {
         // handle 404 as empty
         return { data: [], message: 'success' };
@@ -370,6 +389,9 @@ export class CaseController {
   ): Promise<ApiResponse<boolean>> {
     try {
       const _case = (await this.getCase(req, caseId)).data;
+      if (!_case) {
+        throw new HttpException(400, 'Bad request');
+      }
       let url: string;
       if (_case.system === 'CASE_DATA') {
         url = `${getApiBase('case-data')}/${MUNICIPALITY_ID}/${_case.namespace}/errands/${caseId}/messages/${messageId}/viewed/${isViewed}`;
@@ -407,8 +429,13 @@ export class CaseController {
     }
 
     const _case = (await this.getCase(req, caseId)).data;
+    if (!_case) {
+      throw new HttpException(400, 'Bad request');
+    }
 
-    let url: string;
+    // url is assigned in every reachable branch below (directly or inside buildMessageData);
+    // initialized empty to satisfy definite-assignment across the closure boundary.
+    let url = '';
     let headers: Record<string, string> = {};
     let data: MessageRequest | WebMessageRequest | MessagingWebMessageRequest | FormData;
 
@@ -466,7 +493,7 @@ export class CaseController {
       data = await buildMessageData(apiBase);
     } else if (_case.system === 'OPEN_E_PLATFORM') {
       url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
-      data = buildMessagingWebMessageRequest(req.user.partyId, caseId, body.message, files);
+      data = buildMessagingWebMessageRequest(req.user.partyId, caseId, body.message, files ?? []);
     } else if (_case.system === 'BYGGR' || _case.system === 'ECOS') {
       // NOTE: BYGGR and ECOS are using externalCaseId
       // url = `${getApiBase('messaging')}/${MUNICIPALITY_ID}/webmessage`;
@@ -523,6 +550,9 @@ export class CaseController {
     }
 
     const _case = (await this.getCase(req, caseId)).data;
+    if (!_case) {
+      throw new HttpException(400, 'Bad request');
+    }
 
     let url: string;
     if (_case.system === 'CASE_DATA') {

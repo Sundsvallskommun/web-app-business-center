@@ -18,11 +18,7 @@ export const getInvoiceDateFrom = (): string => {
   return date.toISOString().split('T')[0];
 };
 
-export const fetchInvoices = async (
-  partyId: string,
-  user: User,
-  api: Pick<ApiService, 'get'> = defaultApi,
-): Promise<InvoicesResponse> => {
+export const fetchInvoices = async (partyId: string, user: User, api: Pick<ApiService, 'get'> = defaultApi): Promise<InvoicesResponse> => {
   const params = {
     partyId,
     organizationNumber: MUNICIPALITY_ORG_NR,
@@ -38,10 +34,8 @@ export const fetchInvoices = async (
     }
 
     return res.data;
-  } catch (error) {
-    if (error.status === 404) {
-      return emptyInvoice;
-    }
+  } catch {
+    // Any failure (including 404) falls back to an empty invoice list
     return emptyInvoice;
   }
 };

@@ -1,6 +1,5 @@
 import { MUNICIPALITY_ID, NAMESPACE } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { CitizenExtended } from '@/data-contracts/citizen/data-contracts';
 import { CreateMandate, MandateDetails, Mandates, SearchMandateParameters } from '@/data-contracts/myrepresentatives/data-contracts';
 import { CreateMandateDto, MandatePaginationDto } from '@/dtos/mandate.dto';
 import { HttpException } from '@/exceptions/HttpException';
@@ -19,12 +18,21 @@ import { Body, Controller, Delete, Get, Param, Post, QueryParams, Req, Res, UseB
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { getCitizen, getCitizenPersonnumber } from '@/services/citizen.service';
 
+// Narrow optional httpCode/message off an unknown thrown value (e.g. routing-controllers HttpError).
+const getErrorStatus = (error: unknown): number | undefined =>
+  typeof error === 'object' && error !== null && typeof (error as { httpCode?: unknown }).httpCode === 'number'
+    ? (error as { httpCode: number }).httpCode
+    : undefined;
+const getErrorMessage = (error: unknown): string | undefined =>
+  typeof error === 'object' && error !== null && typeof (error as { message?: unknown }).message === 'string'
+    ? (error as { message: string }).message
+    : undefined;
+
 @Controller()
 @UseBefore(authMiddleware)
 export class MandateController {
   private readonly apiService = new ApiService();
   private readonly apiBase = `${getApiBase('myrepresentatives')}/${MUNICIPALITY_ID}/${NAMESPACE}`;
-  private readonly citizenApiBase = `${getApiBase('citizen')}/${MUNICIPALITY_ID}`;
 
   @Get('/mandates/personal')
   @OpenAPI({ summary: 'Get all mandates given to me' })
@@ -58,7 +66,7 @@ export class MandateController {
     @Res() res: Response<PopulatedMandatesApiResponse>,
   ): Promise<Response<PopulatedMandatesApiResponse>> {
     const url = `${this.apiBase}/mandates`;
-    const partyId = req.session.representing.BUSINESS?.partyId;
+    const partyId = req.session.representing?.BUSINESS?.partyId;
     if (!partyId) {
       throw new HttpException(400, 'Not representing an organization');
     }
@@ -115,8 +123,8 @@ export class MandateController {
     const url = `${this.apiBase}/mandates`;
     try {
       const cacheHandler = handleSignCache(req);
-      const { granteeId, grantorId, ...mandate } = cacheHandler.get<SignMandateCache>('mandates', body.transactionId);
-      const sign: GrpCollectResponseWithRef = cacheHandler.get('completed', body.transactionId);
+      const mandateCache = cacheHandler.get<SignMandateCache>('mandates', body.transactionId);
+      const sign = cacheHandler.get<GrpCollectResponseWithRef>('completed', body.transactionId);
 
       const grantorDetails = req.session.representing?.BUSINESS;
 
@@ -128,9 +136,12 @@ export class MandateController {
         throw new HttpException(422, 'Can not find BankId sign details');
       }
 
-      if (!mandate || !sign) {
+      if (!mandateCache) {
         throw new HttpException(422, 'Can not find BankId sign details');
       }
+
+      // grantorId is intentionally excluded from the CreateMandate payload
+      const { granteeId, grantorId: _grantorId, ...mandate } = mandateCache;
 
       if (sign.progressStatus.status !== GrpStatus.Complete) {
         throw new HttpException(403, 'Mandate is not signed');
@@ -176,13 +187,13 @@ export class MandateController {
           grantorDetails: result.data.grantorDetails,
           activeFrom: result.data.activeFrom,
           inactiveAfter: result.data.inactiveAfter,
-          id: result.data.id,
+          id: result.data.id ?? '',
           status: result.data.status,
         },
       });
     } catch (error) {
       logger.error('Error creating mandates: ', error);
-      throw new HttpException(error?.httpCode ?? 500, error?.message ?? 'Error creating mandates');
+      throw new HttpException(getErrorStatus(error) ?? 500, getErrorMessage(error) ?? 'Error creating mandates');
     }
   }
 

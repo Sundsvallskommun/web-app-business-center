@@ -1,35 +1,11 @@
-import { API_BASE_URL, BASE_URL_PREFIX } from '@config';
-/**
- * @method isEmpty
- * @param {String | Number | Object} value
- * @returns {Boolean} true & false
- * @description this value is Empty Check
- */
-export const isEmpty = (value: string | number | object): boolean => {
-  if (value === null) {
-    return true;
-  } else if (typeof value !== 'number' && value === '') {
-    return true;
-  } else if (typeof value === 'undefined' || value === undefined) {
-    return true;
-  } else if (value !== null && typeof value === 'object' && !Object.keys(value).length) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
-export const localApi = (...parts: string[]): string => {
-  const urlParts = [BASE_URL_PREFIX, ...parts];
-  return urlParts.map(pathPart => pathPart.replace(/(\/$)/g, '')).join('/');
-};
+import { API_BASE_URL } from '@config';
 
 export const apiURL = (...parts: string[]): string => {
   const urlParts = [API_BASE_URL, ...parts];
-  return urlParts.map(pathPart => pathPart.replace(/(^\/|\/$)/g, '')).join('/');
+  return urlParts.map(pathPart => (pathPart ?? '').replace(/(^\/|\/$)/g, '')).join('/');
 };
 
-export const luhnCheck = (str = ''): boolean => {
+const luhnCheck = (str = ''): boolean => {
   str = str.length === 12 ? str.slice(2) : str;
   let sum = 0;
   for (let i = 0, l = str.length; i < l; i++) {
@@ -43,11 +19,11 @@ export const luhnCheck = (str = ''): boolean => {
   return sum % 10 === 0;
 };
 
-export enum OrgNumberFormat {
+enum OrgNumberFormat {
   DASH,
 }
 
-export const formatOrgNr = (orgNr: string, format: OrgNumberFormat = OrgNumberFormat.DASH): string | undefined => {
+export const formatOrgNr = (orgNr: string, format: OrgNumberFormat = OrgNumberFormat.DASH): string | null | undefined => {
   if (!orgNr) {
     return null;
   }
@@ -72,8 +48,4 @@ export const isValidUrl = (string: string) => {
     return false;
   }
   return url.protocol === 'http:' || url.protocol === 'https:';
-};
-
-export const dataDir = (path: string): string => {
-  return __dirname + '/../../data/' + path;
 };

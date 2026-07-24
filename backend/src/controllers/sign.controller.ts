@@ -28,6 +28,10 @@ import { randomUUID } from 'node:crypto';
 import { Body, Controller, Get, Param, Post, Req, Res, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
+// Safely read an optional `details` field off an unknown thrown value for logging.
+const getErrorDetails = (error: unknown): unknown =>
+  typeof error === 'object' && error !== null && 'details' in error ? (error as { details: unknown }).details : undefined;
+
 @Controller()
 @UseBefore(authMiddleware)
 export class SignController {
@@ -39,16 +43,16 @@ export class SignController {
     const { personNumber } = req.user;
     const transactionId = randomUUID();
     const params: GrpInitiateParameters = {
-      endUserInfo,
-      serviceId: GRP_SERVICE_ID,
-      displayName: GRP_DISPLAY_NAME,
+      endUserInfo: endUserInfo ?? '',
+      serviceId: GRP_SERVICE_ID ?? '',
+      displayName: GRP_DISPLAY_NAME ?? '',
       provider: 'bankid',
       requestType: 'SIGN',
       transactionId,
     };
     const data: GrpInitiateBody = {
       subjectIdentifier: {
-        value: ENVIRONMENT === 'TEST' ? GRP_DEV_PERSONNUMBER : personNumber,
+        value: (ENVIRONMENT === 'TEST' ? GRP_DEV_PERSONNUMBER : personNumber) ?? '',
         type: GrpSubjectIdentifierType.Tin,
       },
       userMessage,
@@ -65,7 +69,7 @@ export class SignController {
       const startTime = Date.now();
       cacheHandler.set('pending', response.transactionId, { ...response, startTime });
 
-      const qrCode = this.qrService.createQRData({ ...response, startTime });
+      const qrCode = this.qrService.createQRData({ ...response, startTime }) ?? undefined;
       return { transactionId: response.transactionId, autoStartToken: response.autoStartToken, qrCode };
     } catch (error) {
       logger.error('Error initiating sign', error);
@@ -88,7 +92,7 @@ export class SignController {
 
       return res.send({ message: 'success', data: response });
     } catch (error) {
-      logger.error('message', error?.details);
+      logger.error('message', getErrorDetails(error));
       throw new HttpException(500, 'Failed to initiate BankID signing process');
     }
   }
@@ -103,6 +107,12 @@ export class SignController {
   ): Promise<Response<SignApiResponse>> {
     const { mandate, ...rest } = body;
     const grantorId = req.session.representing?.BUSINESS?.partyId;
+    if (!grantorId) {
+      throw new HttpException(400, 'Not representing an organization');
+    }
+    if (!mandate) {
+      throw new HttpException(400, 'Missing mandate details');
+    }
     try {
       const cacheHandler = handleSignCache(req);
       const response = await this.initiateSign(req, rest);
@@ -111,7 +121,7 @@ export class SignController {
 
       return res.send({ message: 'success', data: response });
     } catch (error) {
-      logger.error('message', error?.details);
+      logger.error('message', getErrorDetails(error));
       throw new HttpException(500, 'Failed to initiate BankID signing process');
     }
   }
@@ -126,6 +136,9 @@ export class SignController {
     const cacheHandler = handleSignCache(req);
     try {
       const sign = cacheHandler.get<GrpInitiateResponseWithStartTime>('pending', transactionId);
+      if (!sign) {
+        throw new HttpException(404, 'No pending BankID signing process found');
+      }
       await this.apiService.post<GrpCancelResponse, GrpCancelRequest>({
         url: 'cancel',
         data: { transactionId, refId: sign.refId },
@@ -135,7 +148,7 @@ export class SignController {
 
       return res.send({ message: 'success', data: null });
     } catch (error) {
-      logger.error('message', error?.details);
+      logger.error('message', getErrorDetails(error));
       throw new HttpException(500, 'Failed to cancel BankID signing process');
     }
   }
@@ -151,6 +164,9 @@ export class SignController {
     try {
       const cacheHandler = handleSignCache(req);
       const sign = cacheHandler.get<GrpInitiateResponseWithStartTime>('pending', transactionId);
+      if (!sign) {
+        throw new HttpException(404, 'No pending BankID signing process found');
+      }
       const params: GrpCollectRequest = {
         transactionId,
         refId: sign.refId,
@@ -162,7 +178,7 @@ export class SignController {
       let qrCode: string | undefined = undefined;
 
       if (result.progressStatus.status === GrpStatus.Pending) {
-        qrCode = this.qrService.createQRData(sign);
+        qrCode = this.qrService.createQRData(sign) ?? undefined;
       } else if (result.progressStatus.status === GrpStatus.Complete) {
         cacheHandler.set('completed', transactionId, { ...result, refId: sign.refId });
         cacheHandler.remove('pending', transactionId);

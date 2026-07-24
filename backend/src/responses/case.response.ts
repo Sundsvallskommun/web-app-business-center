@@ -9,7 +9,7 @@ import { IsArray, IsEnum, IsOptional, IsString, ValidateNested } from 'class-val
 // the frontend actually consumes, exposed through this backend's OpenAPI so they
 // are regenerated into the frontend via `generate:contracts`.
 
-export class CaseStatusResponse implements CaseStatusResponseType {
+class CaseStatusResponse implements CaseStatusResponseType {
   @IsString()
   @IsOptional()
   caseId?: string;
@@ -46,46 +46,46 @@ export class CaseStatusResponse implements CaseStatusResponseType {
   propertyDesignations?: string[];
 }
 
-export class AttachmentResponse implements AttachmentResponseType {
+class AttachmentResponse implements AttachmentResponseType {
   @IsString()
-  attachmentId: string;
+  attachmentId!: string;
   @IsString()
-  name: string;
+  name!: string;
   @IsString()
   @IsOptional()
   contentType?: string;
 }
 
-export class FrontendMessageResponse implements FrontendMessageResponseType {
+class FrontendMessageResponse implements FrontendMessageResponseType {
   @IsString()
-  conversationId: string;
+  conversationId!: string;
   @IsString()
-  messageId: string;
+  messageId!: string;
   @IsEnum(MessageResponseDirectionEnum)
-  direction: MessageResponseDirectionEnum;
+  direction!: MessageResponseDirectionEnum;
   @IsString()
-  message: string;
+  message!: string;
   @IsString()
-  sent: string;
+  sent!: string;
   @IsString()
-  sender: string;
+  sender!: string;
   @ValidateNested({ each: true })
   @Type(() => AttachmentResponse)
-  attachments: AttachmentResponseType[];
+  attachments!: AttachmentResponseType[];
 }
 
 export class CasesApiResponse implements ApiResponse<CaseStatusResponseType[]> {
   @ValidateNested({ each: true })
   @Type(() => CaseStatusResponse)
-  data: CaseStatusResponseType[];
+  data!: CaseStatusResponseType[];
   @IsString()
-  message: string;
+  message!: string;
 }
 
 export class CaseMessagesApiResponse implements ApiResponse<FrontendMessageResponseType[]> {
   @ValidateNested({ each: true })
   @Type(() => FrontendMessageResponse)
-  data: FrontendMessageResponseType[];
+  data!: FrontendMessageResponseType[];
   @IsString()
-  message: string;
+  message!: string;
 }

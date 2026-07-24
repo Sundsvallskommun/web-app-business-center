@@ -36,9 +36,7 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
 
   const title = isInitial ? t('confirmation:welcomeTitle') : t('confirmation:confirmTitle');
 
-  const description = isInitial
-    ? t('confirmation:welcomeDescription')
-    : t('confirmation:confirmDescription');
+  const description = isInitial ? t('confirmation:welcomeDescription') : t('confirmation:confirmDescription');
 
   return (
     <Modal.Content className="px-0 lg:px-56 gap-32 md:gap-30">
@@ -87,21 +85,19 @@ const ContactSettingsConfirmationContent: React.FC<ContactSettingsConfirmationCo
         <Disclosure>
           <Disclosure.Header>
             <Disclosure.Title>{t('confirmation:personalDataTitle')}</Disclosure.Title>
-             <Disclosure.Button />
+            <Disclosure.Button />
           </Disclosure.Header>
           <Disclosure.Content>
-          <p className="pb-16">
-            {t('confirmation:gdprText')}
-          </p>
-          <p>
-            <Link
-              href="https://sundsvall.se/kommun-och-politik/overklaga-beslut-rattssakerhet/behandling-av-personuppgifter"
-              target="_blank"
-              external
-            >
-              {t('confirmation:personalDataLink')}
-            </Link>
-          </p>
+            <p className="pb-16">{t('confirmation:gdprText')}</p>
+            <p>
+              <Link
+                href="https://sundsvall.se/kommun-och-politik/overklaga-beslut-rattssakerhet/behandling-av-personuppgifter"
+                target="_blank"
+                external
+              >
+                {t('confirmation:personalDataLink')}
+              </Link>
+            </p>
           </Disclosure.Content>
         </Disclosure>
         <Divider className="py-0 my-0" />
@@ -143,7 +139,7 @@ export const ContactSettingsConfirmation: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const getCookie = (name) => {
+    const getCookie = (name: string) => {
       const value = '; ' + document.cookie;
       const parts = value.split('; ' + name + '=');
       if (parts.length === 2) {

@@ -9,7 +9,7 @@ import { MobileMenu } from './mobile-menu/mobile-menu.component';
 import { SiteMenu } from './site-menu/site-menu.component';
 import { AlertBanner } from './alert-banner.component';
 
-export const DefaultLayout = ({ children }) => {
+export const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
   const { isMinDesktop } = useThemeQueries();
   const { t } = useTranslation('layout');
 

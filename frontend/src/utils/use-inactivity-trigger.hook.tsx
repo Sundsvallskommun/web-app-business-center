@@ -2,7 +2,7 @@ import CountdownTimer from '@components/countdown/countdown-timer.component';
 import { useConfirm } from '@sk-web-gui/react';
 import { useCallback, useEffect, useRef } from 'react';
 
-export const useInactivityTrigger = ({
+const useInactivityTrigger = ({
   trigger,
   timeout = 3 * 1000,
   triggerCondition = true,

@@ -24,7 +24,6 @@ envalid.cleanEnv(process.env, {
 
 module.exports = withBundleAnalyzer({
   allowedDevOrigins: ['dev.test'],
-  output: 'standalone',
   turbopack: {},
   images: {
     remotePatterns: [{ hostname: process.env.DOMAIN_NAME || 'localhost' }],
@@ -37,19 +36,5 @@ module.exports = withBundleAnalyzer({
   },
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];
-  },
-  //Note: This is a workaround for JS not working correctly when reloading a page.
-  async headers() {
-    return [
-      {
-        source: '/_next/static/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
-          },
-        ],
-      },
-    ];
   },
 });

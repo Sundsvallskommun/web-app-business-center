@@ -16,7 +16,7 @@ interface PageDecision {
   content?: Decision[];
 }
 
-export interface ClientDecision {
+interface ClientDecision {
   id?: number;
   errandId?: number;
   errandNumber?: string;

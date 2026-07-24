@@ -1,0 +1,5 @@
+set -e
+
+# Format and lint only staged files, per package
+(cd frontend && npx --no-install lint-staged)
+(cd backend && npx --no-install lint-staged)

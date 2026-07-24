@@ -11,9 +11,9 @@ import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ClientContactSettingAddress } from './contactsettings.response';
 
-export class RepresentingPrivateEntity implements RepresentingPrivateEntityClient {
+class RepresentingPrivateEntity implements RepresentingPrivateEntityClient {
   @IsString()
-  name: string;
+  name!: string;
   @IsString()
   @IsOptional()
   personNumber?: string;
@@ -23,17 +23,17 @@ export class RepresentingPrivateEntity implements RepresentingPrivateEntityClien
   information?: ClientBusinessInformation;
 }
 
-export class RepresentingBusinessEntity implements RepresentingBusinessEntityClient {
+class RepresentingBusinessEntity implements RepresentingBusinessEntityClient {
   @IsString()
-  organizationName: string;
+  organizationName!: string;
   @IsString()
-  organizationNumber: string;
+  organizationNumber!: string;
   @IsBoolean()
   @IsOptional()
   isAuthorizedSignatory?: boolean;
   @ValidateNested()
   @Type(() => Information)
-  information: ClientBusinessInformation;
+  information!: ClientBusinessInformation;
   @IsBoolean()
   @IsOptional()
   whitelisted?: boolean;
@@ -42,10 +42,10 @@ export class RepresentingBusinessEntity implements RepresentingBusinessEntityCli
 class Information {
   @ValidateNested()
   @Type(() => ClientContactSettingAddress)
-  address: ContactSettingAddress;
+  address!: ContactSettingAddress;
 }
 
-export class RepresentingEntity implements RepresentingEntityClient {
+class RepresentingEntity implements RepresentingEntityClient {
   @ValidateNested()
   @Type(() => RepresentingBusinessEntity)
   @IsOptional()
@@ -55,13 +55,13 @@ export class RepresentingEntity implements RepresentingEntityClient {
   @IsOptional()
   PRIVATE?: RepresentingPrivateEntityClient;
   @IsEnum(RepresentingMode)
-  mode: RepresentingMode;
+  mode!: RepresentingMode;
 }
 
 export class ClientRepresentingApiResponse implements ApiResponse<RepresentingEntityClient> {
   @ValidateNested()
   @Type(() => RepresentingEntity)
-  data: RepresentingEntityClient;
+  data!: RepresentingEntityClient;
   @IsString()
-  message: string;
+  message!: string;
 }

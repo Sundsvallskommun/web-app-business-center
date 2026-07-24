@@ -21,7 +21,7 @@ import { ArrowRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-export const MAX_FILE_SIZE_MB = 50;
+const MAX_FILE_SIZE_MB = 50;
 
 interface PermitRenewalFormModel {
   changedCircumstances: string;

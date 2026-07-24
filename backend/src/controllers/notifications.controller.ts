@@ -15,9 +15,9 @@ interface Response {
   message: string;
 }
 
-export class CreateReadNotificationsDto {
+class CreateReadNotificationsDto {
   @IsString()
-  caseId: string;
+  caseId!: string;
 }
 
 @Controller()

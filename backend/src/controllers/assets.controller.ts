@@ -52,7 +52,6 @@ export class AssetsController {
   private apiService = new ApiService();
   private apiBase = getApiBase('partyassets');
   private casedataApiBase = getApiBase('case-data');
-  private citizenApiBase = getApiBase('citizen');
 
   private async uploadAttachments(errandId: number, files: Express.Multer.File[], options: AttachmentOptions, user: User): Promise<void> {
     const baseURL = apiURL(this.casedataApiBase);
@@ -130,7 +129,7 @@ export class AssetsController {
     const url = `${MUNICIPALITY_ID}/${CaseDataNamespace.SBK_PARKING_PERMIT}/errands`;
     const errandRes = await this.apiService.post<Errand, Errand>({ url, baseURL, data }, req.user);
 
-    if (options.files?.length > 0 && errandRes.data?.id && options.attachmentOptions) {
+    if (options.files && options.files.length > 0 && errandRes.data?.id && options.attachmentOptions) {
       await this.uploadAttachments(errandRes.data.id, options.files, options.attachmentOptions, req.user);
     }
 
@@ -143,6 +142,10 @@ export class AssetsController {
   @UseBefore(authMiddleware)
   async getAssets(@Req() req: RequestWithUser): Promise<ApiResponse<AssetWithService[]>> {
     const { representing } = req.session ?? {};
+
+    if (!representing) {
+      throw new HttpException(400, 'Bad Request');
+    }
 
     const controller = new AbortController();
     const { signal } = controller;
@@ -167,7 +170,7 @@ export class AssetsController {
 
       return { data, message: 'success' };
     } catch (error) {
-      if (error.status === 404) {
+      if (error instanceof HttpException && error.status === 404) {
         return { data: [], message: '404 from api, Assumed empty array' };
       } else {
         throw new HttpException(500, 'Something went wrong');
@@ -180,6 +183,10 @@ export class AssetsController {
   @UseBefore(authMiddleware)
   async getAsset(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ApiResponse<AssetWithService>> {
     const { representing } = req.session ?? {};
+
+    if (!representing) {
+      throw new HttpException(400, 'Bad Request');
+    }
 
     const controller = new AbortController();
     const { signal } = controller;
@@ -214,7 +221,7 @@ export class AssetsController {
       return { data: { ...toClientAsset(asset), service }, message: 'success' };
     } catch (error) {
       console.error(error);
-      if (error.status === 404) {
+      if (error instanceof HttpException && error.status === 404) {
         throw new HttpException(404, 'Asset not found');
       }
       throw new HttpException(500, 'Something went wrong');

@@ -10,7 +10,7 @@ interface EnumOption {
 
 // Just enough of an RJSF schema to resolve a field's enum option titles. A field
 // is either a single string (oneOf directly) or an array (oneOf under items).
-export interface RjsfSchema {
+interface RjsfSchema {
   properties?: Record<string, { oneOf?: EnumOption[]; items?: { oneOf?: EnumOption[] } }>;
 }
 

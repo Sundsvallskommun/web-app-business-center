@@ -12,9 +12,3 @@ export interface BusinessInformation {
     };
   };
 }
-
-export interface OrganisationInfo {
-  organizationName: string;
-  organizationNumber: string;
-  information: BusinessInformation;
-}

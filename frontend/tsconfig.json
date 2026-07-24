@@ -29,7 +29,7 @@
         "src/components/*"
       ],
       "@data-contracts/*": [
-        "../backend/src/data-contracts/*"
+        "src/data-contracts/*"
       ],
       "@interfaces/*": [
         "src/interfaces/*"
@@ -71,7 +71,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "../backend/src/data-contracts/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [

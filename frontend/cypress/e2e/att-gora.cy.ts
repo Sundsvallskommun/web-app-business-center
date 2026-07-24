@@ -1,4 +1,4 @@
-import { Asset, Status } from '@data-contracts/partyassets/data-contracts';
+import { Asset } from '@data-contracts/backend/data-contracts';
 import { RepresentingMode } from '@interfaces/app';
 import { ApiResponse } from '@services/api-service';
 import { getCases } from 'cypress/fixtures/getCases';
@@ -15,7 +15,7 @@ const getAssetsWithExpiringPermit: (representingMode?: RepresentingMode) => ApiR
       description: `Parkeringstillstånd för funktionshindrad-${RepresentingMode[representingMode]}`,
       issued: '2021-01-01',
       origin: 'CASEDATA',
-      status: Status.ACTIVE,
+      status: 'ACTIVE',
       type: 'PERMIT',
       validTo: dayjs().add(2, 'month').format('YYYY-MM-DD'), // Expires in 2 months (within 3 month window)
     },
@@ -33,7 +33,7 @@ const getAssetsWithNoExpiringPermit: (representingMode?: RepresentingMode) => Ap
       description: `Parkeringstillstånd för funktionshindrad-${RepresentingMode[representingMode]}`,
       issued: '2021-01-01',
       origin: 'CASEDATA',
-      status: Status.ACTIVE,
+      status: 'ACTIVE',
       type: 'PERMIT',
       validTo: dayjs().add(6, 'month').format('YYYY-MM-DD'), // Expires in 6 months (outside 3 month window)
     },

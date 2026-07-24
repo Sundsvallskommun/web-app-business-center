@@ -1,7 +1,7 @@
 'use client';
 
-import { Asset } from '@data-contracts/partyassets/data-contracts';
-import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { Asset } from '@data-contracts/backend/data-contracts';
+import { CaseStatusResponse } from '@data-contracts/backend/data-contracts';
 import { CasesData, ICaseStatusResponse } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { isParkingPermit, soonExpiring } from '@services/asset-service';

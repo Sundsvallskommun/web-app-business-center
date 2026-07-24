@@ -10,7 +10,7 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:generate": "prisma generate",
     "generate:contracts": "cross-env NODE_ENV=development ts-node ./src/swagger-typescript-api.ts",
-    "build": "tsc && tsc-alias",
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "build:swc": "swc src -d dist --source-maps --copy-files",
     "lint": "eslint --ignore-path .gitignore --ext .ts --max-warnings=0 src/",
     "lint:fix": "eslint --ignore-path .gitignore --ext .ts src/ --fix",

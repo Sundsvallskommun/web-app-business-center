@@ -1,4 +1,4 @@
-import { AttachmentResponse } from '@data-contracts/case-data/data-contracts';
+import { AttachmentResponse } from '@data-contracts/backend/data-contracts';
 import { FrontendMessageResponse } from '@interfaces/case';
 import { getCaseMessageAttachment } from '@services/case-service';
 import { downloadBlob } from '@utils/download-blob';

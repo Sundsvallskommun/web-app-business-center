@@ -1,4 +1,4 @@
-import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { CaseStatusResponse } from '@data-contracts/backend/data-contracts';
 import { CasesData, ICaseStatusResponse } from '../interfaces/case';
 import { statusCodes } from '../interfaces/status-codes';
 import { ApiResponse, apiService } from './api-service';

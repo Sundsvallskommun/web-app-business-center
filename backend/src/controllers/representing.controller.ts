@@ -129,11 +129,9 @@ export class RepresentingController {
   @OpenAPI({ summary: 'Sets which entity a logged in user represents' })
   @UseBefore(authMiddleware)
   async postBusinessEngagements(@Body() selectedRepresenting: RepresentsDto, @Req() req: RequestWithUser): Promise<ResponseData> {
-    const { representing } = req.session;
-    if (!representing) {
-      throw new HttpException(403, 'Forbidden');
-    }
-    let newRepresenting: RepresentingEntity = representing;
+    let newRepresenting: RepresentingEntity = req.session.representing ?? {
+      mode: selectedRepresenting.mode ?? RepresentingMode.PRIVATE,
+    };
 
     if (selectedRepresenting.organizationNumber !== undefined) {
       const data: RepresentingEntity = {

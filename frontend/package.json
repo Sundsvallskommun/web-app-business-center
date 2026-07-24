@@ -51,7 +51,8 @@
   },
   "resolutions": {
     "wrap-ansi": "7.0.0",
-    "string-width": "4.2.3"
+    "string-width": "4.2.3",
+    "baseline-browser-mapping": "^2.11.1"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",

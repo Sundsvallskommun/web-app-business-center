@@ -236,10 +236,15 @@ class App {
         } else if (req.query.successRedirect) {
           req.query.RelayState = req.query.successRedirect;
         }
-        if (req.query.representingMode) {
-          req.session.representing = {
-            mode: parseInt(req.query.representingMode as string) as RepresentingMode,
-          };
+        // Carry the representing mode through the SAML round-trip via RelayState (the IdP
+        // echoes it back in the callback). The pre-auth session cannot be relied on: its
+        // cookie is not sent on the cross-site IdP callback POST (sameSite=lax), and
+        // passport's req.login regenerates the session. representing is therefore set in
+        // the callback, after req.login, on the authenticated session.
+        if (req.query.representingMode && typeof req.query.RelayState === 'string' && isValidUrl(req.query.RelayState)) {
+          const relay = new URL(req.query.RelayState);
+          relay.searchParams.set('representingMode', req.query.representingMode as string);
+          req.query.RelayState = relay.toString();
         }
         next();
       },
@@ -406,6 +411,25 @@ class App {
           } catch (err) {
             logger.error('Error fetching business engagements:', err);
           }
+
+          // Set representing from the mode carried through RelayState (see /saml/login).
+          // This runs after req.login so it lands on the authenticated, persisted session.
+          const representingModeParam = successRedirect?.searchParams.get('representingMode');
+          if (representingModeParam !== null && representingModeParam !== undefined) {
+            req.session.representing = {
+              mode: parseInt(representingModeParam) as RepresentingMode,
+            };
+            successRedirect?.searchParams.delete('representingMode');
+          }
+
+          await new Promise<void>(resolve => {
+            req.session.save(saveErr => {
+              if (saveErr) {
+                logger.error('Error saving session after login:', saveErr);
+              }
+              resolve();
+            });
+          });
 
           return res.redirect(successRedirect?.toString() ?? '');
         }

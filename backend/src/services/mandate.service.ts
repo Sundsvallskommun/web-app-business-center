@@ -10,12 +10,13 @@ import { HttpException } from '@exceptions/HttpException';
  * Fetches active mandate details for current user and selected organization
  * Returns true if user is whitelisted for current organization
  */
-export const getIsWhitelisted = async (user: User, orgPartyId: string): Promise<boolean> => {
+const defaultApi = new ApiService();
+
+export const getIsWhitelisted = async (user: User, orgPartyId: string, api: Pick<ApiService, 'get'> = defaultApi): Promise<boolean> => {
   if (!user.partyId || !orgPartyId) {
     throw new HttpException(400, 'Bad Request: Missing party ids');
   }
 
-  const apiService = new ApiService();
   const mandateApiUrl = `${getApiBase('myrepresentatives')}/${MUNICIPALITY_ID}/${NAMESPACE}/mandates`;
   const mandateParams = {
     grantorPartyId: orgPartyId,
@@ -24,7 +25,7 @@ export const getIsWhitelisted = async (user: User, orgPartyId: string): Promise<
   };
 
   try {
-    const mandateRes = await apiService.get<Mandates>({ url: mandateApiUrl, params: mandateParams }, user);
+    const mandateRes = await api.get<Mandates>({ url: mandateApiUrl, params: mandateParams }, user);
     return mandateRes?.data?.mandateDetailsList?.some(entry => entry.whitelisted === true) ?? false;
   } catch (error) {
     logger.error('Error getting engagement: ', error);

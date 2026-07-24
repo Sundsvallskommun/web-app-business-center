@@ -1,7 +1,10 @@
 import { ContactMethod } from '@/data-contracts/contactsettings/data-contracts';
+import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ContactSetting } from '@/interfaces/contact-settings';
 import { ClientContactSetting } from '@/responses/contactsettings.response';
-import { getContactSettingChannels, makeClientContactSetting } from '@/services/contact-setting.service';
+import { deleteContactSetting, getContactSettingChannels, makeClientContactSetting } from '@/services/contact-setting.service';
+import { createMockApiService } from './helpers/mockApiService';
+import { mockUser } from './helpers/fixtures';
 
 describe('contact-setting.service', () => {
   describe('getContactSettingChannels', () => {
@@ -72,6 +75,32 @@ describe('contact-setting.service', () => {
         alias: 'default',
         notifications: { email_enabled: false, phone_enabled: false },
       });
+    });
+  });
+
+  describe('deleteContactSetting', () => {
+    const req = { user: mockUser } as unknown as RequestWithUser;
+
+    it('throws 400 without calling the API when no id is given', async () => {
+      const api = createMockApiService();
+
+      await expect(deleteContactSetting('', req, api)).rejects.toMatchObject({ status: 400 });
+      expect(api.delete).not.toHaveBeenCalled();
+    });
+
+    it('deletes the setting on its settings endpoint and returns true', async () => {
+      const api = createMockApiService();
+      api.delete.mockResolvedValue({ data: true });
+
+      await expect(deleteContactSetting('cs1', req, api)).resolves.toBe(true);
+      expect(api.delete).toHaveBeenCalledWith({ url: expect.stringContaining('/settings/cs1') }, mockUser);
+    });
+
+    it('still resolves true when the delete call fails (error is swallowed)', async () => {
+      const api = createMockApiService();
+      api.delete.mockRejectedValue(new Error('delete down'));
+
+      await expect(deleteContactSetting('cs1', req, api)).resolves.toBe(true);
     });
   });
 });

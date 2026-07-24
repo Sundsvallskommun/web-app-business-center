@@ -14,8 +14,11 @@ import {
   sortMessagesBySentDesc,
   toFrontendMessage,
 } from '@/services/case.service';
+import { mockUser as sharedUser } from './helpers/fixtures';
 
-const mockUser = { partyId: 'party-me', name: 'Test Testsson' } as User;
+// Derive from the shared fixture but pin partyId/name to the values the message
+// sender assertions below expect ('party-me' is the logged-in user in these tests).
+const mockUser: User = { ...sharedUser, partyId: 'party-me', name: 'Test Testsson' };
 
 const convMessage = (overrides: Partial<MessageWithConversationId<Message>> = {}): MessageWithConversationId<Message> =>
   ({

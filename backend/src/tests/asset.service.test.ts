@@ -1,5 +1,23 @@
 import { ExtraParameter } from '@/data-contracts/case-data/data-contracts';
-import { buildRenewalExtraParameters, ParkingPermitRenewalBody } from '@/services/asset.service';
+import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
+import {
+  buildRenewalExtraParameters,
+  isAllowedAsset,
+  isVisibleStatus,
+  ParkingPermitRenewalBody,
+  toClientAsset,
+  toServiceDetails,
+  toVisibleAssets,
+} from '@/services/asset.service';
+import { mockUser } from './helpers/fixtures';
+
+// 'PARKINGPERMIT' is the single whitelisted type wired up in tests/setup.ts.
+const ALLOWED_TYPE = 'PARKINGPERMIT';
+
+// Asset carrying a single jsonParameters entry (the shape toServiceDetails reads).
+// `value` may be a JSON string or an already-parsed object; schemaId is omitted so
+// no RJSF schema is fetched and enum titles fall back to the raw values.
+const serviceAsset = (value: unknown): Asset => ({ jsonParameters: [{ value }] } as unknown as Asset);
 
 const findValues = (params: ExtraParameter[], key: string) => params.find(p => p.key === key)?.values;
 
@@ -81,6 +99,106 @@ describe('asset.service', () => {
 
     it('returns an empty array for an empty body', () => {
       expect(buildRenewalExtraParameters({})).toEqual([]);
+    });
+  });
+
+  describe('isAllowedAsset', () => {
+    it('allows only whitelisted types', () => {
+      expect(isAllowedAsset({ type: ALLOWED_TYPE } as Asset)).toBe(true);
+      expect(isAllowedAsset({ type: 'SOMETHING_ELSE' } as Asset)).toBe(false);
+    });
+
+    it('rejects assets without a type', () => {
+      expect(isAllowedAsset({} as Asset)).toBe(false);
+    });
+  });
+
+  describe('isVisibleStatus', () => {
+    it('hides DRAFT and REPLACED assets', () => {
+      expect(isVisibleStatus({ status: Status.DRAFT } as Asset)).toBe(false);
+      expect(isVisibleStatus({ status: Status.REPLACED } as Asset)).toBe(false);
+    });
+
+    it('shows other statuses and hides assets with no status', () => {
+      expect(isVisibleStatus({ status: Status.ACTIVE } as Asset)).toBe(true);
+      expect(isVisibleStatus({ status: Status.BLOCKED } as Asset)).toBe(true);
+      expect(isVisibleStatus({} as Asset)).toBe(false);
+    });
+  });
+
+  describe('toClientAsset', () => {
+    it('strips partyId and jsonParameters without mutating the input', () => {
+      const asset = { id: '1', type: ALLOWED_TYPE, partyId: 'secret', jsonParameters: [{ value: '{}' }] } as unknown as Asset;
+
+      const client = toClientAsset(asset);
+
+      expect(client).toEqual({ id: '1', type: ALLOWED_TYPE });
+      expect(asset.partyId).toBe('secret');
+      expect(asset.jsonParameters).toHaveLength(1);
+    });
+  });
+
+  describe('toVisibleAssets', () => {
+    it('keeps only assets that are allowed, visible and addressable', () => {
+      const keep = { id: 'ok', type: ALLOWED_TYPE, status: Status.ACTIVE } as Asset;
+      const assets: Asset[] = [
+        keep,
+        { id: 'a', type: 'SOMETHING_ELSE', status: Status.ACTIVE } as Asset, // not whitelisted
+        { id: 'b', type: ALLOWED_TYPE, status: Status.DRAFT } as Asset, // hidden status
+        { id: 'c', type: ALLOWED_TYPE, status: Status.REPLACED } as Asset, // hidden status
+        { type: ALLOWED_TYPE, status: Status.ACTIVE } as Asset, // no id -> not addressable
+      ];
+
+      expect(toVisibleAssets(assets)).toEqual([keep]);
+    });
+  });
+
+  describe('toServiceDetails', () => {
+    it('returns undefined when there is no jsonParameters value', async () => {
+      await expect(toServiceDetails({} as Asset, mockUser)).resolves.toBeUndefined();
+      await expect(toServiceDetails({ jsonParameters: [{}] } as unknown as Asset, mockUser)).resolves.toBeUndefined();
+    });
+
+    it('returns undefined when the value is invalid JSON', async () => {
+      await expect(toServiceDetails(serviceAsset('not-json'), mockUser)).resolves.toBeUndefined();
+    });
+
+    it('normalizes string, array and {value|key} entries and passes values through when there is no schema', async () => {
+      const asset = serviceAsset(
+        JSON.stringify({
+          type: ['A', 'B'],
+          transportMode: 'X',
+          mobilityAids: [{ value: 'aid1' }, { key: 'aid2' }, 42],
+          additionalAids: [],
+          notes: 'a comment',
+          isWinterService: 'nej',
+        }),
+      );
+
+      await expect(toServiceDetails(asset, mockUser)).resolves.toEqual({
+        restyp: ['A', 'B'],
+        transportMode: ['X'],
+        aids: ['aid1', 'aid2'],
+        addon: [],
+        comment: 'a comment',
+        isWinterService: false,
+      });
+    });
+
+    it('accepts an already-parsed object value and defaults a missing comment to an empty string', async () => {
+      await expect(toServiceDetails(serviceAsset({ type: 'A' }), mockUser)).resolves.toMatchObject({
+        restyp: ['A'],
+        comment: '',
+      });
+    });
+
+    it.each([
+      ['string "ja"', { isWinterService: 'ja' }],
+      ['boolean true', { isWinterService: true }],
+      ['validityType vinterfardtjanst', { validityType: 'vinterfardtjanst' }],
+    ])('flags winter service for %s', async (_label, formData) => {
+      const result = await toServiceDetails(serviceAsset(JSON.stringify(formData)), mockUser);
+      expect(result?.isWinterService).toBe(true);
     });
   });
 });

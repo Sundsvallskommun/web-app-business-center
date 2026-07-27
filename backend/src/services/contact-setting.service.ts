@@ -52,14 +52,19 @@ export const makeClientContactSetting = (contactSetting: ContactSetting): Client
   return clientContactSetting;
 };
 
-export const deleteContactSetting = async (contactSettingId: string, req: RequestWithUser): Promise<boolean> => {
-  const apiService = new ApiService();
+const defaultApi = new ApiService();
+
+export const deleteContactSetting = async (
+  contactSettingId: string,
+  req: RequestWithUser,
+  api: Pick<ApiService, 'delete'> = defaultApi,
+): Promise<boolean> => {
   const apiBase = getApiBase('contactsettings');
   if (!contactSettingId) {
     throw new HttpException(400, 'Bad Request');
   }
   const url = `${apiBase}/${MUNICIPALITY_ID}/settings/${contactSettingId}`;
-  await apiService.delete<boolean>({ url }, req.user).catch(error => {
+  await api.delete<boolean>({ url }, req.user).catch(error => {
     console.error('Error deleting contact setting:', error);
     return false;
   });

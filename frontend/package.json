@@ -19,7 +19,7 @@
     "jest": "jest --watch",
     "jest:coverage": "jest --coverage",
     "test": "concurrently \"yarn jest\" \"yarn cypress\"",
-    "type-check": "tsc --pretty --noEmit"
+    "type-check": "next typegen && tsc --pretty --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",

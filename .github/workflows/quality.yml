@@ -36,6 +36,11 @@ jobs:
 
       - name: Type check
         run: yarn type-check
+        env:
+          HEALTH_AUTH: false
+          HEALTH_USERNAME: ""
+          HEALTH_PASSWORD: ""
+          NEXT_PUBLIC_API_URL: http://localhost:3001/api
 
       - name: Lint (warnings = errors)
         run: yarn lint

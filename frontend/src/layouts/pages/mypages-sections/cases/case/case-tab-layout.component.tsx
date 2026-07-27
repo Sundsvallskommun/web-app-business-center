@@ -19,8 +19,14 @@ export enum CaseCurrentTab {
 
 const MESSAGES_ALLOWED_SYSTEMS = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM']);
 
-export default function CaseTabLayout({ caseId, currentTab: _currentTab }: { caseId: string; currentTab: string }) {
-  const currentTabWithDefault = _currentTab ? _currentTab[0] : CaseCurrentTab.UPPGIFTER;
+export default function CaseTabLayout({
+  caseId,
+  currentTab: _currentTab,
+}: {
+  caseId: string;
+  currentTab: keyof typeof CaseCurrentTab;
+}) {
+  const currentTabWithDefault = _currentTab ? _currentTab : CaseCurrentTab.UPPGIFTER;
   const { representingMode } = useAppContext();
   const { caseData } = useContext(CaseContext);
   const router = useRouter();

@@ -14,8 +14,13 @@ import {
   sortMessagesBySentDesc,
   toFrontendMessage,
 } from '@/services/case.service';
+import { mockUser as sharedUser } from './helpers/fixtures';
+import { TEST_OTHER_PARTY_ID, TEST_USER_PARTY_ID } from './helpers/constants';
 
-const mockUser = { partyId: 'party-me', name: 'Test Testsson' } as User;
+// Derive from the shared fixture; only the display name differs. The logged-in user's
+// partyId is TEST_USER_PARTY_ID (from the fixture), and the message-sender assertions
+// below reference that same constant for the "own message" cases.
+const mockUser: User = { ...sharedUser, name: 'Test Testsson' };
 
 const convMessage = (overrides: Partial<MessageWithConversationId<Message>> = {}): MessageWithConversationId<Message> =>
   ({
@@ -24,7 +29,7 @@ const convMessage = (overrides: Partial<MessageWithConversationId<Message>> = {}
     created: '2025-01-01T00:00:00Z',
     conversationId: 'c1',
     type: MessageTypeEnum.USER_CREATED,
-    createdBy: { type: 'partyId', value: 'party-other' },
+    createdBy: { type: 'partyId', value: TEST_OTHER_PARTY_ID },
     ...overrides,
   } as MessageWithConversationId<Message>);
 
@@ -53,7 +58,7 @@ describe('case.service', () => {
       expect(conversationInit(mockUser)).toEqual({
         topic: 'Mina Sidor',
         type: 'EXTERNAL',
-        participants: [{ type: 'partyId', value: 'party-me' }],
+        participants: [{ type: 'partyId', value: TEST_USER_PARTY_ID }],
       });
     });
   });
@@ -62,21 +67,21 @@ describe('case.service', () => {
     const file = (name: string) => ({ buffer: Buffer.from(name), originalname: name, mimetype: 'text/plain' } as Express.Multer.File);
 
     it('references the case as a flowInstanceId external reference', () => {
-      const result = buildMessagingWebMessageRequest('party-me', 'case-1', 'hi', []);
+      const result = buildMessagingWebMessageRequest(TEST_USER_PARTY_ID, 'case-1', 'hi', []);
       expect(result).toMatchObject({
         sendAsOwner: true,
-        party: { partyId: 'party-me', externalReferences: [{ key: 'flowInstanceId', value: 'case-1' }] },
+        party: { partyId: TEST_USER_PARTY_ID, externalReferences: [{ key: 'flowInstanceId', value: 'case-1' }] },
         oepInstance: 'EXTERNAL',
         message: 'hi',
       });
     });
 
     it('omits attachments when there are no files', () => {
-      expect(buildMessagingWebMessageRequest('party-me', 'case-1', 'hi', []).attachments).toBeUndefined();
+      expect(buildMessagingWebMessageRequest(TEST_USER_PARTY_ID, 'case-1', 'hi', []).attachments).toBeUndefined();
     });
 
     it('base64-encodes file buffers as attachments', () => {
-      const result = buildMessagingWebMessageRequest('party-me', 'case-1', 'hi', [file('a.txt')]);
+      const result = buildMessagingWebMessageRequest(TEST_USER_PARTY_ID, 'case-1', 'hi', [file('a.txt')]);
       expect(result.attachments).toEqual([{ base64Data: Buffer.from('a.txt').toString('base64'), fileName: 'a.txt', mimeType: 'text/plain' }]);
     });
   });
@@ -112,13 +117,13 @@ describe('case.service', () => {
 
   describe('toFrontendMessage', () => {
     it("uses the logged in user's own name when they are the sender", () => {
-      const msg = convMessage({ createdBy: { type: 'partyId', value: 'party-me' } });
+      const msg = convMessage({ createdBy: { type: 'partyId', value: TEST_USER_PARTY_ID } });
       expect(toFrontendMessage(msg, {}, mockUser).sender).toBe('Test Testsson');
     });
 
     it('resolves other senders from the name map', () => {
-      const msg = convMessage({ createdBy: { type: 'partyId', value: 'party-other' } });
-      expect(toFrontendMessage(msg, { 'party-other': 'Other Person' }, mockUser).sender).toBe('Other Person');
+      const msg = convMessage({ createdBy: { type: 'partyId', value: TEST_OTHER_PARTY_ID } });
+      expect(toFrontendMessage(msg, { [TEST_OTHER_PARTY_ID]: 'Other Person' }, mockUser).sender).toBe('Other Person');
     });
 
     it('falls back to "Okänd avsändare" when the sender is unknown', () => {
@@ -135,7 +140,9 @@ describe('case.service', () => {
       expect(toFrontendMessage(convMessage({ createdBy: { type: 'PARTY_ID', value: 'x' } }), {}, mockUser).direction).toBe('INBOUND');
       expect(toFrontendMessage(convMessage({ createdBy: { type: 'AD_ACCOUNT', value: 'x' } }), {}, mockUser).direction).toBe('OUTBOUND');
       // own message via uppercase PARTY_ID resolves to the logged in user's name
-      expect(toFrontendMessage(convMessage({ createdBy: { type: 'PARTY_ID', value: 'party-me' } }), {}, mockUser).sender).toBe('Test Testsson');
+      expect(toFrontendMessage(convMessage({ createdBy: { type: 'PARTY_ID', value: TEST_USER_PARTY_ID } }), {}, mockUser).sender).toBe(
+        'Test Testsson',
+      );
     });
 
     it('maps message fields and attachments to the frontend shape', () => {

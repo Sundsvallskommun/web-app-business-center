@@ -5,14 +5,17 @@ import { TEST_REPRESENTING_PARTY_ID } from './helpers/constants';
 
 describe('invoices.service', () => {
   describe('getInvoiceDateFrom', () => {
-    it('returns a date string 12 months ago in YYYY-MM-DD format', () => {
-      const result = getInvoiceDateFrom();
-      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    afterEach(() => {
+      vi.useRealTimers();
+    });
 
-      const resultDate = new Date(result);
-      const now = new Date();
-      const diffMonths = (now.getFullYear() - resultDate.getFullYear()) * 12 + (now.getMonth() - resultDate.getMonth());
-      expect(diffMonths).toBe(12);
+    // Frozen at a mid-month, midday-UTC instant so the result is the same date in
+    // every timezone (avoids the month-boundary drift a live `new Date()` risks).
+    it('returns the date exactly 12 months before now in YYYY-MM-DD format', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-06-15T12:00:00Z'));
+
+      expect(getInvoiceDateFrom()).toBe('2024-06-15');
     });
   });
 

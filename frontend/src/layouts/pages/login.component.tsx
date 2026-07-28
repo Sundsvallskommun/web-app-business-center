@@ -35,8 +35,8 @@ function Login() {
       const path = searchParams?.get('path') || '';
       const myPagesAdjustedPathname =
         getAdjustedPathname(path, representingMode) || getRepresentingModeRoute(representingMode);
-      router.push(
-        `${process.env.NEXT_PUBLIC_API_URL}/saml/login?successRedirect=${`${appURL()}${myPagesAdjustedPathname}&representingMode=${representingMode}`}`
+      window.location.assign(
+        `${process.env.NEXT_PUBLIC_API_URL}/saml/login?successRedirect=${appURL()}${myPagesAdjustedPathname}&representingMode=${representingMode}`
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -128,9 +128,7 @@ function Login() {
             </p>
             <h2 className="text-h3-md mt-30">{t('login:personalDataTitle')}</h2>
             <div>
-              <span>
-                {t('login:personalDataDescription')}
-              </span>{' '}
+              <span>{t('login:personalDataDescription')}</span>{' '}
               <Link external href={url_personal_data}>
                 {t('login:personalDataLink')}
               </Link>

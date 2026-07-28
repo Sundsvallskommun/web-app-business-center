@@ -20,7 +20,9 @@ export const NoRepresent: React.FC = ({}) => {
   };
 
   const onLogout = () => {
-    router.push(`${process.env.NEXT_PUBLIC_API_URL}/saml/logout?successRedirect=${`${appURL()}/login?loggedout`}`); // eslint-disable-next-line react-hooks/exhaustive-deps
+    window.location.assign(
+      `${process.env.NEXT_PUBLIC_API_URL}/saml/logout?successRedirect=${appURL()}/login?loggedout`
+    ); // eslint-disable-next-line react-hooks/exhaustive-deps
   };
 
   return (
@@ -31,9 +33,7 @@ export const NoRepresent: React.FC = ({}) => {
             <div className="mb-14">
               <h1 className="text-xl">{t('common:noRepresent.title')}</h1>
 
-              <p className="my-0">
-                {t('common:noRepresent.description')}
-              </p>
+              <p className="my-0">{t('common:noRepresent.description')}</p>
               <p className="my-0">
                 {t('valj-foretag:noRepresent.description2')}{' '}
                 <Link href="https://naringslivsbolaget.se/nu-lanserar-vi-mina-sidor-for-dig-som-foretagare/" external>

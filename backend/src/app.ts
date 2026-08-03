@@ -56,9 +56,11 @@ import { isValidUrl } from './utils/util';
 import { getBusinessEngagements, mapEngagements } from './services/legal-entity.service';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
-const sessionTTL = 4 * 24 * 60 * 60;
+const sessionTTL = 12 * 60 * 60;
 // NOTE: memory uses ms while file uses seconds
-const sessionStore = new SessionStoreCreate(SESSION_MEMORY ? { checkPeriod: sessionTTL * 1000 } : { sessionTTL, path: './data/sessions' });
+const sessionStore = new SessionStoreCreate(
+  SESSION_MEMORY ? { ttl: sessionTTL * 1000, checkPeriod: sessionTTL * 1000 } : { sessionTTL, path: './data/sessions' },
+);
 const apiService = new ApiService();
 
 passport.serializeUser(function (user, done) {
@@ -79,12 +81,12 @@ const samlStrategy = new Strategy(
     issuer: SAML_ISSUER ?? '',
     signatureAlgorithm: 'sha256',
     digestAlgorithm: 'sha256',
-    wantAssertionsSigned: false,
+    wantAssertionsSigned: true,
     wantAuthnResponseSigned: false,
-    audience: false,
+    audience: SAML_ISSUER ?? '',
     logoutUrl: SAML_LOGOUT_URL ?? '',
     logoutCallbackUrl: SAML_LOGOUT_CALLBACK_URL,
-    acceptedClockSkewMs: -1,
+    acceptedClockSkewMs: 5000,
   },
   async function (samlProfile: SamlProfile | null, done: VerifiedCallback) {
     if (!samlProfile) {
@@ -216,9 +218,12 @@ class App {
         saveUninitialized: false,
         store: sessionStore,
         cookie: {
-          httpOnly: this.env === 'production' && process.env.ENVIRONMENT !== 'TEST',
-          sameSite: process.env.ENVIRONMENT === 'TEST' ? 'lax' : 'none',
-          secure: this.env === 'production' && process.env.ENVIRONMENT !== 'TEST',
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: this.env === 'production' && process.env.ENVIRONMENT !== 'LOCAL',
+          // No maxAge → session cookie: dropped on browser close (matters on shared/public devices).
+          // Idle sessions are logged out client-side (~15 min) via a full SAML logout; the server-side
+          // store TTL (sessionTTL, refreshed per request via store.touch) is the idle backstop.
         },
       }),
     );
@@ -265,7 +270,7 @@ class App {
       `${BASE_URL_PREFIX}/saml/logout`,
       samlLimiter,
       (req, _res, next) => {
-        logger.info(
+        logger.debug(
           `Logout request received: ${JSON.stringify(
             {
               url: req.originalUrl,
@@ -320,7 +325,7 @@ class App {
     );
 
     this.app.get(`${BASE_URL_PREFIX}/saml/logout/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res) => {
-      logger.info('SAML logout callback received', { query: req.query, body: req.body, user: req.user });
+      logger.debug('SAML logout callback received', { query: req.query, body: req.body, user: req.user });
       req.logout(err => {
         if (err) return res.status(500).send(err);
         let successRedirect: URL = new URL(SAML_LOGOUT_REDIRECT ?? '');
@@ -359,7 +364,8 @@ class App {
     this.app.post(`${BASE_URL_PREFIX}/saml/login/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
       let successRedirect: URL | undefined, failureRedirect: URL | undefined;
 
-      const urls = req?.body?.RelayState.split(',');
+      const relayState = typeof req?.body?.RelayState === 'string' ? req.body.RelayState : '';
+      const urls = relayState.split(',');
 
       if (isValidUrl(urls[0])) {
         successRedirect = new URL(urls[0]);
@@ -378,6 +384,7 @@ class App {
 
       passport.authenticate('saml', async (err: Error | null, user: Express.User | false) => {
         if (err) {
+          logger.warn(`SAML login callback failed: ${err.name}: ${err.message}`);
           const queries = new URLSearchParams(failRedirect.searchParams);
           if (err?.name) {
             queries.append('failMessage', err.name);

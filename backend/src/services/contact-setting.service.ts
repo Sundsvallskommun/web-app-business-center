@@ -59,7 +59,7 @@ const defaultApi = new ApiService();
  * The upstream API filters by `partyId`, so the result only ever contains the
  * represented party's own settings.
  */
-export const fetchContactSettings = async (
+const fetchContactSettings = async (
   partyId: string,
   user: RequestWithUser['user'],
   api: Pick<ApiService, 'get'> = defaultApi,

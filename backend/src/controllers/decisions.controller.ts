@@ -6,7 +6,7 @@ import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
-import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
+import { getRepresentedPartyId } from '@/utils/getRepresentedPartyId';
 import { Controller, Get, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 
@@ -73,7 +73,8 @@ export class DecisionsController {
 
     const { representing } = req.session ?? {};
 
-    if (!representing) {
+    const partyId = getRepresentedPartyId(representing, req.user);
+    if (!partyId) {
       throw new HttpException(400, 'No representing entity found in session');
     }
 
@@ -85,7 +86,6 @@ export class DecisionsController {
     });
 
     try {
-      const partyId = getRepresentingPartyId(representing);
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/errands/${partyId}/decisions?sort=decisions.decidedAt,desc`;
       const params = {
         page: 0,

@@ -17,6 +17,7 @@ import { Response } from 'express';
 import { Body, Controller, Delete, Get, Param, Post, QueryParams, Req, Res, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { getCitizen, getCitizenPersonnumber } from '@/services/citizen.service';
+import { mandateBelongsToUser } from '@/services/mandate.service';
 
 // Narrow optional httpCode/message off an unknown thrown value (e.g. routing-controllers HttpError).
 const getErrorStatus = (error: unknown): number | undefined =>
@@ -204,6 +205,13 @@ export class MandateController {
     @Param('id') id: string,
     @Res() res: Response<ApiResponse<null>>,
   ): Promise<Response<ApiResponse<null>>> {
+    // Verify the mandate belongs to the user (as grantee or as the represented grantor org)
+    // before deleting it, so a manipulated id cannot revoke someone else's mandate.
+    const representingBusinessPartyId = req.session.representing?.BUSINESS?.partyId;
+    if (!(await mandateBelongsToUser(id, req.user, representingBusinessPartyId))) {
+      throw new HttpException(404, 'Mandate not found');
+    }
+
     const url = `${this.apiBase}/mandates/${id}`;
 
     try {

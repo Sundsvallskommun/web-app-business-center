@@ -13,16 +13,34 @@ import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse, ResponseData } from '../interfaces/service';
 import { validationMiddleware } from '../middlewares/validation.middleware';
 import { ClientContactSetting } from '../responses/contactsettings.response';
-import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
+import { getRepresentedPartyId } from '../utils/getRepresentedPartyId';
 import { getBusinessAddress, getBusinessName } from './contact-settings/utils';
 import { LEAddress } from '@/data-contracts/legalentity/data-contracts';
 import { logger } from '@/utils/logger';
-import { deleteContactSetting, getContactSettingChannels, makeClientContactSetting } from '@/services/contact-setting.service';
+import {
+  contactSettingBelongsToParty,
+  deleteContactSetting,
+  getContactSettingChannels,
+  makeClientContactSetting,
+} from '@/services/contact-setting.service';
 
 @Controller()
 export class ContactSettingsController {
   private readonly apiService = new ApiService();
   private readonly apiBase = getApiBase('contactsettings');
+
+  /**
+   * Resolve the represented party's id from the session. Contact settings are always
+   * scoped to this party, so a user can only reach settings belonging to whoever they
+   * are currently representing.
+   */
+  private resolveRepresentedPartyId(req: RequestWithUser): string {
+    const partyId = getRepresentedPartyId(req.session?.representing, req.user);
+    if (!partyId) {
+      throw new HttpException(403, 'Forbidden');
+    }
+    return partyId;
+  }
 
   @Get('/contactsettings')
   @OpenAPI({ summary: 'Return a list of contact settings' })
@@ -36,13 +54,18 @@ export class ContactSettingsController {
     const representing = req.session?.representing;
     const { user } = req;
 
-    if (!representing || !getRepresentingPartyId(representing)) {
+    if (!representing) {
+      throw new HttpException(403, 'Forbidden');
+    }
+
+    const partyId = getRepresentedPartyId(representing, user);
+    if (!partyId) {
       throw new HttpException(403, 'Forbidden');
     }
 
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings`;
     const params = {
-      partyId: getRepresentingPartyId(representing),
+      partyId,
       page: page ?? 1,
       limit: limit ?? 100, // NOTE: 100 is max it seems
     };
@@ -109,10 +132,16 @@ export class ContactSettingsController {
     if (!representing) {
       throw new HttpException(403, 'Forbidden');
     }
+
+    const representedPartyId = getRepresentedPartyId(representing, req.user);
+    if (!userData.createdById && !representedPartyId) {
+      throw new HttpException(403, 'Forbidden');
+    }
+
     const newContactSettings: NewContactSettings = {
       alias: userData.alias ?? 'default',
       virtual: userData.virtual ?? false,
-      partyId: userData.createdById ? (undefined as unknown as string) : getRepresentingPartyId(representing),
+      partyId: userData.createdById ? (undefined as unknown as string) : (representedPartyId as string),
       createdById: userData.createdById ?? req.user.partyId,
       contactChannels: getContactSettingChannels(userData),
     };
@@ -141,6 +170,13 @@ export class ContactSettingsController {
     if (!userData.id) {
       throw new HttpException(400, 'Bad Request');
     }
+
+    // Verify the setting belongs to the represented party before editing it.
+    const partyId = this.resolveRepresentedPartyId(req);
+    if (!(await contactSettingBelongsToParty(partyId, userData.id, req.user))) {
+      throw new HttpException(404, 'Contact setting not found');
+    }
+
     try {
       const editedContactSettings: UpdateContactSettings = {
         alias: userData.alias ?? 'default',
@@ -169,6 +205,13 @@ export class ContactSettingsController {
     if (!contactSettingId) {
       throw new HttpException(400, 'Bad Request');
     }
+
+    // Verify the setting belongs to the represented party before deleting it.
+    const partyId = this.resolveRepresentedPartyId(req);
+    if (!(await contactSettingBelongsToParty(partyId, contactSettingId, req.user))) {
+      throw new HttpException(404, 'Contact setting not found');
+    }
+
     try {
       const deletionOk = await deleteContactSetting(contactSettingId, req);
       if (!deletionOk) {

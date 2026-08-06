@@ -582,6 +582,20 @@ export class CaseController {
       throw new HttpException(400, 'Bad Request');
     }
 
+    // The attachment endpoint is keyed only by attachmentId, so a manipulated id could
+    // otherwise reach another user's file. Verify the case belongs to the user and that
+    // the requested attachment actually belongs to one of that case's messages.
+    const _case = (await this.getCase(req, caseId)).data;
+    if (!_case) {
+      throw new HttpException(400, 'Bad request');
+    }
+
+    const messages = (await this.getCaseMessages(req, caseId)).data ?? [];
+    const attachmentBelongsToCase = messages.some(message => message.attachments?.some(attachment => attachment.attachmentId === attachmentId));
+    if (!attachmentBelongsToCase) {
+      throw new HttpException(404, 'Attachment not found');
+    }
+
     const url = `${getApiBase('webmessagecollector')}/${MUNICIPALITY_ID}/messages/EXTERNAL/attachments/${attachmentId}`;
     return this.fetchAttachment(url, req);
   }

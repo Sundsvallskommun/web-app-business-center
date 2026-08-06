@@ -2,9 +2,15 @@ import { ContactMethod } from '@/data-contracts/contactsettings/data-contracts';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ContactSetting } from '@/interfaces/contact-settings';
 import { ClientContactSetting } from '@/responses/contactsettings.response';
-import { deleteContactSetting, getContactSettingChannels, makeClientContactSetting } from '@/services/contact-setting.service';
+import {
+  contactSettingBelongsToParty,
+  deleteContactSetting,
+  getContactSettingChannels,
+  makeClientContactSetting,
+} from '@/services/contact-setting.service';
 import { createMockApiService } from './helpers/mockApiService';
 import { mockUser } from './helpers/fixtures';
+import { TEST_REPRESENTING_PARTY_ID } from './helpers/constants';
 
 describe('contact-setting.service', () => {
   describe('getContactSettingChannels', () => {
@@ -101,6 +107,41 @@ describe('contact-setting.service', () => {
       api.delete.mockRejectedValue(new Error('delete down'));
 
       await expect(deleteContactSetting('cs1', req, api)).resolves.toBe(true);
+    });
+  });
+
+  describe('contactSettingBelongsToParty', () => {
+    it('returns true when the party owns a setting with the given id', async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({ data: [{ id: 'cs1', partyId: TEST_REPRESENTING_PARTY_ID }] });
+
+      await expect(contactSettingBelongsToParty(TEST_REPRESENTING_PARTY_ID, 'cs1', mockUser, api)).resolves.toBe(true);
+      // The ownership lookup is scoped to the party.
+      expect(api.get).toHaveBeenCalledWith(
+        { url: expect.stringContaining('/settings'), params: expect.objectContaining({ partyId: TEST_REPRESENTING_PARTY_ID }) },
+        mockUser,
+      );
+    });
+
+    it("returns false when the id is not among the party's settings", async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({ data: [{ id: 'other', partyId: TEST_REPRESENTING_PARTY_ID }] });
+
+      await expect(contactSettingBelongsToParty(TEST_REPRESENTING_PARTY_ID, 'cs1', mockUser, api)).resolves.toBe(false);
+    });
+
+    it('returns false when a setting with the id exists but belongs to another party', async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({ data: [{ id: 'cs1', partyId: 'someone-else' }] });
+
+      await expect(contactSettingBelongsToParty(TEST_REPRESENTING_PARTY_ID, 'cs1', mockUser, api)).resolves.toBe(false);
+    });
+
+    it('fails closed (returns false) when the settings lookup throws', async () => {
+      const api = createMockApiService();
+      api.get.mockRejectedValue(new Error('settings down'));
+
+      await expect(contactSettingBelongsToParty(TEST_REPRESENTING_PARTY_ID, 'cs1', mockUser, api)).resolves.toBe(false);
     });
   });
 });

@@ -133,16 +133,20 @@ export class ContactSettingsController {
       throw new HttpException(403, 'Forbidden');
     }
 
+    // Always create the contact setting for the represented party, attributed to the
+    // logged-in user. Any client-supplied partyId/createdById/virtual is ignored, so a
+    // user can only ever create a setting for themselves / whoever they represent — a
+    // manipulated request body cannot create one on another party's behalf.
     const representedPartyId = getRepresentedPartyId(representing, req.user);
-    if (!userData.createdById && !representedPartyId) {
+    if (!representedPartyId) {
       throw new HttpException(403, 'Forbidden');
     }
 
     const newContactSettings: NewContactSettings = {
       alias: userData.alias ?? 'default',
-      virtual: userData.virtual ?? false,
-      partyId: userData.createdById ? (undefined as unknown as string) : (representedPartyId as string),
-      createdById: userData.createdById ?? req.user.partyId,
+      virtual: false,
+      partyId: representedPartyId,
+      createdById: req.user.partyId,
       contactChannels: getContactSettingChannels(userData),
     };
     const baseURL = apiURL(this.apiBase);

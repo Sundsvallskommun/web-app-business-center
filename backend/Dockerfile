@@ -4,7 +4,7 @@
 # =====================
 FROM node:22-slim AS build-deps
 # openssl is required by Prisma's query engine
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
@@ -12,12 +12,12 @@ RUN yarn install --frozen-lockfile
 # Install only the packages needed by the running service. Prisma remains a
 # production dependency because migrations are deliberately applied at startup.
 FROM node:22-slim AS production-deps
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json yarn.lock ./
 COPY prisma ./prisma
-RUN yarn install --frozen-lockfile --production=true \
+RUN yarn install --frozen-lockfile --production=true --ignore-scripts \
  && yarn prisma:generate \
  && yarn cache clean
 
@@ -25,20 +25,20 @@ RUN yarn install --frozen-lockfile --production=true \
 # Rebuild the source code only when needed
 # =====================
 FROM node:22-slim AS builder
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build-deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate the Prisma client into node_modules, then compile TypeScript
-RUN yarn prisma:generate
-RUN yarn build
+RUN yarn prisma:generate \
+ && yarn build
 
 # =====================
 # Production image
 # =====================
 FROM node:22-slim AS runner
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -51,14 +51,13 @@ COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 
-# Guard against accidentally reintroducing build and test tooling in production.
+# Guard against accidentally reintroducing build and test tooling in production,
+# then create the only runtime-writable folders.
 RUN test ! -e /app/node_modules/typescript \
  && test ! -e /app/node_modules/vitest \
  && test ! -e /app/node_modules/ts-node \
- && test -x /app/node_modules/.bin/prisma
-
-# Writable folders for sessions, logs and the SQLite database
-RUN mkdir -p /app/data/sessions /app/data/logs /app/data/database \
+ && test -x /app/node_modules/.bin/prisma \
+ && mkdir -p /app/data/sessions /app/data/logs /app/data/database \
  && chown -R nodejs:nodejs /app/data
 
 USER nodejs

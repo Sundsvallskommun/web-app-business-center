@@ -40,7 +40,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.ts'],
-      exclude: ['src/data-contracts/**', 'src/**/*.{test,spec}.ts', 'src/tests/helpers/**', 'src/types/**', 'src/swagger-typescript-api.ts'],
+      exclude: ['src/data-contracts/**', 'src/**/*.{test,spec}.ts', 'src/tests/helpers/**', 'src/types/**', 'src/generate-data-contracts.ts'],
     },
   },
 });

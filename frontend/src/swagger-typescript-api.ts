@@ -1,27 +1,29 @@
-import { exec } from 'child_process';
 import { config } from 'dotenv';
-import fs from 'node:fs';
-import path from 'path';
-import { promisify } from 'util';
-config();
-const execAsync = promisify(exec);
+import path from 'node:path';
+import { generateApi } from 'swagger-typescript-api';
 
-const PATH_TO_OUTPUT_DIR = path.resolve(process.cwd(), './src/data-contracts');
-const SWAGGER_PATH = path.join(PATH_TO_OUTPUT_DIR, 'backend', 'swagger.json');
+config();
+
+const PATH_TO_OUTPUT_DIR = path.resolve(process.cwd(), './src/data-contracts/backend');
 
 const main = async () => {
-  if (!fs.existsSync(`${PATH_TO_OUTPUT_DIR}/backend`)) {
-    fs.mkdirSync(`${PATH_TO_OUTPUT_DIR}/backend`, { recursive: true });
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiBaseUrl) {
+    throw new Error('NEXT_PUBLIC_API_URL is required to generate backend contracts');
   }
+
+  const swaggerUrl = new URL(`${apiBaseUrl.replace(/\/$/, '')}/swagger.json`);
   console.log('Downloading and generating api-docs for backend');
 
-  await execAsync(`curl -o "${SWAGGER_PATH}" ${process.env.NEXT_PUBLIC_API_URL}/swagger.json`);
-
-  await execAsync(
-    `npx swagger-typescript-api generate --path "${SWAGGER_PATH}" --output "${PATH_TO_OUTPUT_DIR}/backend" --modular --no-client `
-  );
-
-  fs.unlinkSync(SWAGGER_PATH);
+  await generateApi({
+    url: swaggerUrl.toString(),
+    output: PATH_TO_OUTPUT_DIR,
+    modular: true,
+    generateClient: false,
+  });
 };
 
-main();
+main().catch((error: unknown) => {
+  console.error('Data-contract generation failed:', error);
+  process.exitCode = 1;
+});

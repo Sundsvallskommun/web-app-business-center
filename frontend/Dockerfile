@@ -30,8 +30,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy everything as root-owned and read-only
-COPY --from=builder --chown=0:0 --chmod=555 /app/next.config.js ./
+# Copy everything as root-owned and read-only.
+# next.config.js is not copied: standalone output serializes the resolved config
+# into server.js, and evaluating the file here would require dev-only plugins.
 COPY --from=builder --chown=0:0 --chmod=555 /app/public ./public
 COPY --from=builder --chown=0:0 --chmod=444 /app/package.json ./
 COPY --from=builder --chown=0:0 --chmod=555 /app/.next/standalone ./

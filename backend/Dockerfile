@@ -2,12 +2,24 @@
 # =====================
 # Install dependencies only when needed
 # =====================
-FROM node:22-slim AS deps
+FROM node:22-slim AS build-deps
 # openssl is required by Prisma's query engine
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
+
+# Install only the packages needed by the running service. Prisma remains a
+# production dependency because migrations are deliberately applied at startup.
+FROM node:22-slim AS production-deps
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package.json yarn.lock ./
+COPY prisma ./prisma
+RUN yarn install --frozen-lockfile --production=true \
+ && yarn prisma:generate \
+ && yarn cache clean
 
 # =====================
 # Rebuild the source code only when needed
@@ -15,7 +27,7 @@ RUN yarn install --frozen-lockfile
 FROM node:22-slim AS builder
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build-deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate the Prisma client into node_modules, then compile TypeScript
@@ -32,9 +44,18 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs \
- && adduser --system --uid 1001 nodejs
+ && adduser --system --uid 1001 --ingroup nodejs nodejs
 
-COPY --from=builder --chown=nodejs:nodejs /app/ ./
+COPY --from=production-deps --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
+
+# Guard against accidentally reintroducing build and test tooling in production.
+RUN test ! -e /app/node_modules/typescript \
+ && test ! -e /app/node_modules/vitest \
+ && test ! -e /app/node_modules/ts-node \
+ && test -x /app/node_modules/.bin/prisma
 
 # Writable folders for sessions, logs and the SQLite database
 RUN mkdir -p /app/data/sessions /app/data/logs /app/data/database \

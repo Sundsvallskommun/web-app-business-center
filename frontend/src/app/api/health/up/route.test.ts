@@ -1,7 +1,7 @@
 /// <reference types="jest" />
 
 import axios from 'axios';
-import { expect as jestExpect } from '@jest/globals';
+import { expect } from '@jest/globals';
 import { headers } from 'next/headers';
 
 import { GET } from './route';
@@ -41,8 +41,8 @@ describe('GET /api/health/up', () => {
 
     const response = await GET();
 
-    jestExpect(mockedAxios.get).toHaveBeenCalledWith('http://localhost:3001/api/health/up');
-    jestExpect(response.status).toBe(200);
-    await jestExpect(response.json()).resolves.toEqual({ status: 'UP' });
+    expect(mockedAxios.get).toHaveBeenCalledWith('http://localhost:3001/api/health/up');
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ status: 'UP' });
   });
 });

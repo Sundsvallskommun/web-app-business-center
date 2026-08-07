@@ -47,3 +47,7 @@ jobs:
 
       - name: Dead code (knip)
         run: yarn knip
+
+      - name: Frontend unit tests
+        if: matrix.package == 'frontend'
+        run: yarn jest:ci

@@ -17,6 +17,7 @@
     "cypress": "cypress open",
     "cypress:headless": "npx cypress run --e2e",
     "jest": "jest --watch",
+    "jest:ci": "jest --runInBand",
     "jest:coverage": "jest --coverage",
     "test": "concurrently \"yarn jest\" \"yarn cypress\"",
     "type-check": "next typegen && tsc --pretty --noEmit"

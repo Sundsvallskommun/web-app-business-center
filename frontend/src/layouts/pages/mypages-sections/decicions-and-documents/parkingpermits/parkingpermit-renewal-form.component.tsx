@@ -17,6 +17,7 @@ import {
   useSnackbar,
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
+import { validateFileCount } from '@utils/upload-limits';
 import { ArrowRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -164,6 +165,8 @@ export const ParkingPermitRenewalForm = ({
   };
 
   const files = form.watch('files');
+  // files is set programmatically (no registered input), so attach the rule here.
+  form.register('files', { validate: validateFileCount });
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-56">
@@ -534,7 +537,8 @@ export const ParkingPermitRenewalForm = ({
                   onRemove: () =>
                     form.setValue(
                       'files',
-                      form.watch('files').filter((f) => f !== file)
+                      form.watch('files').filter((f) => f !== file),
+                      { shouldValidate: true }
                     ),
                 }}
               />
@@ -548,9 +552,12 @@ export const ParkingPermitRenewalForm = ({
             name="files"
             maxFileSizeMB={MAX_FILE_SIZE_MB}
             onChange={(e) => {
-              form.setValue('files', e.target.value);
+              form.setValue('files', e.target.value, { shouldValidate: true });
             }}
           />
+        )}
+        {form.formState.errors.files && (
+          <FormErrorMessage className="text-error">{form.formState.errors.files.message}</FormErrorMessage>
         )}
       </FormControl>
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mt-40">

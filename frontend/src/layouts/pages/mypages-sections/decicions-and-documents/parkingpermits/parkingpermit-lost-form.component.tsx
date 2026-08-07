@@ -13,6 +13,7 @@ import {
   useSnackbar,
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
+import { validateFileCount } from '@utils/upload-limits';
 import { ArrowRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -98,6 +99,8 @@ export const ParkingPermitLostForm = ({
   };
 
   const files = form.watch('files');
+  // files is set programmatically (no registered input), so attach the rule here.
+  form.register('files', { validate: validateFileCount });
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-56">
@@ -138,7 +141,8 @@ export const ParkingPermitLostForm = ({
                   onRemove: () =>
                     form.setValue(
                       'files',
-                      form.watch('files').filter((f) => f !== file)
+                      form.watch('files').filter((f) => f !== file),
+                      { shouldValidate: true }
                     ),
                 }}
               />
@@ -153,7 +157,7 @@ export const ParkingPermitLostForm = ({
             maxFileSizeMB={MAX_FILE_SIZE_MB}
             data-cy="police-report-file-upload"
             onChange={(e) => {
-              form.setValue('files', e.target.value);
+              form.setValue('files', e.target.value, { shouldValidate: true });
             }}
           />
         )}

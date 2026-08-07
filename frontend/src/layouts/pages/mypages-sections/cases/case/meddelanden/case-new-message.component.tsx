@@ -11,6 +11,7 @@ import {
   useThemeQueries,
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
+import { validateFileCount } from '@utils/upload-limits';
 import dayjs from 'dayjs';
 import { Info } from 'lucide-react';
 import { useContext, useMemo, useState } from 'react';
@@ -149,7 +150,7 @@ export default function CaseNewMessage() {
                   appendFiles={files}
                   className="mt-16"
                   maxFileSizeMB={25}
-                  {...context.register('files')}
+                  {...context.register('files', { validate: validateFileCount })}
                 />
                 <div className="flex items-row text-small gap-5 mt-10">
                   <span className="text-dark-secondary">Maximal filstorlek: 25 MB.</span>{' '}
@@ -157,6 +158,11 @@ export default function CaseNewMessage() {
                     Visa tillåtna filtyper
                   </Button>
                 </div>
+                {context.formState.errors.files && (
+                  <FormErrorMessage className="text-small text-error" role="alert">
+                    {context.formState.errors.files.message}
+                  </FormErrorMessage>
+                )}
               </div>
 
               {files.length ? (

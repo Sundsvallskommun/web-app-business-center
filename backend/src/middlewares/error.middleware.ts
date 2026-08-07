@@ -1,13 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
+import { MulterError } from 'multer';
 import { HttpException } from '@exceptions/HttpException';
 import { logger } from '@utils/logger';
 
-const errorMiddleware = (error: HttpException, req: Request, res: Response, next: NextFunction) => {
+const errorMiddleware = (error: HttpException | MulterError, req: Request, res: Response, next: NextFunction) => {
   try {
-    const status: number = error.status || 500;
+    // A MulterError means the request violated an upload limit (file count,
+    // file size, parts); that is a client error, not a server fault.
+    const status: number = error instanceof MulterError ? 400 : error.status || 500;
     const message: string = error.message || 'Something went wrong';
+    const validationErrors = error instanceof MulterError ? undefined : error.errors;
     const errors: string =
-      error.errors?.length > 0 ? JSON.stringify(error.errors.map(error => ({ property: error.property, constraints: error.constraints }))) : '';
+      validationErrors && validationErrors.length > 0
+        ? JSON.stringify(validationErrors.map(error => ({ property: error.property, constraints: error.constraints })))
+        : '';
 
     // Strip CR/LF from user-controlled values to prevent log injection
     const strip = (value: string) => value.replace(/[\r\n]/g, '');

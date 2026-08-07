@@ -5,6 +5,8 @@ export const fileUploadSettings = {
   MAX_FILE_SIZE_BYTES: 1024 * 1024 * 50,
   MAX_FILES_PER_REQUEST: 10,
   MAX_FIELDS_PER_REQUEST: 50,
+  MAX_FIELD_NAME_LENGTH: 255,
+  MAX_FIELD_SIZE_BYTES: 1024 * 1024,
   fileNameFormat: (fileName: string) => {
     const fN = Date.now() + '-' + Math.round(Math.random() * 1e9);
     return fN + path.extname(fileName);

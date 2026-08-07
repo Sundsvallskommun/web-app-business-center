@@ -1,6 +1,8 @@
 /// <reference types="jest" />
 
 import axios from 'axios';
+// tsconfig sets `types: ["cypress"]`, so the global `expect` resolves to Chai's
+// Assertion; import Jest's expect explicitly to get Jest matcher typings.
 import { expect } from '@jest/globals';
 import { headers } from 'next/headers';
 

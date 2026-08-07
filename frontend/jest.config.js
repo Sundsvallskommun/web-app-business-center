@@ -1,8 +1,7 @@
 // babel
 module.exports = {
   roots: ['<rootDir>/'],
-  // No unit tests currently exist (the stale pages-router suites were removed in the
-  // app-router migration); keep the harness without failing CI until app-router tests are added.
+  // Keep CI green if a refactor temporarily leaves no matching test files.
   passWithNoTests: true,
   // "testTimeout": 15000,
   // Add more setup options before each test is run
@@ -11,12 +10,7 @@ module.exports = {
   collectCoverage: true,
   // on node 14.x coverage provider v8 offers good speed and more or less good report
   coverageProvider: 'v8',
-  collectCoverageFrom: [
-    '<rootDir>/services/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/pages/**/*.{js,jsx,ts,tsx}',
-    '<rootDir>/components/**/*.{js,jsx,ts,tsx}',
-    '!**/__unused__/**',
-  ],
+  collectCoverageFrom: ['<rootDir>/src/**/*.{js,jsx,ts,tsx}', '!<rootDir>/src/data-contracts/**'],
   moduleNameMapper: {
     // Handle CSS imports (with CSS modules)
     // https://jestjs.io/docs/webpack#mocking-css-modules

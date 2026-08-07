@@ -52,9 +52,9 @@
   },
   "resolutions": {
     "baseline-browser-mapping": "^2.11.1",
-    "form-data": "4.0.6",
-    "immutable": "5.1.8",
-    "lodash": "4.18.1",
+    "form-data": "^4.0.6",
+    "immutable": "^5.1.8",
+    "lodash": "^4.18.1",
     "string-width": "4.2.3",
     "wrap-ansi": "7.0.0"
   },

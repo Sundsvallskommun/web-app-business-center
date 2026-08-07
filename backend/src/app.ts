@@ -52,8 +52,14 @@ import { Profile } from './interfaces/profile.interface';
 import { RepresentingMode } from './interfaces/representing.interface';
 import { User } from './interfaces/users.interface';
 import { additionalConverters } from './utils/custom-validation-classes';
-import { isValidUrl } from './utils/util';
 import { getBusinessEngagements, mapEngagements } from './services/legal-entity.service';
+import {
+  getAllowedRedirectUrl,
+  getRelayStateRedirects,
+  getSamlSecurityOptions,
+  getSessionCookieOptions,
+  serializeRelayStateRedirects,
+} from './auth/saml-security';
 
 const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
 const sessionTTL = 4 * 24 * 60 * 60;
@@ -79,12 +85,9 @@ const samlStrategy = new Strategy(
     issuer: SAML_ISSUER ?? '',
     signatureAlgorithm: 'sha256',
     digestAlgorithm: 'sha256',
-    wantAssertionsSigned: false,
-    wantAuthnResponseSigned: false,
-    audience: false,
+    ...getSamlSecurityOptions(SAML_ISSUER ?? ''),
     logoutUrl: SAML_LOGOUT_URL ?? '',
     logoutCallbackUrl: SAML_LOGOUT_CALLBACK_URL,
-    acceptedClockSkewMs: -1,
   },
   async function (samlProfile: SamlProfile | null, done: VerifiedCallback) {
     if (!samlProfile) {
@@ -215,11 +218,7 @@ class App {
         resave: false,
         saveUninitialized: false,
         store: sessionStore,
-        cookie: {
-          httpOnly: this.env === 'production' && process.env.ENVIRONMENT !== 'TEST',
-          sameSite: process.env.ENVIRONMENT === 'TEST' ? 'lax' : 'none',
-          secure: this.env === 'production' && process.env.ENVIRONMENT !== 'TEST',
-        },
+        cookie: getSessionCookieOptions(this.env === 'production', process.env.ENVIRONMENT === 'TEST'),
       }),
     );
 
@@ -231,20 +230,20 @@ class App {
       `${BASE_URL_PREFIX}/saml/login`,
       samlLimiter,
       (req, _res, next) => {
-        if (req.session.returnTo) {
-          req.query.RelayState = req.session.returnTo;
-        } else if (req.query.successRedirect) {
-          req.query.RelayState = req.query.successRedirect;
-        }
+        const relayState = req.session.returnTo ?? req.query.successRedirect;
+        const { successRedirect, failureRedirect } = getRelayStateRedirects(relayState, ORIGIN);
+
         // Carry the representing mode through the SAML round-trip via RelayState (the IdP
         // echoes it back in the callback). The pre-auth session cannot be relied on: its
         // cookie is not sent on the cross-site IdP callback POST (sameSite=lax), and
         // passport's req.login regenerates the session. representing is therefore set in
         // the callback, after req.login, on the authenticated session.
-        if (req.query.representingMode && typeof req.query.RelayState === 'string' && isValidUrl(req.query.RelayState)) {
-          const relay = new URL(req.query.RelayState);
-          relay.searchParams.set('representingMode', req.query.representingMode as string);
-          req.query.RelayState = relay.toString();
+        if (successRedirect) {
+          if (typeof req.query.representingMode === 'string') {
+            successRedirect.searchParams.set('representingMode', req.query.representingMode);
+          }
+          const distinctFailureRedirect = failureRedirect?.toString() === successRedirect.toString() ? undefined : failureRedirect;
+          req.query.RelayState = serializeRelayStateRedirects(successRedirect, distinctFailureRedirect);
         }
         next();
       },
@@ -282,10 +281,11 @@ class App {
         next();
       },
       (req, res) => {
-        if (req.session?.returnTo) {
-          req.query.RelayState = req.session.returnTo;
-        } else if (req.query.successRedirect) {
-          req.query.RelayState = req.query.successRedirect;
+        const relayState = req.session?.returnTo ?? req.query.successRedirect;
+        const { successRedirect, failureRedirect } = getRelayStateRedirects(relayState, ORIGIN);
+        if (successRedirect) {
+          const distinctFailureRedirect = failureRedirect?.toString() === successRedirect.toString() ? undefined : failureRedirect;
+          req.query.RelayState = serializeRelayStateRedirects(successRedirect, distinctFailureRedirect);
         }
 
         if (!req.user || !req.user.nameID || !req.user.nameIDFormat) {
@@ -323,16 +323,24 @@ class App {
       logger.info('SAML logout callback received', { query: req.query, body: req.body, user: req.user });
       req.logout(err => {
         if (err) return res.status(500).send(err);
-        let successRedirect: URL = new URL(SAML_LOGOUT_REDIRECT ?? '');
+        const configuredLogoutRedirect = getAllowedRedirectUrl(SAML_LOGOUT_REDIRECT, ORIGIN);
+        if (!configuredLogoutRedirect) {
+          logger.error('SAML_LOGOUT_REDIRECT must use the configured ORIGIN');
+          return res.status(500).send('Invalid logout redirect configuration');
+        }
+
+        let successRedirect = configuredLogoutRedirect;
         let failureRedirect: URL | undefined;
         const urls = req?.body?.RelayState?.split(',') ?? [];
 
         if (urls.length !== 0) {
-          if (isValidUrl(urls[0])) {
-            successRedirect = new URL(urls[0]);
+          const requestedSuccessRedirect = getAllowedRedirectUrl(urls[0], ORIGIN);
+          const requestedFailureRedirect = getAllowedRedirectUrl(urls[1], ORIGIN);
+          if (requestedSuccessRedirect) {
+            successRedirect = requestedSuccessRedirect;
           }
-          if (isValidUrl(urls[1])) {
-            failureRedirect = new URL(urls[1]);
+          if (requestedFailureRedirect) {
+            failureRedirect = requestedFailureRedirect;
           } else {
             failureRedirect = successRedirect;
           }
@@ -357,20 +365,9 @@ class App {
     });
 
     this.app.post(`${BASE_URL_PREFIX}/saml/login/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
-      let successRedirect: URL | undefined, failureRedirect: URL | undefined;
+      const { successRedirect, failureRedirect } = getRelayStateRedirects(req?.body?.RelayState, ORIGIN);
 
-      const urls = req?.body?.RelayState.split(',');
-
-      if (isValidUrl(urls[0])) {
-        successRedirect = new URL(urls[0]);
-      }
-      if (isValidUrl(urls[1])) {
-        failureRedirect = new URL(urls[1]);
-      } else {
-        failureRedirect = successRedirect;
-      }
-
-      if (!failureRedirect) {
+      if (!successRedirect || !failureRedirect) {
         res.status(400).send('Missing or invalid RelayState');
         return;
       }

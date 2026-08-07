@@ -17,14 +17,19 @@ const main = async () => {
     const outputDirectory = path.join(PATH_TO_OUTPUT_DIR, api.name);
     const apiDocsUrl = new URL(`${API_BASE_URL.replace(/\/$/, '')}/${encodeURIComponent(api.name)}/${encodeURIComponent(api.version)}/api-docs`);
 
-    await generateApi({
-      url: apiDocsUrl.toString(),
-      output: outputDirectory,
-      fileName: 'data-contracts.ts',
-      generateClient: false,
-      cleanOutput: true,
-      extractEnums: true,
-    });
+    try {
+      await generateApi({
+        url: apiDocsUrl.toString(),
+        output: outputDirectory,
+        fileName: 'data-contracts.ts',
+        generateClient: false,
+        cleanOutput: true,
+        extractEnums: true,
+      });
+    } catch (error) {
+      console.error(`Failed to generate contracts for ${api.name} ${api.version}`);
+      throw error;
+    }
 
     console.log(`- ${api.name} ${api.version}`);
   }

@@ -52,11 +52,19 @@ COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 
 # Guard against accidentally reintroducing build and test tooling in production,
-# then create the only runtime-writable folders.
-RUN test ! -e /app/node_modules/typescript \
- && test ! -e /app/node_modules/vitest \
- && test ! -e /app/node_modules/ts-node \
- && test -x /app/node_modules/.bin/prisma \
+# then create the only runtime-writable folders. The guards fail the build even
+# when a tool arrives transitively via a legitimate production dependency; that
+# is deliberate and should be resolved consciously, not silently shipped.
+RUN for tool in typescript vitest ts-node; do \
+      if [ -e "/app/node_modules/$tool" ]; then \
+        echo "Build guard: dev-only tool '$tool' must not be present in the production image" >&2; \
+        exit 1; \
+      fi; \
+    done \
+ && if [ ! -x /app/node_modules/.bin/prisma ]; then \
+      echo "Build guard: Prisma CLI is missing; the image runs 'prisma migrate deploy' at startup" >&2; \
+      exit 1; \
+    fi \
  && mkdir -p /app/data/sessions /app/data/logs /app/data/database \
  && chown -R nodejs:nodejs /app/data
 

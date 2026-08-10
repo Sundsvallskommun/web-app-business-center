@@ -29,7 +29,7 @@ import {
 import { getCitizen } from '@/services/citizen.service';
 import { buildMyPagesErrand } from '@/utils/casedata-errand-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
-import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
+import { getRepresentedPartyId } from '@/utils/getRepresentedPartyId';
 import { apiURL } from '@/utils/util';
 import { AssetsApiResponse } from '@/responses/asset.response';
 import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
@@ -143,7 +143,8 @@ export class AssetsController {
   async getAssets(@Req() req: RequestWithUser): Promise<ApiResponse<AssetWithService[]>> {
     const { representing } = req.session ?? {};
 
-    if (!representing) {
+    const partyId = getRepresentedPartyId(representing, req.user);
+    if (!partyId) {
       throw new HttpException(400, 'Bad Request');
     }
 
@@ -155,9 +156,7 @@ export class AssetsController {
     });
 
     try {
-      const params = {
-        partyId: getRepresentingPartyId(representing),
-      };
+      const params = { partyId };
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/assets`;
       const res = await this.apiService.get<Asset[]>({ url, signal, params }, req.user);
 
@@ -184,7 +183,8 @@ export class AssetsController {
   async getAsset(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ApiResponse<AssetWithService>> {
     const { representing } = req.session ?? {};
 
-    if (!representing) {
+    const partyId = getRepresentedPartyId(representing, req.user);
+    if (!partyId) {
       throw new HttpException(400, 'Bad Request');
     }
 
@@ -200,9 +200,7 @@ export class AssetsController {
     }
 
     try {
-      const params = {
-        partyId: getRepresentingPartyId(representing),
-      };
+      const params = { partyId };
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/assets`;
       const res = await this.apiService.get<Asset[]>({ url, signal, params }, req.user);
 

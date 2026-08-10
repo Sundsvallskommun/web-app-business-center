@@ -54,6 +54,48 @@ export const makeClientContactSetting = (contactSetting: ContactSetting): Client
 
 const defaultApi = new ApiService();
 
+/**
+ * Fetch all contact settings that belong to a given party.
+ * The upstream API filters by `partyId`, so the result only ever contains the
+ * represented party's own settings.
+ */
+const fetchContactSettings = async (
+  partyId: string,
+  user: RequestWithUser['user'],
+  api: Pick<ApiService, 'get'> = defaultApi,
+): Promise<ContactSetting[]> => {
+  const apiBase = getApiBase('contactsettings');
+  const url = `${apiBase}/${MUNICIPALITY_ID}/settings`;
+  const params = { partyId, page: 1, limit: 100 };
+
+  const res = await api.get<ContactSetting[]>({ url, params }, user);
+  return res.data ?? [];
+};
+
+/**
+ * Verify that a contact setting belongs to the represented party before it is
+ * edited or deleted.
+ *
+ * The setting id comes from the client. Without this check a logged-in user could
+ * swap the id and modify/remove another party's contact setting (IDOR). We load the
+ * party's own settings and confirm the id is among them. Fails closed: any lookup
+ * error resolves to "not owned".
+ */
+export const contactSettingBelongsToParty = async (
+  partyId: string,
+  contactSettingId: string,
+  user: RequestWithUser['user'],
+  api: Pick<ApiService, 'get'> = defaultApi,
+): Promise<boolean> => {
+  try {
+    const settings = await fetchContactSettings(partyId, user, api);
+    return settings.some(setting => setting.id === contactSettingId && setting.partyId === partyId);
+  } catch (error) {
+    console.error('Error verifying contact setting ownership:', error);
+    return false;
+  }
+};
+
 export const deleteContactSetting = async (
   contactSettingId: string,
   req: RequestWithUser,

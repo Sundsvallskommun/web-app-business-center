@@ -10,5 +10,8 @@
     "title": "Avslutade",
     "empty": "Det finns inga avslutade ärenden",
     "loading": "Laddar avslutade ärenden"
+  },
+  "newMessage": {
+    "sendError": "Något gick fel när meddelandet skickades. Försök igen senare."
   }
 }

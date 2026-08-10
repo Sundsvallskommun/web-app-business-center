@@ -1,6 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { act, renderHook } from '@testing-library/react';
 import { QueryClient } from '@tanstack/react-query';
+import { TFunction } from 'i18next';
 import { apiService, getApiErrorResponse, useApi } from './api-service';
 import { applyApiErrorToForm } from './form-api-error';
 
@@ -17,30 +18,35 @@ describe('API error handling', () => {
     const error = createApiError({
       code: 'UPLOAD_TOO_MANY_FILES',
       field: 'files',
-      message: 'Du kan bifoga högst 10 filer.',
+      params: { max: 10 },
     });
 
     expect(getApiErrorResponse(error)).toEqual({
       code: 'UPLOAD_TOO_MANY_FILES',
       field: 'files',
-      message: 'Du kan bifoga högst 10 filer.',
+      params: { max: 10 },
     });
   });
 
-  it('places a field-specific API error on the matching form field', () => {
+  it('translates a coded API error and places it on the matching form field', () => {
     const setError = jest.fn();
     const onFormError = jest.fn();
-    const error = createApiError({ field: 'files', message: 'Du kan bifoga högst 10 filer.' });
+    const translate = jest.fn(() => 'localized upload error') as unknown as TFunction;
+    const error = createApiError({ code: 'UPLOAD_TOO_MANY_FILES', field: 'files', params: { max: 10 } });
 
     applyApiErrorToForm<{ files: never[] }>(
       error,
       { getValues: () => ({ files: [] }), setError },
-      { fallbackMessage: 'Ett oväntat fel inträffade.', inlineFields: ['files'], onFormError }
+      { fallbackMessage: 'fallback error', inlineFields: ['files'], onFormError, translate }
     );
 
     expect(setError).toHaveBeenCalledWith('files', {
-      message: 'Du kan bifoga högst 10 filer.',
+      message: 'localized upload error',
       type: 'server',
+    });
+    expect(translate).toHaveBeenCalledWith('common:uploadErrors.UPLOAD_TOO_MANY_FILES', {
+      defaultValue: 'fallback error',
+      max: 10,
     });
     expect(onFormError).not.toHaveBeenCalled();
   });
@@ -48,19 +54,21 @@ describe('API error handling', () => {
   it('places errors at form level when the field has no inline error surface', () => {
     const setError = jest.fn();
     const onFormError = jest.fn();
+    const translate = jest.fn(() => 'localized field error') as unknown as TFunction;
     const error = createApiError({
+      code: 'UPLOAD_FIELD_TOO_LARGE',
       field: 'reason',
-      message: 'Ett textfält får innehålla högst 1 MB.',
+      params: { max: 1 },
     });
 
     applyApiErrorToForm<{ files: never[]; reason: string }>(
       error,
       { getValues: () => ({ files: [], reason: '' }), setError },
-      { fallbackMessage: 'Ett oväntat fel inträffade.', inlineFields: ['files'], onFormError }
+      { fallbackMessage: 'fallback error', inlineFields: ['files'], onFormError, translate }
     );
 
     expect(setError).not.toHaveBeenCalled();
-    expect(onFormError).toHaveBeenCalledWith('Ett textfält får innehålla högst 1 MB.');
+    expect(onFormError).toHaveBeenCalledWith('localized field error');
   });
 
   it("keeps failed mutations in TanStack Query's error path", async () => {

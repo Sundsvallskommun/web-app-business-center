@@ -12,11 +12,12 @@ import {
   useThemeQueries,
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
-import { validateFileCount } from '@utils/upload-limits';
+import { MAX_FILES_PER_UPLOAD, validateFileCount } from '@utils/upload-limits';
 import dayjs from 'dayjs';
 import { Info } from 'lucide-react';
 import { useContext, useMemo, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { CaseContext } from '../case-layout.component';
 
 interface NewMessage {
@@ -27,6 +28,7 @@ interface NewMessage {
 const MESSAGE_CHARACTER_LIMIT = 10000;
 
 export default function CaseNewMessage() {
+  const { t } = useTranslation(['cases', 'common']);
   const { isMinDesktop } = useThemeQueries();
   const context = useForm<NewMessage>({ defaultValues: { files: [], message: '' }, mode: 'onChange' });
   const { caseData } = useContext(CaseContext);
@@ -105,9 +107,10 @@ export default function CaseNewMessage() {
     } catch (error) {
       console.error('Error sending message:', error);
       applyApiErrorToForm<NewMessage>(error, context, {
-        fallbackMessage: 'Något gick fel när meddelandet skickades, försök igen senare',
+        fallbackMessage: t('cases:newMessage.sendError'),
         inlineFields: ['files', 'message'],
         onFormError: (message) => context.setError('root', { message, type: 'server' }),
+        translate: t,
       });
     }
   };
@@ -153,7 +156,13 @@ export default function CaseNewMessage() {
                   appendFiles={files}
                   className="mt-16"
                   maxFileSizeMB={25}
-                  {...context.register('files', { validate: validateFileCount })}
+                  {...context.register('files', {
+                    validate: (files) =>
+                      validateFileCount(
+                        files,
+                        t('common:uploadErrors.UPLOAD_TOO_MANY_FILES', { max: MAX_FILES_PER_UPLOAD })
+                      ),
+                  })}
                 />
                 <div className="flex items-row text-small gap-5 mt-10">
                   <span className="text-dark-secondary">Maximal filstorlek: 25 MB.</span>{' '}

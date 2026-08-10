@@ -57,5 +57,15 @@
   "seconds_one": "{{count}} sekund",
   "seconds_other": "{{count}} sekunder",
   "left": "kvar",
-  "citizenError": "Kunde inte hämta personuppgifter"
+  "citizenError": "Kunde inte hämta personuppgifter",
+  "uploadErrors": {
+    "UPLOAD_FILE_TOO_LARGE": "En bifogad fil får vara högst {{max}} MB.",
+    "UPLOAD_FIELD_NAME_MISSING": "Ett formulärfält saknar namn.",
+    "UPLOAD_FIELD_NAME_TOO_LONG": "Ett formulärfält får ha ett namn på högst {{max}} tecken.",
+    "UPLOAD_FIELD_TOO_LARGE": "Ett textfält får innehålla högst {{max}} MB.",
+    "UPLOAD_TOO_MANY_FIELDS": "Formuläret får innehålla högst {{max}} textfält.",
+    "UPLOAD_TOO_MANY_FILES": "Du kan bifoga högst {{max}} filer.",
+    "UPLOAD_TOO_MANY_PARTS": "Formuläret får innehålla högst {{max}} textfält och filer sammanlagt.",
+    "UPLOAD_UNEXPECTED_FILE": "Den valda filen kan inte bifogas i det här fältet."
+  }
 }

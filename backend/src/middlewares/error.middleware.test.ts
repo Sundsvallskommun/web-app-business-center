@@ -14,27 +14,49 @@ const createMocks = () => {
 
 describe('errorMiddleware', () => {
   it.each([
-    ['LIMIT_FILE_COUNT', undefined, 'files', 'UPLOAD_TOO_MANY_FILES', 'Du kan bifoga högst 10 filer.'],
-    ['LIMIT_FILE_SIZE', 'files', 'files', 'UPLOAD_FILE_TOO_LARGE', 'En bifogad fil får vara högst 50 MB.'],
-    ['LIMIT_FIELD_COUNT', undefined, undefined, 'UPLOAD_TOO_MANY_FIELDS', 'Formuläret innehåller fler än 50 textfält.'],
-    ['LIMIT_FIELD_KEY', undefined, undefined, 'UPLOAD_FIELD_NAME_TOO_LONG', 'Ett formulärfält har ett för långt namn.'],
-    ['LIMIT_FIELD_VALUE', 'message', 'message', 'UPLOAD_FIELD_TOO_LARGE', 'Ett textfält får innehålla högst 1 MB.'],
-    [
-      'LIMIT_PART_COUNT',
-      undefined,
-      undefined,
-      'UPLOAD_TOO_MANY_PARTS',
-      'Formuläret får innehålla högst 60 textfält och filer sammanlagt.',
-    ],
-    ['LIMIT_UNEXPECTED_FILE', 'files', 'files', 'UPLOAD_UNEXPECTED_FILE', 'Den valda filen kan inte bifogas i det här fältet.'],
-  ] as const)('maps %s to a typed 400 response', (multerCode, errorField, responseField, code, message) => {
+    {
+      multerCode: 'LIMIT_FILE_COUNT',
+      errorField: undefined,
+      response: { code: 'UPLOAD_TOO_MANY_FILES', field: 'files', params: { max: 10 } },
+    },
+    {
+      multerCode: 'LIMIT_FILE_SIZE',
+      errorField: 'files',
+      response: { code: 'UPLOAD_FILE_TOO_LARGE', field: 'files', params: { max: 50 } },
+    },
+    {
+      multerCode: 'LIMIT_FIELD_COUNT',
+      errorField: undefined,
+      response: { code: 'UPLOAD_TOO_MANY_FIELDS', params: { max: 50 } },
+    },
+    {
+      multerCode: 'LIMIT_FIELD_KEY',
+      errorField: undefined,
+      response: { code: 'UPLOAD_FIELD_NAME_TOO_LONG', params: { max: 255 } },
+    },
+    {
+      multerCode: 'LIMIT_FIELD_VALUE',
+      errorField: 'message',
+      response: { code: 'UPLOAD_FIELD_TOO_LARGE', field: 'message', params: { max: 1 } },
+    },
+    {
+      multerCode: 'LIMIT_PART_COUNT',
+      errorField: undefined,
+      response: { code: 'UPLOAD_TOO_MANY_PARTS', params: { max: 60 } },
+    },
+    {
+      multerCode: 'LIMIT_UNEXPECTED_FILE',
+      errorField: 'files',
+      response: { code: 'UPLOAD_UNEXPECTED_FILE', field: 'files' },
+    },
+  ] as const)('maps $multerCode to a typed 400 response', ({ multerCode, errorField, response }) => {
     const { req, res, next } = createMocks();
     const error = new MulterError(multerCode, errorField);
 
     errorMiddleware(error, req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ code, ...(responseField ? { field: responseField } : {}), message });
+    expect(res.json).toHaveBeenCalledWith(response);
   });
 
   it('keeps the status and message of an HttpException', () => {

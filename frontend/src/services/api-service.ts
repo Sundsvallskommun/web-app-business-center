@@ -22,20 +22,31 @@ export interface ApiResponse<T> {
 interface ApiErrorResponse {
   code?: string;
   field?: string;
-  message: string;
+  message?: string;
+  params?: ApiErrorParams;
+}
+
+interface ApiErrorParams {
+  max: number;
 }
 
 const isApiErrorResponse = (value: unknown): value is ApiErrorResponse =>
-  typeof value === 'object' && value !== null && 'message' in value && typeof value.message === 'string';
+  typeof value === 'object' &&
+  value !== null &&
+  (('message' in value && typeof value.message === 'string') || ('code' in value && typeof value.code === 'string'));
+
+const isApiErrorParams = (value: unknown): value is ApiErrorParams =>
+  typeof value === 'object' && value !== null && 'max' in value && typeof value.max === 'number';
 
 export const getApiErrorResponse = (error: unknown): ApiErrorResponse | undefined => {
   if (!axios.isAxiosError(error) || !isApiErrorResponse(error.response?.data)) return undefined;
 
-  const { code, field, message } = error.response.data;
+  const { code, field, message, params } = error.response.data;
   return {
-    message,
     ...(typeof code === 'string' ? { code } : {}),
     ...(typeof field === 'string' ? { field } : {}),
+    ...(typeof message === 'string' ? { message } : {}),
+    ...(isApiErrorParams(params) ? { params } : {}),
   };
 };
 

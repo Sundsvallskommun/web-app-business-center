@@ -17,13 +17,17 @@ type FileUploadErrorCode = (typeof fileUploadErrorCodes)[keyof typeof fileUpload
 interface FileUploadErrorResponse {
   code: FileUploadErrorCode;
   field?: string;
-  message: string;
+  params?: FileUploadErrorParams;
 }
 
 interface FileUploadErrorDetails {
   code: FileUploadErrorCode;
   defaultField?: string;
-  message: string;
+  params?: FileUploadErrorParams;
+}
+
+interface FileUploadErrorParams {
+  max: number;
 }
 
 type MulterRuntimeErrorCode = MulterError['code'] | 'MISSING_FIELD_NAME';
@@ -37,43 +41,40 @@ const fileUploadErrors = {
   LIMIT_FILE_COUNT: {
     code: fileUploadErrorCodes.TOO_MANY_FILES,
     defaultField: 'files',
-    message: `Du kan bifoga högst ${fileUploadSettings.MAX_FILES_PER_REQUEST} filer.`,
+    params: { max: fileUploadSettings.MAX_FILES_PER_REQUEST },
   },
   LIMIT_FILE_SIZE: {
     code: fileUploadErrorCodes.FILE_TOO_LARGE,
     defaultField: 'files',
-    message: `En bifogad fil får vara högst ${maxFileSizeMb} MB.`,
+    params: { max: maxFileSizeMb },
   },
   LIMIT_FIELD_COUNT: {
     code: fileUploadErrorCodes.TOO_MANY_FIELDS,
-    message: `Formuläret innehåller fler än ${fileUploadSettings.MAX_FIELDS_PER_REQUEST} textfält.`,
+    params: { max: fileUploadSettings.MAX_FIELDS_PER_REQUEST },
   },
   LIMIT_FIELD_KEY: {
     code: fileUploadErrorCodes.FIELD_NAME_TOO_LONG,
-    message: 'Ett formulärfält har ett för långt namn.',
+    params: { max: fileUploadSettings.MAX_FIELD_NAME_LENGTH },
   },
   LIMIT_FIELD_VALUE: {
     code: fileUploadErrorCodes.FIELD_TOO_LARGE,
-    message: `Ett textfält får innehålla högst ${maxFieldSizeMb} MB.`,
+    params: { max: maxFieldSizeMb },
   },
   LIMIT_PART_COUNT: {
     code: fileUploadErrorCodes.TOO_MANY_PARTS,
-    message: `Formuläret får innehålla högst ${maxPartsPerRequest} textfält och filer sammanlagt.`,
+    params: { max: maxPartsPerRequest },
   },
   LIMIT_UNEXPECTED_FILE: {
     code: fileUploadErrorCodes.UNEXPECTED_FILE,
     defaultField: 'files',
-    message: 'Den valda filen kan inte bifogas i det här fältet.',
   },
   MISSING_FIELD_NAME: {
     code: fileUploadErrorCodes.FIELD_NAME_MISSING,
-    message: 'Ett formulärfält saknar namn.',
   },
 } satisfies Record<MulterRuntimeErrorCode, FileUploadErrorDetails>;
 
 const unknownUploadError: FileUploadErrorDetails = {
   code: fileUploadErrorCodes.UNEXPECTED_FILE,
-  message: 'Uppladdningen kunde inte behandlas.',
 };
 
 export const toFileUploadErrorResponse = (error: MulterError): FileUploadErrorResponse => {

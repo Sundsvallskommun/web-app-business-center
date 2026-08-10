@@ -8,7 +8,7 @@ const errorMiddleware = (error: HttpException | MulterError, req: Request, res: 
   try {
     const uploadError = error instanceof MulterError ? toFileUploadErrorResponse(error) : undefined;
     const status: number = error instanceof MulterError ? 400 : error.status || 500;
-    const message: string = uploadError?.message ?? error.message ?? 'Something went wrong';
+    const message: string = uploadError?.code ?? error.message ?? 'Something went wrong';
     const validationErrors = error instanceof MulterError ? undefined : error.errors;
     const errors: string =
       validationErrors && validationErrors.length > 0

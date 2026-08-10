@@ -16,7 +16,7 @@ import {
   useSnackbar,
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
-import { validateFileCount } from '@utils/upload-limits';
+import { MAX_FILES_PER_UPLOAD, validateFileCount } from '@utils/upload-limits';
 import { ArrowRight } from 'lucide-react';
 import { useController, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -100,7 +100,10 @@ export const ParkingPermitRenewalForm = ({
   const { field: filesField, fieldState: filesFieldState } = useController({
     control: form.control,
     name: 'files',
-    rules: { validate: validateFileCount },
+    rules: {
+      validate: (files) =>
+        validateFileCount(files, t('common:uploadErrors.UPLOAD_TOO_MANY_FILES', { max: MAX_FILES_PER_UPLOAD })),
+    },
   });
 
   const onSubmit = async (data: PermitRenewalFormModel) => {
@@ -163,6 +166,7 @@ export const ParkingPermitRenewalForm = ({
           fallbackMessage: t('decisions:parkingPermit.renewal.form.errorMessage'),
           inlineFields: ['expirationDate', 'files'],
           onFormError: (message) => toastMessage({ position: 'bottom', closeable: false, message, status: 'error' }),
+          translate: t,
         });
       }
     }

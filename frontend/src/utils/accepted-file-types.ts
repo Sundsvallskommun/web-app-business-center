@@ -6,7 +6,7 @@
  * Note: this is the client-side hint only. The backend enforces its own list in
  * `fileUploadSettings.FILE_TYPES`; keep the two in rough agreement.
  */
-export const documentMimeTypes = [
+const documentMimeTypes = [
   'video/quicktime',
   'video/mp4',
   'video/mpeg',

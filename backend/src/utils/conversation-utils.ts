@@ -1,6 +1,6 @@
 import { Conversation } from '@/data-contracts/case-data/data-contracts';
 
-export function findExternalConversation(conversations: Conversation[]): Conversation {
+export function findExternalConversation(conversations: Conversation[]): Conversation | undefined {
   return conversations.find(c => c.type === 'EXTERNAL');
 }
 

@@ -4,8 +4,9 @@ import winston from 'winston';
 import winstonDaily from 'winston-daily-rotate-file';
 import { LOG_DIR } from '@config';
 
-// logs dir
-const logDir: string = join(__dirname, LOG_DIR);
+// logs dir — fall back to the container's data/logs path when LOG_DIR is unset
+// so a missing env var can't crash the process before validateEnv() runs.
+const logDir: string = join(__dirname, LOG_DIR ?? '../../data/logs');
 
 if (!existsSync(logDir)) {
   mkdirSync(logDir, { recursive: true });
@@ -52,6 +53,10 @@ const logger = winston.createLogger({
 
 logger.add(
   new winston.transports.Console({
+    // Also surface uncaught exceptions/rejections on stdout/stderr (not only in
+    // the error log file) so crashes are visible in container logs (Dokploy).
+    handleExceptions: true,
+    handleRejections: true,
     format: winston.format.combine(winston.format.splat(), winston.format.colorize()),
   }),
 );

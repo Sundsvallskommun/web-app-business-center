@@ -1,4 +1,4 @@
-import { AttachmentResponse } from '@data-contracts/case-data/data-contracts';
+import { AttachmentResponse } from '@data-contracts/backend/data-contracts';
 import { FrontendMessageResponse } from '@interfaces/case';
 import { getCaseMessageAttachment } from '@services/case-service';
 import { downloadBlob } from '@utils/download-blob';
@@ -24,7 +24,7 @@ export default function CaseMessageFiles(props: { message: FrontendMessageRespon
       const attachment = await getCaseMessageAttachment(url); // returns base64 string
       downloadBlob(attachment, file.contentType || 'application/octet-stream', file.name || 'download');
     },
-    [caseData?.caseId, message.conversationId, message.messageId]
+    [caseData, message.conversationId, message.messageId]
   );
 
   if (!message || message.attachments?.length === 0) return null;

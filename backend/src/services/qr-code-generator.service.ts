@@ -12,7 +12,7 @@ export class QRGenerator {
 
       return `bankid.${sign.qrStartToken}.${qrTime}.${qrAuthCode}`;
     } catch (error) {
-      console.error(`Error generating QR data: ${error.message}`);
+      console.error(`Error generating QR data: ${error instanceof Error ? error.message : error}`);
       return null;
     }
   }

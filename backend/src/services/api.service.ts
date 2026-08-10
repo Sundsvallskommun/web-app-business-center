@@ -6,16 +6,18 @@ import { v4 as uuidv4 } from 'uuid';
 import ApiTokenService from './api-token.service';
 
 export class ApiResponse<T> {
-  data: T;
-  message: string;
+  data!: T;
+  message!: string;
 }
 
 const apiTokenService = new ApiTokenService();
 
 class ApiService {
   private instance: AxiosInstance;
-  constructor() {
-    this.instance = axios.create();
+  // The Axios instance is injectable so tests can supply a stub; production callers
+  // use the default `axios.create()` and behaviour is unchanged.
+  constructor(instance: AxiosInstance = axios.create()) {
+    this.instance = instance;
     this.instance.interceptors.request.use(
       async function (request) {
         if (request.url === apiURL('token')) {

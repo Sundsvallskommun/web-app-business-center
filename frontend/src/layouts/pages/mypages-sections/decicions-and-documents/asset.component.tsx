@@ -1,7 +1,13 @@
 'use client';
 
 import { Card } from '@components/cards/card.component';
-import { formatAssetDate, formatAssetValidity, getAssetStatusProps, isParkingPermit, soonExpiring } from '@services/asset-service';
+import {
+  formatAssetDate,
+  formatAssetValidity,
+  getAssetStatusProps,
+  isParkingPermit,
+  soonExpiring,
+} from '@services/asset-service';
 import sanitized from '@services/sanitizer-service';
 import { Button, Divider, Icon, Label } from '@sk-web-gui/react';
 import { ArrowRight, Car, Cog, FileCheck2, PlusCircle } from 'lucide-react';
@@ -19,7 +25,10 @@ const Chips = ({ items, emptyText }: { items?: string[]; emptyText: string }) =>
   return (
     <div className="flex flex-wrap gap-6">
       {items.map((item, i) => (
-        <span key={`${item}-${i}`} className="inline-flex items-center text-small bg-vattjom-background-200 text-dark-primary rounded-full px-10 py-4">
+        <span
+          key={`${item}-${i}`}
+          className="inline-flex items-center text-small bg-vattjom-background-200 text-dark-primary rounded-full px-10 py-4"
+        >
           {item}
         </span>
       ))}

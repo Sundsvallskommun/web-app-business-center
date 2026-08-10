@@ -20,10 +20,12 @@ export interface ApiResponse<T> {
   message: string;
 }
 
-export const handleError = (error) => {
-  if (error?.response?.status === 401 && !window?.location.pathname.includes('login')) {
+const handleError = (error: AxiosError | unknown) => {
+  const axiosErr = axios.isAxiosError(error) ? error : null;
+  if (axiosErr?.response?.status === 401 && !window?.location.pathname.includes('login')) {
     const path = window.location.pathname.includes('/valj-foretag') ? '/' : window.location.pathname;
-    window.location.href = `/login?path=${path}&failMessage=${error.response.data.message}`;
+    const message = (axiosErr.response?.data as { message?: string })?.message ?? '';
+    window.location.href = `/login?path=${path}&failMessage=${message}`;
   }
 };
 
@@ -55,7 +57,7 @@ const put = <T, D = unknown>(url: string, data?: D, options?: { [key: string]: u
 
 export const apiService = { get, post, put, patch, delete: remove };
 
-export const queryClient = new QueryClient({
+const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false, // default: true
@@ -159,7 +161,7 @@ type DefaultApiCall = <TQueryFnData = unknown>(
   config: DefaultApiCallConfig
 ) => Promise<AxiosResponse<ApiResponse<TQueryFnData>>>;
 
-export const defaultApiCall: DefaultApiCall = <TQueryFnData>(config: DefaultApiCallConfig) => {
+const defaultApiCall: DefaultApiCall = <TQueryFnData>(config: DefaultApiCallConfig) => {
   if (config.method === 'post' || config.method === 'put' || config.method === 'patch') {
     return apiService[config.method]<TQueryFnData>(config.url, config?.body, {
       signal: config.context?.signal,

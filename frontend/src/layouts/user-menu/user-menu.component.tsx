@@ -2,7 +2,6 @@ import { Button, Divider, Icon, PopupMenu } from '@sk-web-gui/react';
 import { ArrowRight, ChevronDown, LogOut, User2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import React from 'react';
 import { RepresentingMode } from '../../interfaces/app';
 import { titleCase } from '../../utils/title-caser';
 import { useAppContext } from '../../contexts/app.context';

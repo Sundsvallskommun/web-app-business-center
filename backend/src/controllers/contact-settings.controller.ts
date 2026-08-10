@@ -5,7 +5,6 @@ import { RequestWithUser } from '@/interfaces/auth.interface';
 import ApiService from '@/services/api.service';
 import { apiURL } from '@/utils/util';
 import authMiddleware from '@middlewares/auth.middleware';
-import _ from 'lodash';
 import { Body, Controller, Delete, Get, HttpCode, OnUndefined, Param, Patch, Post, QueryParam, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { MUNICIPALITY_ID } from '../config';
@@ -14,16 +13,34 @@ import { RepresentingMode } from '../interfaces/representing.interface';
 import { ApiResponse, ResponseData } from '../interfaces/service';
 import { validationMiddleware } from '../middlewares/validation.middleware';
 import { ClientContactSetting } from '../responses/contactsettings.response';
-import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
+import { getRepresentedPartyId } from '../utils/getRepresentedPartyId';
 import { getBusinessAddress, getBusinessName } from './contact-settings/utils';
 import { LEAddress } from '@/data-contracts/legalentity/data-contracts';
 import { logger } from '@/utils/logger';
-import { deleteContactSetting, getContactSettingChannels, makeClientContactSetting } from '@/services/contact-setting.service';
+import {
+  contactSettingBelongsToParty,
+  deleteContactSetting,
+  getContactSettingChannels,
+  makeClientContactSetting,
+} from '@/services/contact-setting.service';
 
 @Controller()
 export class ContactSettingsController {
   private readonly apiService = new ApiService();
   private readonly apiBase = getApiBase('contactsettings');
+
+  /**
+   * Resolve the represented party's id from the session. Contact settings are always
+   * scoped to this party, so a user can only reach settings belonging to whoever they
+   * are currently representing.
+   */
+  private resolveRepresentedPartyId(req: RequestWithUser): string {
+    const partyId = getRepresentedPartyId(req.session?.representing, req.user);
+    if (!partyId) {
+      throw new HttpException(403, 'Forbidden');
+    }
+    return partyId;
+  }
 
   @Get('/contactsettings')
   @OpenAPI({ summary: 'Return a list of contact settings' })
@@ -34,41 +51,51 @@ export class ContactSettingsController {
     @QueryParam('limit', { required: false }) limit?: number,
     @QueryParam('page', { required: false }) page?: number,
   ): Promise<ResponseData<ClientContactSetting>> {
-    const representing = req.session?.representing ?? undefined;
+    const representing = req.session?.representing;
     const { user } = req;
 
-    if (!getRepresentingPartyId(representing)) {
+    if (!representing) {
+      throw new HttpException(403, 'Forbidden');
+    }
+
+    const partyId = getRepresentedPartyId(representing, user);
+    if (!partyId) {
       throw new HttpException(403, 'Forbidden');
     }
 
     const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings`;
     const params = {
-      partyId: getRepresentingPartyId(representing),
+      partyId,
       page: page ?? 1,
       limit: limit ?? 100, // NOTE: 100 is max it seems
     };
 
-    let res: ApiResponse<Array<ContactSetting>>;
+    let res: ApiResponse<Array<ContactSetting>> | undefined;
     try {
       res = await this.apiService.get<Array<ContactSetting>>({ url, params }, req.user);
     } catch (err) {
-      if (err.status !== 404) {
+      if (!(err instanceof HttpException) || err.status !== 404) {
         throw err;
       }
     }
 
-    const mapAdress = (adress: LEAddress): ContactSettingAddress => ({
-      city: adress?.city,
+    // Accepts any address-like shape (LEAddress, business Address, citizen address).
+    // Only LEAddress-style fields are read; absent ones resolve to undefined as before.
+    type MappableAddress = Partial<Pick<LEAddress, 'city' | 'addressArea' | 'adressNumber' | 'postalCode'>>;
+    const mapAdress = (adress: MappableAddress | null | undefined): ContactSettingAddress => ({
+      city: adress?.city ?? undefined,
       street: !adress?.addressArea || !adress?.adressNumber ? undefined : `${adress.addressArea} ${adress.adressNumber}`,
-      postcode: adress?.postalCode,
+      postcode: adress?.postalCode ?? undefined,
     });
 
     try {
-      const clientContactSetting = makeClientContactSetting(res?.data?.[0]);
+      // res may be undefined on a 404; makeClientContactSetting optional-chains its input
+      const clientContactSetting = makeClientContactSetting(res?.data?.[0] as ContactSetting);
 
       switch (representing.mode) {
         case RepresentingMode.BUSINESS:
-          clientContactSetting.name = getBusinessName(representing);
+          // name is declared string but is intentionally nullable at runtime (see makeClientContactSetting)
+          clientContactSetting.name = getBusinessName(representing) as ClientContactSetting['name'];
           clientContactSetting.address = mapAdress(getBusinessAddress(representing));
           break;
         case RepresentingMode.PRIVATE:
@@ -101,12 +128,25 @@ export class ContactSettingsController {
   @OpenAPI({ summary: 'Create contact settings for current logged in user' })
   @UseBefore(authMiddleware, validationMiddleware(ClientContactSetting, 'body'))
   async newContactSettings(@Req() req: RequestWithUser, @Body() userData: ClientContactSetting): Promise<ResponseData<ClientContactSetting>> {
-    const representing = req.session?.representing ?? undefined;
+    const representing = req.session?.representing;
+    if (!representing) {
+      throw new HttpException(403, 'Forbidden');
+    }
+
+    // Always create the contact setting for the represented party, attributed to the
+    // logged-in user. Any client-supplied partyId/createdById/virtual is ignored, so a
+    // user can only ever create a setting for themselves / whoever they represent — a
+    // manipulated request body cannot create one on another party's behalf.
+    const representedPartyId = getRepresentedPartyId(representing, req.user);
+    if (!representedPartyId) {
+      throw new HttpException(403, 'Forbidden');
+    }
+
     const newContactSettings: NewContactSettings = {
       alias: userData.alias ?? 'default',
-      virtual: userData.virtual ?? false,
-      partyId: userData.createdById ? undefined : getRepresentingPartyId(representing),
-      createdById: userData.createdById ?? req.user.partyId,
+      virtual: false,
+      partyId: representedPartyId,
+      createdById: req.user.partyId,
       contactChannels: getContactSettingChannels(userData),
     };
     const baseURL = apiURL(this.apiBase);
@@ -114,11 +154,12 @@ export class ContactSettingsController {
     try {
       const res = await this.apiService.post<ClientContactSetting, NewContactSettings>({ url, baseURL, data: newContactSettings }, req.user);
 
-      const data: ClientContactSetting = _.merge(userData, {
-        id: res.data?.id,
-      });
+      // Preserve lodash merge semantics: only overwrite id when defined
+      if (res.data?.id !== undefined) {
+        userData.id = res.data.id;
+      }
 
-      return { data: data, message: 'created' };
+      return { data: userData, message: 'created' };
     } catch (error) {
       logger.error('Error saving contactsetting', error);
       throw new HttpException(500, 'Internal server error');
@@ -133,19 +174,27 @@ export class ContactSettingsController {
     if (!userData.id) {
       throw new HttpException(400, 'Bad Request');
     }
+
+    // Verify the setting belongs to the represented party before editing it.
+    const partyId = this.resolveRepresentedPartyId(req);
+    if (!(await contactSettingBelongsToParty(partyId, userData.id, req.user))) {
+      throw new HttpException(404, 'Contact setting not found');
+    }
+
     try {
       const editedContactSettings: UpdateContactSettings = {
-        alias: userData.alias,
+        alias: userData.alias ?? 'default',
         contactChannels: getContactSettingChannels(userData),
       };
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/settings/${userData.id}`;
       const res = await this.apiService.patch<ClientContactSetting, UpdateContactSettings>({ url, data: editedContactSettings }, req.user);
 
-      const data = _.merge(userData, {
-        id: res.data?.id,
-      });
+      // Preserve lodash merge semantics: only overwrite id when defined
+      if (res.data?.id !== undefined) {
+        userData.id = res.data.id;
+      }
 
-      return { data: data, message: 'updated' };
+      return { data: userData, message: 'updated' };
     } catch (error) {
       logger.error('Error updating contactsetting', error);
       throw new HttpException(500, 'Internal server error');
@@ -160,6 +209,13 @@ export class ContactSettingsController {
     if (!contactSettingId) {
       throw new HttpException(400, 'Bad Request');
     }
+
+    // Verify the setting belongs to the represented party before deleting it.
+    const partyId = this.resolveRepresentedPartyId(req);
+    if (!(await contactSettingBelongsToParty(partyId, contactSettingId, req.user))) {
+      throw new HttpException(404, 'Contact setting not found');
+    }
+
     try {
       const deletionOk = await deleteContactSetting(contactSettingId, req);
       if (!deletionOk) {

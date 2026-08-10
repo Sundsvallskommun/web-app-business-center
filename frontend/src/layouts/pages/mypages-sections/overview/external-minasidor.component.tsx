@@ -24,7 +24,7 @@ type ExternalMinaSidorProps = {
   services?: ExternalService[];
 };
 
-export const ExternalMinaSidor = ({ services }: ExternalMinaSidorProps) => {
+const ExternalMinaSidor = ({ services }: ExternalMinaSidorProps) => {
   const { t } = useTranslation('overview');
   const items = services?.length ? services : servicesSource;
   if (!items.length) return null;
@@ -33,9 +33,7 @@ export const ExternalMinaSidor = ({ services }: ExternalMinaSidorProps) => {
     <section className="pt-80">
       <h3>{t('overview:externalServices.title')}</h3>
 
-      <p className="mt-12 max-w-[106rem]">
-        {t('overview:externalServices.description')}
-      </p>
+      <p className="mt-12 max-w-[106rem]">{t('overview:externalServices.description')}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-24 my-24 max-w-[106rem]">
         {items.map((svc) => (

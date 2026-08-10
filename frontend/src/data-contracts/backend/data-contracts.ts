@@ -10,54 +10,93 @@
  * ---------------------------------------------------------------
  */
 
+export interface Asset {
+  id?: string;
+  assetId?: string;
+  origin?: string;
+  partyId?: string;
+  type?: string;
+  issued?: string;
+  validTo?: string;
+  status?:
+    | "ACTIVE"
+    | "DRAFT"
+    | "EXPIRED"
+    | "BLOCKED"
+    | "TEMPORARY"
+    | "REPLACED";
+  statusReason?: string;
+  description?: string;
+  replacesId?: string;
+}
+
+export interface AssetsApiResponse {
+  data: Asset[];
+  message: string;
+}
+
 export interface CaseMessageDto {
   message: string;
   files?: any[];
 }
 
-export interface FeedbackDto {
-  body: string;
+export interface CaseStatusResponse {
+  caseId?: string;
+  externalCaseId?: string;
+  caseType?: string;
+  status?: string;
+  externalStatus?: string;
+  firstSubmitted?: string;
+  lastStatusChange?: string;
+  system?: string;
+  namespace?: string;
+  errandNumber?: string;
+  propertyDesignations?: string[];
 }
 
-export interface CreateReadNotificationsDto {
-  caseId: string;
+export interface AttachmentResponse {
+  attachmentId: string;
+  name: string;
+  contentType?: string;
 }
 
-export interface RepresentsDto {
-  organizationNumber?: string;
-  personNumber?: string;
-  mode?: "PRIVATE" | "BUSINESS" | 0 | 1;
+export interface FrontendMessageResponse {
+  conversationId: string;
+  messageId: string;
+  direction: "INBOUND" | "OUTBOUND";
+  message: string;
+  sent: string;
+  sender: string;
+  attachments: AttachmentResponse[];
 }
 
-export interface ContactSettingChannel {
-  contactMethod: string;
-  destination: string;
-  disabled?: boolean;
-  alias: string;
+export interface CasesApiResponse {
+  data: CaseStatusResponse[];
+  message: string;
 }
 
-export interface Meta {
-  page?: number;
-  limit?: number;
-  count?: number;
-  totalRecords?: number;
-  totalPages?: number;
+export interface CaseMessagesApiResponse {
+  data: FrontendMessageResponse[];
+  message: string;
 }
 
-export interface ContactSetting {
-  id: string;
-  partyId: string;
-  contactChannels: ContactSettingChannel[];
-  created: string;
-  modified: string;
-  virtual: boolean;
-  alias: string;
-  municipalityId: string;
+export interface Citizen {
+  personId: string;
+  givenname: string;
+  lastname: string;
 }
 
-export interface UpdateContactSettingsDto {
-  id: string;
-  contactChannels: ContactSettingChannel[];
+export interface CitizenApiResponse {
+  data: Citizen;
+  message: string;
+}
+
+export interface CitizenLookupDto {
+  /**
+   * @minLength 12
+   * @maxLength 12
+   */
+  personnumber: string;
 }
 
 export interface ClientContactSettingNotifications {
@@ -79,46 +118,45 @@ export interface ClientContactSettingAddress {
 
 export interface ClientContactSetting {
   id?: string;
+  createdById?: string;
   name?: string;
   email?: string | null;
   phone?: string | null;
-  address?: ClientContactSettingAddress[] | null;
-  notifications?: ClientContactSettingNotifications[];
-  decicionsAndDocuments?: ClientContactSettingDecicionsAndDocuments[];
+  address?: ClientContactSettingAddress | null;
+  notifications?: ClientContactSettingNotifications;
+  decicionsAndDocuments?: ClientContactSettingDecicionsAndDocuments;
+  virtual?: boolean;
+  alias?: string | null;
+  municipalityId?: string | null;
   modified?: string;
 }
 
-export interface RepresentingPrivateEntity {
-  name: string;
-  personNumber?: string;
-  information?: Information;
+export interface ClientDelegate {
+  id?: string;
+  principalId?: string;
+  agentId?: string;
+  created?: string;
+  modified?: string;
+  filters?: Filter[];
 }
 
-export interface RepresentingBusinessEntity {
-  organizationName: string;
-  organizationNumber: string;
-  isAuthorizedSignatory?: boolean;
-  information: Information;
-  whitelisted?: boolean;
+export interface Filter {
+  id?: string;
+  alias?: string;
+  channel?: string;
+  created?: string;
+  modified?: string;
+  rules: Rule[];
 }
 
-export interface Information {
-  address: ClientContactSettingAddress;
+export interface Rule {
+  attributeName: string;
+  operator: "EQUALS" | "NOT_EQUALS";
+  attributeValue: string;
 }
 
-export interface RepresentingEntity {
-  BUSINESS?: RepresentingBusinessEntity;
-  PRIVATE?: RepresentingPrivateEntity;
-  mode: "PRIVATE" | "BUSINESS" | 0 | 1;
-}
-
-export interface ClientRepresentingApiResponse {
-  data: RepresentingEntity;
-  message: string;
-}
-
-export interface PatchUserSettingsDto {
-  feedbackLifespan: "untilRemoved" | "oneMonth" | "twoWeeks";
+export interface FeedbackDto {
+  body: string;
 }
 
 export interface Grantor {
@@ -211,6 +249,14 @@ export interface MandatePopulated {
   whitelisted?: boolean;
 }
 
+export interface Meta {
+  page?: number;
+  limit?: number;
+  count?: number;
+  totalRecords?: number;
+  totalPages?: number;
+}
+
 export interface MandatesApiResponse {
   data: Mandate[];
   message: string;
@@ -261,6 +307,68 @@ export interface MandatePaginationDto {
 
 export interface CreateMandateDto {
   transactionId: string;
+}
+
+export interface CreateReadNotificationsDto {
+  caseId: string;
+}
+
+export interface RepresentsDto {
+  organizationNumber?: string;
+  personNumber?: string;
+  mode?: "PRIVATE" | "BUSINESS" | 0 | 1;
+}
+
+export interface ContactSettingChannel {
+  contactMethod: string;
+  destination: string;
+  disabled?: boolean;
+  alias: string;
+}
+
+export interface ContactSetting {
+  id: string;
+  partyId: string;
+  contactChannels: ContactSettingChannel[];
+  created: string;
+  modified: string;
+  virtual: boolean;
+  alias: string;
+  municipalityId: string;
+}
+
+export interface UpdateContactSettingsDto {
+  id: string;
+  contactChannels: ContactSettingChannel[];
+}
+
+export interface RepresentingPrivateEntity {
+  name: string;
+  personNumber?: string;
+  information?: Information;
+}
+
+export interface RepresentingBusinessEntity {
+  organizationName: string;
+  organizationNumber: string;
+  isAuthorizedSignatory?: boolean;
+  information: Information;
+  whitelisted?: boolean;
+}
+
+export interface Information {
+  address: ClientContactSettingAddress;
+}
+
+export interface RepresentingEntity {
+  BUSINESS?: RepresentingBusinessEntity;
+  PRIVATE?: RepresentingPrivateEntity;
+  mode: "PRIVATE" | "BUSINESS" | 0 | 1;
+}
+
+export interface ClientRepresentingApiResponse {
+  data: RepresentingEntity;
+  message: string;
 }
 
 export interface SignDto {
@@ -326,21 +434,6 @@ export interface SignCollectApiResponse {
   message: string;
 }
 
-export interface Citizen {
-  personId: string;
-  givenname: string;
-  lastname: string;
-}
-
-export interface CitizenApiResponse {
-  data: Citizen;
-  message: string;
-}
-
-export interface CitizenLookupDto {
-  /**
-   * @minLength 12
-   * @maxLength 12
-   */
-  personnumber: string;
+export interface PatchUserSettingsDto {
+  feedbackLifespan: "untilRemoved" | "oneMonth" | "twoWeeks";
 }

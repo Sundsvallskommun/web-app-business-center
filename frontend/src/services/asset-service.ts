@@ -1,4 +1,4 @@
-import { Asset, type Status } from '@data-contracts/partyassets/data-contracts';
+import { Asset } from '@data-contracts/backend/data-contracts';
 import dayjs from 'dayjs';
 
 const PARKING_PERMIT_EXPIRY_WARNING_MONTHS = 3;
@@ -15,7 +15,7 @@ const ASSET_STATUS_PROPS: Record<string, { color: string; tKey: string }> = {
   TEMPORARY: { color: 'warning', tKey: 'decisions:asset.status.temporary' },
 };
 
-export const getAssetStatusProps = (status: Status | undefined): { color: string; tKey: string } => {
+export const getAssetStatusProps = (status: Asset['status']): { color: string; tKey: string } => {
   return (status && ASSET_STATUS_PROPS[status]) || { color: 'neutral', tKey: 'decisions:asset.status.unknown' };
 };
 

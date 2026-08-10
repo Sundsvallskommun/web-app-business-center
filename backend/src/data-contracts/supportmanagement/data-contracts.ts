@@ -12,23 +12,23 @@
 
 /** Type of event */
 export enum EventType {
-  CREATE = "CREATE",
-  UPDATE = "UPDATE",
-  DELETE = "DELETE",
-  UNKNOWN = "UNKNOWN",
+  CREATE = 'CREATE',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+  UNKNOWN = 'UNKNOWN',
 }
 
 /** ConversationType model */
 export enum ConversationType {
-  INTERNAL = "INTERNAL",
-  EXTERNAL = "EXTERNAL",
+  INTERNAL = 'INTERNAL',
+  EXTERNAL = 'EXTERNAL',
 }
 
 /** Priority model */
 export enum Priority {
-  LOW = "LOW",
-  MEDIUM = "MEDIUM",
-  HIGH = "HIGH",
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
 }
 
 export interface Problem {
@@ -1616,34 +1616,34 @@ export enum SubscriptionTargetTypeEnum {
 }
 
 export enum JsonNodeNodeTypeEnum {
-  ARRAY = "ARRAY",
-  BINARY = "BINARY",
-  BOOLEAN = "BOOLEAN",
-  MISSING = "MISSING",
-  NULL = "NULL",
-  NUMBER = "NUMBER",
-  OBJECT = "OBJECT",
-  POJO = "POJO",
-  STRING = "STRING",
+  ARRAY = 'ARRAY',
+  BINARY = 'BINARY',
+  BOOLEAN = 'BOOLEAN',
+  MISSING = 'MISSING',
+  NULL = 'NULL',
+  NUMBER = 'NUMBER',
+  OBJECT = 'OBJECT',
+  POJO = 'POJO',
+  STRING = 'STRING',
 }
 
 /** If the communication is inbound or outbound from the perspective of case-data/e-service. */
 export enum CommunicationDirectionEnum {
-  INBOUND = "INBOUND",
-  OUTBOUND = "OUTBOUND",
+  INBOUND = 'INBOUND',
+  OUTBOUND = 'OUTBOUND',
 }
 
 /** The communication was delivered by */
 export enum CommunicationCommunicationTypeEnum {
-  SMS = "SMS",
-  EMAIL = "EMAIL",
-  WEB_MESSAGE = "WEB_MESSAGE",
+  SMS = 'SMS',
+  EMAIL = 'EMAIL',
+  WEB_MESSAGE = 'WEB_MESSAGE',
 }
 
 /** Type of message (user or system created) */
 export enum MessageTypeEnum {
-  USER_CREATED = "USER_CREATED",
-  SYSTEM_CREATED = "SYSTEM_CREATED",
+  USER_CREATED = 'USER_CREATED',
+  SYSTEM_CREATED = 'SYSTEM_CREATED',
 }
 
 /** The channel the attachment was received via */

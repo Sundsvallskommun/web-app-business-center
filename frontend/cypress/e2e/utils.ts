@@ -161,7 +161,7 @@ export const testHandledInvoices = (representingMode: RepresentingMode = represe
     .find('tbody')
     .within(() => {
       handledInvoices.forEach((key) => {
-        cy.contains(statusMapInvoices[key].label).should('exist');
+        cy.contains(statusMapInvoices[key as keyof typeof statusMapInvoices].label).should('exist');
         cy.contains(RepresentingMode[representingMode]).should('exist');
       });
     });
@@ -175,7 +175,7 @@ export const testNotHandledInvoices = (representingMode: RepresentingMode = repr
     .find('tbody')
     .within(() => {
       notHandledInvoices.forEach((key) => {
-        cy.contains(statusMapInvoices[key].label).should('exist');
+        cy.contains(statusMapInvoices[key as keyof typeof statusMapInvoices].label).should('exist');
         cy.contains(RepresentingMode[representingMode]).should('exist');
       });
     });

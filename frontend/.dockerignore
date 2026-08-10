@@ -5,3 +5,7 @@ npm-debug.log
 README.md
 .next
 .git
+
+# Local env files — the build uses .env-cicd (copied to .env.local) instead
+.env
+.env*.local

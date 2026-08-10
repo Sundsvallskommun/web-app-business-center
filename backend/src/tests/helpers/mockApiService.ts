@@ -1,15 +1,13 @@
-import type ApiService from '@/services/api.service';
+import { vi, type Mock } from 'vitest';
 
 type ApiMethod = 'get' | 'post' | 'patch' | 'put' | 'delete';
 
-export type MockApiService = { [K in ApiMethod]: jest.Mock };
+export type MockApiService = { [K in ApiMethod]: Mock };
 
 export const createMockApiService = (): MockApiService => ({
-  get: jest.fn(),
-  post: jest.fn(),
-  patch: jest.fn(),
-  put: jest.fn(),
-  delete: jest.fn(),
+  get: vi.fn(),
+  post: vi.fn(),
+  patch: vi.fn(),
+  put: vi.fn(),
+  delete: vi.fn(),
 });
-
-export type ApiSurface = Pick<ApiService, ApiMethod>;

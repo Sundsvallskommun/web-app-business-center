@@ -1,6 +1,11 @@
 # compiled output
 .vscode
 /node_modules
+/dist
+
+# local secrets / env (provided at runtime via container env)
+.env
+.env.*.local
 
 # code formatter
 .eslintrc

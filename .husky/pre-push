@@ -1,0 +1,6 @@
+set -e
+
+# Full quality gate before pushing: types, lint (warnings = errors), dead code
+yarn type-check
+yarn lint
+yarn knip

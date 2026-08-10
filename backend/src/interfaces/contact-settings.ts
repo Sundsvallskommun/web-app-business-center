@@ -4,61 +4,39 @@ import {
   ContactMethod as IContactMethod,
 } from '@/data-contracts/contactsettings/data-contracts';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class ContactSettingChannel implements IContactChannel {
   @IsString()
-  contactMethod: IContactMethod;
+  contactMethod!: IContactMethod;
   @IsString()
-  destination: string;
+  destination!: string;
   @IsOptional()
   @IsBoolean()
-  disabled: boolean;
+  disabled!: boolean;
   @IsString()
-  alias: string;
-}
-
-export class Meta {
-  @IsNumber()
-  page: number;
-  @IsNumber()
-  limit: number;
-  @IsNumber()
-  count: number;
-  @IsNumber()
-  totalRecords: number;
-  @IsNumber()
-  totalPages: number;
+  alias!: string;
 }
 
 export class ContactSetting implements IContactSetting {
   @IsString()
-  id: string;
+  id!: string;
   @IsString()
-  partyId: string;
+  partyId!: string;
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ContactSettingChannel)
-  contactChannels: ContactSettingChannel[];
+  contactChannels!: ContactSettingChannel[];
   @IsString()
-  created: string;
+  created!: string;
   @IsString()
-  modified: string;
+  modified!: string;
   @IsBoolean()
-  virtual: boolean;
+  virtual!: boolean;
   @IsString()
-  alias: string;
+  alias!: string;
   @IsString()
-  municipalityId: string;
-}
-
-export class UpdateContactSettingsDto {
-  @IsString()
-  id: string;
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ContactSettingChannel)
-  contactChannels: ContactSettingChannel[];
+  municipalityId!: string;
 }
 
 export interface UpdateContactSettings {

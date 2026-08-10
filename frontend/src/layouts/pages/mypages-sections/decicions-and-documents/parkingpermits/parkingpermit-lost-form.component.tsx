@@ -104,9 +104,13 @@ export const ParkingPermitLostForm = ({
       <p className="text-base">{t('decisions:parkingPermit.lost.form.attachDescription')}</p>
 
       <FormControl className="w-full desktop:w-3/4">
-        <FormLabel htmlFor="policeReportNumber">{t('decisions:parkingPermit.lost.form.policeReportNumberLabel')}</FormLabel>
+        <FormLabel htmlFor="policeReportNumber">
+          {t('decisions:parkingPermit.lost.form.policeReportNumberLabel')}
+        </FormLabel>
         <Input
-          {...form.register('policeReportNumber', { required: t('decisions:parkingPermit.lost.form.policeReportNumberRequired') })}
+          {...form.register('policeReportNumber', {
+            required: t('decisions:parkingPermit.lost.form.policeReportNumberRequired'),
+          })}
           placeholder=""
           data-cy="police-report-number-input"
         />

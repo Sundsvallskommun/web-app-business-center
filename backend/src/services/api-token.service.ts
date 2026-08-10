@@ -5,7 +5,7 @@ import { HttpException } from '@/exceptions/HttpException';
 import { logger } from '@utils/logger';
 import { API_BASE_URL } from '@config';
 
-export interface Token {
+interface Token {
   access_token: string;
   expires_in: number;
 }

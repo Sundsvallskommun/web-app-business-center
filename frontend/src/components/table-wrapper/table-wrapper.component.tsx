@@ -1,8 +1,8 @@
 import { cx } from '@sk-web-gui/react';
 
 export const TableWrapper: React.FC<{
-  header?;
-  children;
+  header?: React.ReactNode;
+  children: React.ReactNode;
 }> = ({ header = '', children }) => {
   return (
     <div className="table-wrapper">

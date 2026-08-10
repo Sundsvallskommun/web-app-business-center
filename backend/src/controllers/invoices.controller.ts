@@ -1,31 +1,35 @@
-import { MUNICIPALITY_ID, MUNICIPALITY_ORG_NR } from '@/config';
-import { getApiBase } from '@/config/api-config';
 import { PdfInvoice } from '@/data-contracts/invoices/data-contracts';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
-import ApiService from '@/services/api.service';
-import { fetchInvoices } from '@/services/invoices.service';
+import { fetchInvoicePdf, fetchInvoices } from '@/services/invoices.service';
 import authMiddleware from '@middlewares/auth.middleware';
 import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI } from 'routing-controllers-openapi';
 import { ApiResponse } from '../interfaces/service';
-import { getRepresentingPartyId } from '../utils/getRepresentingPartyId';
+import { getRepresentedPartyId } from '../utils/getRepresentedPartyId';
 
 @Controller()
 export class InvoicesController {
-  private apiService = new ApiService();
-  private apiBase = getApiBase('invoices');
+  /**
+   * Resolve the party id of the currently represented entity from the session.
+   * Every invoice request is scoped to this party so a user can only ever reach
+   * invoices belonging to whoever they are currently representing.
+   */
+  private resolveRepresentedPartyId(req: RequestWithUser): string {
+    const partyId = getRepresentedPartyId(req.session?.representing, req.user);
+
+    if (!partyId) {
+      throw new HttpException(400, 'Bad Request');
+    }
+
+    return partyId;
+  }
 
   @Get('/invoices')
   @OpenAPI({ summary: 'Return a list of invoices for current represented organization' })
   @UseBefore(authMiddleware)
   async getInvoices(@Req() req: RequestWithUser) {
-    const { representing } = req?.session;
-    const partyId = getRepresentingPartyId(representing);
-
-    if (!partyId) {
-      throw new HttpException(400, 'Bad Request');
-    }
+    const partyId = this.resolveRepresentedPartyId(req);
 
     const data = await fetchInvoices(partyId, req.user);
     return { data, message: 'success' };
@@ -39,9 +43,11 @@ export class InvoicesController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    const url = `${this.apiBase}/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION/${MUNICIPALITY_ORG_NR}/${id}/pdf`;
-    const res = await this.apiService.get<PdfInvoice>({ url }, req.user);
+    const partyId = this.resolveRepresentedPartyId(req);
 
-    return { data: res.data, message: 'success' };
+    // Verify the invoice belongs to the represented party before returning its PDF.
+    const data = await fetchInvoicePdf(partyId, id, req.user);
+
+    return { data, message: 'success' };
   }
 }

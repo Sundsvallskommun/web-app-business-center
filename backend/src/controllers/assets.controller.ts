@@ -29,10 +29,11 @@ import {
 import { getCitizen } from '@/services/citizen.service';
 import { buildMyPagesErrand } from '@/utils/casedata-errand-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
-import { getRepresentingPartyId } from '@/utils/getRepresentingPartyId';
+import { getRepresentedPartyId } from '@/utils/getRepresentedPartyId';
 import { apiURL } from '@/utils/util';
+import { AssetsApiResponse } from '@/responses/asset.response';
 import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
-import { OpenAPI } from 'routing-controllers-openapi';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 interface AttachmentOptions {
   category: AttachmentCategory;
@@ -51,7 +52,6 @@ export class AssetsController {
   private apiService = new ApiService();
   private apiBase = getApiBase('partyassets');
   private casedataApiBase = getApiBase('case-data');
-  private citizenApiBase = getApiBase('citizen');
 
   private async uploadAttachments(errandId: number, files: Express.Multer.File[], options: AttachmentOptions, user: User): Promise<void> {
     const baseURL = apiURL(this.casedataApiBase);
@@ -129,7 +129,7 @@ export class AssetsController {
     const url = `${MUNICIPALITY_ID}/${CaseDataNamespace.SBK_PARKING_PERMIT}/errands`;
     const errandRes = await this.apiService.post<Errand, Errand>({ url, baseURL, data }, req.user);
 
-    if (options.files?.length > 0 && errandRes.data?.id && options.attachmentOptions) {
+    if (options.files && options.files.length > 0 && errandRes.data?.id && options.attachmentOptions) {
       await this.uploadAttachments(errandRes.data.id, options.files, options.attachmentOptions, req.user);
     }
 
@@ -138,9 +138,15 @@ export class AssetsController {
 
   @Get('/assets')
   @OpenAPI({ summary: 'Return a list of assets for current representing entity' })
+  @ResponseSchema(AssetsApiResponse)
   @UseBefore(authMiddleware)
   async getAssets(@Req() req: RequestWithUser): Promise<ApiResponse<AssetWithService[]>> {
     const { representing } = req.session ?? {};
+
+    const partyId = getRepresentedPartyId(representing, req.user);
+    if (!partyId) {
+      throw new HttpException(400, 'Bad Request');
+    }
 
     const controller = new AbortController();
     const { signal } = controller;
@@ -150,9 +156,7 @@ export class AssetsController {
     });
 
     try {
-      const params = {
-        partyId: getRepresentingPartyId(representing),
-      };
+      const params = { partyId };
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/assets`;
       const res = await this.apiService.get<Asset[]>({ url, signal, params }, req.user);
 
@@ -165,7 +169,7 @@ export class AssetsController {
 
       return { data, message: 'success' };
     } catch (error) {
-      if (error.status === 404) {
+      if (error instanceof HttpException && error.status === 404) {
         return { data: [], message: '404 from api, Assumed empty array' };
       } else {
         throw new HttpException(500, 'Something went wrong');
@@ -179,6 +183,11 @@ export class AssetsController {
   async getAsset(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ApiResponse<AssetWithService>> {
     const { representing } = req.session ?? {};
 
+    const partyId = getRepresentedPartyId(representing, req.user);
+    if (!partyId) {
+      throw new HttpException(400, 'Bad Request');
+    }
+
     const controller = new AbortController();
     const { signal } = controller;
     req.on('aborted', () => {
@@ -191,9 +200,7 @@ export class AssetsController {
     }
 
     try {
-      const params = {
-        partyId: getRepresentingPartyId(representing),
-      };
+      const params = { partyId };
       const url = `${this.apiBase}/${MUNICIPALITY_ID}/assets`;
       const res = await this.apiService.get<Asset[]>({ url, signal, params }, req.user);
 
@@ -212,7 +219,7 @@ export class AssetsController {
       return { data: { ...toClientAsset(asset), service }, message: 'success' };
     } catch (error) {
       console.error(error);
-      if (error.status === 404) {
+      if (error instanceof HttpException && error.status === 404) {
         throw new HttpException(404, 'Asset not found');
       }
       throw new HttpException(500, 'Something went wrong');

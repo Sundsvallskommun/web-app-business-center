@@ -24,7 +24,7 @@ import {
   SWAGGER_ENABLED,
 } from '@config';
 import errorMiddleware from '@middlewares/error.middleware';
-import { Strategy, VerifiedCallback } from '@node-saml/passport-saml';
+import { Profile as SamlProfile, Strategy, VerifiedCallback } from '@node-saml/passport-saml';
 import { logger, stream } from '@utils/logger';
 import prisma from '@utils/prisma';
 import bodyParser from 'body-parser';
@@ -64,7 +64,7 @@ const apiService = new ApiService();
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
-passport.deserializeUser(function (user, done) {
+passport.deserializeUser(function (user: Express.User, done) {
   done(null, user);
 });
 
@@ -72,31 +72,32 @@ const samlStrategy = new Strategy(
   {
     disableRequestedAuthnContext: true,
     identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-    callbackUrl: SAML_CALLBACK_URL,
-    entryPoint: SAML_ENTRY_SSO,
-    privateKey: SAML_PRIVATE_KEY,
-    idpCert: SAML_IDP_PUBLIC_CERT,
-    issuer: SAML_ISSUER,
+    callbackUrl: SAML_CALLBACK_URL ?? '',
+    entryPoint: SAML_ENTRY_SSO ?? '',
+    privateKey: SAML_PRIVATE_KEY ?? '',
+    idpCert: SAML_IDP_PUBLIC_CERT ?? '',
+    issuer: SAML_ISSUER ?? '',
     signatureAlgorithm: 'sha256',
     digestAlgorithm: 'sha256',
     wantAssertionsSigned: false,
     wantAuthnResponseSigned: false,
     audience: false,
-    logoutUrl: SAML_LOGOUT_URL,
+    logoutUrl: SAML_LOGOUT_URL ?? '',
     logoutCallbackUrl: SAML_LOGOUT_CALLBACK_URL,
     acceptedClockSkewMs: -1,
   },
-  async function (profile: Profile, done: VerifiedCallback) {
-    if (!profile) {
+  async function (samlProfile: SamlProfile | null, done: VerifiedCallback) {
+    if (!samlProfile) {
       return done({
         name: 'SAML_MISSING_PROFILE',
         message: 'SAML_MISSING_PROFILE',
-      });
+      } as Error);
     }
+    const profile = samlProfile as Profile;
     const { firstname: givenName, Surname: surname, citizenIdentifier } = profile;
 
     if (!givenName || !surname || !citizenIdentifier) {
-      return done(null, null, {
+      return done(null, undefined, {
         name: 'SAML_MISSING_ATTRIBUTES',
         message: 'SAML_MISSING_ATTRIBUTES',
       });
@@ -119,7 +120,7 @@ const samlStrategy = new Strategy(
         return done({
           name: 'SAML_CITIZEN_FAILED',
           message: 'Failed to fetch user from Citizen API',
-        });
+        } as Error);
       }
 
       const findUser: User = {
@@ -130,8 +131,8 @@ const samlStrategy = new Strategy(
         surname,
         username: 'unknown', // Username is not provided in the SAML profile, set a default value
         nameID: profile.nameID,
-        nameIDFormat: profile.nameIDFormat,
-        sessionIndex: profile.sessionIndex,
+        nameIDFormat: profile.nameIDFormat ?? '',
+        sessionIndex: profile.sessionIndex ?? '',
       };
 
       const userSettings = await prisma.userSettings.findFirst({ where: { userId: findUser.partyId } });
@@ -150,10 +151,10 @@ const samlStrategy = new Strategy(
       if (err instanceof HttpException && err?.status === 404) {
         // TODO: Handle missing person form Citizen?
       }
-      done(err);
+      done(err as Error);
     }
   },
-  async function (profile: Profile, done: VerifiedCallback) {
+  async function (_profile: SamlProfile | null, done: VerifiedCallback) {
     return done(null, {});
   },
 );
@@ -164,7 +165,7 @@ class App {
   public port: string | number;
   public swaggerEnabled: boolean;
 
-  constructor(Controllers) {
+  constructor(Controllers: Function[]) {
     this.app = express();
     this.env = NODE_ENV || 'development';
     this.port = PORT || 3000;
@@ -194,7 +195,7 @@ class App {
   }
 
   private initializeMiddlewares() {
-    this.app.use(morgan(LOG_FORMAT, { stream }));
+    this.app.use(morgan(LOG_FORMAT ?? '', { stream }));
     this.app.use(hpp());
     this.app.use(helmet());
     this.app.use(compression());
@@ -210,7 +211,7 @@ class App {
 
     this.app.use(
       session({
-        secret: SECRET_KEY,
+        secret: SECRET_KEY ?? '',
         resave: false,
         saveUninitialized: false,
         store: sessionStore,
@@ -229,16 +230,21 @@ class App {
     this.app.get(
       `${BASE_URL_PREFIX}/saml/login`,
       samlLimiter,
-      (req, res, next) => {
+      (req, _res, next) => {
         if (req.session.returnTo) {
           req.query.RelayState = req.session.returnTo;
         } else if (req.query.successRedirect) {
           req.query.RelayState = req.query.successRedirect;
         }
-        if (req.query.representingMode) {
-          req.session.representing = {
-            mode: parseInt(req.query.representingMode as string) as RepresentingMode,
-          };
+        // Carry the representing mode through the SAML round-trip via RelayState (the IdP
+        // echoes it back in the callback). The pre-auth session cannot be relied on: its
+        // cookie is not sent on the cross-site IdP callback POST (sameSite=lax), and
+        // passport's req.login regenerates the session. representing is therefore set in
+        // the callback, after req.login, on the authenticated session.
+        if (req.query.representingMode && typeof req.query.RelayState === 'string' && isValidUrl(req.query.RelayState)) {
+          const relay = new URL(req.query.RelayState);
+          relay.searchParams.set('representingMode', req.query.representingMode as string);
+          req.query.RelayState = relay.toString();
         }
         next();
       },
@@ -249,16 +255,16 @@ class App {
       },
     );
 
-    this.app.get(`${BASE_URL_PREFIX}/saml/metadata`, (req, res) => {
+    this.app.get(`${BASE_URL_PREFIX}/saml/metadata`, (_req, res) => {
       res.type('application/xml');
-      const metadata = samlStrategy.generateServiceProviderMetadata(SAML_PUBLIC_KEY, SAML_PUBLIC_KEY);
+      const metadata = samlStrategy.generateServiceProviderMetadata(SAML_PUBLIC_KEY ?? null, SAML_PUBLIC_KEY ?? null);
       res.status(200).send(metadata);
     });
 
     this.app.get(
       `${BASE_URL_PREFIX}/saml/logout`,
       samlLimiter,
-      (req, res, next) => {
+      (req, _res, next) => {
         logger.info(
           `Logout request received: ${JSON.stringify(
             {
@@ -284,21 +290,21 @@ class App {
 
         if (!req.user || !req.user.nameID || !req.user.nameIDFormat) {
           logger.warn('User missing required SAML fields for logout', { user: req.user });
-          res.redirect(SAML_LOGOUT_CALLBACK_URL);
+          res.redirect(SAML_LOGOUT_CALLBACK_URL ?? '');
           return;
         }
 
         samlStrategy.logout(req as any, (err, url) => {
           if (err || !url) {
             logger.error('Failed to generate SAML logout URL', { err, user: req.user });
-            res.redirect(SAML_LOGOUT_CALLBACK_URL);
+            res.redirect(SAML_LOGOUT_CALLBACK_URL ?? '');
             return;
           }
 
           try {
             logger.info(`Parsing url: ${url}`);
             const parsed = new URL(url);
-            parsed.searchParams.set('RelayState', SAML_LOGOUT_CALLBACK_URL);
+            parsed.searchParams.set('RelayState', SAML_LOGOUT_CALLBACK_URL ?? '');
 
             const redirectUrl = parsed.toString();
             logger.info(`User ${req.user ? (req.user as User).partyId : 'unknown'} logged out`);
@@ -317,8 +323,8 @@ class App {
       logger.info('SAML logout callback received', { query: req.query, body: req.body, user: req.user });
       req.logout(err => {
         if (err) return res.status(500).send(err);
-        let successRedirect: URL = new URL(SAML_LOGOUT_REDIRECT);
-        let failureRedirect: URL;
+        let successRedirect: URL = new URL(SAML_LOGOUT_REDIRECT ?? '');
+        let failureRedirect: URL | undefined;
         const urls = req?.body?.RelayState?.split(',') ?? [];
 
         if (urls.length !== 0) {
@@ -351,7 +357,7 @@ class App {
     });
 
     this.app.post(`${BASE_URL_PREFIX}/saml/login/callback`, samlLimiter, bodyParser.urlencoded({ extended: false }), (req, res, next) => {
-      let successRedirect: URL, failureRedirect: URL;
+      let successRedirect: URL | undefined, failureRedirect: URL | undefined;
 
       const urls = req?.body?.RelayState.split(',');
 
@@ -364,21 +370,27 @@ class App {
         failureRedirect = successRedirect;
       }
 
-      passport.authenticate('saml', async (err, user) => {
+      if (!failureRedirect) {
+        res.status(400).send('Missing or invalid RelayState');
+        return;
+      }
+      const failRedirect = failureRedirect;
+
+      passport.authenticate('saml', async (err: Error | null, user: Express.User | false) => {
         if (err) {
-          const queries = new URLSearchParams(failureRedirect.searchParams);
+          const queries = new URLSearchParams(failRedirect.searchParams);
           if (err?.name) {
             queries.append('failMessage', err.name);
           } else {
             queries.append('failMessage', 'SAML_UNKNOWN_ERROR');
           }
-          failureRedirect.search = queries.toString();
-          res.redirect(failureRedirect.toString());
+          failRedirect.search = queries.toString();
+          res.redirect(failRedirect.toString());
         } else if (!user) {
-          const failMessage = new URLSearchParams(failureRedirect.searchParams);
+          const failMessage = new URLSearchParams(failRedirect.searchParams);
           failMessage.append('failMessage', 'NO_USER');
-          failureRedirect.search = failMessage.toString();
-          res.redirect(failureRedirect.toString());
+          failRedirect.search = failMessage.toString();
+          res.redirect(failRedirect.toString());
         } else {
           const loginError = await new Promise<Error | null>(resolve => {
             req.login(user, loginErr => {
@@ -387,26 +399,45 @@ class App {
           });
 
           if (loginError) {
-            const failMessage = new URLSearchParams(failureRedirect.searchParams);
+            const failMessage = new URLSearchParams(failRedirect.searchParams);
             failMessage.append('failMessage', 'SAML_UNKNOWN_ERROR');
-            failureRedirect.search = failMessage.toString();
-            return res.redirect(failureRedirect.toString());
+            failRedirect.search = failMessage.toString();
+            return res.redirect(failRedirect.toString());
           }
 
           try {
-            const engagements = await getBusinessEngagements(user);
+            const engagements = await getBusinessEngagements(user as unknown as User);
             req.session.representingBusinessChoices = mapEngagements(engagements);
           } catch (err) {
             logger.error('Error fetching business engagements:', err);
           }
 
-          return res.redirect(successRedirect?.toString());
+          // Set representing from the mode carried through RelayState (see /saml/login).
+          // This runs after req.login so it lands on the authenticated, persisted session.
+          const representingModeParam = successRedirect?.searchParams.get('representingMode');
+          if (representingModeParam !== null && representingModeParam !== undefined) {
+            req.session.representing = {
+              mode: parseInt(representingModeParam) as RepresentingMode,
+            };
+            successRedirect?.searchParams.delete('representingMode');
+          }
+
+          await new Promise<void>(resolve => {
+            req.session.save(saveErr => {
+              if (saveErr) {
+                logger.error('Error saving session after login:', saveErr);
+              }
+              resolve();
+            });
+          });
+
+          return res.redirect(successRedirect?.toString() ?? '');
         }
       })(req, res, next);
     });
   }
 
-  private initializeRoutes(controllers) {
+  private initializeRoutes(controllers: Function[]) {
     useExpressServer(this.app, {
       routePrefix: BASE_URL_PREFIX,
       cors: {
@@ -419,7 +450,7 @@ class App {
     });
   }
 
-  private initializeSwagger(controllers) {
+  private initializeSwagger(controllers: Function[]) {
     const schemas = validationMetadatasToSchemas({
       classTransformerMetadataStorage: defaultMetadataStorage,
       refPointerPrefix: '#/components/schemas/',

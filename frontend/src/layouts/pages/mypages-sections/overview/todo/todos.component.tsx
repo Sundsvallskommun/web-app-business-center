@@ -1,7 +1,7 @@
 'use client';
 
-import { Asset } from '@data-contracts/partyassets/data-contracts';
-import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { Asset } from '@data-contracts/backend/data-contracts';
+import { CaseStatusResponse } from '@data-contracts/backend/data-contracts';
 import { CasesData, ICaseStatusResponse } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { isParkingPermit, soonExpiring } from '@services/asset-service';
@@ -13,14 +13,14 @@ import { TodoCase } from './todo-case.component';
 import { TodoParkingPermitExpiry } from './todo-parking-permit-expiry.component';
 import styles from './todos.module.scss';
 
-export enum TodoType {
+enum TodoType {
   CONTRACT,
   MESSAGE,
   CASE,
   PARKING_PERMIT_EXPIRY,
 }
 
-export function dataToTodo<TTodoType = TodoType>(
+function dataToTodo<TTodoType = TodoType>(
   data: TodoItem<TTodoType>['data'],
   type: TodoItem<TTodoType>['type']
 ): TodoItem<TTodoType> {
@@ -30,7 +30,7 @@ export function dataToTodo<TTodoType = TodoType>(
   };
 }
 
-export interface TodoItem<TTodoType = TodoType> {
+interface TodoItem<TTodoType = TodoType> {
   type: TTodoType;
   data: TTodoType extends TodoType.CASE
     ? ICaseStatusResponse
@@ -42,7 +42,7 @@ export interface TodoItem<TTodoType = TodoType> {
 export const Todos = () => {
   const { t } = useTranslation('overview');
 
-  const { data: cases, isFetching: casesIsFetching } = useApi<CaseStatusResponse, Error, CasesData>({
+  const { data: cases, isFetching: casesIsFetching } = useApi<CaseStatusResponse[], Error, CasesData>({
     url: '/cases',
     method: 'get',
     dataHandler: casesHandler,

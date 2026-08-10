@@ -1,6 +1,6 @@
 // import { AlertBanner } from '@sk-web-gui/react';
 
-export const AlertBannerWrapper: React.FC = () => {
+const AlertBannerWrapper: React.FC = () => {
   return <></>;
   //   return (
   //     <AlertBanner

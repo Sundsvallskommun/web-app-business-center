@@ -8,7 +8,9 @@
     ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -27,7 +29,7 @@
         "src/components/*"
       ],
       "@data-contracts/*": [
-        "../backend/src/data-contracts/*"
+        "src/data-contracts/*"
       ],
       "@interfaces/*": [
         "src/interfaces/*"
@@ -61,8 +63,7 @@
       {
         "name": "next"
       }
-    ],
-    "strictNullChecks": true
+    ]
   },
   "include": [
     "next-env.d.ts",
@@ -70,7 +71,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "../backend/src/data-contracts/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [

@@ -1,6 +1,6 @@
 'use client';
 
-import { CaseStatusResponse } from '@data-contracts/casestatus/data-contracts';
+import { CaseStatusResponse } from '@data-contracts/backend/data-contracts';
 import { CasesData } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { emptyCaseList, casesHandler, getOngoing, getClosed } from '@services/case-service';
@@ -12,7 +12,7 @@ import FullscreenMainSpinner from '@components/spinner/fullscreen-main-spinner.c
 
 function Page() {
   const { t } = useTranslation('cases');
-  const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseStatusResponse, Error, CasesData>({
+  const { data: cases = emptyCaseList, isFetching: isFetchingCases } = useApi<CaseStatusResponse[], Error, CasesData>({
     url: '/cases',
     method: 'get',
     dataHandler: casesHandler,

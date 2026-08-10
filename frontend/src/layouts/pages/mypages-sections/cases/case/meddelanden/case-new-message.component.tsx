@@ -1,3 +1,4 @@
+import { applyApiErrorToForm } from '@services/form-api-error';
 import { useApi } from '@services/api-service';
 import {
   Button,
@@ -99,13 +100,14 @@ export default function CaseNewMessage() {
     }
 
     try {
-      const res = await postMessageMutation.mutateAsync(formData);
-      if (!res.error) context.reset();
+      await postMessageMutation.mutateAsync(formData);
+      context.reset();
     } catch (error) {
       console.error('Error sending message:', error);
-      context.setError('root', {
-        type: 'manual',
-        message: 'Något gick fel när meddelandet skickades, försök igen senare',
+      applyApiErrorToForm<NewMessage>(error, context, {
+        fallbackMessage: 'Något gick fel när meddelandet skickades, försök igen senare',
+        inlineFields: ['files', 'message'],
+        onFormError: (message) => context.setError('root', { message, type: 'server' }),
       });
     }
   };
@@ -113,7 +115,8 @@ export default function CaseNewMessage() {
   const handleRemoveFile = (file: UploadFile) => {
     context.setValue(
       'files',
-      context.watch('files').filter((x) => x !== file)
+      context.watch('files').filter((x) => x !== file),
+      { shouldValidate: true }
     );
   };
 

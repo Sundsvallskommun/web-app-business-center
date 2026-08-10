@@ -1,9 +1,8 @@
+import { applyApiErrorToForm } from '@services/form-api-error';
 import { useApi } from '@services/api-service';
-import { ACCEPTED_UPLOAD_FILETYPES } from '@utils/accepted-file-types';
 import {
   Button,
   Checkbox,
-  FileUpload,
   FormControl,
   FormErrorMessage,
   FormHelperText,
@@ -19,8 +18,9 @@ import {
 import { toBase64 } from '@utils/toBase64';
 import { validateFileCount } from '@utils/upload-limits';
 import { ArrowRight } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useController, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { ParkingPermitFileUpload } from './parkingpermit-file-upload.component';
 
 const MAX_FILE_SIZE_MB = 50;
 
@@ -97,6 +97,11 @@ export const ParkingPermitRenewalForm = ({
     method: 'post',
     axiosParameters: { headers: { 'Content-Type': 'multipart/form-data' } },
   });
+  const { field: filesField, fieldState: filesFieldState } = useController({
+    control: form.control,
+    name: 'files',
+    rules: { validate: validateFileCount },
+  });
 
   const onSubmit = async (data: PermitRenewalFormModel) => {
     const confirmed = await confirm.showConfirmation(
@@ -153,20 +158,17 @@ export const ParkingPermitRenewalForm = ({
           status: 'success',
         });
         setFormState('success');
-      } catch {
-        toastMessage({
-          position: 'bottom',
-          closeable: false,
-          message: t('decisions:parkingPermit.renewal.form.errorMessage'),
-          status: 'error',
+      } catch (error) {
+        applyApiErrorToForm<PermitRenewalFormModel>(error, form, {
+          fallbackMessage: t('decisions:parkingPermit.renewal.form.errorMessage'),
+          inlineFields: ['expirationDate', 'files'],
+          onFormError: (message) => toastMessage({ position: 'bottom', closeable: false, message, status: 'error' }),
         });
       }
     }
   };
 
-  const files = form.watch('files');
-  // files is set programmatically (no registered input), so attach the rule here.
-  form.register('files', { validate: validateFileCount });
+  const files = filesField.value;
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-56">
@@ -520,45 +522,14 @@ export const ParkingPermitRenewalForm = ({
       <FormControl className="w-full">
         <FormLabel>{t('decisions:parkingPermit.renewal.form.attachMedicalCertificate')}</FormLabel>
         <FormHelperText className="mb-12">{t('decisions:parkingPermit.renewal.form.allowedFileTypes')}</FormHelperText>
-        {files && files.length > 0 ? (
-          <FileUpload.List name="files">
-            {files.map((file, i) => (
-              <FileUpload.ListItem
-                key={file.id}
-                index={i}
-                file={file}
-                categoryProps={{
-                  categories: {
-                    MEDICAL_CONFIRMATION: t('decisions:parkingPermit.renewal.form.medicalCertificateCategory'),
-                  },
-                }}
-                actionsProps={{
-                  showRemove: true,
-                  onRemove: () =>
-                    form.setValue(
-                      'files',
-                      form.watch('files').filter((f) => f !== file),
-                      { shouldValidate: true }
-                    ),
-                }}
-              />
-            ))}
-          </FileUpload.List>
-        ) : (
-          <FileUpload.Field
-            className="inline-block w-full"
-            accept={ACCEPTED_UPLOAD_FILETYPES}
-            variant="horizontal"
-            name="files"
-            maxFileSizeMB={MAX_FILE_SIZE_MB}
-            onChange={(e) => {
-              form.setValue('files', e.target.value, { shouldValidate: true });
-            }}
-          />
-        )}
-        {form.formState.errors.files && (
-          <FormErrorMessage className="text-error">{form.formState.errors.files.message}</FormErrorMessage>
-        )}
+        <ParkingPermitFileUpload
+          category="MEDICAL_CONFIRMATION"
+          categoryLabel={t('decisions:parkingPermit.renewal.form.medicalCertificateCategory')}
+          errorMessage={filesFieldState.error?.message}
+          files={files}
+          maxFileSizeMB={MAX_FILE_SIZE_MB}
+          onChange={filesField.onChange}
+        />
       </FormControl>
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mt-40">
         <Button size="lg" variant="secondary" onClick={() => setFormState('showInfo')}>

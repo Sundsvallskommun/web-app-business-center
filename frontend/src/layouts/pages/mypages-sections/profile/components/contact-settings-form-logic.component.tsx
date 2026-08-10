@@ -120,7 +120,7 @@ export default function ContactSettingsFormLogic({
     if (onSubmit) {
       onSubmit(values, context);
     } else {
-      const apiCall = isPatch() ? await patchMutation.mutateAsync : await postMutation.mutateAsync;
+      const apiCall = isPatch() ? patchMutation.mutateAsync : postMutation.mutateAsync;
       const data: Partial<ClientContactSetting> = _.merge(formData, {
         id: formData?.id,
         email: values.email,
@@ -135,14 +135,14 @@ export default function ContactSettingsFormLogic({
           snailmail: values.decicionsAndDocuments?.snailmail,
         },
       });
-      const res = await apiCall(data);
-      if (!res.error) {
+      try {
+        const res = await apiCall(data);
         reset(res);
         queryClient.invalidateQueries({
           queryKey: ['/contactsettings'],
         });
         if (onSubmitSuccess) onSubmitSuccess();
-      } else {
+      } catch {
         if (onSubmitFailed) onSubmitFailed();
       }
     }

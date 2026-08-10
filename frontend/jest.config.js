@@ -24,13 +24,16 @@ module.exports = {
     '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
 
     // Handle module aliases (this will be automatically configured for you soon)
-    '@components/(.*)$': '<rootDir>/components/$1',
-    '@interfaces/(.*)$': '<rootDir>/interfaces/$1',
-    '@utils/(.*)$': '<rootDir>/utils/$1',
-    '@pages/(.*)$': '<rootDir>/pages/$1',
+    '@app/(.*)$': '<rootDir>/src/app/$1',
+    '@components/(.*)$': '<rootDir>/src/components/$1',
+    '@contexts/(.*)$': '<rootDir>/src/contexts/$1',
+    '@data-contracts/(.*)$': '<rootDir>/src/data-contracts/$1',
+    '@interfaces/(.*)$': '<rootDir>/src/interfaces/$1',
+    '@layouts/(.*)$': '<rootDir>/src/layouts/$1',
+    '@pages/(.*)$': '<rootDir>/src/pages/$1',
     '@public/(.*)$': '<rootDir>/public/$1',
-    '@services/(.*)$': '<rootDir>/services/$1',
-    '@contexts/(.*)$': '<rootDir>/contexts/$1',
+    '@services/(.*)$': '<rootDir>/src/services/$1',
+    '@utils/(.*)$': '<rootDir>/src/utils/$1',
     '@jestRoot/(.*)$': '<rootDir>/.jest/$1',
   },
   testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
@@ -40,7 +43,7 @@ module.exports = {
     // https://jestjs.io/docs/configuration#transform-objectstring-pathtotransformer--pathtotransformer-object
     '^.+\\.(js|jsx|ts|tsx)$': [
       'babel-jest',
-      { presets: ['next/babel'], plugins: ['@babel/plugin-proposal-private-methods'] },
+      { presets: [['next/babel', { 'preset-react': { runtime: 'automatic' } }]] },
     ],
     // Handle image imports
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':

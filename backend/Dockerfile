@@ -2,42 +2,70 @@
 # =====================
 # Install dependencies only when needed
 # =====================
-FROM node:22-slim AS deps
+FROM node:22-slim AS build-deps
 # openssl is required by Prisma's query engine
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
+
+# Install only the packages needed by the running service. Prisma remains a
+# production dependency because migrations are deliberately applied at startup.
+FROM node:22-slim AS production-deps
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package.json yarn.lock ./
+COPY prisma ./prisma
+RUN yarn install --frozen-lockfile --production=true --ignore-scripts \
+ && yarn prisma:generate \
+ && yarn cache clean
 
 # =====================
 # Rebuild the source code only when needed
 # =====================
 FROM node:22-slim AS builder
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build-deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate the Prisma client into node_modules, then compile TypeScript
-RUN yarn prisma:generate
-RUN yarn build
+RUN yarn prisma:generate \
+ && yarn build
 
 # =====================
 # Production image
 # =====================
 FROM node:22-slim AS runner
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs \
- && adduser --system --uid 1001 nodejs
+ && adduser --system --uid 1001 --ingroup nodejs nodejs
 
-COPY --from=builder --chown=nodejs:nodejs /app/ ./
+COPY --from=production-deps --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 
-# Writable folders for sessions, logs and the SQLite database
-RUN mkdir -p /app/data/sessions /app/data/logs /app/data/database \
+# Guard against accidentally reintroducing build and test tooling in production,
+# then create the only runtime-writable folders. The guards fail the build even
+# when a tool arrives transitively via a legitimate production dependency; that
+# is deliberate and should be resolved consciously, not silently shipped.
+RUN for tool in typescript vitest ts-node; do \
+      if [ -e "/app/node_modules/$tool" ]; then \
+        echo "Build guard: dev-only tool '$tool' must not be present in the production image" >&2; \
+        exit 1; \
+      fi; \
+    done \
+ && if [ ! -x /app/node_modules/.bin/prisma ]; then \
+      echo "Build guard: Prisma CLI is missing; the image runs 'prisma migrate deploy' at startup" >&2; \
+      exit 1; \
+    fi \
+ && mkdir -p /app/data/sessions /app/data/logs /app/data/database \
  && chown -R nodejs:nodejs /app/data
 
 USER nodejs

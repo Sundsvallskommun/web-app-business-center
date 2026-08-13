@@ -61,14 +61,21 @@ jobs:
           set -euo pipefail
           NODE_VERSION="$(tr -d '[:space:]v' < .nvmrc)"
           echo "Installerar Node.js v${NODE_VERSION}"
-          curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
-            -o /tmp/node.tar.xz
+          TARBALL="node-v${NODE_VERSION}-linux-x64.tar.xz"
+          DIST_URL="https://nodejs.org/dist/v${NODE_VERSION}"
+          # --proto/--proto-redir hindrar att -L följer en redirect ner till http.
+          curl -fsSL --proto '=https' --proto-redir '=https' --tlsv1.2 \
+            "${DIST_URL}/${TARBALL}" -o "/tmp/${TARBALL}"
+          curl -fsSL --proto '=https' --proto-redir '=https' --tlsv1.2 \
+            "${DIST_URL}/SHASUMS256.txt" -o /tmp/SHASUMS256.txt
+          (cd /tmp && grep " ${TARBALL}\$" SHASUMS256.txt | sha256sum --check --strict -)
           mkdir -p /usr/local/lib/nodejs
-          tar -xJf /tmp/node.tar.xz -C /usr/local/lib/nodejs
+          tar -xJf "/tmp/${TARBALL}" -C /usr/local/lib/nodejs
           echo "/usr/local/lib/nodejs/node-v${NODE_VERSION}-linux-x64/bin" >> "$GITHUB_PATH"
 
       - name: Install Yarn
-        run: npm install --global "yarn@${YARN_VERSION}"
+        # --ignore-scripts: yarn 1.x behöver inga lifecycle-skript för att installeras.
+        run: npm install --global --ignore-scripts "yarn@${YARN_VERSION}"
 
       - name: Environment info
         run: |

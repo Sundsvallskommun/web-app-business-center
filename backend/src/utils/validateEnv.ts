@@ -10,6 +10,25 @@ const emails = makeValidator(emailString => {
   return emailString;
 });
 
+const EXAMPLE_SECRET = 'NffJVXQ7P2YqK37kEC3hcxywwaKNuv'; // shipped in .env.example.local
+const RECOMMENDED_SECRET_LENGTH = 32; // ~256-bit when base64/hex
+
+// Guard against a weak session SECRET_KEY. Enforce only in deployed envs (TEST/prod run
+// NODE_ENV=production); local dev may keep the template value.
+function validateSecretStrength(): void {
+  if (process.env.NODE_ENV !== 'production') {
+    return;
+  }
+  const secret = (process.env.SECRET_KEY ?? '').trim();
+  if (secret === EXAMPLE_SECRET) {
+    console.error('\nInsecure SECRET_KEY: it is the shipped example value; set a strong unique secret.\n');
+    process.exit(1);
+  }
+  if (secret.length < RECOMMENDED_SECRET_LENGTH) {
+    console.warn(`⚠️  SECRET_KEY is shorter than the recommended ${RECOMMENDED_SECRET_LENGTH} characters.`);
+  }
+}
+
 // NOTE: Make sure we got these in ENV
 const validateEnv = () => {
   cleanEnv(process.env, {
@@ -33,6 +52,8 @@ const validateEnv = () => {
     SAML_SUCCESS_REDIRECT: str(),
     FEEDBACK_EMAIL: emails(),
   });
+
+  validateSecretStrength();
 };
 
 export default validateEnv;

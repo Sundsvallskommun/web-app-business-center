@@ -23,6 +23,7 @@ envalid.cleanEnv(process.env, {
 });
 
 module.exports = withBundleAnalyzer({
+  output: 'standalone',
   allowedDevOrigins: ['dev.test'],
   turbopack: {},
   images: {

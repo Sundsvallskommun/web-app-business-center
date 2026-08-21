@@ -23,7 +23,7 @@ const baseInvoice = {
   organizationNumber: '5565027223',
   invoiceName: 'faktura-999.pdf',
   invoiceType: 'INVOICE',
-  invoiceDescription: 'Fjärrvärme',
+  invoiceDescriptions: ['Fjärrvärme'],
   invoiceAddress: {
     street: 'Storgatan 1',
     postcode: '11122',
@@ -38,6 +38,6 @@ export const getGeneratedInvoices = (representingMode: RepresentingMode = repres
   Object.keys(statusMapInvoices).map((status) => ({
     ...baseInvoice,
     invoiceStatus: status as InvoiceStatus,
-    invoiceDescription: `${status}-${RepresentingMode[representingMode]}`,
+    invoiceDescriptions: [`${status}-${RepresentingMode[representingMode]}`],
     invoiceName: `faktura-999-${status.toLowerCase()}.pdf`,
   }));

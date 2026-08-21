@@ -10,101 +10,51 @@
  * ---------------------------------------------------------------
  */
 
-/** Type of invoice */
-export enum InvoiceType {
-  INVOICE = 'INVOICE',
-  CREDIT_INVOICE = 'CREDIT_INVOICE',
-  START_INVOICE = 'START_INVOICE',
-  FINAL_INVOICE = 'FINAL_INVOICE',
-  DIRECT_DEBIT = 'DIRECT_DEBIT',
-  SELF_INVOICE = 'SELF_INVOICE',
-  REMINDER = 'REMINDER',
-  CONSOLIDATED_INVOICE = 'CONSOLIDATED_INVOICE',
-  INTERNAL_INVOICE = 'INTERNAL_INVOICE',
-  OFFSET_INVOICE = 'OFFSET_INVOICE',
-  UNKNOWN = 'UNKNOWN',
+/** The sort order direction */
+export enum Direction {
+  ASC = "ASC",
+  DESC = "DESC",
 }
 
-/** Status of invoice */
-export enum InvoiceStatus {
-  PAID = 'PAID',
-  SENT = 'SENT',
-  PARTIALLY_PAID = 'PARTIALLY_PAID',
-  DEBT_COLLECTION = 'DEBT_COLLECTION',
-  PAID_TOO_MUCH = 'PAID_TOO_MUCH',
-  REMINDER = 'REMINDER',
-  VOID = 'VOID',
-  CREDITED = 'CREDITED',
-  WRITTEN_OFF = 'WRITTEN_OFF',
-  UNKNOWN = 'UNKNOWN',
+export interface Problem {
+  /** @format uri */
+  instance?: string;
+  /** @format uri */
+  type?: string;
+  title?: string;
+  detail?: string;
+  /** @format int32 */
+  status?: number;
 }
 
-/**
- * Invoice origin (invoices originates from either commercial or public activities)
- * @example "COMMERCIAL"
- */
-export enum InvoiceOrigin {
-  COMMERCIAL = 'COMMERCIAL',
-  PUBLIC_ADMINISTRATION = 'PUBLIC_ADMINISTRATION',
+export interface ConstraintViolationProblem {
+  /** @format uri */
+  type?: string;
+  /** @format int32 */
+  status?: number;
+  violations?: Violation[];
+  title?: string;
+  /** @format uri */
+  instance?: string;
+  detail?: string;
+  causeAsProblem?: ThrowableProblem;
 }
 
-/** Invoice request parameters model */
-export interface InvoicesParameters {
-  /**
-   * Page number
-   * @format int32
-   * @min 1
-   * @default 1
-   */
-  page?: number;
-  /**
-   * Result size per page
-   * @format int32
-   * @min 1
-   * @max 1000
-   * @default 100
-   */
-  limit?: number;
-  /**
-   * @minItems 1
-   * @uniqueItems true
-   */
-  partyId: string[];
-  facilityId?: string[];
-  /** Invoice number */
-  invoiceNumber?: string;
-  /**
-   * Earliest invoice date. Format is YYYY-MM-DD.
-   * @format date
-   */
-  invoiceDateFrom?: string;
-  /**
-   * Latest invoice date. Format is YYYY-MM-DD.
-   * @format date
-   */
-  invoiceDateTo?: string;
-  /** invoice name */
-  invoiceName?: string;
-  /** Invoice type */
-  invoiceType?: InvoiceType;
-  /** Invoice status */
-  invoiceStatus?: InvoiceStatus;
-  /** Ocr number */
-  ocrNumber?: string;
-  /**
-   * Earliest due date. Format is YYYY-MM-DD.
-   * @format date
-   */
-  dueDateFrom?: string;
-  /**
-   * Latest due date. Format is YYYY-MM-DD.
-   * @format date
-   */
-  dueDateTo?: string;
-  /** Creditor organization number */
-  organizationNumber?: string;
-  /** Organization group */
-  organizationGroup?: string;
+export interface ThrowableProblem {
+  /** @format uri */
+  type?: string;
+  title?: string;
+  /** @format int32 */
+  status?: number;
+  detail?: string;
+  /** @format uri */
+  instance?: string;
+  causeAsProblem?: any;
+}
+
+export interface Violation {
+  field?: string;
+  message?: string;
 }
 
 export interface Address {
@@ -125,35 +75,17 @@ export interface Invoice {
    * @format date
    */
   dueDate?: string;
-  /**
-   * Invoice-amount including VAT and rounding
-   * @format float
-   */
+  /** Invoice-amount including VAT and rounding */
   totalAmount?: number;
-  /**
-   * Invoice-amount including VAT
-   * @format float
-   */
+  /** Invoice-amount including VAT */
   amountVatIncluded?: number;
-  /**
-   * Invoice-amount excluding VAT
-   * @format float
-   */
+  /** Invoice-amount excluding VAT */
   amountVatExcluded?: number;
-  /**
-   * Amount which VAT is applied on
-   * @format float
-   */
+  /** Amount which VAT is applied on */
   vatEligibleAmount?: number;
-  /**
-   * Equalization to integer
-   * @format float
-   */
+  /** Equalization to integer */
   rounding?: number;
-  /**
-   * VAT
-   * @format float
-   */
+  /** VAT */
   vat?: number;
   /** Is VAT reversed */
   reversedVat?: boolean;
@@ -179,7 +111,7 @@ export interface Invoice {
   /** Invoice-number */
   invoiceNumber?: string;
   /** Status of invoice */
-  invoiceStatus?: InvoiceStatus;
+  invoiceStatus?: InvoiceInvoiceStatusEnum;
   /** OCR-number */
   ocrNumber?: string;
   /** Organization number of the creditor */
@@ -187,15 +119,21 @@ export interface Invoice {
   /** Invoice-name */
   invoiceName?: string;
   /** Type of invoice */
-  invoiceType?: InvoiceType;
-  /** Invoice-description */
-  invoiceDescription?: string;
+  invoiceType?: InvoiceInvoiceTypeEnum;
+  /**
+   * Invoice-description
+   * @uniqueItems true
+   */
+  invoiceDescriptions?: string[];
   /** Invoice-address */
   invoiceAddress?: Address;
-  /** Facility-id */
-  facilityId?: string;
+  /**
+   * Facility-id
+   * @uniqueItems true
+   */
+  facilityIds?: string[];
   /** Invoice origin (invoices originates from either commercial or public activities) */
-  invoiceOrigin?: InvoiceOrigin;
+  invoiceOrigin?: InvoiceInvoiceOriginEnum;
 }
 
 /** InvoicesResponse model */
@@ -234,109 +172,6 @@ export interface MetaData {
   totalPages?: number;
 }
 
-export interface Problem {
-  /** @format uri */
-  instance?: string;
-  /** @format uri */
-  type?: string;
-  parameters?: Record<string, any>;
-  status?: StatusType;
-  title?: string;
-  detail?: string;
-}
-
-export interface StatusType {
-  /** @format int32 */
-  statusCode?: number;
-  reasonPhrase?: string;
-}
-
-export interface ConstraintViolationProblem {
-  cause?: ThrowableProblem;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
-  /** @format uri */
-  type?: string;
-  status?: StatusType;
-  violations?: Violation[];
-  title?: string;
-  message?: string;
-  /** @format uri */
-  instance?: string;
-  parameters?: Record<string, any>;
-  detail?: string;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
-}
-
-export interface ThrowableProblem {
-  cause?: any;
-  stackTrace?: {
-    classLoaderName?: string;
-    moduleName?: string;
-    moduleVersion?: string;
-    methodName?: string;
-    fileName?: string;
-    /** @format int32 */
-    lineNumber?: number;
-    className?: string;
-    nativeMethod?: boolean;
-  }[];
-  message?: string;
-  /** @format uri */
-  instance?: string;
-  /** @format uri */
-  type?: string;
-  parameters?: Record<string, any>;
-  status?: StatusType;
-  title?: string;
-  detail?: string;
-  suppressed?: {
-    stackTrace?: {
-      classLoaderName?: string;
-      moduleName?: string;
-      moduleVersion?: string;
-      methodName?: string;
-      fileName?: string;
-      /** @format int32 */
-      lineNumber?: number;
-      className?: string;
-      nativeMethod?: boolean;
-    }[];
-    message?: string;
-    localizedMessage?: string;
-  }[];
-  localizedMessage?: string;
-}
-
-export interface Violation {
-  field?: string;
-  message?: string;
-}
-
 export interface PdfInvoice {
   /** File-name */
   fileName?: string;
@@ -344,42 +179,24 @@ export interface PdfInvoice {
    * Base64-encoded contents of file
    * @format byte
    */
-  file?: string;
+  file?: Blob;
 }
 
 /** Invoice-detail */
 export interface InvoiceDetail {
-  /**
-   * Amount
-   * @format float
-   */
+  /** Amount */
   amount?: number;
-  /**
-   * Invoice-amount excluding VAT
-   * @format float
-   */
+  /** Invoice-amount excluding VAT */
   amountVatExcluded?: number;
-  /**
-   * VAT
-   * @format float
-   */
+  /** VAT */
   vat?: number;
-  /**
-   * VAT-rate in percent
-   * @format float
-   */
+  /** VAT-rate in percent */
   vatRate?: number;
-  /**
-   * Quantity of product
-   * @format float
-   */
+  /** Quantity of product */
   quantity?: number;
   /** Unit in quantity */
   unit?: string;
-  /**
-   * Unit-price
-   * @format float
-   */
+  /** Unit-price */
   unitPrice?: number;
   /** Description of detail */
   description?: string;
@@ -397,8 +214,317 @@ export interface InvoiceDetail {
    * @format date
    */
   toDate?: string;
+  /** Facility id */
+  facilityId?: string;
+  /** Administration */
+  administration?: string;
 }
 
 export interface InvoiceDetailsResponse {
   details?: InvoiceDetail[];
+}
+
+/** Customer invoice model */
+export interface CustomerInvoice {
+  /** Customer number */
+  customerNumber?: string;
+  /** Customer type */
+  customerType?: CustomerInvoiceCustomerTypeEnum;
+  /** List of facility ids */
+  facilityIds?: string[];
+  /** Invoice number */
+  invoiceNumber?: string;
+  /**
+   * Invoice id
+   * @format int64
+   */
+  invoiceId?: number;
+  /**
+   * Joint invoice id
+   * @format int64
+   */
+  jointInvoiceId?: number;
+  /**
+   * Invoice date
+   * @format date
+   */
+  invoiceDate?: string;
+  /** Invoice name */
+  invoiceName?: string;
+  /** Type of invoice */
+  invoiceType?: CustomerInvoiceInvoiceTypeEnum;
+  /** Invoice description */
+  invoiceDescription?: string;
+  /** Status of invoice */
+  invoiceStatus?: CustomerInvoiceInvoiceStatusEnum;
+  /** OCR number */
+  ocrNumber?: string;
+  /**
+   * Due date
+   * @format date
+   */
+  dueDate?: string;
+  /**
+   * Invoice period start
+   * @format date
+   */
+  periodFrom?: string;
+  /**
+   * Invoice period end
+   * @format date
+   */
+  periodTo?: string;
+  /** Total amount */
+  totalAmount?: number;
+  /** Amount included VAT */
+  amountVatIncluded?: number;
+  /** Amount excluded VAT */
+  amountVatExcluded?: number;
+  /** Amount eligible for VAT */
+  vatEligibleAmount?: number;
+  /** Rounding */
+  rounding?: number;
+  /** Organization group */
+  organizationGroup?: string;
+  /** Organization number of invoice issuer */
+  organizationNumber?: string;
+  /** Administration */
+  administration?: string;
+  /** Street */
+  street?: string;
+  /** Postal code */
+  postCode?: string;
+  /** City */
+  city?: string;
+  /** Care of address */
+  careOf?: string;
+  /** Invoice reference */
+  invoiceReference?: string;
+  /** Is pdf-version of invoice available */
+  pdfAvailable?: boolean;
+  details?: InvoiceDetail[];
+}
+
+/** CustomerInvoicesResponse model */
+export interface CustomerInvoicesResponse {
+  invoices?: CustomerInvoice[];
+  /** Metadata model */
+  _meta?: MetaData;
+}
+
+/** Status of invoice */
+export enum InvoiceInvoiceStatusEnum {
+  PAID = "PAID",
+  SENT = "SENT",
+  PARTIALLY_PAID = "PARTIALLY_PAID",
+  DEBT_COLLECTION = "DEBT_COLLECTION",
+  PAID_TOO_MUCH = "PAID_TOO_MUCH",
+  REMINDER = "REMINDER",
+  VOID = "VOID",
+  CREDITED = "CREDITED",
+  WRITTEN_OFF = "WRITTEN_OFF",
+  UNKNOWN = "UNKNOWN",
+}
+
+/** Type of invoice */
+export enum InvoiceInvoiceTypeEnum {
+  INVOICE = "INVOICE",
+  CREDIT_INVOICE = "CREDIT_INVOICE",
+  START_INVOICE = "START_INVOICE",
+  FINAL_INVOICE = "FINAL_INVOICE",
+  DIRECT_DEBIT = "DIRECT_DEBIT",
+  SELF_INVOICE = "SELF_INVOICE",
+  REMINDER = "REMINDER",
+  CONSOLIDATED_INVOICE = "CONSOLIDATED_INVOICE",
+  INTERNAL_INVOICE = "INTERNAL_INVOICE",
+  OFFSET_INVOICE = "OFFSET_INVOICE",
+  UNKNOWN = "UNKNOWN",
+}
+
+/** Invoice origin (invoices originates from either commercial or public activities) */
+export enum InvoiceInvoiceOriginEnum {
+  COMMERCIAL = "COMMERCIAL",
+  PUBLIC_ADMINISTRATION = "PUBLIC_ADMINISTRATION",
+}
+
+/** Customer type */
+export enum CustomerInvoiceCustomerTypeEnum {
+  ENTERPRISE = "ENTERPRISE",
+  PRIVATE = "PRIVATE",
+}
+
+/** Type of invoice */
+export enum CustomerInvoiceInvoiceTypeEnum {
+  INVOICE = "INVOICE",
+  CREDIT_INVOICE = "CREDIT_INVOICE",
+  START_INVOICE = "START_INVOICE",
+  FINAL_INVOICE = "FINAL_INVOICE",
+  DIRECT_DEBIT = "DIRECT_DEBIT",
+  SELF_INVOICE = "SELF_INVOICE",
+  REMINDER = "REMINDER",
+  CONSOLIDATED_INVOICE = "CONSOLIDATED_INVOICE",
+  INTERNAL_INVOICE = "INTERNAL_INVOICE",
+  OFFSET_INVOICE = "OFFSET_INVOICE",
+  UNKNOWN = "UNKNOWN",
+}
+
+/** Status of invoice */
+export enum CustomerInvoiceInvoiceStatusEnum {
+  PAID = "PAID",
+  SENT = "SENT",
+  PARTIALLY_PAID = "PARTIALLY_PAID",
+  DEBT_COLLECTION = "DEBT_COLLECTION",
+  PAID_TOO_MUCH = "PAID_TOO_MUCH",
+  REMINDER = "REMINDER",
+  VOID = "VOID",
+  CREDITED = "CREDITED",
+  WRITTEN_OFF = "WRITTEN_OFF",
+  UNKNOWN = "UNKNOWN",
+}
+
+/** Invoice type */
+export enum GetInvoicesParamsInvoiceTypeEnum {
+  INVOICE = "INVOICE",
+  CREDIT_INVOICE = "CREDIT_INVOICE",
+  START_INVOICE = "START_INVOICE",
+  FINAL_INVOICE = "FINAL_INVOICE",
+  DIRECT_DEBIT = "DIRECT_DEBIT",
+  SELF_INVOICE = "SELF_INVOICE",
+  REMINDER = "REMINDER",
+  CONSOLIDATED_INVOICE = "CONSOLIDATED_INVOICE",
+  INTERNAL_INVOICE = "INTERNAL_INVOICE",
+  OFFSET_INVOICE = "OFFSET_INVOICE",
+  UNKNOWN = "UNKNOWN",
+}
+
+/** Invoice status */
+export enum GetInvoicesParamsInvoiceStatusEnum {
+  PAID = "PAID",
+  SENT = "SENT",
+  PARTIALLY_PAID = "PARTIALLY_PAID",
+  DEBT_COLLECTION = "DEBT_COLLECTION",
+  PAID_TOO_MUCH = "PAID_TOO_MUCH",
+  REMINDER = "REMINDER",
+  VOID = "VOID",
+  CREDITED = "CREDITED",
+  WRITTEN_OFF = "WRITTEN_OFF",
+  UNKNOWN = "UNKNOWN",
+}
+
+/**
+ * Invoice origin (invoices originates from either commercial or public activities)
+ * @example "COMMERCIAL"
+ */
+export enum GetInvoicesParamsInvoiceOriginEnum {
+  COMMERCIAL = "COMMERCIAL",
+  PUBLIC_ADMINISTRATION = "PUBLIC_ADMINISTRATION",
+}
+
+/** @example "COMMERCIAL" */
+export enum GetInvoicesParamsEnum {
+  COMMERCIAL = "COMMERCIAL",
+  PUBLIC_ADMINISTRATION = "PUBLIC_ADMINISTRATION",
+}
+
+/** InvoiceType filter parameter */
+export enum GetPdfInvoiceParamsInvoiceTypeEnum {
+  INVOICE = "INVOICE",
+  CREDIT_INVOICE = "CREDIT_INVOICE",
+  START_INVOICE = "START_INVOICE",
+  FINAL_INVOICE = "FINAL_INVOICE",
+  DIRECT_DEBIT = "DIRECT_DEBIT",
+  SELF_INVOICE = "SELF_INVOICE",
+  REMINDER = "REMINDER",
+  CONSOLIDATED_INVOICE = "CONSOLIDATED_INVOICE",
+  INTERNAL_INVOICE = "INTERNAL_INVOICE",
+  OFFSET_INVOICE = "OFFSET_INVOICE",
+  UNKNOWN = "UNKNOWN",
+}
+
+/**
+ * Invoice origin (invoices originates from either commercial or public activities)
+ * @example "COMMERCIAL"
+ */
+export enum GetPdfInvoiceParamsInvoiceOriginEnum {
+  COMMERCIAL = "COMMERCIAL",
+  PUBLIC_ADMINISTRATION = "PUBLIC_ADMINISTRATION",
+}
+
+/** @example "COMMERCIAL" */
+export enum GetPdfInvoiceParamsEnum {
+  COMMERCIAL = "COMMERCIAL",
+  PUBLIC_ADMINISTRATION = "PUBLIC_ADMINISTRATION",
+}
+
+/** InvoiceType filter parameter */
+export enum DownloadInvoicePdfParamsInvoiceTypeEnum {
+  INVOICE = "INVOICE",
+  CREDIT_INVOICE = "CREDIT_INVOICE",
+  START_INVOICE = "START_INVOICE",
+  FINAL_INVOICE = "FINAL_INVOICE",
+  DIRECT_DEBIT = "DIRECT_DEBIT",
+  SELF_INVOICE = "SELF_INVOICE",
+  REMINDER = "REMINDER",
+  CONSOLIDATED_INVOICE = "CONSOLIDATED_INVOICE",
+  INTERNAL_INVOICE = "INTERNAL_INVOICE",
+  OFFSET_INVOICE = "OFFSET_INVOICE",
+  UNKNOWN = "UNKNOWN",
+}
+
+/**
+ * Invoice origin (invoices originates from either commercial or public activities)
+ * @example "COMMERCIAL"
+ */
+export enum DownloadInvoicePdfParamsInvoiceOriginEnum {
+  COMMERCIAL = "COMMERCIAL",
+  PUBLIC_ADMINISTRATION = "PUBLIC_ADMINISTRATION",
+}
+
+/** @example "COMMERCIAL" */
+export enum DownloadInvoicePdfParamsEnum {
+  COMMERCIAL = "COMMERCIAL",
+  PUBLIC_ADMINISTRATION = "PUBLIC_ADMINISTRATION",
+}
+
+/** Invoice type */
+export enum GetPublicAdministrationInvoicesParamsInvoiceTypeEnum {
+  INVOICE = "INVOICE",
+  CREDIT_INVOICE = "CREDIT_INVOICE",
+  START_INVOICE = "START_INVOICE",
+  FINAL_INVOICE = "FINAL_INVOICE",
+  DIRECT_DEBIT = "DIRECT_DEBIT",
+  SELF_INVOICE = "SELF_INVOICE",
+  REMINDER = "REMINDER",
+  CONSOLIDATED_INVOICE = "CONSOLIDATED_INVOICE",
+  INTERNAL_INVOICE = "INTERNAL_INVOICE",
+  OFFSET_INVOICE = "OFFSET_INVOICE",
+  UNKNOWN = "UNKNOWN",
+}
+
+/** Invoice status */
+export enum GetPublicAdministrationInvoicesParamsInvoiceStatusEnum {
+  PAID = "PAID",
+  SENT = "SENT",
+  PARTIALLY_PAID = "PARTIALLY_PAID",
+  DEBT_COLLECTION = "DEBT_COLLECTION",
+  PAID_TOO_MUCH = "PAID_TOO_MUCH",
+  REMINDER = "REMINDER",
+  VOID = "VOID",
+  CREDITED = "CREDITED",
+  WRITTEN_OFF = "WRITTEN_OFF",
+  UNKNOWN = "UNKNOWN",
+}
+
+/** Invoice status filter */
+export enum GetInvoicesForCustomerParamsStatusEnum {
+  PAID = "PAID",
+  SENT = "SENT",
+  PARTIALLY_PAID = "PARTIALLY_PAID",
+  DEBT_COLLECTION = "DEBT_COLLECTION",
+  PAID_TOO_MUCH = "PAID_TOO_MUCH",
+  REMINDER = "REMINDER",
+  VOID = "VOID",
+  CREDITED = "CREDITED",
+  WRITTEN_OFF = "WRITTEN_OFF",
+  UNKNOWN = "UNKNOWN",
 }

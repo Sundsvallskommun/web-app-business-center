@@ -145,21 +145,21 @@ export interface JsonSchema {
 }
 
 export interface PageJsonSchema {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   /** @format int32 */
   size?: number;
   content?: JsonSchema[];
   /** @format int32 */
   number?: number;
-  first?: boolean;
-  last?: boolean;
+  sort?: SortObject;
   pageable?: PageableObject;
   /** @format int32 */
   numberOfElements?: number;
-  sort?: SortObject;
+  first?: boolean;
+  last?: boolean;
   empty?: boolean;
 }
 
@@ -171,8 +171,8 @@ export interface PageableObject {
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
-  sort?: SortObject;
   unpaged?: boolean;
+  sort?: SortObject;
 }
 
 export interface SortObject {

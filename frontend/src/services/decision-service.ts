@@ -1,3 +1,12 @@
+import { ApiResponse, apiService } from './api-service';
+
+export interface ClientDecisionAttachment {
+  id: number;
+  name: string;
+  mimeType?: string;
+  extension?: string;
+}
+
 export interface ClientDecision {
   id?: number;
   errandId?: number;
@@ -9,12 +18,17 @@ export interface ClientDecision {
   validFrom?: string;
   validTo?: string;
   created?: string;
-  attachments?: {
-    id?: number;
-    name?: string;
-    file?: string;
-  }[];
+  attachments?: ClientDecisionAttachment[];
 }
+
+// The decision payload no longer carries the file content, so it is fetched per
+// attachment. Returns null on failure so the caller can show an error instead of
+// downloading an empty file.
+export const getDecisionAttachment: (decisionId: number, attachmentId: number) => Promise<string | null> = (decisionId, attachmentId) =>
+  apiService
+    .get<ApiResponse<string>>(`/decisions/${decisionId}/attachments/${attachmentId}`)
+    .then((res) => res.data.data)
+    .catch(() => null);
 
 const decisionOutcomeLabels: Record<string, string> = {
   APPROVAL: 'Bifall',

@@ -12,12 +12,12 @@
 
 /** Status model */
 export enum Status {
-  ACTIVE = 'ACTIVE',
-  DRAFT = 'DRAFT',
-  EXPIRED = 'EXPIRED',
-  BLOCKED = 'BLOCKED',
-  TEMPORARY = 'TEMPORARY',
-  REPLACED = 'REPLACED',
+  ACTIVE = "ACTIVE",
+  DRAFT = "DRAFT",
+  EXPIRED = "EXPIRED",
+  BLOCKED = "BLOCKED",
+  TEMPORARY = "TEMPORARY",
+  REPLACED = "REPLACED",
 }
 
 export interface Problem {
@@ -119,7 +119,6 @@ export interface JsonNode {
   null?: boolean;
   object?: boolean;
   float?: boolean;
-  integralNumber?: boolean;
   pojo?: boolean;
   floatingPointNumber?: boolean;
   short?: boolean;
@@ -131,9 +130,10 @@ export interface JsonNode {
   /** @deprecated */
   textual?: boolean;
   binary?: boolean;
+  nodeType?: JsonNodeNodeTypeEnum;
+  integralNumber?: boolean;
   valueNode?: boolean;
   container?: boolean;
-  nodeType?: JsonNodeNodeTypeEnum;
   missingNode?: boolean;
   number?: boolean;
   string?: boolean;
@@ -207,13 +207,13 @@ export interface Asset {
 }
 
 export enum JsonNodeNodeTypeEnum {
-  ARRAY = 'ARRAY',
-  BINARY = 'BINARY',
-  BOOLEAN = 'BOOLEAN',
-  MISSING = 'MISSING',
-  NULL = 'NULL',
-  NUMBER = 'NUMBER',
-  OBJECT = 'OBJECT',
-  POJO = 'POJO',
-  STRING = 'STRING',
+  ARRAY = "ARRAY",
+  BINARY = "BINARY",
+  BOOLEAN = "BOOLEAN",
+  MISSING = "MISSING",
+  NULL = "NULL",
+  NUMBER = "NUMBER",
+  OBJECT = "OBJECT",
+  POJO = "POJO",
+  STRING = "STRING",
 }

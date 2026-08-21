@@ -13,7 +13,7 @@ export const InvoiceTableCard: React.FC<{ item: IInvoice }> = ({ item }) => {
           <div className="w-full flex flex-col gap-y-16">
             <div className="flex flex-col-reverse">
               <div className="flex justify-between gap-x-8 text-large font-bold">
-                <h3 className="text-large font-bold">{item.invoiceDescription}</h3>
+                <h3 className="text-large font-bold">{item.invoiceDescriptions?.join(', ')}</h3>
                 <div className="flex gap-x-8">
                   <span>{`${item.totalAmount} kr`}</span>
                 </div>

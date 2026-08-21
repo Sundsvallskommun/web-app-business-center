@@ -1,13 +1,13 @@
 import { CardList } from '@components/cards/cards.component';
 import { useApi } from '@services/api-service';
-import { ClientDecision, getDecisionOutcomeLabel, sortDecisionsByDate } from '@services/decision-service';
+import { ClientDecision, getDecisionAttachment, getDecisionOutcomeLabel, sortDecisionsByDate } from '@services/decision-service';
 import { getCaseReference } from '@utils/case-reference';
 import { downloadBlob } from '@utils/download-blob';
-import { Button, Icon, Spinner, useThemeQueries } from '@sk-web-gui/react';
+import { Button, Icon, Spinner, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import sv from 'dayjs/locale/sv';
 import { Download, File } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useAppContext } from '@contexts/app.context';
@@ -18,12 +18,29 @@ const DecisionCard: React.FC<{ item: ClientDecision }> = ({ item }) => {
   const attachment = item.attachments?.[0];
   const { representingMode } = useAppContext();
   const { isPhone } = useThemeQueries();
+  const [isDownloading, setIsDownloading] = useState(false);
+  const toastMessage = useSnackbar();
 
-  const handleDownload = useCallback(() => {
-    if (!attachment?.file) return;
-    const filename = attachment.name || `beslut-${item.id}.pdf`;
-    downloadBlob(attachment.file, 'application/pdf', filename);
-  }, [attachment, item.id]);
+  const handleDownload = useCallback(async () => {
+    if (!attachment || !item.id) return;
+    setIsDownloading(true);
+    try {
+      const base64 = await getDecisionAttachment(item.id, attachment.id);
+      if (!base64) {
+        toastMessage({
+          position: 'bottom',
+          closeable: false,
+          message: 'Det gick inte att hämta beslutet. Försök igen senare.',
+          status: 'error',
+        });
+        return;
+      }
+      const filename = attachment.name || `beslut-${item.id}.${attachment.extension || 'pdf'}`;
+      downloadBlob(base64, attachment.mimeType || 'application/pdf', filename);
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [attachment, item.id, toastMessage]);
 
   return (
     <div className="list-item-card">
@@ -56,12 +73,14 @@ const DecisionCard: React.FC<{ item: ClientDecision }> = ({ item }) => {
               ) : null}
             </div>
           </div>
-          {attachment?.file && (
+          {attachment && (
             <Button
               iconButton={isPhone}
               rightIcon={<Icon icon={<Download />} />}
               variant="tertiary"
               size="sm"
+              loading={isDownloading}
+              disabled={isDownloading}
               onClick={handleDownload}
             >
               {!isPhone ? 'Ladda ner' : null}

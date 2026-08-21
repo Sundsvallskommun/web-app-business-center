@@ -1,7 +1,6 @@
 import { MUNICIPALITY_ID, MUNICIPALITY_ORG_NR } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import { InvoicesResponse, PdfInvoice } from '@/data-contracts/invoices/data-contracts';
-import { HttpException } from '@/exceptions/HttpException';
+import { InvoicesResponse } from '@/data-contracts/invoices/data-contracts';
 import { User } from '@interfaces/users.interface';
 import ApiService from './api.service';
 
@@ -21,13 +20,13 @@ export const getInvoiceDateFrom = (): string => {
 
 export const fetchInvoices = async (partyId: string, user: User, api: Pick<ApiService, 'get'> = defaultApi): Promise<InvoicesResponse> => {
   const params = {
-    partyId,
-    organizationNumber: MUNICIPALITY_ORG_NR,
+    partyId: [partyId],
+    organizationNumbers: [MUNICIPALITY_ORG_NR],
     invoiceDateFrom: getInvoiceDateFrom(),
   };
 
   try {
-    const url = `${apiBase}/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION`;
+    const url = `${apiBase}/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION/customers/invoices`;
     const res = await api.get<InvoicesResponse>({ url, params }, user);
 
     if (res.data && Array.isArray(res.data?.invoices) && res.data.invoices.length < 1) {
@@ -39,33 +38,4 @@ export const fetchInvoices = async (partyId: string, user: User, api: Pick<ApiSe
     // Any failure (including 404) falls back to an empty invoice list
     return emptyInvoice;
   }
-};
-
-/**
- * Fetch the PDF for a single invoice, but only after verifying that the invoice
- * belongs to the represented party.
- *
- * The invoice id is supplied by the client and is otherwise trusted blindly by the
- * downstream API. Without this ownership check a logged-in user could reuse their own
- * session and swap the id in the request to download another party's invoice (IDOR).
- * We therefore load the party's own invoices first and only proceed when the requested
- * id is actually among them.
- */
-export const fetchInvoicePdf = async (
-  partyId: string,
-  invoiceId: string,
-  user: User,
-  api: Pick<ApiService, 'get'> = defaultApi,
-): Promise<PdfInvoice> => {
-  const { invoices } = await fetchInvoices(partyId, user, api);
-
-  const ownsInvoice = invoices?.some(invoice => invoice.invoiceNumber === invoiceId) ?? false;
-  if (!ownsInvoice) {
-    throw new HttpException(404, 'Invoice not found');
-  }
-
-  const url = `${apiBase}/${MUNICIPALITY_ID}/PUBLIC_ADMINISTRATION/${MUNICIPALITY_ORG_NR}/${invoiceId}/pdf`;
-  const res = await api.get<PdfInvoice>({ url }, user);
-
-  return res.data;
 };

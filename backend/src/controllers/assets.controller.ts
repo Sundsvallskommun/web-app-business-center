@@ -7,6 +7,7 @@ import { AttachmentCategory, CaseDataNamespace, ParkingPermitCaseType, Stakehold
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
+import { RepresentingMode } from '@/interfaces/representing.interface';
 import { User } from '@/interfaces/users.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
@@ -100,11 +101,19 @@ export class AssetsController {
   private async createParkingPermitErrand(req: RequestWithUser, options: CreateErrandOptions): Promise<ApiResponse<{ success: boolean }>> {
     const { representing } = req.session ?? {};
 
-    if (!representing?.PRIVATE?.partyId) {
+    // A parking permit is always applied for by the citizen themselves: the applicant
+    // stakeholder is a PERSON, so an organization partyId must never reach personId.
+    if (representing?.mode !== RepresentingMode.PRIVATE) {
       throw new HttpException(400, 'Missing party-id');
     }
 
-    const stakeholder = await this.getApplicantStakeholder(representing.PRIVATE.partyId, req.user);
+    const partyId = getRepresentedPartyId(representing, req.user);
+
+    if (!partyId) {
+      throw new HttpException(400, 'Missing party-id');
+    }
+
+    const stakeholder = await this.getApplicantStakeholder(partyId, req.user);
 
     const data = buildMyPagesErrand({
       caseType: options.caseType,

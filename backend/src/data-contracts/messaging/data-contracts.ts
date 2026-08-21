@@ -11,25 +11,25 @@
  */
 
 export enum MessageType {
-  MESSAGE = 'MESSAGE',
-  EMAIL = 'EMAIL',
-  SMS = 'SMS',
-  WEB_MESSAGE = 'WEB_MESSAGE',
-  DIGITAL_MAIL = 'DIGITAL_MAIL',
-  DIGITAL_INVOICE = 'DIGITAL_INVOICE',
-  SNAIL_MAIL = 'SNAIL_MAIL',
-  LETTER = 'LETTER',
-  SLACK = 'SLACK',
+  MESSAGE = "MESSAGE",
+  EMAIL = "EMAIL",
+  SMS = "SMS",
+  WEB_MESSAGE = "WEB_MESSAGE",
+  DIGITAL_MAIL = "DIGITAL_MAIL",
+  DIGITAL_INVOICE = "DIGITAL_INVOICE",
+  SNAIL_MAIL = "SNAIL_MAIL",
+  LETTER = "LETTER",
+  SLACK = "SLACK",
 }
 
 export enum MessageStatus {
-  PENDING = 'PENDING',
-  AWAITING_FEEDBACK = 'AWAITING_FEEDBACK',
-  SENT = 'SENT',
-  NOT_SENT = 'NOT_SENT',
-  FAILED = 'FAILED',
-  NO_CONTACT_SETTINGS_FOUND = 'NO_CONTACT_SETTINGS_FOUND',
-  NO_CONTACT_WANTED = 'NO_CONTACT_WANTED',
+  PENDING = "PENDING",
+  AWAITING_FEEDBACK = "AWAITING_FEEDBACK",
+  SENT = "SENT",
+  NOT_SENT = "NOT_SENT",
+  FAILED = "FAILED",
+  NO_CONTACT_SETTINGS_FOUND = "NO_CONTACT_SETTINGS_FOUND",
+  NO_CONTACT_WANTED = "NO_CONTACT_WANTED",
 }
 
 export interface Problem {
@@ -508,11 +508,13 @@ export interface EmailRequest {
   /** Party */
   party?: EmailRequestParty;
   /**
-   * Recipient e-mail address
+   * Recipient e-mail address. Deprecated, use 'recipients' instead
+   * @deprecated
    * @format email
-   * @minLength 1
    */
-  emailAddress: string;
+  emailAddress?: string;
+  recipients?: string[];
+  cc?: string[];
   /**
    * E-mail subject
    * @minLength 1
@@ -597,6 +599,7 @@ export interface Details {
   /**
    * The invoice amount
    * @format float
+   * @min 0
    */
   amount: number;
   /**
@@ -876,81 +879,81 @@ export interface HistoryResponse {
 
 /** Content type */
 export enum DigitalMailAttachmentContentTypeEnum {
-  ApplicationPdf = 'application/pdf',
+  ApplicationPdf = "application/pdf",
 }
 
 /** Content type */
 export enum DigitalMailRequestContentTypeEnum {
-  TextPlain = 'text/plain',
-  TextHtml = 'text/html',
+  TextPlain = "text/plain",
+  TextHtml = "text/html",
 }
 
 /** Determines if the message should be added to the internal or external OeP instance */
 export enum WebMessageRequestOepInstanceEnum {
-  INTERNAL = 'INTERNAL',
-  EXTERNAL = 'EXTERNAL',
+  INTERNAL = "INTERNAL",
+  EXTERNAL = "EXTERNAL",
 }
 
 /** Priority (optional, will be defaulted to NORMAL if not present) */
 export enum SmsRequestPriorityEnum {
-  HIGH = 'HIGH',
-  NORMAL = 'NORMAL',
+  HIGH = "HIGH",
+  NORMAL = "NORMAL",
 }
 
 /** Priority (optional, will be defaulted to NORMAL if not present) */
 export enum SmsBatchRequestPriorityEnum {
-  HIGH = 'HIGH',
-  NORMAL = 'NORMAL',
+  HIGH = "HIGH",
+  NORMAL = "NORMAL",
 }
 
 /** Delivery mode */
 export enum LetterAttachmentDeliveryModeEnum {
-  ANY = 'ANY',
-  DIGITAL_MAIL = 'DIGITAL_MAIL',
-  SNAIL_MAIL = 'SNAIL_MAIL',
+  ANY = "ANY",
+  DIGITAL_MAIL = "DIGITAL_MAIL",
+  SNAIL_MAIL = "SNAIL_MAIL",
 }
 
 /** Content type */
 export enum LetterAttachmentContentTypeEnum {
-  ApplicationPdf = 'application/pdf',
+  ApplicationPdf = "application/pdf",
 }
 
 /** Content type */
 export enum LetterRequestContentTypeEnum {
-  TextPlain = 'text/plain',
-  TextHtml = 'text/html',
+  TextPlain = "text/plain",
+  TextHtml = "text/html",
 }
 
 export enum DetailsPaymentReferenceTypeEnum {
-  SE_OCR = 'SE_OCR',
-  TENANT_REF = 'TENANT_REF',
+  SE_OCR = "SE_OCR",
+  TENANT_REF = "TENANT_REF",
 }
 
 export enum DetailsAccountTypeEnum {
-  BANKGIRO = 'BANKGIRO',
-  PLUSGIRO = 'PLUSGIRO',
+  BANKGIRO = "BANKGIRO",
+  PLUSGIRO = "PLUSGIRO",
 }
 
 /** Content type */
 export enum DigitalInvoiceFileContentTypeEnum {
-  ApplicationPdf = 'application/pdf',
+  ApplicationPdf = "application/pdf",
 }
 
 /** Invoice type */
 export enum DigitalInvoiceRequestTypeEnum {
-  INVOICE = 'INVOICE',
-  REMINDER = 'REMINDER',
+  INVOICE = "INVOICE",
+  REMINDER = "REMINDER",
 }
 
 /** Message type */
 export enum GetStatisticsParamsMessageTypeEnum {
-  MESSAGE = 'MESSAGE',
-  EMAIL = 'EMAIL',
-  SMS = 'SMS',
-  WEB_MESSAGE = 'WEB_MESSAGE',
-  DIGITAL_MAIL = 'DIGITAL_MAIL',
-  DIGITAL_INVOICE = 'DIGITAL_INVOICE',
-  SNAIL_MAIL = 'SNAIL_MAIL',
-  LETTER = 'LETTER',
-  SLACK = 'SLACK',
+  MESSAGE = "MESSAGE",
+  EMAIL = "EMAIL",
+  SMS = "SMS",
+  WEB_MESSAGE = "WEB_MESSAGE",
+  DIGITAL_MAIL = "DIGITAL_MAIL",
+  DIGITAL_INVOICE = "DIGITAL_INVOICE",
+  SNAIL_MAIL = "SNAIL_MAIL",
+  LETTER = "LETTER",
+  SLACK = "SLACK",
 }

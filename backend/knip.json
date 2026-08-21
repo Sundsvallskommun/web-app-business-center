@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/server.ts", "src/**/*.{test,spec}.ts"],
+  "entry": ["src/server.ts", "src/**/*.{test,spec}.ts", "src/utils/error-reporter/index.ts"],
   "project": ["src/**/*.ts"],
   "ignore": ["src/data-contracts/**"],
   "ignoreDependencies": ["lint-staged", "tsconfig-paths", "cors"],

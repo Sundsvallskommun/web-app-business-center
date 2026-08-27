@@ -12,31 +12,31 @@
 
 /** ConversationType model */
 export enum ConversationType {
-  INTERNAL = 'INTERNAL',
-  EXTERNAL = 'EXTERNAL',
+  INTERNAL = "INTERNAL",
+  EXTERNAL = "EXTERNAL",
 }
 
 export enum Header {
-  IN_REPLY_TO = 'IN_REPLY_TO',
-  REFERENCES = 'REFERENCES',
-  MESSAGE_ID = 'MESSAGE_ID',
-  AUTO_SUBMITTED = 'AUTO_SUBMITTED',
-  RETURN_PATH = 'RETURN_PATH',
-  CONTENT_TYPE = 'CONTENT_TYPE',
+  IN_REPLY_TO = "IN_REPLY_TO",
+  REFERENCES = "REFERENCES",
+  MESSAGE_ID = "MESSAGE_ID",
+  AUTO_SUBMITTED = "AUTO_SUBMITTED",
+  RETURN_PATH = "RETURN_PATH",
+  CONTENT_TYPE = "CONTENT_TYPE",
 }
 
 /** Message classification */
 export enum Classification {
-  INFORMATION = 'INFORMATION',
-  COMPLETION_REQUEST = 'COMPLETION_REQUEST',
-  OBTAIN_OPINION = 'OBTAIN_OPINION',
-  INTERNAL_COMMUNICATION = 'INTERNAL_COMMUNICATION',
-  OTHER = 'OTHER',
+  INFORMATION = "INFORMATION",
+  COMPLETION_REQUEST = "COMPLETION_REQUEST",
+  OBTAIN_OPINION = "OBTAIN_OPINION",
+  INTERNAL_COMMUNICATION = "INTERNAL_COMMUNICATION",
+  OTHER = "OTHER",
 }
 
 export enum NoteType {
-  INTERNAL = 'INTERNAL',
-  PUBLIC = 'PUBLIC',
+  INTERNAL = "INTERNAL",
+  PUBLIC = "PUBLIC",
 }
 
 export interface Address {
@@ -314,6 +314,11 @@ export interface Attachment {
    * @format int64
    */
   errandId?: number;
+  /**
+   * Decision id associated with the attachment, null for attachments belonging directly to the errand
+   * @format int64
+   */
+  decisionId?: number;
   /** Namespace */
   namespace?: string;
   /**
@@ -338,8 +343,8 @@ export interface Attachment {
   extension?: string;
   /** MIME type of the attachment */
   mimeType?: string;
-  /** Base64 encoded file content */
-  file?: string;
+  /** SHA-256 hash (hex encoded) of the attachment's raw content */
+  hash?: string;
   /** Additional parameters for the attachment */
   extraParameters?: Record<string, string>;
 }
@@ -395,7 +400,7 @@ export interface Decision {
    * @format date-time
    */
   validTo?: string;
-  /** List of attachments related to the decision */
+  /** List of attachments related to the decision. Attachments are managed through the decision attachment endpoints and sending them in this payload is rejected */
   attachments?: Attachment[];
   /** Additional parameters for the decision */
   extraParameters?: Record<string, string>;
@@ -584,7 +589,6 @@ export interface JsonNode {
   null?: boolean;
   object?: boolean;
   float?: boolean;
-  integralNumber?: boolean;
   pojo?: boolean;
   floatingPointNumber?: boolean;
   short?: boolean;
@@ -600,9 +604,10 @@ export interface JsonNode {
   container?: boolean;
   missingNode?: boolean;
   nodeType?: JsonNodeNodeTypeEnum;
-  number?: boolean;
+  integralNumber?: boolean;
   string?: boolean;
   boolean?: boolean;
+  number?: boolean;
   embeddedValue?: boolean;
 }
 
@@ -887,6 +892,31 @@ export interface KeyValues {
   values?: string[];
 }
 
+/** Message model */
+export interface Message {
+  /** Message ID */
+  id?: string;
+  /** The ID of the replied message */
+  inReplyToMessageId?: string;
+  /**
+   * The timestamp when the message was created.
+   * @format date-time
+   */
+  created?: string;
+  /** The participant who created the message. */
+  createdBy?: Identifier;
+  /**
+   * The content of the message.
+   * @minLength 1
+   */
+  content: string;
+  readBy?: ReadBy[];
+  attachments?: ConversationAttachment[];
+  attachmentIds?: number[];
+  /** Type of message (user or system created) */
+  type?: MessageTypeEnum;
+}
+
 /** Readby model */
 export interface ReadBy {
   /** The identifier of the person who read the message. */
@@ -911,6 +941,8 @@ export interface ConversationAttachment {
   fileSize?: number;
   /** Mime type of the file */
   mimeType?: string;
+  /** Hash of the file content */
+  hash?: string;
   /**
    * The attachment created date
    * @format date-time
@@ -918,29 +950,10 @@ export interface ConversationAttachment {
   created?: string;
 }
 
-/** Message model */
-export interface Message {
-  /** Message ID */
-  id?: string;
-  /** The ID of the replied message */
-  inReplyToMessageId?: string;
-  /**
-   * The timestamp when the message was created.
-   * @format date-time
-   */
-  created?: string;
-  /** The participant who created the message. */
-  createdBy?: Identifier;
-  /**
-   * The content of the message.
-   * @minLength 1
-   */
-  content: string;
-  readBy?: ReadBy[];
-  attachments?: ConversationAttachment[];
-  attachmentIds?: number[];
-  /** Type of message (user or system created) */
-  type?: MessageTypeEnum;
+/** Request to mark messages as read */
+export interface MarkAsReadRequest {
+  /** @minItems 1 */
+  messageIds: string[];
 }
 
 export interface PatchNotification {
@@ -1074,12 +1087,12 @@ export interface PageErrand {
   content?: Errand[];
   /** @format int32 */
   number?: number;
-  first?: boolean;
-  last?: boolean;
-  /** @format int32 */
-  numberOfElements?: number;
   sort?: SortObject;
   pageable?: PageableObject;
+  /** @format int32 */
+  numberOfElements?: number;
+  first?: boolean;
+  last?: boolean;
   empty?: boolean;
 }
 
@@ -1088,11 +1101,11 @@ export interface PageableObject {
   offset?: number;
   sort?: SortObject;
   paged?: boolean;
-  unpaged?: boolean;
   /** @format int32 */
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
+  unpaged?: boolean;
 }
 
 export interface SortObject {
@@ -1225,13 +1238,54 @@ export interface PageMessage {
   content?: Message[];
   /** @format int32 */
   number?: number;
-  first?: boolean;
-  last?: boolean;
-  /** @format int32 */
-  numberOfElements?: number;
   sort?: SortObject;
   pageable?: PageableObject;
+  /** @format int32 */
+  numberOfElements?: number;
+  first?: boolean;
+  last?: boolean;
   empty?: boolean;
+}
+
+/** Read-by statistics for a conversation */
+export interface ConversationReadByCount {
+  /**
+   * The SM conversation ID
+   * @example "896a44d8-724b-11ed-a840-0242ac110002"
+   */
+  conversationId?: string;
+  /**
+   * Total number of messages in the conversation
+   * @format int64
+   */
+  messageCount?: number;
+  readByCount?: ReadByCount[];
+  readByPartCount?: ReadByPartCount[];
+}
+
+/** Number of messages read by a specific identifier */
+export interface ReadByCount {
+  /** The identifier of the person the count refers to */
+  identifier?: Identifier;
+  /**
+   * Number of messages read by the identifier
+   * @format int64
+   */
+  count?: number;
+}
+
+/** Number of messages read by a specific part */
+export interface ReadByPartCount {
+  /**
+   * The part the count refers to
+   * @example "KC-23010001"
+   */
+  part?: string;
+  /**
+   * Number of messages read by the part
+   * @format int64
+   */
+  count?: number;
 }
 
 export interface PageDecision {
@@ -1244,67 +1298,67 @@ export interface PageDecision {
   content?: Decision[];
   /** @format int32 */
   number?: number;
-  first?: boolean;
-  last?: boolean;
-  /** @format int32 */
-  numberOfElements?: number;
   sort?: SortObject;
   pageable?: PageableObject;
+  /** @format int32 */
+  numberOfElements?: number;
+  first?: boolean;
+  last?: boolean;
   empty?: boolean;
 }
 
 /** Category of the address */
 export enum AddressAddressCategoryEnum {
-  POSTAL_ADDRESS = 'POSTAL_ADDRESS',
-  INVOICE_ADDRESS = 'INVOICE_ADDRESS',
-  VISITING_ADDRESS = 'VISITING_ADDRESS',
+  POSTAL_ADDRESS = "POSTAL_ADDRESS",
+  INVOICE_ADDRESS = "INVOICE_ADDRESS",
+  VISITING_ADDRESS = "VISITING_ADDRESS",
 }
 
 /** The type of contact information */
 export enum ContactInformationContactTypeEnum {
-  CELLPHONE = 'CELLPHONE',
-  PHONE = 'PHONE',
-  EMAIL = 'EMAIL',
+  CELLPHONE = "CELLPHONE",
+  PHONE = "PHONE",
+  EMAIL = "EMAIL",
 }
 
 /** The type of stakeholder */
 export enum StakeholderTypeEnum {
-  PERSON = 'PERSON',
-  ORGANIZATION = 'ORGANIZATION',
+  PERSON = "PERSON",
+  ORGANIZATION = "ORGANIZATION",
 }
 
 /** Channel through which the attachment was received */
 export enum AttachmentChannelEnum {
-  EMAIL = 'EMAIL',
-  ESERVICE = 'ESERVICE',
-  WEB_UI = 'WEB_UI',
-  MY_PAGES = 'MY_PAGES',
+  EMAIL = "EMAIL",
+  ESERVICE = "ESERVICE",
+  WEB_UI = "WEB_UI",
+  MY_PAGES = "MY_PAGES",
 }
 
 /** Type of the decision */
 export enum DecisionDecisionTypeEnum {
-  RECOMMENDED = 'RECOMMENDED',
-  PROPOSED = 'PROPOSED',
-  FINAL = 'FINAL',
+  RECOMMENDED = "RECOMMENDED",
+  PROPOSED = "PROPOSED",
+  FINAL = "FINAL",
 }
 
 /** Outcome of the decision */
 export enum DecisionDecisionOutcomeEnum {
-  APPROVAL = 'APPROVAL',
-  REJECTION = 'REJECTION',
-  DISMISSAL = 'DISMISSAL',
-  CANCELLATION = 'CANCELLATION',
+  APPROVAL = "APPROVAL",
+  REJECTION = "REJECTION",
+  DISMISSAL = "DISMISSAL",
+  CANCELLATION = "CANCELLATION",
 }
 
 /** How the errand was created */
 export enum ErrandChannelEnum {
-  ESERVICE = 'ESERVICE',
-  ESERVICE_KATLA = 'ESERVICE_KATLA',
-  EMAIL = 'EMAIL',
-  WEB_UI = 'WEB_UI',
-  MOBILE = 'MOBILE',
-  SYSTEM = 'SYSTEM',
-  MY_PAGES = 'MY_PAGES',
+  ESERVICE = "ESERVICE",
+  ESERVICE_KATLA = "ESERVICE_KATLA",
+  EMAIL = "EMAIL",
+  WEB_UI = "WEB_UI",
+  MOBILE = "MOBILE",
+  SYSTEM = "SYSTEM",
+  MY_PAGES = "MY_PAGES",
 }
 
 /**
@@ -1312,59 +1366,59 @@ export enum ErrandChannelEnum {
  * @default "MEDIUM"
  */
 export enum ErrandPriorityEnum {
-  HIGH = 'HIGH',
-  MEDIUM = 'MEDIUM',
-  LOW = 'LOW',
+  HIGH = "HIGH",
+  MEDIUM = "MEDIUM",
+  LOW = "LOW",
 }
 
 export enum JsonNodeNodeTypeEnum {
-  ARRAY = 'ARRAY',
-  BINARY = 'BINARY',
-  BOOLEAN = 'BOOLEAN',
-  MISSING = 'MISSING',
-  NULL = 'NULL',
-  NUMBER = 'NUMBER',
-  OBJECT = 'OBJECT',
-  POJO = 'POJO',
-  STRING = 'STRING',
+  ARRAY = "ARRAY",
+  BINARY = "BINARY",
+  BOOLEAN = "BOOLEAN",
+  MISSING = "MISSING",
+  NULL = "NULL",
+  NUMBER = "NUMBER",
+  OBJECT = "OBJECT",
+  POJO = "POJO",
+  STRING = "STRING",
 }
 
 /** If the message is inbound or outbound from the perspective of case-data/e-service. */
 export enum MessageRequestDirectionEnum {
-  INBOUND = 'INBOUND',
-  OUTBOUND = 'OUTBOUND',
+  INBOUND = "INBOUND",
+  OUTBOUND = "OUTBOUND",
 }
 
 /** Type of message (user or system created) */
 export enum MessageTypeEnum {
-  USER_CREATED = 'USER_CREATED',
-  SYSTEM_CREATED = 'SYSTEM_CREATED',
+  USER_CREATED = "USER_CREATED",
+  SYSTEM_CREATED = "SYSTEM_CREATED",
 }
 
 /** The priority of the case */
 export enum PatchErrandPriorityEnum {
-  HIGH = 'HIGH',
-  MEDIUM = 'MEDIUM',
-  LOW = 'LOW',
+  HIGH = "HIGH",
+  MEDIUM = "MEDIUM",
+  LOW = "LOW",
 }
 
 /** The type of decision */
 export enum PatchDecisionDecisionTypeEnum {
-  RECOMMENDED = 'RECOMMENDED',
-  PROPOSED = 'PROPOSED',
-  FINAL = 'FINAL',
+  RECOMMENDED = "RECOMMENDED",
+  PROPOSED = "PROPOSED",
+  FINAL = "FINAL",
 }
 
 /** The outcome of the decision */
 export enum PatchDecisionDecisionOutcomeEnum {
-  APPROVAL = 'APPROVAL',
-  REJECTION = 'REJECTION',
-  DISMISSAL = 'DISMISSAL',
-  CANCELLATION = 'CANCELLATION',
+  APPROVAL = "APPROVAL",
+  REJECTION = "REJECTION",
+  DISMISSAL = "DISMISSAL",
+  CANCELLATION = "CANCELLATION",
 }
 
 /** If the message is inbound or outbound from the perspective of case-data/e-service. */
 export enum MessageResponseDirectionEnum {
-  INBOUND = 'INBOUND',
-  OUTBOUND = 'OUTBOUND',
+  INBOUND = "INBOUND",
+  OUTBOUND = "OUTBOUND",
 }

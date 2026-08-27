@@ -1,19 +1,13 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
-import {
-  AddressAddressCategoryEnum,
-  Attachment,
-  AttachmentChannelEnum,
-  Errand,
-  Stakeholder,
-  StakeholderTypeEnum,
-} from '@/data-contracts/case-data/data-contracts';
+import { AddressAddressCategoryEnum, Errand, Stakeholder, StakeholderTypeEnum } from '@/data-contracts/case-data/data-contracts';
 import { Asset } from '@/data-contracts/partyassets/data-contracts';
 import { AssetWithService } from '@/interfaces/asset.interface';
 import { AttachmentCategory, CaseDataNamespace, ParkingPermitCaseType, StakeholderRole } from '@/interfaces/casedata.interface';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
+import { RepresentingMode } from '@/interfaces/representing.interface';
 import { User } from '@/interfaces/users.interface';
 import authMiddleware from '@/middlewares/auth.middleware';
 import ApiService from '@/services/api.service';
@@ -26,10 +20,12 @@ import {
   toServiceDetails,
   toVisibleAssets,
 } from '@/services/asset.service';
+import { toAttachmentMetadata, uploadErrandAttachment } from '@/services/casedata-attachment.service';
 import { getCitizen } from '@/services/citizen.service';
 import { buildMyPagesErrand } from '@/utils/casedata-errand-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { getRepresentedPartyId } from '@/utils/getRepresentedPartyId';
+import { logger } from '@/utils/logger';
 import { apiURL } from '@/utils/util';
 import { AssetsApiResponse } from '@/responses/asset.response';
 import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
@@ -54,24 +50,19 @@ export class AssetsController {
   private casedataApiBase = getApiBase('case-data');
 
   private async uploadAttachments(errandId: number, files: Express.Multer.File[], options: AttachmentOptions, user: User): Promise<void> {
-    const baseURL = apiURL(this.casedataApiBase);
-    const attachmentUrl = `${MUNICIPALITY_ID}/${CaseDataNamespace.SBK_PARKING_PERMIT}/errands/${errandId}/attachments`;
-
-    await Promise.all(
-      files.map(file => {
-        const fileExtension = file.originalname.split('.').pop() || '';
-        const attachmentData: Attachment = {
-          category: options.category,
-          name: file.originalname,
-          extension: fileExtension,
-          mimeType: file.mimetype,
-          file: file.buffer.toString('base64'),
-          note: options.note,
-          channel: AttachmentChannelEnum.MY_PAGES,
-        };
-        return this.apiService.post<Attachment, Attachment>({ url: attachmentUrl, baseURL, data: attachmentData }, user);
-      }),
-    );
+    // Uploaded one at a time: CaseData version locks the errand, so parallel posts to the
+    // same errand risk losing an attachment to a locking conflict. These forms carry one
+    // or two files, so the ordering costs nothing.
+    for (const file of files) {
+      try {
+        await uploadErrandAttachment(CaseDataNamespace.SBK_PARKING_PERMIT, errandId, file, toAttachmentMetadata(file, options), user);
+      } catch (error) {
+        // The errand itself is already created at this point, so log enough for support
+        // to be able to add the attachment manually.
+        logger.error(`Failed to upload attachment ${file.originalname} to errand ${errandId}`);
+        throw error;
+      }
+    }
   }
 
   private async getApplicantStakeholder(partyId: string, user: User): Promise<Stakeholder> {
@@ -110,11 +101,19 @@ export class AssetsController {
   private async createParkingPermitErrand(req: RequestWithUser, options: CreateErrandOptions): Promise<ApiResponse<{ success: boolean }>> {
     const { representing } = req.session ?? {};
 
-    if (!representing?.PRIVATE?.partyId) {
+    // A parking permit is always applied for by the citizen themselves: the applicant
+    // stakeholder is a PERSON, so an organization partyId must never reach personId.
+    if (representing?.mode !== RepresentingMode.PRIVATE) {
       throw new HttpException(400, 'Missing party-id');
     }
 
-    const stakeholder = await this.getApplicantStakeholder(representing.PRIVATE.partyId, req.user);
+    const partyId = getRepresentedPartyId(representing, req.user);
+
+    if (!partyId) {
+      throw new HttpException(400, 'Missing party-id');
+    }
+
+    const stakeholder = await this.getApplicantStakeholder(partyId, req.user);
 
     const data = buildMyPagesErrand({
       caseType: options.caseType,

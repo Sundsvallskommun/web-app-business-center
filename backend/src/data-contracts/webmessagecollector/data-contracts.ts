@@ -102,6 +102,6 @@ export interface MessageDTO {
 
 /** If the message is inbound or outbound from the perspective of case-data/e-service. */
 export enum MessageDtoDirectionEnum {
-  INBOUND = 'INBOUND',
-  OUTBOUND = 'OUTBOUND',
+  INBOUND = "INBOUND",
+  OUTBOUND = "OUTBOUND",
 }

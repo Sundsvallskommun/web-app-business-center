@@ -45,7 +45,7 @@ const handleInvoiceResponse: (data: InvoicesResponse) => IInvoice[] = (data) =>
   data.invoices.map((n: InvoicesResponseData) => ({
     invoiceNumber: n.invoiceNumber,
     dueDate: n.dueDate,
-    invoiceDescription: n.invoiceDescription,
+    invoiceDescriptions: n.invoiceDescriptions,
     totalAmount: n.totalAmount,
     pdfAvailable: n.pdfAvailable,
     invoiceStatus: mapStatus(n.invoiceStatus),

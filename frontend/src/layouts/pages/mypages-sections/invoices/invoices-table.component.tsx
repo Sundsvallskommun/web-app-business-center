@@ -21,7 +21,7 @@ export const InvoicesTable: React.FC<{
     return (
       <Table.Row key={`row-${idx}`}>
         <Table.Column>
-          <div className="text-left text-small font-bold">{item.invoiceDescription}</div>
+          <div className="text-left text-small font-bold">{item.invoiceDescriptions?.join(', ')}</div>
         </Table.Column>
         <Table.Column>
           <div className="text-left">
@@ -39,12 +39,6 @@ export const InvoicesTable: React.FC<{
         <Table.Column>
           <div className="text-left">{item.ocrNumber}</div>
         </Table.Column>
-        {/* <Table.Column>
-          Disabled until third-party modifications are made
-           <div className="text-left">
-            <GetPdfButton isLoading={isLoading} setIsLoading={setIsLoading} item={item} />
-          </div> 
-        </Table.Column> */}
       </Table.Row>
     );
   });
@@ -69,7 +63,7 @@ export const InvoicesTable: React.FC<{
                   <Table.HeaderColumn>{t('invoice:table.dueDate')}</Table.HeaderColumn>
                   <Table.HeaderColumn>{t('invoice:table.amount')}</Table.HeaderColumn>
                   <Table.HeaderColumn>{t('invoice:table.reference')}</Table.HeaderColumn>
-                  <Table.HeaderColumn className="sr-only">{t('invoice:table.download')}</Table.HeaderColumn>
+                  {/* <Table.HeaderColumn className="sr-only">{t('invoice:table.download')}</Table.HeaderColumn> */}
                 </Table.Header>
                 <Table.Body>{datarows}</Table.Body>
               </Table>

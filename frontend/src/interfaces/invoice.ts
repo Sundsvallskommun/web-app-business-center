@@ -3,7 +3,7 @@ import { ApiResponseMeta } from './service';
 export interface IInvoice {
   invoiceNumber: string;
   dueDate: string;
-  invoiceDescription: string;
+  invoiceDescriptions: string[];
   totalAmount: number;
   pdfAvailable: boolean;
   invoiceStatus: { code: InvoiceStatus; color: string; label: string };
@@ -52,7 +52,7 @@ export interface InvoicesResponseData {
   organizationNumber: string;
   invoiceName: string;
   invoiceType: string;
-  invoiceDescription: string;
+  invoiceDescriptions: string[];
   invoiceAddress: InvoiceAddress;
   facilityId: string;
   invoiceOrigin: string;

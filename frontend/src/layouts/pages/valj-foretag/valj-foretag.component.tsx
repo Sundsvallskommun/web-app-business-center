@@ -41,7 +41,7 @@ export default function ValjForetag() {
 
   const onContinue = async () => {
     const res = await setRepresenting({ organizationNumber: choosen, mode: RepresentingMode.BUSINESS });
-    if (!res.error) {
+    if (res.success) {
       const path = searchParams?.get('path') || '';
       const myPagesAdjustedPathname = getAdjustedPathname(path, representingMode);
       router.push(

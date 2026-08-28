@@ -12,6 +12,8 @@ import { useApi, useApiService } from '../../services/api-service';
 import { getRepresentingModeRoute, newRepresentingModePathname } from '../../utils/representingModeRoute';
 import { toRepresentingLabel } from '@utils/to-representing-label';
 
+type SetRepresentingResult = { data: RepresentingEntity; success: true } | { error: unknown; success: false };
+
 export const useRepresentingSwitch = () => {
   const queryClient = useApiService((s) => s.queryClient);
   const representingMutation = useApi<RepresentingEntity>({
@@ -24,21 +26,18 @@ export const useRepresentingSwitch = () => {
     queryClient.invalidateQueries();
   };
 
-  const setRepresenting = async (representingDto: RepresentingEntityDto) => {
+  const setRepresenting = async (representingDto: RepresentingEntityDto): Promise<SetRepresentingResult> => {
     queryClient.cancelQueries();
     try {
       const res = await representingMutation.mutateAsync(representingDto);
-      if (!res.error) {
-        invalidateQueries();
-      } else {
-        if (representingDto.mode === RepresentingMode.BUSINESS) {
-          router.push(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/valj-foretag`);
-        }
-      }
-      return res;
+      invalidateQueries();
+      return { data: res, success: true };
     } catch (err) {
       console.error('Could not set representing mode in backend');
-      return { error: err };
+      if (representingDto.mode === RepresentingMode.BUSINESS) {
+        router.push(`${getRepresentingModeRoute(RepresentingMode.BUSINESS)}/valj-foretag`);
+      }
+      return { error: err, success: false };
     }
   };
 
@@ -78,8 +77,9 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
   const { isMinDesktop } = useThemeQueries();
 
   const setEngagement = async (value?: string) => {
-    const res = (await setRepresenting({ organizationNumber: value })) as RepresentingEntity;
-    setRepresentingName(toRepresentingLabel(res));
+    const res = await setRepresenting({ organizationNumber: value });
+    if (!res.success) return;
+    setRepresentingName(toRepresentingLabel(res.data));
 
     if (submitCallback) submitCallback();
   };
@@ -143,4 +143,3 @@ export const MyPagesBusinessSwitch: React.FC<{ submitCallback?: () => void }> = 
     </label>
   );
 };
-

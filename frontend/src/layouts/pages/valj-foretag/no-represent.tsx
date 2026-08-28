@@ -15,7 +15,7 @@ export const NoRepresent: React.FC = ({}) => {
 
   const goPrivate = async () => {
     const res = await setRepresenting({ mode: RepresentingMode.PRIVATE, organizationNumber: undefined });
-    if (res?.error) return;
+    if (!res.success) return;
     router.push('/privat/oversikt');
   };
 

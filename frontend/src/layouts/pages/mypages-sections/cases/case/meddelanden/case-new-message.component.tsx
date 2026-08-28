@@ -1,3 +1,4 @@
+import { applyApiErrorToForm } from '@services/form-api-error';
 import { useApi } from '@services/api-service';
 import {
   Button,
@@ -11,10 +12,12 @@ import {
   useThemeQueries,
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
+import { MAX_FILES_PER_UPLOAD, validateFileCount } from '@utils/upload-limits';
 import dayjs from 'dayjs';
 import { Info } from 'lucide-react';
 import { useContext, useMemo, useState } from 'react';
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { CaseContext } from '../case-layout.component';
 
 interface NewMessage {
@@ -25,6 +28,7 @@ interface NewMessage {
 const MESSAGE_CHARACTER_LIMIT = 10000;
 
 export default function CaseNewMessage() {
+  const { t } = useTranslation(['cases', 'common']);
   const { isMinDesktop } = useThemeQueries();
   const context = useForm<NewMessage>({ defaultValues: { files: [], message: '' }, mode: 'onChange' });
   const { caseData } = useContext(CaseContext);
@@ -98,13 +102,15 @@ export default function CaseNewMessage() {
     }
 
     try {
-      const res = await postMessageMutation.mutateAsync(formData);
-      if (!res.error) context.reset();
+      await postMessageMutation.mutateAsync(formData);
+      context.reset();
     } catch (error) {
       console.error('Error sending message:', error);
-      context.setError('root', {
-        type: 'manual',
-        message: 'Något gick fel när meddelandet skickades, försök igen senare',
+      applyApiErrorToForm<NewMessage>(error, context, {
+        fallbackMessage: t('cases:newMessage.sendError'),
+        inlineFields: ['files', 'message'],
+        onFormError: (message) => context.setError('root', { message, type: 'server' }),
+        translate: t,
       });
     }
   };
@@ -112,7 +118,8 @@ export default function CaseNewMessage() {
   const handleRemoveFile = (file: UploadFile) => {
     context.setValue(
       'files',
-      context.watch('files').filter((x) => x !== file)
+      context.watch('files').filter((x) => x !== file),
+      { shouldValidate: true }
     );
   };
 
@@ -149,7 +156,13 @@ export default function CaseNewMessage() {
                   appendFiles={files}
                   className="mt-16"
                   maxFileSizeMB={25}
-                  {...context.register('files')}
+                  {...context.register('files', {
+                    validate: (files) =>
+                      validateFileCount(
+                        files,
+                        t('common:uploadErrors.UPLOAD_TOO_MANY_FILES', { max: MAX_FILES_PER_UPLOAD })
+                      ),
+                  })}
                 />
                 <div className="flex items-row text-small gap-5 mt-10">
                   <span className="text-dark-secondary">Maximal filstorlek: 25 MB.</span>{' '}
@@ -157,6 +170,11 @@ export default function CaseNewMessage() {
                     Visa tillåtna filtyper
                   </Button>
                 </div>
+                {context.formState.errors.files && (
+                  <FormErrorMessage className="text-small text-error" role="alert">
+                    {context.formState.errors.files.message}
+                  </FormErrorMessage>
+                )}
               </div>
 
               {files.length ? (

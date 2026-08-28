@@ -1,8 +1,7 @@
+import { applyApiErrorToForm } from '@services/form-api-error';
 import { useApi } from '@services/api-service';
-import { ACCEPTED_UPLOAD_FILETYPES } from '@utils/accepted-file-types';
 import {
   Button,
-  FileUpload,
   FormControl,
   FormErrorMessage,
   FormHelperText,
@@ -13,9 +12,11 @@ import {
   useSnackbar,
 } from '@sk-web-gui/react';
 import { toBase64 } from '@utils/toBase64';
+import { MAX_FILES_PER_UPLOAD, validateFileCount } from '@utils/upload-limits';
 import { ArrowRight } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useController, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { ParkingPermitFileUpload } from './parkingpermit-file-upload.component';
 
 const MAX_FILE_SIZE_MB = 25;
 
@@ -45,6 +46,14 @@ export const ParkingPermitLostForm = ({
     url: '/assets/parkingpermit/lost',
     method: 'post',
     axiosParameters: { headers: { 'Content-Type': 'multipart/form-data' } },
+  });
+  const { field: filesField, fieldState: filesFieldState } = useController({
+    control: form.control,
+    name: 'files',
+    rules: {
+      validate: (files) =>
+        validateFileCount(files, t('common:uploadErrors.UPLOAD_TOO_MANY_FILES', { max: MAX_FILES_PER_UPLOAD })),
+    },
   });
 
   const onSubmit = async (data: LostPermitFormModel) => {
@@ -86,18 +95,18 @@ export const ParkingPermitLostForm = ({
           status: 'success',
         });
         setFormState('success');
-      } catch {
-        toastMessage({
-          position: 'bottom',
-          closeable: false,
-          message: t('decisions:parkingPermit.lost.form.errorMessage'),
-          status: 'error',
+      } catch (error) {
+        applyApiErrorToForm<LostPermitFormModel>(error, form, {
+          fallbackMessage: t('decisions:parkingPermit.lost.form.errorMessage'),
+          inlineFields: ['files', 'policeReportNumber'],
+          onFormError: (message) => toastMessage({ position: 'bottom', closeable: false, message, status: 'error' }),
+          translate: t,
         });
       }
     }
   };
 
-  const files = form.watch('files');
+  const files = filesField.value;
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-56">
@@ -123,43 +132,15 @@ export const ParkingPermitLostForm = ({
       <FormControl className="w-full">
         <FormLabel>{t('decisions:parkingPermit.lost.form.attachPoliceReport')}</FormLabel>
         <FormHelperText className="mb-12">{t('decisions:parkingPermit.lost.form.allowedFileTypes')}</FormHelperText>
-        {files && files.length > 0 ? (
-          <FileUpload.List name="files">
-            {files.map((file, i) => (
-              <FileUpload.ListItem
-                key={file.id}
-                index={i}
-                file={file}
-                categoryProps={{
-                  categories: { POLICE_REPORT: t('decisions:parkingPermit.lost.form.policeReportCategory') },
-                }}
-                actionsProps={{
-                  showRemove: true,
-                  onRemove: () =>
-                    form.setValue(
-                      'files',
-                      form.watch('files').filter((f) => f !== file)
-                    ),
-                }}
-              />
-            ))}
-          </FileUpload.List>
-        ) : (
-          <FileUpload.Field
-            className="inline-block w-full"
-            accept={ACCEPTED_UPLOAD_FILETYPES}
-            variant="horizontal"
-            name="files"
-            maxFileSizeMB={MAX_FILE_SIZE_MB}
-            data-cy="police-report-file-upload"
-            onChange={(e) => {
-              form.setValue('files', e.target.value);
-            }}
-          />
-        )}
-        {form.formState.errors.files && (
-          <FormErrorMessage className="text-error">{form.formState.errors.files.message}</FormErrorMessage>
-        )}
+        <ParkingPermitFileUpload
+          category="POLICE_REPORT"
+          categoryLabel={t('decisions:parkingPermit.lost.form.policeReportCategory')}
+          dataCy="police-report-file-upload"
+          errorMessage={filesFieldState.error?.message}
+          files={files}
+          maxFileSizeMB={MAX_FILE_SIZE_MB}
+          onChange={filesField.onChange}
+        />
       </FormControl>
 
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center mt-40">

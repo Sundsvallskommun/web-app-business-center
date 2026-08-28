@@ -1,20 +1,26 @@
 import { NextFunction, Request, Response } from 'express';
+import { MulterError } from 'multer';
 import { HttpException } from '@exceptions/HttpException';
 import { logger } from '@utils/logger';
+import { toFileUploadErrorResponse } from '@utils/files/fileUploadError';
 
-const errorMiddleware = (error: HttpException, req: Request, res: Response, next: NextFunction) => {
+const errorMiddleware = (error: HttpException | MulterError, req: Request, res: Response, next: NextFunction) => {
   try {
-    const status: number = error.status || 500;
-    const message: string = error.message || 'Something went wrong';
+    const uploadError = error instanceof MulterError ? toFileUploadErrorResponse(error) : undefined;
+    const status: number = error instanceof MulterError ? 400 : error.status || 500;
+    const message: string = uploadError?.code ?? error.message ?? 'Something went wrong';
+    const validationErrors = error instanceof MulterError ? undefined : error.errors;
     const errors: string =
-      error.errors?.length > 0 ? JSON.stringify(error.errors.map(error => ({ property: error.property, constraints: error.constraints }))) : '';
+      validationErrors && validationErrors.length > 0
+        ? JSON.stringify(validationErrors.map(error => ({ property: error.property, constraints: error.constraints })))
+        : '';
 
     // Strip CR/LF from user-controlled values to prevent log injection
     const strip = (value: string) => value.replace(/[\r\n]/g, '');
     const logLine = `[${strip(req.method)}] ${strip(req.path)} >> StatusCode:: ${status}, Message:: ${strip(message)}, Errors:: ${strip(errors)}`;
     console.error(logLine);
     logger.error(logLine);
-    res.status(status).json({ message });
+    res.status(status).json(uploadError ?? { message });
   } catch (error) {
     next(error);
   }

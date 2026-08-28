@@ -55,6 +55,7 @@
     "baseline-browser-mapping": "^2.11.1"
   },
   "devDependencies": {
+    "@jest/globals": "29.7.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",

@@ -1,6 +1,5 @@
 import { __DEV__ } from '@sk-web-gui/react';
 import {
-  DefaultError,
   QueryClient,
   QueryKey,
   UseMutationOptions,
@@ -20,11 +19,42 @@ export interface ApiResponse<T> {
   message: string;
 }
 
+interface ApiErrorResponse {
+  code?: string;
+  field?: string;
+  message?: string;
+  params?: ApiErrorParams;
+}
+
+interface ApiErrorParams {
+  max: number;
+}
+
+const isApiErrorResponse = (value: unknown): value is ApiErrorResponse =>
+  typeof value === 'object' &&
+  value !== null &&
+  (('message' in value && typeof value.message === 'string') || ('code' in value && typeof value.code === 'string'));
+
+const isApiErrorParams = (value: unknown): value is ApiErrorParams =>
+  typeof value === 'object' && value !== null && 'max' in value && typeof value.max === 'number';
+
+export const getApiErrorResponse = (error: unknown): ApiErrorResponse | undefined => {
+  if (!axios.isAxiosError(error) || !isApiErrorResponse(error.response?.data)) return undefined;
+
+  const { code, field, message, params } = error.response.data;
+  return {
+    ...(typeof code === 'string' ? { code } : {}),
+    ...(typeof field === 'string' ? { field } : {}),
+    ...(typeof message === 'string' ? { message } : {}),
+    ...(isApiErrorParams(params) ? { params } : {}),
+  };
+};
+
 const handleError = (error: AxiosError | unknown) => {
   const axiosErr = axios.isAxiosError(error) ? error : null;
   if (axiosErr?.response?.status === 401 && !window?.location.pathname.includes('login')) {
     const path = window.location.pathname.includes('/valj-foretag') ? '/' : window.location.pathname;
-    const message = (axiosErr.response?.data as { message?: string })?.message ?? '';
+    const message = getApiErrorResponse(error)?.message ?? '';
     window.location.href = `/login?path=${path}&failMessage=${message}`;
   }
 };
@@ -206,7 +236,7 @@ export function useApi<
 >(
   props: UseApiMutationProps<TQueryFnData, TError, TData, TQueryKey, TContext>,
   queryClient?: QueryClient
-): UseMutationResult<TData & { error?: DefaultError }, TError, unknown, TContext>;
+): UseMutationResult<TData, TError, unknown, TContext>;
 
 export function useApi<
   TQueryFnData = unknown,
@@ -244,8 +274,8 @@ export function useApi<
         dataHandler(res.data.data)
       );
     } catch (error) {
-      handleError(error as AxiosError);
-      return { error };
+      handleError(error);
+      throw error;
     }
   };
 
@@ -276,12 +306,7 @@ export function useApi<
           return { newBody };
         },
         onSuccess: (result) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          _queryClient.setQueryData<TQueryFnData & { error?: DefaultError }>(queryKey, result as any);
-        },
-        throwOnError: (error) => {
-          handleError(error as AxiosError);
-          return false;
+          _queryClient.setQueryData<TData>(queryKey, result as TData);
         },
         ...mutationOptions,
       },

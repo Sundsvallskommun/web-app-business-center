@@ -2,7 +2,9 @@ import { ExtraParameter } from '@/data-contracts/case-data/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
 import {
   buildRenewalExtraParameters,
+  buildRenewalPrefill,
   isAllowedAsset,
+  isParkingPermitAsset,
   isVisibleStatus,
   ParkingPermitRenewalBody,
   toClientAsset,
@@ -143,10 +145,10 @@ describe('asset.service', () => {
       const keep = { id: 'ok', type: ALLOWED_TYPE, status: Status.ACTIVE } as Asset;
       const assets: Asset[] = [
         keep,
-        { id: 'a', type: 'SOMETHING_ELSE', status: Status.ACTIVE } as Asset, // not whitelisted
-        { id: 'b', type: ALLOWED_TYPE, status: Status.DRAFT } as Asset, // hidden status
-        { id: 'c', type: ALLOWED_TYPE, status: Status.REPLACED } as Asset, // hidden status
-        { type: ALLOWED_TYPE, status: Status.ACTIVE } as Asset, // no id -> not addressable
+        { id: 'a', type: 'SOMETHING_ELSE', status: Status.ACTIVE } as Asset,
+        { id: 'b', type: ALLOWED_TYPE, status: Status.DRAFT } as Asset,
+        { id: 'c', type: ALLOWED_TYPE, status: Status.REPLACED } as Asset,
+        { type: ALLOWED_TYPE, status: Status.ACTIVE } as Asset,
       ];
 
       expect(toVisibleAssets(assets)).toEqual([keep]);
@@ -199,6 +201,163 @@ describe('asset.service', () => {
     ])('flags winter service for %s', async (_label, formData) => {
       const result = await toServiceDetails(serviceAsset(JSON.stringify(formData)), mockUser);
       expect(result?.isWinterService).toBe(true);
+    });
+  });
+
+  describe('buildRenewalExtraParameters when the applicant states nothing has changed', () => {
+    const UNCHANGED = 'Den sökande har angett att förutsättningarna inte har ändrats';
+
+    it('replaces a carried-over summary with the fixed sentence', () => {
+      const params = buildRenewalExtraParameters({ circumstancesChanged: 'FALSE', caseMeaning: 'Sammanfattning från det gamla ärendet' });
+
+      expect(findValues(params, 'caseMeaning')).toEqual([UNCHANGED]);
+      expect(params.filter(p => p.key === 'caseMeaning')).toHaveLength(1);
+    });
+
+    it('adds the fixed sentence even when no summary was submitted', () => {
+      const params = buildRenewalExtraParameters({ circumstancesChanged: 'FALSE' });
+
+      expect(findValues(params, 'caseMeaning')).toEqual([UNCHANGED]);
+    });
+
+    it('still records the changedCircumstances flag as N', () => {
+      const params = buildRenewalExtraParameters({ circumstancesChanged: 'FALSE' });
+
+      expect(findValues(params, 'application.renewal.changedCircumstances')).toEqual(['N']);
+    });
+
+    it('leaves the summary alone when circumstances have changed', () => {
+      const params = buildRenewalExtraParameters({ circumstancesChanged: 'TRUE', caseMeaning: 'Min egen sammanfattning' });
+
+      expect(findValues(params, 'caseMeaning')).toEqual(['Min egen sammanfattning']);
+    });
+
+    it('leaves the summary alone when the flag is absent', () => {
+      const params = buildRenewalExtraParameters({ caseMeaning: 'Min egen sammanfattning' });
+
+      expect(findValues(params, 'caseMeaning')).toEqual(['Min egen sammanfattning']);
+    });
+  });
+
+  describe('buildRenewalPrefill', () => {
+    const originErrand = {
+      extraParameters: [
+        { key: 'application.applicant.capacity', values: ['DRIVER'] },
+        { key: 'application.applicant.signingAbility', values: ['false'] },
+        { key: 'disability.canBeAloneWhileParking', values: [] },
+        { key: 'disability.canBeAloneWhileParking.note', values: [] },
+        { key: 'process.phaseStatus', values: ['WAITING'] },
+        { key: 'process.phaseAction', values: ['UNKNOWN'] },
+        { key: 'artefact.permit.number', values: ['99999'] },
+        { key: 'consent.contact.doctor', values: ['false'] },
+        { key: 'disability.walkingDistance.max', values: ['0'] },
+        { key: 'caseMeaning', values: ['Sammanfattning'] },
+        { key: 'disability.walkingDistance.beforeRest', values: ['0'] },
+        { key: 'disability.duration', values: ['P0Y'] },
+        { key: 'consent.view.transportationServiceDetails', values: ['false'] },
+        { key: 'process.displayPhase', values: ['Uppföljning'] },
+        { key: 'application.reason', values: ['Försämrad rörlighet'] },
+        { key: 'disability.walkingAbility', values: ['false'] },
+        { key: 'disability.aid', values: ['Krycka/kryckor/käpp'] },
+        { key: 'artefact.permit.status', values: ['Aktivt'] },
+      ],
+    };
+
+    it('maps a real origin errand onto the renewal form fields', () => {
+      expect(buildRenewalPrefill(originErrand, '2026-12-31')).toEqual({
+        capacity: 'DRIVER',
+        signingAbility: 'false',
+        consentContactDoctor: 'false',
+        consentViewTransportationService: 'false',
+        walkingDistanceMax: '0',
+        walkingDistanceBeforeRest: '0',
+        caseMeaning: 'Sammanfattning',
+        duration: 'P0Y',
+        reason: 'Försämrad rörlighet',
+        walkingAbility: 'false',
+        walkingAids: ['Krycka/kryckor/käpp'],
+        expirationDate: '2026-12-31',
+      });
+    });
+
+    it("drops Draken's own process and artefact bookkeeping", () => {
+      const prefill = buildRenewalPrefill(originErrand) as Record<string, unknown>;
+
+      for (const key of ['process.phaseStatus', 'process.displayPhase', 'artefact.permit.number', 'artefact.permit.status']) {
+        expect(prefill[key]).toBeUndefined();
+      }
+      expect(Object.values(prefill)).not.toContain('99999');
+    });
+
+    it('leaves unanswered parameters out rather than setting an empty string', () => {
+      const prefill = buildRenewalPrefill(originErrand);
+
+      expect(prefill).not.toHaveProperty('canBeAloneWhileParking');
+      expect(prefill).not.toHaveProperty('canBeAloneWhileParkingNote');
+    });
+
+    it('takes the expiry from the asset, not the errand', () => {
+      const errand = { extraParameters: [{ key: 'application.renewal.expirationDate', values: ['2020-01-01'] }] };
+
+      expect(buildRenewalPrefill(errand, '2026-12-31')).toEqual({ expirationDate: '2026-12-31' });
+    });
+
+    it('omits the expiry when the asset has no validTo', () => {
+      expect(buildRenewalPrefill({ extraParameters: [] })).toEqual({});
+    });
+
+    it('keeps every walking aid of a multi-valued parameter', () => {
+      const errand = { extraParameters: [{ key: 'disability.aid', values: ['Rullator', 'Elrullstol'] }] };
+
+      expect(buildRenewalPrefill(errand).walkingAids).toEqual(['Rullator', 'Elrullstol']);
+    });
+
+    it('tolerates an errand with no extraParameters at all', () => {
+      expect(buildRenewalPrefill({})).toEqual({});
+    });
+
+    it('round-trips the values written by buildRenewalExtraParameters', () => {
+      const body: ParkingPermitRenewalBody = {
+        caseMeaning: 'Sammanfattning',
+        capacity: 'PASSENGER',
+        reason: 'Försämrad rörlighet',
+        walkingAids: JSON.stringify(['Rullator', 'Elrullstol']),
+        walkingAbility: 'false',
+        walkingDistanceBeforeRest: '50',
+        walkingDistanceMax: '120',
+        duration: 'P2Y',
+        canBeAloneWhileParking: 'false',
+        canBeAloneWhileParkingNote: 'Behöver assistans',
+        consentContactDoctor: 'true',
+        consentViewTransportationService: 'false',
+        signingAbility: 'true',
+      };
+
+      expect(buildRenewalPrefill({ extraParameters: buildRenewalExtraParameters(body) })).toEqual({
+        caseMeaning: 'Sammanfattning',
+        capacity: 'PASSENGER',
+        reason: 'Försämrad rörlighet',
+        walkingAids: ['Rullator', 'Elrullstol'],
+        walkingAbility: 'false',
+        walkingDistanceBeforeRest: '50',
+        walkingDistanceMax: '120',
+        duration: 'P2Y',
+        canBeAloneWhileParking: 'false',
+        canBeAloneWhileParkingNote: 'Behöver assistans',
+        consentContactDoctor: 'true',
+        consentViewTransportationService: 'false',
+        signingAbility: 'true',
+      });
+    });
+  });
+
+  describe('isParkingPermitAsset', () => {
+    it.each(['PERMIT', 'PARKINGPERMIT'])('accepts %s', type => {
+      expect(isParkingPermitAsset({ type } as Asset)).toBe(true);
+    });
+
+    it.each([['PARATRANSIT'], [undefined]])('rejects %s', type => {
+      expect(isParkingPermitAsset({ type } as Asset)).toBe(false);
     });
   });
 });

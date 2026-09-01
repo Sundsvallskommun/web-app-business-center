@@ -1,5 +1,5 @@
 import { WHITELIST_ASSET_TYPES } from '@/config';
-import { ExtraParameter } from '@/data-contracts/case-data/data-contracts';
+import { Errand, ExtraParameter } from '@/data-contracts/case-data/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
 import { ServiceDetails } from '@/interfaces/asset.interface';
 import { User } from '@/interfaces/users.interface';
@@ -7,6 +7,12 @@ import { enumTitles, getRjsfSchema } from '@/services/jsonschema.service';
 
 export const isAllowedAsset = (asset: Asset): boolean => {
   return !!asset?.type && WHITELIST_ASSET_TYPES.has(asset.type);
+};
+
+const PARKING_PERMIT_TYPES: ReadonlySet<string> = new Set(['PERMIT', 'PARKINGPERMIT']);
+
+export const isParkingPermitAsset = (asset: Asset): boolean => {
+  return !!asset?.type && PARKING_PERMIT_TYPES.has(asset.type);
 };
 
 const HIDDEN_STATUSES: ReadonlySet<Status> = new Set([Status.DRAFT, Status.REPLACED]);
@@ -92,6 +98,11 @@ export interface ParkingPermitRenewalBody {
   medicalConfirmationRequired?: string; // 'yes' | 'no'
 }
 
+// The multi-valued walking aids are written by buildRenewalExtraParameters directly rather
+// than through RENEWAL_PARAMETER_KEYS (the body carries them JSON-encoded), so the key has
+// to be named here too for the inverse map to cover it.
+const WALKING_AIDS_PARAMETER_KEY = 'disability.aid';
+
 // Direct body-field -> extraParameter key map. Keys + value encodings mirror
 // Draken's ExtraParametersDto (draken .../data-contracts/backend/data-contracts.ts).
 const RENEWAL_PARAMETER_KEYS: Record<string, string> = {
@@ -110,6 +121,11 @@ const RENEWAL_PARAMETER_KEYS: Record<string, string> = {
   date: 'application.renewal.expirationDate',
   medicalConfirmationRequired: 'application.renewal.medicalConfirmationRequired',
 };
+
+// Fixed summary filed when the applicant states nothing has changed since the current permit.
+// The carried-over summary describes the original application rather than this renewal, so it
+// is replaced instead of being refiled as if the applicant had written it for this errand.
+const UNCHANGED_CIRCUMSTANCES_CASE_MEANING = 'Den sökande har angett att förutsättningarna inte har ändrats';
 
 // Maps a Mina sidor parking-permit renewal submission to CaseData extraParameters.
 // Empty fields are omitted so hidden/conditional fields simply don't appear.
@@ -131,12 +147,25 @@ export const buildRenewalExtraParameters = (body: ParkingPermitRenewalBody): Ext
     });
   }
 
+  if (body.circumstancesChanged === 'FALSE') {
+    const caseMeaningIndex = extraParameters.findIndex(parameter => parameter.key === RENEWAL_PARAMETER_KEYS.caseMeaning);
+    const caseMeaning: ExtraParameter = {
+      key: RENEWAL_PARAMETER_KEYS.caseMeaning,
+      values: [UNCHANGED_CIRCUMSTANCES_CASE_MEANING],
+    };
+    if (caseMeaningIndex === -1) {
+      extraParameters.push(caseMeaning);
+    } else {
+      extraParameters[caseMeaningIndex] = caseMeaning;
+    }
+  }
+
   // Walking aids arrive as a JSON-encoded string[]; emit only when non-empty.
   if (body.walkingAids) {
     try {
       const walkingAidsArray: string[] = JSON.parse(body.walkingAids);
       if (Array.isArray(walkingAidsArray) && walkingAidsArray.length > 0) {
-        extraParameters.push({ key: 'disability.aid', values: walkingAidsArray });
+        extraParameters.push({ key: WALKING_AIDS_PARAMETER_KEY, values: walkingAidsArray });
       }
     } catch {
       // Invalid JSON, skip walkingAids
@@ -144,4 +173,62 @@ export const buildRenewalExtraParameters = (body: ParkingPermitRenewalBody): Ext
   }
 
   return extraParameters;
+};
+
+export interface ParkingPermitRenewalPrefill {
+  caseMeaning?: string;
+  capacity?: string;
+  reason?: string;
+  walkingAids?: string[];
+  walkingAbility?: string;
+  walkingDistanceBeforeRest?: string;
+  walkingDistanceMax?: string;
+  duration?: string;
+  canBeAloneWhileParking?: string;
+  canBeAloneWhileParkingNote?: string;
+  consentContactDoctor?: string;
+  consentViewTransportationService?: string;
+  signingAbility?: string;
+  expirationDate?: string;
+}
+
+const RENEWAL_KEYS_TO_FIELDS: Record<string, string> = {
+  ...Object.fromEntries(Object.entries(RENEWAL_PARAMETER_KEYS).map(([field, key]) => [key, field])),
+  [WALKING_AIDS_PARAMETER_KEY]: 'walkingAids',
+};
+
+const firstValue = (values?: string[]): string | undefined => {
+  const value = values?.[0];
+  return value ? value : undefined;
+};
+
+// Maps a CaseData errand's extraParameters back onto the renewal form model. Unknown keys
+// (Draken's own `process.*` / `artefact.*` bookkeeping) are ignored, and the permit's own
+// expiry is taken from the asset since the origin errand does not carry a renewal date.
+export const buildRenewalPrefill = (errand: Pick<Errand, 'extraParameters'>, validTo?: string): ParkingPermitRenewalPrefill => {
+  const prefill: ParkingPermitRenewalPrefill = {};
+
+  for (const parameter of errand?.extraParameters ?? []) {
+    const field = parameter.key ? RENEWAL_KEYS_TO_FIELDS[parameter.key] : undefined;
+    if (!field) continue;
+
+    if (field === 'walkingAids') {
+      const aids = (parameter.values ?? []).filter(Boolean);
+      if (aids.length > 0) prefill.walkingAids = aids;
+      continue;
+    }
+
+    if (field === 'date' || field === 'circumstancesChanged' || field === 'medicalConfirmationRequired') continue;
+
+    const value = firstValue(parameter.values);
+    if (value !== undefined) {
+      (prefill as Record<string, unknown>)[field] = value;
+    }
+  }
+
+  if (validTo) {
+    prefill.expirationDate = validTo;
+  }
+
+  return prefill;
 };

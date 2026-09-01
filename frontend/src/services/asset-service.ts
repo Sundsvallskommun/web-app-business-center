@@ -1,7 +1,12 @@
 import { Asset } from '@data-contracts/backend/data-contracts';
 import dayjs from 'dayjs';
 
-const PARKING_PERMIT_EXPIRY_WARNING_MONTHS = 3;
+const DEFAULT_PARKING_PERMIT_EXPIRY_WARNING_MONTHS = 3;
+
+const parsedExpiryWarningMonths = parseInt(process.env.NEXT_PUBLIC_PARKING_PERMIT_EXPIRY_WARNING_MONTHS ?? '', 10);
+const PARKING_PERMIT_EXPIRY_WARNING_MONTHS = Number.isFinite(parsedExpiryWarningMonths)
+  ? parsedExpiryWarningMonths
+  : DEFAULT_PARKING_PERMIT_EXPIRY_WARNING_MONTHS;
 
 const PARKING_PERMIT_TYPES: readonly string[] = ['PERMIT', 'PARKINGPERMIT'];
 

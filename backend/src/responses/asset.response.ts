@@ -1,5 +1,6 @@
 import { Asset as AssetType, Status } from '@/data-contracts/partyassets/data-contracts';
 import { ApiResponse } from '@/interfaces/service';
+import { ParkingPermitRenewalPrefill as ParkingPermitRenewalPrefillType } from '@/services/asset.service';
 import { Type } from 'class-transformer';
 import { IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 
@@ -49,6 +50,59 @@ export class AssetsApiResponse implements ApiResponse<AssetType[]> {
   @ValidateNested({ each: true })
   @Type(() => Asset)
   data!: AssetType[];
+  @IsString()
+  message!: string;
+}
+
+class ParkingPermitRenewalPrefill implements ParkingPermitRenewalPrefillType {
+  @IsString()
+  @IsOptional()
+  caseMeaning?: string;
+  @IsString()
+  @IsOptional()
+  capacity?: string;
+  @IsString()
+  @IsOptional()
+  reason?: string;
+  @IsString({ each: true })
+  @IsOptional()
+  walkingAids?: string[];
+  @IsString()
+  @IsOptional()
+  walkingAbility?: string;
+  @IsString()
+  @IsOptional()
+  walkingDistanceBeforeRest?: string;
+  @IsString()
+  @IsOptional()
+  walkingDistanceMax?: string;
+  @IsString()
+  @IsOptional()
+  duration?: string;
+  @IsString()
+  @IsOptional()
+  canBeAloneWhileParking?: string;
+  @IsString()
+  @IsOptional()
+  canBeAloneWhileParkingNote?: string;
+  @IsString()
+  @IsOptional()
+  consentContactDoctor?: string;
+  @IsString()
+  @IsOptional()
+  consentViewTransportationService?: string;
+  @IsString()
+  @IsOptional()
+  signingAbility?: string;
+  @IsString()
+  @IsOptional()
+  expirationDate?: string;
+}
+
+export class ParkingPermitRenewalPrefillApiResponse implements ApiResponse<ParkingPermitRenewalPrefillType> {
+  @ValidateNested()
+  @Type(() => ParkingPermitRenewalPrefill)
+  data!: ParkingPermitRenewalPrefillType;
   @IsString()
   message!: string;
 }

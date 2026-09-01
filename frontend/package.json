@@ -17,6 +17,7 @@
     "cypress": "cypress open",
     "cypress:headless": "npx cypress run --e2e",
     "jest": "jest --watch",
+    "jest:ci": "jest --runInBand",
     "jest:coverage": "jest --coverage",
     "test": "concurrently \"yarn jest\" \"yarn cypress\"",
     "type-check": "next typegen && tsc --pretty --noEmit"
@@ -55,6 +56,7 @@
     "baseline-browser-mapping": "^2.11.1"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",

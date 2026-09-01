@@ -51,6 +51,12 @@ const validateEnv = () => {
     SAML_LOGOUT_REDIRECT: str(),
     SAML_SUCCESS_REDIRECT: str(),
     FEEDBACK_EMAIL: emails(),
+    // Optional. Empty disables Slack error reporting entirely, which is the local/dev default.
+    // Validated as str() rather than url() so a blank value in a compose file cannot crash boot.
+    SLACK_WEBHOOK_URL: str({ default: '' }),
+    SLACK_APP_NAME: str({ default: '' }),
+    SLACK_IGNORE_STATUSES: str({ default: '' }),
+    SLACK_IGNORE_MESSAGES: str({ default: '' }),
   });
 
   validateSecretStrength();

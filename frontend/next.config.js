@@ -25,7 +25,9 @@ envalid.cleanEnv(process.env, {
 module.exports = withBundleAnalyzer({
   output: 'standalone',
   allowedDevOrigins: ['dev.test'],
-  turbopack: {},
+  turbopack: {
+    root: __dirname,
+  },
   images: {
     remotePatterns: [{ hostname: process.env.DOMAIN_NAME || 'localhost' }],
     formats: ['image/avif', 'image/webp'],

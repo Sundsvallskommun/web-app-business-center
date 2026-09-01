@@ -1,3 +1,4 @@
+import { ParkingPermitRenewalPrefill } from '@data-contracts/backend/data-contracts';
 import { useApi } from '@services/api-service';
 import { ACCEPTED_UPLOAD_FILETYPES } from '@utils/accepted-file-types';
 import {
@@ -44,8 +45,10 @@ interface PermitRenewalFormModel {
 
 export const ParkingPermitRenewalForm = ({
   setFormState,
+  prefill,
 }: {
   setFormState: React.Dispatch<React.SetStateAction<'showForm' | 'showInfo' | 'success'>>;
+  prefill?: ParkingPermitRenewalPrefill;
 }) => {
   const { t } = useTranslation('decisions');
   const confirm = useConfirm();
@@ -72,20 +75,20 @@ export const ParkingPermitRenewalForm = ({
   const form = useForm<PermitRenewalFormModel>({
     defaultValues: {
       changedCircumstances: 'Y',
-      caseMeaning: '',
-      capacity: '',
-      reason: '',
-      walkingAids: [],
-      walkingAbility: '',
-      walkingDistanceBeforeRest: '',
-      walkingDistanceMax: '',
-      duration: '',
-      canBeAloneWhileParking: '',
-      canBeAloneWhileParkingNote: '',
-      consentContactDoctor: '',
-      consentViewTransportationService: '',
-      signingAbility: '',
-      expirationDate: '',
+      caseMeaning: prefill?.caseMeaning ?? '',
+      capacity: prefill?.capacity ?? '',
+      reason: prefill?.reason ?? '',
+      walkingAids: prefill?.walkingAids ?? [],
+      walkingAbility: prefill?.walkingAbility ?? '',
+      walkingDistanceBeforeRest: prefill?.walkingDistanceBeforeRest ?? '',
+      walkingDistanceMax: prefill?.walkingDistanceMax ?? '',
+      duration: prefill?.duration ?? '',
+      canBeAloneWhileParking: prefill?.canBeAloneWhileParking ?? '',
+      canBeAloneWhileParkingNote: prefill?.canBeAloneWhileParkingNote ?? '',
+      consentContactDoctor: prefill?.consentContactDoctor ?? '',
+      consentViewTransportationService: prefill?.consentViewTransportationService ?? '',
+      signingAbility: prefill?.signingAbility ?? '',
+      expirationDate: prefill?.expirationDate ?? '',
       files: [],
     },
     mode: 'onChange',

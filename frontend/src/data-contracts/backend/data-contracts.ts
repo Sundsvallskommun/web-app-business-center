@@ -10,31 +10,6 @@
  * ---------------------------------------------------------------
  */
 
-export interface Asset {
-  id?: string;
-  assetId?: string;
-  origin?: string;
-  partyId?: string;
-  type?: string;
-  issued?: string;
-  validTo?: string;
-  status?:
-    | "ACTIVE"
-    | "DRAFT"
-    | "EXPIRED"
-    | "BLOCKED"
-    | "TEMPORARY"
-    | "REPLACED";
-  statusReason?: string;
-  description?: string;
-  replacesId?: string;
-}
-
-export interface AssetsApiResponse {
-  data: Asset[];
-  message: string;
-}
-
 export interface CaseMessageDto {
   message: string;
   files?: any[];
@@ -80,23 +55,36 @@ export interface CaseMessagesApiResponse {
   message: string;
 }
 
-export interface Citizen {
-  personId: string;
-  givenname: string;
-  lastname: string;
+export interface FeedbackDto {
+  body: string;
 }
 
-export interface CitizenApiResponse {
-  data: Citizen;
-  message: string;
+export interface CreateReadNotificationsDto {
+  caseId: string;
 }
 
-export interface CitizenLookupDto {
-  /**
-   * @minLength 12
-   * @maxLength 12
-   */
-  personnumber: string;
+export interface RepresentsDto {
+  organizationNumber?: string;
+  personNumber?: string;
+  mode?: "PRIVATE" | "BUSINESS" | 0 | 1;
+}
+
+export interface ContactSettingChannel {
+  contactMethod: string;
+  destination: string;
+  disabled?: boolean;
+  alias: string;
+}
+
+export interface ContactSetting {
+  id: string;
+  partyId: string;
+  contactChannels: ContactSettingChannel[];
+  created: string;
+  modified: string;
+  virtual: boolean;
+  alias: string;
+  municipalityId: string;
 }
 
 export interface ClientContactSettingNotifications {
@@ -131,32 +119,101 @@ export interface ClientContactSetting {
   modified?: string;
 }
 
-export interface ClientDelegate {
+export interface RepresentingPrivateEntity {
+  name: string;
+  personNumber?: string;
+  information?: Information;
+}
+
+export interface RepresentingBusinessEntity {
+  organizationName: string;
+  organizationNumber: string;
+  isAuthorizedSignatory?: boolean;
+  information: Information;
+  whitelisted?: boolean;
+}
+
+export interface Information {
+  address: ClientContactSettingAddress;
+}
+
+export interface RepresentingEntity {
+  BUSINESS?: RepresentingBusinessEntity;
+  PRIVATE?: RepresentingPrivateEntity;
+  mode: "PRIVATE" | "BUSINESS" | 0 | 1;
+}
+
+export interface ClientRepresentingApiResponse {
+  data: RepresentingEntity;
+  message: string;
+}
+
+export interface PatchUserSettingsDto {
+  feedbackLifespan: "untilRemoved" | "oneMonth" | "twoWeeks";
+}
+
+export interface Asset {
   id?: string;
-  principalId?: string;
-  agentId?: string;
-  created?: string;
-  modified?: string;
-  filters?: Filter[];
+  assetId?: string;
+  origin?: string;
+  partyId?: string;
+  type?: string;
+  issued?: string;
+  validTo?: string;
+  status?:
+    | "ACTIVE"
+    | "DRAFT"
+    | "EXPIRED"
+    | "BLOCKED"
+    | "TEMPORARY"
+    | "REPLACED";
+  statusReason?: string;
+  description?: string;
+  replacesId?: string;
 }
 
-export interface Filter {
-  id?: string;
-  alias?: string;
-  channel?: string;
-  created?: string;
-  modified?: string;
-  rules: Rule[];
+export interface AssetsApiResponse {
+  data: Asset[];
+  message: string;
 }
 
-export interface Rule {
-  attributeName: string;
-  operator: "EQUALS" | "NOT_EQUALS";
-  attributeValue: string;
+export interface ParkingPermitRenewalPrefill {
+  caseMeaning?: string;
+  capacity?: string;
+  reason?: string;
+  walkingAids?: string[];
+  walkingAbility?: string;
+  walkingDistanceBeforeRest?: string;
+  walkingDistanceMax?: string;
+  duration?: string;
+  canBeAloneWhileParking?: string;
+  canBeAloneWhileParkingNote?: string;
+  consentContactDoctor?: string;
+  consentViewTransportationService?: string;
+  signingAbility?: string;
+  expirationDate?: string;
 }
 
-export interface FeedbackDto {
-  body: string;
+export interface ParkingPermitRenewalPrefillApiResponse {
+  data: ParkingPermitRenewalPrefill;
+  message: string;
+}
+
+export interface SignMandateDetails {
+  granteeId: string;
+  /** @pattern \d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d.\d+Z? */
+  activeFrom: string;
+  /** @pattern \d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d.\d+Z? */
+  inactiveAfter?: string;
+}
+
+export interface MandatePaginationDto {
+  page?: number;
+  limit?: number;
+}
+
+export interface CreateMandateDto {
+  transactionId: string;
 }
 
 export interface Grantor {
@@ -172,35 +229,6 @@ export interface Grantee {
 export interface MandatePart {
   name: string;
   personNumber?: string;
-}
-
-export interface CompletionDataUser {
-  personalNumber: string;
-  name?: string;
-  givenName: string;
-  surname: string;
-}
-
-export interface CompletionDataDevice {
-  ipAddress: string;
-  uhi?: string;
-}
-
-export interface CompletionData {
-  /** @pattern \d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d.\d+Z? */
-  bankIdIssueDate?: string;
-  signature: string;
-  ocspResponse?: string;
-  risk?: string;
-  user: CompletionDataUser;
-  device: CompletionDataDevice;
-}
-
-export interface SigningInfo {
-  orderRef: string;
-  externalTransactionId?: string;
-  status: "COMPLETE" | "FAILED" | "CANCELLED" | "PENDING";
-  completionData: CompletionData;
 }
 
 export interface MandateDefaults {
@@ -282,95 +310,6 @@ export interface PopulatedMandatesApiResponse {
   totalPages?: number;
 }
 
-export interface SignMandateDetails {
-  granteeId: string;
-  /** @pattern \d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d.\d+Z? */
-  activeFrom: string;
-  /** @pattern \d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d.\d+Z? */
-  inactiveAfter?: string;
-}
-
-export interface MandateDto {
-  grantorDetails: Grantor;
-  granteeDetails: Grantee;
-  /** @pattern \d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d.\d+Z? */
-  activeFrom: string;
-  /** @pattern \d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d.\d+Z? */
-  inactiveAfter?: string;
-  signingInfo: SigningInfo;
-}
-
-export interface MandatePaginationDto {
-  page?: number;
-  limit?: number;
-}
-
-export interface CreateMandateDto {
-  transactionId: string;
-}
-
-export interface CreateReadNotificationsDto {
-  caseId: string;
-}
-
-export interface RepresentsDto {
-  organizationNumber?: string;
-  personNumber?: string;
-  mode?: "PRIVATE" | "BUSINESS" | 0 | 1;
-}
-
-export interface ContactSettingChannel {
-  contactMethod: string;
-  destination: string;
-  disabled?: boolean;
-  alias: string;
-}
-
-export interface ContactSetting {
-  id: string;
-  partyId: string;
-  contactChannels: ContactSettingChannel[];
-  created: string;
-  modified: string;
-  virtual: boolean;
-  alias: string;
-  municipalityId: string;
-}
-
-export interface UpdateContactSettingsDto {
-  id: string;
-  contactChannels: ContactSettingChannel[];
-}
-
-export interface RepresentingPrivateEntity {
-  name: string;
-  personNumber?: string;
-  information?: Information;
-}
-
-export interface RepresentingBusinessEntity {
-  organizationName: string;
-  organizationNumber: string;
-  isAuthorizedSignatory?: boolean;
-  information: Information;
-  whitelisted?: boolean;
-}
-
-export interface Information {
-  address: ClientContactSettingAddress;
-}
-
-export interface RepresentingEntity {
-  BUSINESS?: RepresentingBusinessEntity;
-  PRIVATE?: RepresentingPrivateEntity;
-  mode: "PRIVATE" | "BUSINESS" | 0 | 1;
-}
-
-export interface ClientRepresentingApiResponse {
-  data: RepresentingEntity;
-  message: string;
-}
-
 export interface SignDto {
   visible: string;
   format: "PLAIN_TEXT" | "MARKDOWN" | "HTML";
@@ -434,6 +373,21 @@ export interface SignCollectApiResponse {
   message: string;
 }
 
-export interface PatchUserSettingsDto {
-  feedbackLifespan: "untilRemoved" | "oneMonth" | "twoWeeks";
+export interface Citizen {
+  personId: string;
+  givenname: string;
+  lastname: string;
+}
+
+export interface CitizenApiResponse {
+  data: Citizen;
+  message: string;
+}
+
+export interface CitizenLookupDto {
+  /**
+   * @minLength 12
+   * @maxLength 12
+   */
+  personnumber: string;
 }

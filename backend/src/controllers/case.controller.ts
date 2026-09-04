@@ -212,8 +212,9 @@ export class CaseController {
         return { data: req.session.cache.cases.PRIVATE, message: 'success' };
       }
 
-      url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses`;
+      url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses?includeDrafts=true`;
     }
+
     return fetchCases(url);
   }
 

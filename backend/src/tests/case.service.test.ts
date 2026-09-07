@@ -51,6 +51,15 @@ describe('case.service', () => {
       expect(caseIsAllowed({ system: 'ECOS' } as CaseStatusResponse)).toBe(false);
       expect(caseIsAllowed({ system: 'CASE_DATA' } as CaseStatusResponse)).toBe(false);
     });
+
+    it('allows drafts only from OPEN_E_PLATFORM', () => {
+      expect(caseIsAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Sparat' } as CaseStatusResponse)).toBe(true);
+      expect(caseIsAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Väntar på flerpartssignering' } as CaseStatusResponse)).toBe(true);
+      expect(caseIsAllowed({ system: 'BYGGR', externalStatus: 'Sparat' } as CaseStatusResponse)).toBe(false);
+      expect(caseIsAllowed({ namespace: CaseDataNamespace.SBK_MEX, system: 'CASE_DATA', externalStatus: 'Sparat' } as CaseStatusResponse)).toBe(
+        false,
+      );
+    });
   });
 
   describe('conversationInit', () => {

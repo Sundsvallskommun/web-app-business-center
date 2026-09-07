@@ -70,7 +70,7 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
 
   cy.contains('h1, h2', /pågående/i)
     .next()
-    .contains('*', 'Visar 24 av 27')
+    .contains('*', 'Visar 24 av 29')
     .should('be.visible');
 
   // load more
@@ -82,11 +82,11 @@ export const testOngoingCases = (representingMode: RepresentingMode = representi
   cy.contains('h1, h2', /pågående/i)
     .next()
     .find('ul li')
-    .should('have.length', 27);
+    .should('have.length', 29);
 
   cy.contains('h1, h2', /pågående/i)
     .next()
-    .contains('*', 'Visar 27 av 27')
+    .contains('*', 'Visar 29 av 29')
     .should('be.visible');
 
   cy.contains('h1, h2', /pågående/i)

@@ -23,6 +23,8 @@ export const statusMapCases = {
   'Komplettering behövs': { code: statusCodes.Ongoing, color: 'warning' as const },
   Kompletterad: { code: statusCodes.Ongoing, color: 'info' as const },
   Avslutat: { code: statusCodes.Approved, color: 'success' as const },
+  Sparat: { code: statusCodes.Ongoing, color: 'info' as const },
+  'Väntar på flerpartssignering': { code: statusCodes.Ongoing, color: 'info' as const },
 };
 
 const mapStatus = (s: string) => {

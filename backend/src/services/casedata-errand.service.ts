@@ -2,6 +2,7 @@ import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
 import { Errand } from '@/data-contracts/case-data/data-contracts';
 import { CaseDataNamespace, StakeholderRole } from '@/interfaces/casedata.interface';
+import { asOwned, Owned } from '@/interfaces/owned';
 import { User } from '@/interfaces/users.interface';
 import ApiService from '@/services/api.service';
 import { logger } from '@/utils/logger';
@@ -41,8 +42,8 @@ const isUserOwned = (errand: Errand, partyId: string): boolean => {
  * @param partyId partyId of the entity the caller represents, as resolved by the calling endpoint
  * @param user user object from request
  * @param api injected API service
- * @returns the `Errand`, or `undefined` if the id or namespace is not readable, the errand was not
- * found, or it does not belong to `partyId`. Never throws.
+ * @returns the errand branded as `Owned`, or `undefined` if the id or namespace is not readable,
+ * the errand was not found, or it does not belong to `partyId`. Never throws.
  */
 export const fetchErrandById = async (
   errandId: string,
@@ -50,7 +51,7 @@ export const fetchErrandById = async (
   partyId: string,
   user: User,
   api: Pick<ApiService, 'get'> = defaultApi,
-): Promise<Errand | undefined> => {
+): Promise<Owned<Errand> | undefined> => {
   if (!errandId) return undefined;
 
   if (!isReadableNamespace(namespace)) {
@@ -71,7 +72,7 @@ export const fetchErrandById = async (
       logger.error(`Errand ${errandId} in namespace ${namespace} does not belong to user.`);
       return undefined;
     }
-    return res.data;
+    return asOwned(res.data);
   } catch (error) {
     logger.error(`Failed to fetch errand ${namespace}/${errandId}: `, error);
     return undefined;

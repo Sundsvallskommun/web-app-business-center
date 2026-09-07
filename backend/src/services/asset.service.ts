@@ -2,6 +2,7 @@ import { WHITELIST_ASSET_TYPES } from '@/config';
 import { Errand, ExtraParameter } from '@/data-contracts/case-data/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
 import { ServiceDetails } from '@/interfaces/asset.interface';
+import { Owned } from '@/interfaces/owned';
 import { User } from '@/interfaces/users.interface';
 import { enumTitles, getRjsfSchema } from '@/services/jsonschema.service';
 
@@ -25,7 +26,14 @@ const isAddressable = (asset: Asset): boolean => {
   return !!asset?.id;
 };
 
-export const toClientAsset = (asset: Asset): Asset => {
+/**
+ * Strip internal fields from an asset before it is returned to a client.
+ *
+ * Takes `Owned<Asset>` so that serialising an asset implies it passed an ownership gate.
+ *
+ * @param asset an asset whose ownership has been established
+ */
+export const toClientAsset = (asset: Owned<Asset>): Asset => {
   const clientAsset = { ...asset };
   delete clientAsset.partyId;
   delete clientAsset.jsonParameters;
@@ -51,7 +59,15 @@ const normalizeArray = (values: unknown): string[] => {
     .filter((value): value is string => Boolean(value));
 };
 
-export const toServiceDetails = async (asset: Asset, user: User): Promise<ServiceDetails | undefined> => {
+/**
+ * Project an asset's `jsonParameters` onto the service details returned alongside it.
+ *
+ * Takes `Owned<Asset>` for the same reason as {@link toClientAsset}: it reads the internal
+ * `jsonParameters` that `toClientAsset` strips, and puts the applicant's answers in the response.
+ *
+ * @param asset an asset whose ownership has been established
+ */
+export const toServiceDetails = async (asset: Owned<Asset>, user: User): Promise<ServiceDetails | undefined> => {
   const param = asset.jsonParameters?.[0];
   if (!param?.value) return undefined;
 
@@ -202,10 +218,17 @@ const firstValue = (values?: string[]): string | undefined => {
   return value ? value : undefined;
 };
 
-// Maps a CaseData errand's extraParameters back onto the renewal form model. Unknown keys
-// (Draken's own `process.*` / `artefact.*` bookkeeping) are ignored, and the permit's own
-// expiry is taken from the asset since the origin errand does not carry a renewal date.
-export const buildRenewalPrefill = (errand: Pick<Errand, 'extraParameters'>, validTo?: string): ParkingPermitRenewalPrefill => {
+/**
+ * Map a CaseData errand's extraParameters back onto the renewal form model.
+ *
+ * Unknown keys (Draken's own `process.*` / `artefact.*` bookkeeping) are ignored, and the permit's
+ * expiry is taken from the asset since the origin errand carries no renewal date. Takes
+ * `Owned<Errand>` because it produces the response payload holding the applicant's medical answers.
+ *
+ * @param errand an errand whose ownership has been established
+ * @param validTo expiry date of the permit being renewed
+ */
+export const buildRenewalPrefill = (errand: Owned<Pick<Errand, 'extraParameters'>>, validTo?: string): ParkingPermitRenewalPrefill => {
   const prefill: ParkingPermitRenewalPrefill = {};
 
   for (const parameter of errand?.extraParameters ?? []) {

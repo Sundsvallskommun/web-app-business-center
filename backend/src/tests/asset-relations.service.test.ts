@@ -1,5 +1,7 @@
+import { Asset } from '@/data-contracts/partyassets/data-contracts';
 import { Relation } from '@/data-contracts/relations/data-contracts';
 import { CaseDataNamespace } from '@/interfaces/casedata.interface';
+import { asOwned } from '@/interfaces/owned';
 import { findSourceErrandForAsset } from '@/services/asset-relations.service';
 import { createMockApiService } from './helpers/mockApiService';
 import { mockUser } from './helpers/fixtures';
@@ -8,6 +10,10 @@ const ASSET_ID = 'dace9046-ac71-4f26-ad5b-ed014a3df5a8';
 const OTHER_ASSET_ID = 'befa8162-fe27-2b52-bc3a-eh513a3af6a7';
 const ERRAND_ID = '5115';
 const OTHER_ERRAND_ID = '1532';
+
+// The service takes an asset whose ownership the caller has already settled; only the id is read.
+const ownedAsset = (id?: string) => asOwned({ id } as Asset);
+const OWNED_ASSET = ownedAsset(ASSET_ID);
 
 const errandAssetLink = (overrides: Partial<Relation> = {}): Relation => ({
   id: 'dcb85989-d9b1-4b75-9d33-812b0260b946',
@@ -25,7 +31,7 @@ describe('asset-relations.service', () => {
       const api = createMockApiService();
       api.get.mockReturnValue(respondWith([errandAssetLink()]));
 
-      await expect(findSourceErrandForAsset(ASSET_ID, mockUser, api)).resolves.toEqual({
+      await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual({
         id: ERRAND_ID,
         namespace: CaseDataNamespace.SBK_PARKING_PERMIT,
       });
@@ -35,7 +41,7 @@ describe('asset-relations.service', () => {
       const api = createMockApiService();
       api.get.mockReturnValue(respondWith([errandAssetLink()]));
 
-      await findSourceErrandForAsset(ASSET_ID, mockUser, api);
+      await findSourceErrandForAsset(OWNED_ASSET, mockUser, api);
 
       expect(api.get).toHaveBeenCalledWith(
         expect.objectContaining({ url: expect.stringContaining(`filter=target.resourceId%3A%27${ASSET_ID}%27`) }),
@@ -49,21 +55,21 @@ describe('asset-relations.service', () => {
         respondWith([errandAssetLink({ source: { resourceId: ERRAND_ID, namespace: CaseDataNamespace.SBK_PARKING_PERMIT, type: 'case', service } })]),
       );
 
-      await expect(findSourceErrandForAsset(ASSET_ID, mockUser, api)).resolves.toMatchObject({ id: ERRAND_ID });
+      await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toMatchObject({ id: ERRAND_ID });
     });
 
     it('returns undefined when the relation carries no errand id', async () => {
       const api = createMockApiService();
       api.get.mockReturnValue(respondWith([errandAssetLink({ source: { resourceId: '', type: 'case', service: 'casedata' } })]));
 
-      await expect(findSourceErrandForAsset(ASSET_ID, mockUser, api)).resolves.toEqual(undefined);
+      await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual(undefined);
     });
 
     it('returns undefined when the relation carries no namespace', async () => {
       const api = createMockApiService();
       api.get.mockReturnValue(respondWith([errandAssetLink({ source: { resourceId: ERRAND_ID, type: 'case', service: 'casedata' } })]));
 
-      await expect(findSourceErrandForAsset(ASSET_ID, mockUser, api)).resolves.toEqual(undefined);
+      await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual(undefined);
     });
 
     it.each([
@@ -75,21 +81,21 @@ describe('asset-relations.service', () => {
       const api = createMockApiService();
       api.get.mockReturnValue(respondWith([relation]));
 
-      await expect(findSourceErrandForAsset(ASSET_ID, mockUser, api)).resolves.toBeUndefined();
+      await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toBeUndefined();
     });
 
     it('returns undefined when the asset has no relations', async () => {
       const api = createMockApiService();
       api.get.mockReturnValue(respondWith([]));
 
-      await expect(findSourceErrandForAsset(ASSET_ID, mockUser, api)).resolves.toBeUndefined();
+      await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toBeUndefined();
     });
 
     it('returns undefined when the asset id does not match found relation target resource id', async () => {
       const api = createMockApiService();
       api.get.mockReturnValue(respondWith([errandAssetLink({ target: { resourceId: OTHER_ASSET_ID, type: 'asset', service: 'partyassets' } })]));
 
-      await expect(findSourceErrandForAsset(ASSET_ID, mockUser, api)).resolves.toBeUndefined();
+      await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toBeUndefined();
     });
 
     it('matches the target asset id regardless of casing', async () => {
@@ -98,7 +104,7 @@ describe('asset-relations.service', () => {
         respondWith([errandAssetLink({ target: { resourceId: ASSET_ID.toUpperCase(), type: 'asset', service: 'partyassets' } })]),
       );
 
-      await expect(findSourceErrandForAsset(ASSET_ID, mockUser, api)).resolves.toEqual({
+      await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual({
         id: ERRAND_ID,
         namespace: CaseDataNamespace.SBK_PARKING_PERMIT,
       });
@@ -119,7 +125,7 @@ describe('asset-relations.service', () => {
         ]),
       );
 
-      await expect(findSourceErrandForAsset(ASSET_ID, mockUser, api)).resolves.toEqual({
+      await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual({
         id: ERRAND_ID,
         namespace: CaseDataNamespace.SBK_PARKING_PERMIT,
       });
@@ -129,13 +135,13 @@ describe('asset-relations.service', () => {
       const api = createMockApiService();
       api.get.mockRejectedValue(new Error('relations unavailable'));
 
-      await expect(findSourceErrandForAsset(ASSET_ID, mockUser, api)).resolves.toBeUndefined();
+      await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toBeUndefined();
     });
 
     it('does not call the API without an asset id', async () => {
       const api = createMockApiService();
 
-      await expect(findSourceErrandForAsset('', mockUser, api)).resolves.toBeUndefined();
+      await expect(findSourceErrandForAsset(ownedAsset(undefined), mockUser, api)).resolves.toBeUndefined();
       expect(api.get).not.toHaveBeenCalled();
     });
   });

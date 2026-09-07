@@ -4,6 +4,7 @@ import { AddressAddressCategoryEnum, Errand, Stakeholder, StakeholderTypeEnum } 
 import { Asset } from '@/data-contracts/partyassets/data-contracts';
 import { AssetWithService } from '@/interfaces/asset.interface';
 import { AttachmentCategory, CaseDataNamespace, ParkingPermitCaseType, StakeholderRole } from '@/interfaces/casedata.interface';
+import { asOwned, Owned } from '@/interfaces/owned';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
@@ -162,6 +163,12 @@ export class AssetsController {
     return { data: { success: true }, message: 'ok' };
   }
 
+  /**
+   * List the assets of the entity the caller represents.
+   *
+   * The upstream `?partyId=` filter is backed by the same `partyId` check `findOwnedAsset` makes,
+   * so that `Owned` means the same thing whichever of the two paths minted it.
+   */
   @Get('/assets')
   @OpenAPI({ summary: 'Return a list of assets for current representing entity' })
   @ResponseSchema(AssetsApiResponse)
@@ -184,7 +191,9 @@ export class AssetsController {
         throw new HttpException(500, 'No data from API');
       }
 
-      const assets = toVisibleAssets(res.data);
+      const assets: Owned<Asset>[] = toVisibleAssets(res.data)
+        .filter(a => isSameUuid(a.partyId, partyId))
+        .map(asOwned);
       const data = await Promise.all(assets.map(async asset => ({ ...toClientAsset(asset), service: await toServiceDetails(asset, req.user) })));
 
       return { data, message: 'success' };
@@ -212,14 +221,14 @@ export class AssetsController {
    *
    * @param req Request object containing user to search assets for
    * @param id Id of the asset to locate
-   * @returns the matching asset as returned by PartyAssets
+   * @returns the matching asset, branded as `Owned`
    * @throws `HttpException` 400 when no partyId can be resolved from the
    * session, or no asset id was given
    * @throws `HttpException` 404 when the asset is not among the user's
    * assets, is not a whitelisted type, or has a hidden status
    * @throws `HttpException` 500 on any other failure from PartyAssets
    */
-  private async findOwnedAsset(req: RequestWithUser, id: string): Promise<Asset> {
+  private async findOwnedAsset(req: RequestWithUser, id: string): Promise<Owned<Asset>> {
     const partyId = this.getPartyId(req);
 
     if (!id) {
@@ -248,7 +257,7 @@ export class AssetsController {
         throw new HttpException(404, 'Asset not found');
       }
 
-      return asset;
+      return asOwned(asset);
     } catch (error) {
       console.error(error);
       if (error instanceof HttpException && error.status === 404) {
@@ -279,7 +288,7 @@ export class AssetsController {
       throw new HttpException(404, 'Asset not found');
     }
 
-    const sourceErrand = await findSourceErrandForAsset(asset.id, req.user);
+    const sourceErrand = await findSourceErrandForAsset(asset, req.user);
     if (!sourceErrand) {
       return { data: { expirationDate: asset.validTo }, message: 'no source errand' };
     }

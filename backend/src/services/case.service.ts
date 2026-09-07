@@ -25,7 +25,7 @@ const systemIsAllowed = (c: CaseStatusResponse): boolean => !!c?.system && allow
 const draftStatuses: ReadonlySet<string> = new Set(['Sparat', 'Väntar på flerpartssignering']);
 const isDraft = (c: CaseStatusResponse): boolean => !!c.externalStatus && draftStatuses.has(c.externalStatus);
 export const caseIsAllowed = (c: CaseStatusResponse): boolean =>
-  (namespaceIsAllowed(c) || (typeof c.namespace === 'undefined' && systemIsAllowed(c))) && (!isDraft(c) || c.system === 'OPEN_E_PLATFORM');
+  (namespaceIsAllowed(c) || (c.namespace === undefined && systemIsAllowed(c))) && (!isDraft(c) || c.system === 'OPEN_E_PLATFORM');
 
 // --- Conversation / message payload builders ---------------------------------
 

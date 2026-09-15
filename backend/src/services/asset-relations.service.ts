@@ -1,6 +1,8 @@
 import { MUNICIPALITY_ID } from '@/config';
 import { getApiBase } from '@/config/api-config';
+import { Asset } from '@/data-contracts/partyassets/data-contracts';
 import { Relation, RelationPagedResponse } from '@/data-contracts/relations/data-contracts';
+import { Owned } from '@/interfaces/owned';
 import { User } from '@/interfaces/users.interface';
 import ApiService from '@/services/api.service';
 import { logger } from '@/utils/logger';
@@ -44,16 +46,22 @@ interface SourceErrandRef {
  *
  * The returned id and namespace can then be used to fetch the errand data.
  *
- * @param assetId id of the asset to find relations for
+ * Takes `Owned<Asset>` because this walks from an asset id to an errand id without checking any
+ * party itself: the caller has to have settled ownership of the asset first. The ref it returns is
+ * deliberately unbranded — nothing here establishes that the errand belongs to anyone, which is
+ * what `fetchErrandById` verifies before branding it.
+ *
+ * @param asset the asset to find relations for, whose ownership has been established
  * @param user user from request object
  * @returns `SourceErrandRef` for the related errand, or `undefined` when no relation links this
  * asset to a CaseData errand, or the relation is missing the errand id or namespace
  */
 export const findSourceErrandForAsset = async (
-  assetId: string,
+  asset: Owned<Asset>,
   user: User,
   api: Pick<ApiService, 'get'> = defaultApi,
 ): Promise<SourceErrandRef | undefined> => {
+  const assetId = asset?.id;
   if (!assetId) return undefined;
 
   const filter = `target.resourceId%3A%27${encodeURIComponent(assetId)}%27`;

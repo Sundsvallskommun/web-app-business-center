@@ -1,5 +1,6 @@
 import { ExtraParameter } from '@/data-contracts/case-data/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
+import { asOwned, Owned } from '@/interfaces/owned';
 import {
   buildRenewalExtraParameters,
   buildRenewalPrefill,
@@ -19,7 +20,7 @@ const ALLOWED_TYPE = 'PARKINGPERMIT';
 // Asset carrying a single jsonParameters entry (the shape toServiceDetails reads).
 // `value` may be a JSON string or an already-parsed object; schemaId is omitted so
 // no RJSF schema is fetched and enum titles fall back to the raw values.
-const serviceAsset = (value: unknown): Asset => ({ jsonParameters: [{ value }] } as unknown as Asset);
+const serviceAsset = (value: unknown): Owned<Asset> => asOwned({ jsonParameters: [{ value }] } as unknown as Asset);
 
 const findValues = (params: ExtraParameter[], key: string) => params.find(p => p.key === key)?.values;
 
@@ -132,7 +133,7 @@ describe('asset.service', () => {
     it('strips partyId and jsonParameters without mutating the input', () => {
       const asset = { id: '1', type: ALLOWED_TYPE, partyId: 'secret', jsonParameters: [{ value: '{}' }] } as unknown as Asset;
 
-      const client = toClientAsset(asset);
+      const client = toClientAsset(asOwned(asset));
 
       expect(client).toEqual({ id: '1', type: ALLOWED_TYPE });
       expect(asset.partyId).toBe('secret');
@@ -157,8 +158,8 @@ describe('asset.service', () => {
 
   describe('toServiceDetails', () => {
     it('returns undefined when there is no jsonParameters value', async () => {
-      await expect(toServiceDetails({} as Asset, mockUser)).resolves.toBeUndefined();
-      await expect(toServiceDetails({ jsonParameters: [{}] } as unknown as Asset, mockUser)).resolves.toBeUndefined();
+      await expect(toServiceDetails(asOwned({} as Asset), mockUser)).resolves.toBeUndefined();
+      await expect(toServiceDetails(asOwned({ jsonParameters: [{}] } as unknown as Asset), mockUser)).resolves.toBeUndefined();
     });
 
     it('returns undefined when the value is invalid JSON', async () => {
@@ -264,7 +265,7 @@ describe('asset.service', () => {
     };
 
     it('maps a real origin errand onto the renewal form fields', () => {
-      expect(buildRenewalPrefill(originErrand, '2026-12-31')).toEqual({
+      expect(buildRenewalPrefill(asOwned(originErrand), '2026-12-31')).toEqual({
         capacity: 'DRIVER',
         signingAbility: 'false',
         consentContactDoctor: 'false',
@@ -281,7 +282,7 @@ describe('asset.service', () => {
     });
 
     it("drops Draken's own process and artefact bookkeeping", () => {
-      const prefill = buildRenewalPrefill(originErrand) as Record<string, unknown>;
+      const prefill = buildRenewalPrefill(asOwned(originErrand)) as Record<string, unknown>;
 
       for (const key of ['process.phaseStatus', 'process.displayPhase', 'artefact.permit.number', 'artefact.permit.status']) {
         expect(prefill[key]).toBeUndefined();
@@ -290,7 +291,7 @@ describe('asset.service', () => {
     });
 
     it('leaves unanswered parameters out rather than setting an empty string', () => {
-      const prefill = buildRenewalPrefill(originErrand);
+      const prefill = buildRenewalPrefill(asOwned(originErrand));
 
       expect(prefill).not.toHaveProperty('canBeAloneWhileParking');
       expect(prefill).not.toHaveProperty('canBeAloneWhileParkingNote');
@@ -299,21 +300,21 @@ describe('asset.service', () => {
     it('takes the expiry from the asset, not the errand', () => {
       const errand = { extraParameters: [{ key: 'application.renewal.expirationDate', values: ['2020-01-01'] }] };
 
-      expect(buildRenewalPrefill(errand, '2026-12-31')).toEqual({ expirationDate: '2026-12-31' });
+      expect(buildRenewalPrefill(asOwned(errand), '2026-12-31')).toEqual({ expirationDate: '2026-12-31' });
     });
 
     it('omits the expiry when the asset has no validTo', () => {
-      expect(buildRenewalPrefill({ extraParameters: [] })).toEqual({});
+      expect(buildRenewalPrefill(asOwned({ extraParameters: [] }))).toEqual({});
     });
 
     it('keeps every walking aid of a multi-valued parameter', () => {
       const errand = { extraParameters: [{ key: 'disability.aid', values: ['Rullator', 'Elrullstol'] }] };
 
-      expect(buildRenewalPrefill(errand).walkingAids).toEqual(['Rullator', 'Elrullstol']);
+      expect(buildRenewalPrefill(asOwned(errand)).walkingAids).toEqual(['Rullator', 'Elrullstol']);
     });
 
     it('tolerates an errand with no extraParameters at all', () => {
-      expect(buildRenewalPrefill({})).toEqual({});
+      expect(buildRenewalPrefill(asOwned({}))).toEqual({});
     });
 
     it('round-trips the values written by buildRenewalExtraParameters', () => {
@@ -333,7 +334,7 @@ describe('asset.service', () => {
         signingAbility: 'true',
       };
 
-      expect(buildRenewalPrefill({ extraParameters: buildRenewalExtraParameters(body) })).toEqual({
+      expect(buildRenewalPrefill(asOwned({ extraParameters: buildRenewalExtraParameters(body) }))).toEqual({
         caseMeaning: 'Sammanfattning',
         capacity: 'PASSENGER',
         reason: 'Försämrad rörlighet',

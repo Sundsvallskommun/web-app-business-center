@@ -31,7 +31,7 @@ describe('Ändra representationsläge (privat/företag)', () => {
       cy.intercept('GET', '**/api/representing', { statusCode: 400 }).as('getRepresenting');
 
       // RepresentingSwitchButton
-      cy.contains('[role="navigationitem"]', 'Organisation').click();
+      cy.contains('[role="menuitem"]', 'Organisation').click();
       cy.url().should('include', '/foretag/valj-foretag');
 
       cy.intercept('GET', '**/api/representing', getRepresentingEntity({ mode: RepresentingMode.BUSINESS })).as(
@@ -53,13 +53,13 @@ describe('Ändra representationsläge (privat/företag)', () => {
         setIntercepts(RepresentingMode.BUSINESS);
 
         // RepresentingSwitchButton
-        cy.contains('[role="navigationitem"]', 'Organisation').click();
+        cy.contains('[role="menuitem"]', 'Organisation').click();
         cy.url().should('include', '/foretag/oversikt');
         cy.contains('Styrbjörns båtar');
       })
       .then(() => {
         setIntercepts(RepresentingMode.PRIVATE);
-        cy.contains('[role="navigationitem"]', 'Privat').click();
+        cy.contains('[role="menuitem"]', 'Privat').click();
         cy.url().should('include', '/privat/oversikt');
       });
   });
@@ -69,12 +69,12 @@ describe('Ändra representationsläge (privat/företag)', () => {
       setIntercepts(RepresentingMode.BUSINESS);
 
       // RepresentingSwitchButton
-      cy.contains('[role="navigationitem"]', 'Organisation').click();
+      cy.contains('[role="menuitem"]', 'Organisation').click();
       cy.url().should('include', '/foretag/oversikt');
     });
   });
   it('should render /privat/arenden then /foretag/arenden', () => {
-    cy.contains('[role="navigationitem"]', 'Ärenden').click();
+    cy.contains('[role="menuitem"]', 'Ärenden').click();
     cy.url().should('include', '/privat/arenden');
     cy.wait(['@getCases', '@getRepresenting']).then(() => {
       testCases(RepresentingMode.PRIVATE);
@@ -82,7 +82,7 @@ describe('Ändra representationsläge (privat/företag)', () => {
       setIntercepts(RepresentingMode.BUSINESS);
 
       // RepresentingSwitchButton
-      cy.contains('[role="navigationitem"]', 'Organisation').click();
+      cy.contains('[role="menuitem"]', 'Organisation').click();
       cy.clearLocalStorage();
 
       cy.url().should('include', '/foretag/arenden');
@@ -93,7 +93,7 @@ describe('Ändra representationsläge (privat/företag)', () => {
   });
   // Temporarily disabled due to the fact that api doesnt provide all invoices
   it('should render /privat/fakturor then /foretag/fakturor', () => {
-    cy.contains('[role="navigationitem"]', 'Fakturor').click();
+    cy.contains('[role="menuitem"]', 'Fakturor').click();
 
     cy.url().should('include', '/privat/fakturor');
     cy.wait(['@getInvoices', '@getRepresenting']).then(() => {
@@ -102,7 +102,7 @@ describe('Ändra representationsläge (privat/företag)', () => {
       setIntercepts(RepresentingMode.BUSINESS);
 
       // RepresentingSwitchButton
-      cy.contains('[role="navigationitem"]', 'Organisation').click();
+      cy.contains('[role="menuitem"]', 'Organisation').click();
 
       cy.url().should('include', '/foretag/fakturor');
       cy.wait(['@getInvoices', '@getRepresenting']).then(() => {
@@ -121,7 +121,7 @@ describe('Ändra representationsläge (privat/företag)', () => {
       setIntercepts(RepresentingMode.BUSINESS);
 
       // RepresentingSwitchButton
-      cy.contains('[role="navigationitem"]', 'Organisation').click();
+      cy.contains('[role="menuitem"]', 'Organisation').click();
 
       cy.url().should('include', '/foretag/profil');
       cy.wait(['@getContactSettings', '@getRepresenting']).then(() => {

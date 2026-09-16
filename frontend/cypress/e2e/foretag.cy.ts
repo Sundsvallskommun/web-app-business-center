@@ -13,13 +13,13 @@ describe('Företag', () => {
     cy.get('h1').should('exist');
   });
   it('should render /foretag/oversikt as default page', () => {
-    cy.contains('[role="navigationitem"]', 'Översikt').should('exist');
+    cy.contains('[role="menuitem"]', 'Översikt').should('exist');
     cy.wait('@getCases').then(() => {
       cy.url().should('include', '/foretag/oversikt');
     });
   });
   it('should render Ärenden when clicked', () => {
-    cy.contains('[role="navigationitem"]', 'Ärenden').click();
+    cy.contains('[role="menuitem"]', 'Ärenden').click();
     cy.wait('@getCases').then(() => {
       cy.url().should('include', '/foretag/arenden');
       testCases(RepresentingMode.BUSINESS);
@@ -27,7 +27,7 @@ describe('Företag', () => {
   });
   // Temporarily disabled due to the fact that api doesnt provide all invoices
   it('should render Fakturor when clicked', () => {
-    cy.contains('[role="navigationitem"]', 'Fakturor').click();
+    cy.contains('[role="menuitem"]', 'Fakturor').click();
     cy.wait('@getInvoices').then(() => {
       cy.url().should('include', '/foretag/fakturor');
       // testInvoices(RepresentingMode.BUSINESS);
@@ -57,14 +57,14 @@ describe('Företag', () => {
       });
   });
   it('should render assets list /foretag', () => {
-    cy.contains('[role="navigationitem"]', 'Beslut och dokument').click();
+    cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
     cy.wait('@getAssets').then(() => {
       cy.url().should('include', '/foretag/beslut-och-dokument');
       testAssets(RepresentingMode.BUSINESS);
     });
   });
   it('should render decisions list /foretag', () => {
-    cy.contains('[role="navigationitem"]', 'Beslut och dokument').click();
+    cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
     cy.wait('@getDecisions').then(() => {
       cy.url().should('include', '/foretag/beslut-och-dokument');
       testDecisions();

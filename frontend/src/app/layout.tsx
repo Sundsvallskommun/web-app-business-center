@@ -1,4 +1,4 @@
-import 'dayjs/locale/se';
+import 'dayjs/locale/sv';
 import '../../tailwind.scss';
 import MyAppLayout from '../layouts/app/layout.component';
 

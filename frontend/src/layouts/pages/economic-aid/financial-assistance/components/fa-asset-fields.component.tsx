@@ -2,7 +2,7 @@ import { FA_FIELD_MAX_LENGTH, AssetCategory, FinancialAssistanceFormData, Proper
 import { FormControl, FormLabel, Input, Select } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { numberFieldOptions } from './fa-form-helpers';
+import { DATE_INPUT_MAX, numberFieldOptions } from './fa-form-helpers';
 
 const PROPERTY_TYPES: PropertyType[] = ['CONDOMINIUM', 'HOUSE', 'PROPERTY', 'HOLIDAY_HOME'];
 const VEHICLE_TYPES: VehicleType[] = ['CAR', 'BOAT', 'MOTORCYCLE', 'CARAVAN', 'MOPED', 'SNOWMOBILE', 'OTHER'];
@@ -167,7 +167,7 @@ export const FaAssetFields: React.FC<FaAssetFieldsProps> = ({ index, category })
           <FormLabel htmlFor={`${fieldId}-purchase-date`}>
             {t('financial-assistance:economy.asset.purchaseDateLabel')}
           </FormLabel>
-          <Input id={`${fieldId}-purchase-date`} type="date" {...register(`assets.${index}.purchaseDate` as const)} />
+          <Input id={`${fieldId}-purchase-date`} type="date" max={DATE_INPUT_MAX} {...register(`assets.${index}.purchaseDate` as const)} />
         </FormControl>
       </div>
       <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">

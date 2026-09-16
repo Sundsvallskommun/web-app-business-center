@@ -1,4 +1,12 @@
 import { ApplicationType, AssetForm, FinancialAssistanceFormData, PeriodChoice, PersonForm, PlanningForm } from '@interfaces/financial-assistance';
+import {
+  incomeAssetLabelSuffix,
+  interpreterQuestionLabel,
+  planningInfoText,
+  sickLeaveLevelLabel,
+} from '@services/financial-assistance-labels';
+import { asksWorkHistory } from '@services/financial-assistance-work-history';
+import { formatPeriodChoiceLabel } from '@utils/financial-assistance-period-choice';
 import { swedishMonthName } from '@utils/swedish-month';
 
 const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
@@ -97,7 +105,7 @@ export const buildApplicationPdfSummary = (
   const niCtx = isCohabiting ? { context: 'ni' } : undefined;
   const q = (key: string): string => t(fa(key), niCtx);
   const infoArray = (key: string): string => {
-    const value = t(fa(key), { returnObjects: true }) as unknown;
+    const value = t(fa(key), { returnObjects: true, ...niCtx }) as unknown;
     if (Array.isArray(value)) return value.filter((part): part is string => typeof part === 'string').join('\n\n');
     return typeof value === 'string' ? value : '';
   };
@@ -163,7 +171,7 @@ export const buildApplicationPdfSummary = (
         // Tolk-frågan ställs på personuppgifter (nyansökan).
         ...(isNew
           ? ([
-              [t(fa('personuppgifter.needsInterpreterLabel')), yesNo(person.needsInterpreter)],
+              [interpreterQuestionLabel(t, isCohabiting, person.role, identity?.name), yesNo(person.needsInterpreter)],
               [t(fa('personuppgifter.interpreterLanguageLabel')), person.interpreterLanguage],
             ] as RawRow[])
           : []),
@@ -217,15 +225,7 @@ export const buildApplicationPdfSummary = (
   // ── 2. Kostnader (ansökningsperiod + norm + kostnader) ─────────────────────────────────────────
   // Nyansökan: "Vad avser ansökan?" är flerval (denna/nästa månad och/eller annat bistånd) och norm
   // (flerval) visas bara vid denna/nästa månad. Åter-/tilläggsansökan: fast period + enkel norm.
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
-  const periodChoiceLabel = (choice: PeriodChoice): string => {
-    const base = t(fa(`periodChoice.${choice}`));
-    if (choice === 'CURRENT_MONTH') return `${base} (${swedishMonthName(currentMonth)})`;
-    if (choice === 'NEXT_MONTH') return `${base} (${swedishMonthName(nextMonth)})`;
-    return base;
-  };
+  const periodChoiceLabel = (choice: PeriodChoice): string => formatPeriodChoiceLabel(choice, t(fa(`periodChoice.${choice}`)));
   const renewalPeriod =
     form.periodMonth && form.periodYear
       ? t(fa('periodNorm.periodValue'), { month: swedishMonthName(form.periodMonth), year: form.periodYear })
@@ -236,7 +236,7 @@ export const buildApplicationPdfSummary = (
           q('periodNorm.periodChoiceLabel'),
           PERIOD_CHOICES.filter((choice) => form.periodChoices.includes(choice)).map(periodChoiceLabel).join(', '),
         ],
-        [t(fa('periodNorm.otherBenefitPlaceholder')), form.periodChoices.includes('OTHER_BENEFIT') ? form.otherBenefitDescription : ''],
+        [q('periodNorm.otherBenefitPlaceholder'), form.periodChoices.includes('OTHER_BENEFIT') ? form.otherBenefitDescription : ''],
         ...(form.periodChoices.some((choice) => choice === 'CURRENT_MONTH' || choice === 'NEXT_MONTH')
           ? form.normTypes.map(
               (normType): RawRow => [q('periodNorm.normTypeLabel'), t(fa(`normType.${normType}`)), t(fa(`normInfo.${normType}`))],
@@ -325,7 +325,7 @@ export const buildApplicationPdfSummary = (
     : [
         // Nyansökan: obligatorisk fritext om försörjning, först i gruppen.
         ...(isNew ? [section(undefined, [[t(fa('income.livelihoodLabel')), form.livelihoodDescription]])] : []),
-        section(t(fa('economy.incomesHeading')), [[q('economy.hasIncomesLabel'), yesNo(form.hasIncomes), q('income.incomesInfo')]]),
+        section(t(fa('economy.incomesHeading')), [[q(`economy.hasIncomesLabel${incomeAssetLabelSuffix(applicationType)}`), yesNo(form.hasIncomes), q('income.incomesInfo')]]),
         ...(form.hasIncomes === true
           ? form.incomes
               .filter((income) => income.incomeType)
@@ -350,7 +350,7 @@ export const buildApplicationPdfSummary = (
               ]),
             )
           : []),
-        section(t(fa('economy.assetsHeading')), [[q('economy.hasAssetsLabel'), yesNo(form.hasAssets), q('income.assetsInfo')]]),
+        section(t(fa('economy.assetsHeading')), [[q(`economy.hasAssetsLabel${incomeAssetLabelSuffix(applicationType)}`), yesNo(form.hasAssets), q('income.assetsInfo')]]),
         ...(form.hasAssets === true
           ? form.assets
               .filter((asset) => asset.assetCategory)
@@ -360,10 +360,6 @@ export const buildApplicationPdfSummary = (
   const incomeGroup = group('3. ' + t(fa('groups.income')), incomeSections);
 
   // ── 4. Planering — generell info + fråga, och egna fält per planering ────────────────────────
-  const planningInfoKey: Record<string, string> = { JOBSEEKING: 'jobseeking', SICK_LEAVE: 'sickLeave', SFI: 'sfi' };
-  // Poster utan satt person räknas som sökandens (samma regel som planeringssteget).
-  const planningPersonRole = (person: string): 'APPLICANT' | 'CO_APPLICANT' =>
-    person === 'CO_APPLICANT' ? 'CO_APPLICANT' : 'APPLICANT';
   const recipientRow = (person: string): RawRow[] =>
     isCohabiting && person ? ([[t(fa('economy.recipientLabel')), t(fa(`recipient.${person}`))]] as RawRow[]) : [];
   const planningTypeRows = (planning: PlanningForm): RawRow[] => {
@@ -375,7 +371,7 @@ export const buildApplicationPdfSummary = (
         ];
       case 'SICK_LEAVE':
         return [
-          [t(fa('planning.sickLeaveLevelLabel')), planning.sickLeaveLevel ? `${planning.sickLeaveLevel}%` : ''],
+          [t(fa('planning.sickLeaveLevelLabel')), sickLeaveLevelLabel(t, planning.sickLeaveLevel)],
           ...(isNew
             ? ([
                 [t(fa('planning.sickFromLabel')), planning.sickLeaveFrom],
@@ -402,7 +398,7 @@ export const buildApplicationPdfSummary = (
           .filter((planning) => planning.planningType)
           .map((planning) =>
             section(t(fa(`planningType.${planning.planningType}`)), [...recipientRow(planning.person), ...planningTypeRows(planning)], {
-              info: planningInfoKey[planning.planningType] ? t(fa(`planning.info.${planningInfoKey[planning.planningType]}`)) : undefined,
+              info: planningInfoText(t, planning.planningType, applicationType),
             }),
           ),
         ...(isNew
@@ -425,10 +421,10 @@ export const buildApplicationPdfSummary = (
               ]),
             )
           : []),
-        // Arbete senaste 12 mån — frågan ställs (nyansökan) för den som inte valt "Arbete" som planering.
+        // Arbete senaste 12 mån — frågan ställs (nyansökan) för den som valt planering men inte "Arbete".
         ...(isNew
           ? form.persons
-              .filter((person) => !form.plannings.some((planning) => planningPersonRole(planning.person) === person.role && planning.planningType === 'WORK'))
+              .filter((person) => asksWorkHistory(form.plannings, person.role))
               .map((person) =>
                 section(isCohabiting ? (identities?.[person.role]?.name ?? t(fa(`recipient.${person.role}`))) : undefined, [
                   [t(fa('planning.hadWorkLabel')), yesNo(person.hadWorkLast12Months)],
@@ -467,7 +463,7 @@ export const buildApplicationPdfSummary = (
   ]);
   const attestationSection = section(
     t(fa('review.attestationHeading')),
-    [[t(fa('review.attestation')), form.attestation ? '✓' : '']],
+    [[q('review.attestation'), form.attestation ? '✓' : '']],
     { info: infoArray('review.attestationInfo') },
   );
   const paymentGroup = group('5. ' + t(fa('groups.payment')), [

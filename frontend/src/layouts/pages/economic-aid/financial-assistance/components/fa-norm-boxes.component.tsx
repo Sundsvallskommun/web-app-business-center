@@ -12,7 +12,8 @@ const toggle = <T,>(values: T[], value: T): T[] =>
 /**
  * Riksnorm/Annan norm som utgiftsboxar (tilläggsansökan). Renderas under kostnadernas befintliga
  * "Övrigt"-kategori — alltså inte under en egen rubrik — så att det bara finns en "Övrigt". Varje
- * ikryssad norm visar sin infotext och en specifikation (för vem/vilka och vilken period).
+ * norm visar sin infotext redan innan den kryssas i; ikryssad norm visar även en specifikation (för
+ * vem/vilka och vilken period).
  */
 export const FaNormBoxes: React.FC = () => {
   const { t } = useTranslation('financial-assistance');
@@ -32,9 +33,9 @@ export const FaNormBoxes: React.FC = () => {
             >
               <span className="font-bold">{t(`financial-assistance:normType.${type}`)}</span>
             </Checkbox>
+            <p className="text-small text-dark-secondary mt-4 ml-32">{t(`financial-assistance:normInfo.${type}`)}</p>
             {checked ? (
               <div className="flex flex-col gap-12 mt-12 ml-32">
-                <span className="text-small text-dark-secondary">{t(`financial-assistance:normInfo.${type}`)}</span>
                 <FormControl className="w-full" data-cy={`fa-norm-specification-${type}`}>
                   <FormLabel className="font-bold">{t('financial-assistance:economy.normSpecificationLabel')}</FormLabel>
                   <Textarea

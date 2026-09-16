@@ -3,12 +3,12 @@ import { Button, Checkbox, FormControl, FormLabel, Icon, Input, Select } from '@
 import { Plus, X } from 'lucide-react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { compactFieldClass, numberFieldOptions, selectableBoxClass } from './fa-form-helpers';
+import { compactFieldClass, DATE_INPUT_MAX, numberFieldOptions, selectableBoxClass } from './fa-form-helpers';
 import { useApplicantNames } from './use-applicant-names';
 
 const INCOME_TYPES: IncomeType[] = [
-  'SALARY',
   'SWISH_DEPOSITS',
+  'SALARY',
   'OCCUPATIONAL_PENSION_INSURANCE',
   'CHILD_SUPPORT',
   'RENT_SHARE_FROM_CHILD',
@@ -39,6 +39,7 @@ export const FaIncomeSelector: React.FC<FaIncomeSelectorProps> = ({ showRecipien
 
   return (
     <div className="flex flex-col gap-12" data-cy="fa-income-selector">
+      <p className="font-bold">{t('financial-assistance:economy.income.typeHeading')}</p>
       {INCOME_TYPES.map((type) => {
         const indices = indicesOf(type);
         const checked = indices.length > 0;
@@ -91,7 +92,7 @@ export const FaIncomeSelector: React.FC<FaIncomeSelectorProps> = ({ showRecipien
                           <FormLabel htmlFor={`${fieldId}-date`}>
                             {t('financial-assistance:economy.income.dateLabel')}
                           </FormLabel>
-                          <Input id={`${fieldId}-date`} type="date" {...register(`incomes.${index}.incomeDate` as const)} />
+                          <Input id={`${fieldId}-date`} type="date" max={DATE_INPUT_MAX} {...register(`incomes.${index}.incomeDate` as const)} />
                         </FormControl>
                       </div>
 

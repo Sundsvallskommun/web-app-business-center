@@ -1,12 +1,15 @@
-import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
+import { FinancialAssistanceFormData, PersonRole } from '@interfaces/financial-assistance';
 import { FormControl, FormLabel, RadioButton } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { interpreterQuestionLabel } from '@services/financial-assistance-labels';
 import { TolkSprakPicker } from '../../components/tolk-sprak-picker.component';
+import { useApplicantNames } from './use-applicant-names';
 
 interface FaInterpreterQuestionProps {
   /** Index into the `persons` field array (applicant or co-applicant). */
   index: number;
+  role: PersonRole;
 }
 
 /**
@@ -14,8 +17,11 @@ interface FaInterpreterQuestionProps {
  * notisvalet. Vid "Ja" väljs språk i en rullista (TolkSprakPicker). En instans per person, så
  * sambos får två frågor. Värdena lagras på persons[index] och skickas vidare av buildPerson.
  */
-export const FaInterpreterQuestion: React.FC<FaInterpreterQuestionProps> = ({ index }) => {
+export const FaInterpreterQuestion: React.FC<FaInterpreterQuestionProps> = ({ index, role }) => {
   const { t } = useTranslation('financial-assistance');
+  const { isCohabiting, nameForRole } = useApplicantNames();
+  // Ensam sökande: "Behöver du tolk?". Tillsammans: personens namn (rollnamn tills namnet laddats).
+  const label = interpreterQuestionLabel(t, isCohabiting, role, nameForRole(role));
   const { watch, setValue } = useFormContext<FinancialAssistanceFormData>();
   const needsInterpreter = watch(`persons.${index}.needsInterpreter` as const);
   const language = watch(`persons.${index}.interpreterLanguage` as const);
@@ -26,7 +32,7 @@ export const FaInterpreterQuestion: React.FC<FaInterpreterQuestionProps> = ({ in
 
   return (
     <FormControl data-cy={cy} className="w-full">
-      <FormLabel className="font-bold">{t('financial-assistance:personuppgifter.needsInterpreterLabel')}</FormLabel>
+      <FormLabel className="font-bold">{label}</FormLabel>
       <RadioButton.Group inline>
         <RadioButton
           size="sm"

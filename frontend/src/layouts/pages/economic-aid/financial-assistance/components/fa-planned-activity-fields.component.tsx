@@ -2,6 +2,7 @@ import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
 import { FormControl, FormLabel, Input } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { DATE_INPUT_MAX } from './fa-form-helpers';
 
 interface FaPlannedActivityFieldsProps {
   index: number;
@@ -22,11 +23,11 @@ export const FaPlannedActivityFields: React.FC<FaPlannedActivityFieldsProps> = (
       <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
         <FormControl className="w-full">
           <FormLabel htmlFor={`${fieldId}-from`}>{t('financial-assistance:planning.activity.fromLabel')}</FormLabel>
-          <Input id={`${fieldId}-from`} type="date" {...register(`plannedActivities.${index}.periodFrom` as const)} />
+          <Input id={`${fieldId}-from`} type="date" max={DATE_INPUT_MAX} {...register(`plannedActivities.${index}.periodFrom` as const)} />
         </FormControl>
         <FormControl className="w-full">
           <FormLabel htmlFor={`${fieldId}-to`}>{t('financial-assistance:planning.activity.toLabel')}</FormLabel>
-          <Input id={`${fieldId}-to`} type="date" {...register(`plannedActivities.${index}.periodTo` as const)} />
+          <Input id={`${fieldId}-to`} type="date" max={DATE_INPUT_MAX} {...register(`plannedActivities.${index}.periodTo` as const)} />
         </FormControl>
       </div>
     </>

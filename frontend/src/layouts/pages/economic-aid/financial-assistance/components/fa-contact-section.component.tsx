@@ -95,30 +95,36 @@ export const FaContactSection: React.FC<FaContactSectionProps> = ({
         ) : null}
       </FormControl>
 
-      {/* Kontaktuppgifter (redigerbara) */}
-      <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
-        <FormControl className="w-full" disabled={!notifyByEmail}>
-          <FormLabel htmlFor={`fa-${emailField}`}>{t('financial-assistance:personuppgifter.emailLabel')}</FormLabel>
-          <Input
-            id={`fa-${emailField}`}
-            type="email"
-            disabled={!notifyByEmail}
-            maxLength={FA_FIELD_MAX_LENGTH.email}
-            {...register(emailField)}
-          />
-        </FormControl>
-        <FormControl className="w-full" disabled={!notifyBySms}>
-          <FormLabel htmlFor={`fa-${phoneField}`}>{t('financial-assistance:personuppgifter.phoneLabel')}</FormLabel>
-          <Input
-            id={`fa-${phoneField}`}
-            inputMode="tel"
-            disabled={!notifyBySms}
-            maxLength={FA_FIELD_MAX_LENGTH.phone}
-            {...register(phoneField)}
-          />
-        </FormControl>
-      </div>
-      <p className="text-small text-dark-secondary">{t('financial-assistance:personuppgifter.contactInfo')}</p>
+      {/* Kontaktuppgifter (redigerbara) — ett fält visas bara när dess notiskanal är vald. */}
+      {notifyByEmail || notifyBySms ? (
+        <>
+          <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
+            {notifyByEmail ? (
+              <FormControl className="w-full">
+                <FormLabel htmlFor={`fa-${emailField}`}>{t('financial-assistance:personuppgifter.emailLabel')}</FormLabel>
+                <Input
+                  id={`fa-${emailField}`}
+                  type="email"
+                  maxLength={FA_FIELD_MAX_LENGTH.email}
+                  {...register(emailField)}
+                />
+              </FormControl>
+            ) : null}
+            {notifyBySms ? (
+              <FormControl className="w-full">
+                <FormLabel htmlFor={`fa-${phoneField}`}>{t('financial-assistance:personuppgifter.phoneLabel')}</FormLabel>
+                <Input
+                  id={`fa-${phoneField}`}
+                  inputMode="tel"
+                  maxLength={FA_FIELD_MAX_LENGTH.phone}
+                  {...register(phoneField)}
+                />
+              </FormControl>
+            ) : null}
+          </div>
+          <p className="text-small text-dark-secondary">{t('financial-assistance:personuppgifter.contactInfo')}</p>
+        </>
+      ) : null}
 
       <Divider />
     </section>

@@ -15,20 +15,26 @@ export const StepPayment: React.FC<FaStepProps> = ({ applicationType, onBack, on
   // persons is fixed (applicant + optional co-applicant) — useFieldArray only for stable keys.
   const { fields } = useFieldArray({ control, name: 'persons' });
   const isCohabiting = watch('maritalStatus') === 'COHABITING';
+  const ni = isCohabiting ? { context: 'ni' } : undefined;
   const stays = watch('staysInMunicipality');
   const attestation = watch('attestation');
   const showStay = applicationType !== 'SUPPLEMENTARY';
-  const attestationInfo = t('financial-assistance:review.attestationInfo', { returnObjects: true }) as string[];
+  // Försäkran växlar du→ni (och jag→vi) när man ansöker tillsammans.
+  const attestationInfo = t('financial-assistance:review.attestationInfo', { returnObjects: true, ...ni }) as string[];
 
   return (
     <section className="flex flex-col gap-24" data-cy="fa-step-payment">
       <header className="text-content flex flex-col gap-8">
         <h2>{t('financial-assistance:payment.heading')}</h2>
-        <p className="font-bold">
-          {t('financial-assistance:payment.payoutQuestion', isCohabiting ? { context: 'ni' } : undefined)}
-        </p>
+        <p className="font-bold">{t('financial-assistance:payment.payoutQuestion', ni)}</p>
         {isCohabiting ? (
           <p className="text-small text-dark-secondary">{t('financial-assistance:payment.payoutInfoCohabiting')}</p>
+        ) : null}
+        {/* Nyansökan: båda anger ett eget konto. */}
+        {isCohabiting && applicationType === 'NEW' ? (
+          <p className="text-small text-dark-secondary">
+            {t('financial-assistance:payment.payoutAccountInfoCohabiting')}
+          </p>
         ) : null}
       </header>
 
@@ -48,7 +54,7 @@ export const StepPayment: React.FC<FaStepProps> = ({ applicationType, onBack, on
           <FormControl data-cy="fa-stays" className="w-full">
             <FormLabel className="text-h4-md font-bold">{t('financial-assistance:review.staysHeading')}</FormLabel>
             <p className="font-bold mb-8">
-              {t('financial-assistance:review.staysInfo', isCohabiting ? { context: 'ni' } : undefined)}
+              {t('financial-assistance:review.staysInfo', ni)}
             </p>
             <RadioButton.Group inline>
               <RadioButton
@@ -101,7 +107,7 @@ export const StepPayment: React.FC<FaStepProps> = ({ applicationType, onBack, on
         </div>
         <FormControl>
           <Checkbox data-cy="fa-attestation" {...register('attestation', { required: true })}>
-            {t('financial-assistance:review.attestation')}
+            {t('financial-assistance:review.attestation', ni)}
           </Checkbox>
         </FormControl>
       </section>

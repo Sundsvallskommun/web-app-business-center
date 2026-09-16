@@ -2,6 +2,7 @@ import { FA_FIELD_MAX_LENGTH, FinancialAssistanceFormData } from '@interfaces/fi
 import { FormControl, FormLabel, Input } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { DATE_INPUT_MAX } from './fa-form-helpers';
 
 interface FaJobApplicationFieldsProps {
   index: number;
@@ -18,7 +19,7 @@ export const FaJobApplicationFields: React.FC<FaJobApplicationFieldsProps> = ({ 
       <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
         <FormControl className="w-full">
           <FormLabel htmlFor={`${fieldId}-date`}>{t('financial-assistance:planning.jobApplication.dateLabel')}</FormLabel>
-          <Input id={`${fieldId}-date`} type="date" {...register(`jobApplications.${index}.applicationDate` as const)} />
+          <Input id={`${fieldId}-date`} type="date" max={DATE_INPUT_MAX} {...register(`jobApplications.${index}.applicationDate` as const)} />
         </FormControl>
         <FormControl className="w-full">
           <FormLabel htmlFor={`${fieldId}-title`}>

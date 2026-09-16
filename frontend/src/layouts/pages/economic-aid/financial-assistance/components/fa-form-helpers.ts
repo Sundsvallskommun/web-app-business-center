@@ -10,6 +10,12 @@ export const numberFieldOptions = {
  */
 export const compactFieldClass = 'max-w-[12rem] w-full';
 
+/**
+ * `max` for date inputs. Without it the browser accepts a five- or six-digit year; capping the
+ * date at 9999-12-31 limits the year segment to four digits.
+ */
+export const DATE_INPUT_MAX = '9999-12-31';
+
 /** Klassen för en valbar ruta (checkbox-kort) — markerad ruta får blå ram + ljus bakgrund. */
 export const selectableBoxClass = (checked: boolean): string =>
   [

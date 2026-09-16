@@ -6,9 +6,11 @@ import {
   SickLeaveLevel,
   WorkExtent,
 } from '@interfaces/financial-assistance';
+import { planningInfoText, sickLeaveLevelLabel } from '@services/financial-assistance-labels';
 import { FormControl, FormLabel, Input, Select } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { DATE_INPUT_MAX } from './fa-form-helpers';
 
 const WORK_EXTENTS: WorkExtent[] = ['FULL', 'PART'];
 const SICK_LEAVE_LEVELS: SickLeaveLevel[] = ['100', '75', '50', '25'];
@@ -30,13 +32,15 @@ interface FaPlanningFieldsProps {
   planningType: PlanningType;
   /** Nyansökan: fråga även efter läkarintygets sjukskrivningsperiod (från/till). */
   showSickLeavePeriod: boolean;
+  /** Återansökan: läkarintygstexten uppmanar att bifoga intyget i ansökan. */
+  isRenewal: boolean;
 }
 
 /**
  * Typspecifika fält för en planeringspost (errand_fa_planning). Typen styrs av rutan i
  * planeringsväljaren. JOBSEEKING-typens aktiviteter/sökta jobb hanteras separat i väljaren.
  */
-export const FaPlanningFields: React.FC<FaPlanningFieldsProps> = ({ index, planningType, showSickLeavePeriod }) => {
+export const FaPlanningFields: React.FC<FaPlanningFieldsProps> = ({ index, planningType, showSickLeavePeriod, isRenewal }) => {
   const { t } = useTranslation('financial-assistance');
   const { register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
   const fieldId = `fa-planning-${index}`;
@@ -88,7 +92,7 @@ export const FaPlanningFields: React.FC<FaPlanningFieldsProps> = ({ index, plann
     const sickLevel = watch(`plannings.${index}.sickLeaveLevel` as const);
     return (
       <div className="flex flex-col gap-16">
-        <Info>{t('financial-assistance:planning.info.sickLeave')}</Info>
+        <Info>{planningInfoText(t, 'SICK_LEAVE', isRenewal ? 'RENEWAL' : 'NEW')}</Info>
         <FormControl className="w-full max-w-[20rem]">
           <FormLabel htmlFor={`${fieldId}-sick-level`}>
             {t('financial-assistance:planning.sickLeaveLevelLabel')}
@@ -108,7 +112,7 @@ export const FaPlanningFields: React.FC<FaPlanningFieldsProps> = ({ index, plann
             </Select.Option>
             {SICK_LEAVE_LEVELS.map((value) => (
               <Select.Option key={value} value={value}>
-                {value} %
+                {sickLeaveLevelLabel(t, value)}
               </Select.Option>
             ))}
           </Select>
@@ -117,11 +121,11 @@ export const FaPlanningFields: React.FC<FaPlanningFieldsProps> = ({ index, plann
           <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
             <FormControl className="w-full">
               <FormLabel htmlFor={`${fieldId}-sick-from`}>{t('financial-assistance:planning.sickFromLabel')}</FormLabel>
-              <Input id={`${fieldId}-sick-from`} type="date" {...register(`plannings.${index}.sickLeaveFrom` as const)} />
+              <Input id={`${fieldId}-sick-from`} type="date" max={DATE_INPUT_MAX} {...register(`plannings.${index}.sickLeaveFrom` as const)} />
             </FormControl>
             <FormControl className="w-full">
               <FormLabel htmlFor={`${fieldId}-sick-to`}>{t('financial-assistance:planning.sickToLabel')}</FormLabel>
-              <Input id={`${fieldId}-sick-to`} type="date" {...register(`plannings.${index}.sickLeaveTo` as const)} />
+              <Input id={`${fieldId}-sick-to`} type="date" max={DATE_INPUT_MAX} {...register(`plannings.${index}.sickLeaveTo` as const)} />
             </FormControl>
           </div>
         ) : null}
@@ -186,9 +190,12 @@ export const FaPlanningFields: React.FC<FaPlanningFieldsProps> = ({ index, plann
 
   // OTHER
   return (
-    <FormControl className="w-full">
-      <FormLabel htmlFor={`${fieldId}-other`}>{t('financial-assistance:planning.otherDescriptionLabel')}</FormLabel>
-      <Input id={`${fieldId}-other`} {...register(`plannings.${index}.otherDescription` as const)} />
-    </FormControl>
+    <div className="flex flex-col gap-16">
+      <Info>{planningInfoText(t, 'OTHER', isRenewal ? 'RENEWAL' : 'NEW')}</Info>
+      <FormControl className="w-full">
+        <FormLabel htmlFor={`${fieldId}-other`}>{t('financial-assistance:planning.otherDescriptionLabel')}</FormLabel>
+        <Input id={`${fieldId}-other`} {...register(`plannings.${index}.otherDescription` as const)} />
+      </FormControl>
+    </div>
   );
 };

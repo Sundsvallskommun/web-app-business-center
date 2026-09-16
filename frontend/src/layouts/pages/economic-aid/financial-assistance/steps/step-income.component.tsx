@@ -8,6 +8,7 @@ import { StepNavigation } from '../../components/step-navigation.component';
 import { FaAssetSelector } from '../components/fa-asset-selector.component';
 import { FaIncomeSelector } from '../components/fa-income-selector.component';
 import { FaPendingBenefitCard } from '../components/fa-pending-benefit-card.component';
+import { incomeAssetLabelSuffix } from '@services/financial-assistance-labels';
 import { FaStepProps } from './fa-step-registry';
 
 type GateField = 'hasIncomes' | 'hasPendingBenefits' | 'hasAssets';
@@ -18,6 +19,8 @@ export const StepIncome: React.FC<FaStepProps> = ({ applicationType, onBack, onN
   const { control, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
 
   const isNew = applicationType === 'NEW';
+  // Återansökan frågar om inkomster "sedan senaste ansökan" och om tillgångar man inte informerat om.
+  const labelSuffix = incomeAssetLabelSuffix(applicationType);
   const showRecipient = watch('maritalStatus') === 'COHABITING';
   const ni = showRecipient ? { context: 'ni' } : undefined;
   const livelihoodDescription = watch('livelihoodDescription');
@@ -104,7 +107,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ applicationType, onBack, onN
         {renderGate(
           'hasIncomes',
           hasIncomes,
-          t('financial-assistance:economy.hasIncomesLabel', ni),
+          t(`financial-assistance:economy.hasIncomesLabel${labelSuffix}`, ni),
           t('financial-assistance:income.incomesInfo', ni),
           'fa-has-incomes',
         )}
@@ -143,7 +146,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ applicationType, onBack, onN
         {renderGate(
           'hasAssets',
           hasAssets,
-          t('financial-assistance:economy.hasAssetsLabel', ni),
+          t(`financial-assistance:economy.hasAssetsLabel${labelSuffix}`, ni),
           t('financial-assistance:income.assetsInfo'),
           'fa-has-assets',
         )}

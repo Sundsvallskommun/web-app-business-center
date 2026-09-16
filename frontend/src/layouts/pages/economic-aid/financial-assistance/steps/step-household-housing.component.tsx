@@ -209,7 +209,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
         notifySmsField="notifyBySms"
       />
       {/* "Behöver du tolk?" direkt efter notisvalet (nyansökan), per person. */}
-      {isNew && applicantIndex >= 0 ? <FaInterpreterQuestion index={applicantIndex} /> : null}
+      {isNew && applicantIndex >= 0 ? <FaInterpreterQuestion index={applicantIndex} role="APPLICANT" /> : null}
 
       {isCohabiting && coApplicantPnr ? (
         <FaContactSection
@@ -223,7 +223,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
         />
       ) : null}
       {isNew && isCohabiting && coApplicantPnr && coApplicantIndex >= 0 ? (
-        <FaInterpreterQuestion index={coApplicantIndex} />
+        <FaInterpreterQuestion index={coApplicantIndex} role="CO_APPLICANT" />
       ) : null}
 
       {/* Barn + boende ingår inte i tilläggsansökan */}
@@ -244,10 +244,14 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
                   className="rounded-12 border-2 border-divider bg-background-content p-16 flex flex-col gap-8"
                   data-cy="fa-prefill-children"
                 >
-                  <span className="font-bold">{t('financial-assistance:householdHousing.prefillHeading')}</span>
+                  <span className="font-bold">
+                    {isRenewal
+                      ? t('financial-assistance:householdHousing.prefillHeadingRenewal', ni)
+                      : t('financial-assistance:householdHousing.prefillHeading')}
+                  </span>
                   {availablePrefilledChildren.map((child) => (
                     <div key={child.partyId ?? child.name ?? ''} className="flex items-center justify-between gap-8">
-                      <span>{child.name}</span>
+                      <span>{[child.name, child.personnummer].filter(Boolean).join(' ')}</span>
                       <Button
                         variant="link"
                         size="sm"

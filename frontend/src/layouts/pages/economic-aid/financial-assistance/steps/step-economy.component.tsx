@@ -1,6 +1,7 @@
 import { FinancialAssistanceFormData, NormType, PeriodChoice } from '@interfaces/financial-assistance';
+import { formatPeriodChoiceLabel } from '@utils/financial-assistance-period-choice';
 import { swedishMonthName } from '@utils/swedish-month';
-import { Checkbox, FormControl, FormLabel, RadioButton } from '@sk-web-gui/react';
+import { Checkbox, FormControl, FormLabel, RadioButton, Textarea } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { StepNavigation } from '../../components/step-navigation.component';
@@ -8,9 +9,8 @@ import { FaCostSelector } from '../components/fa-cost-selector.component';
 import { FaNormBoxes } from '../components/fa-norm-boxes.component';
 import { FaStepProps } from './fa-step-registry';
 
-// "Annat bistånd" är borttaget som periodval på nyansökan — det behovet täcks av kostnaden
-// "Övrigt bistånd", så vi har bara en "Övrigt"-ingång. Här erbjuds därför bara månadsvalen.
-const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH'];
+// Nyansökan: denna månad, nästa månad och/eller "Annat bistånd" (t.ex. en skuld) — alla tre kan väljas.
+const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
 const NORM_TYPES: NormType[] = ['NATIONAL_NORM', 'OTHER_NORM'];
 
 /** Lägger till/tar bort ett värde ur en flervalslista. */
@@ -82,20 +82,14 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
   const isSupplementary = applicationType === 'SUPPLEMENTARY';
   const ni = watch('maritalStatus') === 'COHABITING' ? { context: 'ni' } : undefined;
   const periodChoices = watch('periodChoices');
+  const otherBenefitDescription = watch('otherBenefitDescription');
   const normTypes = watch('normTypes');
   const periodMonth = watch('periodMonth');
   const periodYear = watch('periodYear');
 
-  // "Denna/Nästa månad" visar månadens namn; beräknas från dagens datum (samma logik som derivePeriod).
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
-  const periodChoiceLabel = (choice: PeriodChoice): string => {
-    const base = t(`financial-assistance:periodChoice.${choice}`);
-    if (choice === 'CURRENT_MONTH') return `${base} (${swedishMonthName(currentMonth)})`;
-    if (choice === 'NEXT_MONTH') return `${base} (${swedishMonthName(nextMonth)})`;
-    return base;
-  };
+  // "Denna/Nästa månad" visar månadens namn (liten bokstav), beräknat från dagens datum.
+  const periodChoiceLabel = (choice: PeriodChoice): string =>
+    formatPeriodChoiceLabel(choice, t(`financial-assistance:periodChoice.${choice}`));
 
   // Norm-frågan visas bara när ansökan avser denna och/eller nästa månad.
   const showNorm = periodChoices.includes('CURRENT_MONTH') || periodChoices.includes('NEXT_MONTH');
@@ -105,10 +99,13 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
   const supplementaryMissingExpense =
     isSupplementary && costs.filter((cost) => cost.costType).length === 0 && normTypes.length === 0;
 
-  // Obligatoriskt: nyansökan kräver minst en period (+ norm när den visas);
-  // tilläggsansökan kräver minst en utgift.
+  // Obligatoriskt: nyansökan kräver minst en period (+ fritext för annat bistånd, + norm när den
+  // visas); tilläggsansökan kräver minst en utgift.
   const forwardDisabled =
-    (isNew && (periodChoices.length === 0 || (showNorm && normTypes.length === 0))) ||
+    (isNew &&
+      (periodChoices.length === 0 ||
+        (periodChoices.includes('OTHER_BENEFIT') && otherBenefitDescription.trim() === '') ||
+        (showNorm && normTypes.length === 0))) ||
     supplementaryMissingExpense;
 
   return (
@@ -121,6 +118,10 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
       {isNew ? (
         <FormControl data-cy="fa-period-choice">
           <FormLabel className="font-bold">{t('financial-assistance:periodNorm.periodChoiceLabel')}</FormLabel>
+          <div className="flex flex-col gap-4 text-small text-dark-secondary mb-8">
+            <p>{t('financial-assistance:periodNorm.periodChoiceMonthInfo', ni)}</p>
+            <p>{t('financial-assistance:periodNorm.periodChoiceOtherInfo', ni)}</p>
+          </div>
           <div className="flex flex-col gap-12">
             {PERIOD_CHOICES.map((choice) => (
               <Checkbox
@@ -134,6 +135,16 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
               </Checkbox>
             ))}
           </div>
+          {periodChoices.includes('OTHER_BENEFIT') ? (
+            <Textarea
+              className="w-full min-h-72 mt-12"
+              data-cy="fa-other-benefit"
+              aria-label={t('financial-assistance:periodNorm.otherBenefitPlaceholder', ni)}
+              placeholder={t('financial-assistance:periodNorm.otherBenefitPlaceholder', ni)}
+              value={otherBenefitDescription}
+              onChange={(event) => setValue('otherBenefitDescription', event.target.value, { shouldDirty: true })}
+            />
+          ) : null}
         </FormControl>
       ) : (
         <div className="text-content">
@@ -162,12 +173,10 @@ export const StepEconomy: React.FC<FaStepProps> = ({ applicationType, onBack, on
           <h3 className="text-h4-md font-bold">
             {t(isSupplementary ? 'financial-assistance:economy.costsHeadingSupplementary' : 'financial-assistance:economy.costsHeading', ni)}
           </h3>
-          {/* "Sök endast …"-texten finns bara på nyansökan. Återansökan visar enbart "Inte
-              obligatoriskt …"; tilläggsansökan visar ingen hjälptext (minst en utgift krävs ändå). */}
+          {/* Ny- och återansökan: "Sök endast … Inte obligatoriskt …". Tilläggsansökan visar ingen
+              hjälptext (minst en utgift krävs ändå). */}
           {isSupplementary ? null : (
-            <p className="text-small text-dark-secondary">
-              {t(isNew ? 'financial-assistance:economy.costsInfo' : 'financial-assistance:economy.costsInfoRenewal')}
-            </p>
+            <p className="text-small text-dark-secondary">{t('financial-assistance:economy.costsInfo', ni)}</p>
           )}
         </div>
         {/* Tilläggsansökan: norm-boxarna (Riksnorm/Annan norm) renderas inuti kostnadernas "Övrigt"

@@ -8,6 +8,7 @@ import {
   emptyPlanning,
 } from '@interfaces/financial-assistance';
 import { useApi } from '@services/api-service';
+import { asksWorkHistory } from '@services/financial-assistance-work-history';
 import { Button, Checkbox, Divider, Icon } from '@sk-web-gui/react';
 import { Plus, X } from 'lucide-react';
 import { useEffect } from 'react';
@@ -48,6 +49,7 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
 
   const showPerson = watch('maritalStatus') === 'COHABITING';
   const isNew = applicationType === 'NEW';
+  const isRenewal = applicationType === 'RENEWAL';
 
   // Sökandens namn till sektionsrubriken ("Vilken planering har <namn>?").
   const applicantProfile = useApi<ApplicantProfile>({ url: '/economic-aid/applicant-profile', method: 'get' });
@@ -92,7 +94,6 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
     });
 
   const personIsJobseeking = (person: PersonRole): boolean => planningIndexFor(person, 'JOBSEEKING') >= 0;
-  const personHasWork = (person: PersonRole): boolean => planningIndexFor(person, 'WORK') >= 0;
 
   // Persons i formuläret (sökande + ev. medsökande) och deras index — för tolk/arbete-frågorna.
   const persons = watch('persons');
@@ -212,7 +213,7 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
 
         {checked ? (
           <div className="flex flex-col gap-16 mt-12 ml-32">
-            <FaPlanningFields index={index} planningType={type} showSickLeavePeriod={isNew} />
+            <FaPlanningFields index={index} planningType={type} showSickLeavePeriod={isNew} isRenewal={isRenewal} />
             {type === 'JOBSEEKING' && isNew ? renderJobseekingExtras(person) : null}
           </div>
         ) : null}
@@ -228,8 +229,8 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
       </div>
       <div className="flex flex-col gap-12">{PLANNING_TYPES.map((type) => renderPlanningBox(person, type))}</div>
 
-      {/* Har personen inte valt "Arbete" som planering → fråga om arbete senaste 12 mån (nyansökan). */}
-      {isNew && !personHasWork(person) && personIndexOf(person) >= 0 ? (
+      {/* Har personen valt planering men inte "Arbete" → fråga om arbete senaste 12 mån (nyansökan). */}
+      {isNew && asksWorkHistory(watchedPlannings ?? [], person) && personIndexOf(person) >= 0 ? (
         <FaWorkHistoryQuestion index={personIndexOf(person)} />
       ) : null}
     </section>

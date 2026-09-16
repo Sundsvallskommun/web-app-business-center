@@ -9,7 +9,7 @@ import { Button, Card, FormControl, FormLabel, Icon, Input, Select } from '@sk-w
 import { X } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { compactFieldClass, numberFieldOptions } from './fa-form-helpers';
+import { compactFieldClass, DATE_INPUT_MAX, numberFieldOptions } from './fa-form-helpers';
 
 const ASSET_CATEGORIES: AssetCategory[] = ['BANK_SAVINGS', 'REAL_ESTATE', 'COMPANY', 'VEHICLE', 'OTHER'];
 const PROPERTY_TYPES: PropertyType[] = ['CONDOMINIUM', 'HOUSE', 'PROPERTY', 'HOLIDAY_HOME'];
@@ -239,6 +239,7 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
               <Input
                 id={`fa-asset-${index}-purchase-date`}
                 type="date"
+                max={DATE_INPUT_MAX}
                 {...register(`assets.${index}.purchaseDate` as const)}
               />
             </FormControl>

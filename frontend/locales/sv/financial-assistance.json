@@ -40,12 +40,12 @@
     "OTHER_NORM": "Annan norm"
   },
   "normInfo": {
-    "NATIONAL_NORM": "Exempelvis mat, kläder/skor, fritid/lek och hygienartiklar.",
-    "OTHER_NORM": "Exempelvis kläder/skor, fritid/lek och hygienartiklar om du bor på exempelvis behandlingshem, Klippangården, Rättspsykiatriska regionkliniken eller HVB."
+    "NATIONAL_NORM": "Bistånd till grundläggande behov så som mat, kläder/skor, fritid/lek och hygienartiklar.",
+    "OTHER_NORM": "Bistånd till vissa grundläggande behov när du bor på exempelvis behandlingshem, Klippangården, Rättspsykiatriska regionkliniken eller HVB och får vissa behov tillgodosedda därigenom."
   },
   "residenceExtent": {
     "FULL_TIME": "Heltid",
-    "HALF_TIME": "Växelvis / halvtid",
+    "HALF_TIME": "Halvtid",
     "OTHER": "Annat (ange antal dagar)"
   },
   "housingForm": {
@@ -85,8 +85,10 @@
     "notifyEmail": "E-post",
     "notifySms": "SMS",
     "notifyRequired": "Välj minst en kanal för notiser.",
-    "contactInfo": "Om du ändrar din e-postadress eller telefonnummer ändras de på hela Mina sidor.",
+    "contactInfo": "Om du ändrar din e-postadress eller telefonnummer ändras det på hela Mina sidor.",
     "needsInterpreterLabel": "Behöver du tolk?",
+    "needsInterpreterLabelNamed": "Behöver {{name}} tolk?",
+    "needsInterpreterLabelCoApplicant": "Behöver medsökande tolk?",
     "interpreterLanguageLabel": "Vilket språk?"
   },
   "householdHousing": {
@@ -96,23 +98,24 @@
     "hasChildrenInfo": "Du ska bara fylla i barn under 18 år och/eller barn som är 18–20 år som studerar grundskola, gymnasium eller annan jämförlig utbildning.",
     "hasChildrenInfo_ni": "Ni ska bara fylla i barn under 18 år och/eller barn som är 18–20 år som studerar grundskola, gymnasium eller annan jämförlig utbildning.",
     "addChild": "Lägg till barn",
-    "prefillHeading": "Föreslagna barn",
+    "prefillHeading": "Välj om något eller några barn ska läggas till i ansökan",
+    "prefillHeadingRenewal": "I förra ansökan ansökte du om bistånd för följande barn, välj om något eller några barn ska läggas till i denna ansökan.",
+    "prefillHeadingRenewal_ni": "I förra ansökan ansökte ni om bistånd för följande barn, välj om något eller några barn ska läggas till i denna ansökan.",
     "prefillAdd": "Lägg till",
-    "childrenChangedLabel": "Har barnens boende ändrats sedan senaste ansökan?",
-    "childrenChangedLabel_ni": "Har barnens boende ändrats sedan senaste ansökan?",
+    "childrenChangedLabel": "Har det skett några förändringar kring barns boende eller umgänge sedan senaste ansökan eller kommer det ske några förändringar under aktuell ansökningsmånad?",
     "changeDescriptionPlaceholder": "Beskriv förändringen",
     "housingChangedLabel": "Har din boendesituation förändrats sedan senaste ansökan eller kommer den förändras under aktuell ansökningsmånad?",
     "housingChangedLabel_ni": "Har er boendesituation förändrats sedan senaste ansökan eller kommer den förändras under aktuell ansökningsmånad?",
     "housingFormLabel": "Hur ser din boendesituation ut?",
     "housingFormLabelChanged": "Välj ny boendeform",
     "personCountLabel": "Uppge hur många vuxna och barn som bor helt eller delvis i bostaden",
-    "roomsLabel": "Antal rum + kök",
+    "roomsLabel": "Antal rum + kök i bostaden",
     "housingDescriptionLabel": "Beskriv din boendesituation",
     "noHousingDescriptionLabel": "Beskriv din boendesituation (exempelvis var eller hos vem du sover, vilket stödboende eller institution du bor på)"
   },
   "costCategory": {
     "boende": "Boende",
-    "work": "Arbete och studier",
+    "work": "Arbete, studier och planering",
     "health": "Hälsa",
     "other": "Övrigt"
   },
@@ -161,23 +164,23 @@
     "ACUTE_DENTAL": "Akut tandvård/basundersökning"
   },
   "incomeType": {
+    "SWISH_DEPOSITS": "Swish/kontoinsättning",
     "SALARY": "Lön",
     "OCCUPATIONAL_PENSION_INSURANCE": "Tjänstepension/försäkringar (AFA, AMF, KPA, SPV etc)",
     "CHILD_SUPPORT": "Underhållsbidrag från den andra föräldern",
-    "SWISH_DEPOSITS": "Swish/kontoinsättningar",
     "RENT_SHARE_FROM_CHILD": "Hyresdel från barn/inneboende",
     "FINANCIAL_AID_OTHER_MUNICIPALITY": "Ekonomiskt bistånd från annan kommun",
-    "OTHER_INCOME": "Annan inkomst (lån, spelvinst, försörjning av tillgång, gåva, kontanter)"
+    "OTHER_INCOME": "Annan inkomst (lån, spelvinst, försäljning av tillgång, gåva, kontanter)"
   },
   "recipient": {
     "APPLICANT": "Sökande",
     "CO_APPLICANT": "Medsökande"
   },
   "assetCategory": {
-    "BANK_SAVINGS": "Banktillgodohavande / sparande",
-    "REAL_ESTATE": "Fastighet",
+    "BANK_SAVINGS": "Bankmedel, aktier, fonder, annat sparande, kontanter",
+    "REAL_ESTATE": "Bostadsrätt, villa, fastighet, fritidshus",
     "COMPANY": "Företag",
-    "VEHICLE": "Fordon",
+    "VEHICLE": "Bil, båt, MC, husvagn, moped, snöskoter",
     "OTHER": "Konst, smycken eller andra övriga tillgångar"
   },
   "propertyType": {
@@ -207,13 +210,15 @@
     "otherHeading": "Övrigt",
     "normLabel": "Norm",
     "normSpecificationLabel": "Specificera för vem eller vilka ansökan om norm avser samt för vilken period",
-    "costsInfo": "Sök endast i för de utgifter som du faktiskt har och ansöker om. Inte obligatoriskt att fylla i.",
-    "costsInfoRenewal": "Inte obligatoriskt att fylla i.",
+    "costsInfo": "Sök endast för de utgifter som du har. Inte obligatoriskt att fylla i.",
+    "costsInfo_ni": "Sök endast för de utgifter som ni har. Inte obligatoriskt att fylla i.",
     "addCost": "Lägg till kostnad",
     "addRow": "Lägg till ny rad",
     "incomesHeading": "Inkomster",
-    "hasIncomesLabel": "Har du fått/kommer få några inkomster/insättningar?",
-    "hasIncomesLabel_ni": "Har ni fått/kommer få några inkomster/insättningar?",
+    "hasIncomesLabel": "Har du fått några inkomster/insättningar senaste månaden eller väntar du några inkomster/insättningar?",
+    "hasIncomesLabel_ni": "Har ni fått några inkomster/insättningar senaste månaden eller väntar ni några inkomster/insättningar?",
+    "hasIncomesLabelRenewal": "Har du fått några inkomster/insättningar sedan senaste ansökan eller väntar du några inkomster/insättningar?",
+    "hasIncomesLabelRenewal_ni": "Har ni fått några inkomster/insättningar sedan senaste ansökan eller väntar ni några inkomster/insättningar?",
     "addIncome": "Lägg till inkomst",
     "pendingBenefitsHeading": "Väntande ersättningar",
     "hasPendingBenefitsLabel": "Har du ansökt om någon ny ersättning och väntar på beslut från någon annan myndighet/organisation?",
@@ -222,6 +227,8 @@
     "assetsHeading": "Tillgångar",
     "hasAssetsLabel": "Har du några tillgångar?",
     "hasAssetsLabel_ni": "Har ni några tillgångar?",
+    "hasAssetsLabelRenewal": "Finns det några tillgångar som du inte har informerat om tidigare?",
+    "hasAssetsLabelRenewal_ni": "Finns det några tillgångar som ni inte har informerat om tidigare?",
     "addAsset": "Lägg till tillgång",
     "cost": {
       "heading": "Kostnad {{number}}",
@@ -233,6 +240,7 @@
     },
     "income": {
       "heading": "Inkomst {{number}}",
+      "typeHeading": "Ange typ av inkomst",
       "typeLabel": "Typ av inkomst",
       "amountLabel": "Belopp (kr)",
       "dateLabel": "Datum"
@@ -251,7 +259,7 @@
       "propertyTypeLabel": "Typ av fastighet",
       "purchaseYearLabel": "Inköpsår",
       "purchasePriceLabel": "Inköpspris (kr)",
-      "companyNameLabel": "Företagsnamn",
+      "companyNameLabel": "Företagets namn",
       "companyAssetSumLabel": "Företagets tillgångar (kr)",
       "vehicleTypeLabel": "Typ av fordon",
       "registrationNumberLabel": "Registreringsnummer",
@@ -260,8 +268,8 @@
   },
   "income": {
     "heading": "Inkomster och tillgångar",
-    "incomesInfo": "Inkomster från Försäkringskassan, Pensionsmyndigheten, CSN, A-kassa eller Skatteverket behöver inte redovisas. Du behöver redovisa alla andra inkomster, exempelvis swish, insättningar på kontot, lön, tjänstepension/försäkringar, arv, kontanter, underhållsbidrag från den andra föräldern, hyresdel från barn.",
-    "incomesInfo_ni": "Inkomster från Försäkringskassan, Pensionsmyndigheten, CSN, A-kassa eller Skatteverket behöver inte redovisas. Ni behöver redovisa alla andra inkomster, exempelvis swish, insättningar på kontot, lön, tjänstepension/försäkringar, arv, kontanter, underhållsbidrag från den andra föräldern, hyresdel från barn.",
+    "incomesInfo": "Inkomster från Försäkringskassan, Pensionsmyndigheten, CSN, A-kassa eller Skatteverket behöver inte redovisas. Du behöver redovisa alla andra inkomster, exempelvis swish, insättningar på kontot, lön, tjänstepension/försäkringar, arv, kontanter, underhållsbidrag från den andra föräldern och hyresdel från barn/inneboende.",
+    "incomesInfo_ni": "Inkomster från Försäkringskassan, Pensionsmyndigheten, CSN, A-kassa eller Skatteverket behöver inte redovisas. Ni behöver redovisa alla andra inkomster, exempelvis swish, insättningar på kontot, lön, tjänstepension/försäkringar, arv, kontanter, underhållsbidrag från den andra föräldern och hyresdel från barn/inneboende.",
     "pendingBenefitsInfo": "Det kan till exempel vara att du har ansökt och väntar på beslut om bostadsbidrag, a-kassa, barnpension, omvårdnadsbidrag, sjukersättning, tjänstepension/försäkringar (exempelvis AFA, AMF, KPA, SPV).",
     "pendingBenefitsInfo_ni": "Det kan till exempel vara att ni har ansökt och väntar på beslut om bostadsbidrag, a-kassa, barnpension, omvårdnadsbidrag, sjukersättning, tjänstepension/försäkringar (exempelvis AFA, AMF, KPA, SPV).",
     "assetsInfo": "Tillgångar kan exempelvis vara fordon, sparade pengar, fastigheter, smycken och konst.",
@@ -278,6 +286,12 @@
     "FULL": "Heltid",
     "PART": "Deltid"
   },
+  "sickLeaveLevel": {
+    "100": "Heltid 100%",
+    "75": "Deltid 75%",
+    "50": "Deltid 50%",
+    "25": "Deltid 25%"
+  },
   "paymentMethod": {
     "BANK_ACCOUNT": "Bankkonto",
     "OTHER": "Annat"
@@ -287,14 +301,16 @@
     "remove": "Ta bort",
     "info": {
       "jobseeking": "När du är arbetssökande ska du vara inskriven på och ha en aktuell planering med Arbetsförmedlingen, aktivt söka jobb och delta i Arbetsförmedlingens insatser.",
-      "sickLeave": "När du är sjukskriven ska du ha ett giltigt läkarintyg för aktuell period. Bifoga läkarintyget om du inte redan har gjort det.",
+      "sickLeave": "När du är sjukskriven ska du ha ett giltigt läkarintyg för aktuell period.",
+      "sickLeaveRenewal": "När du är sjukskriven ska du ha ett giltigt läkarintyg för aktuell period. Bifoga läkarintyget i ansökan om du inte redan har lämnat in det.",
       "partialSickWarning": "Om du är deltidssjukskriven behöver du välja ytterligare alternativ för din planering då du behöver ha en planering på heltid",
-      "partTimeWarning": "Vid deltid behöver du lägga till ytterligare planering så att din totala planering blir på heltid.",
-      "sfi": "När du är SFI-studerande ska du också vara inskriven på och ha en aktuell planering med Arbetsförmedlingen och delta i Arbetsförmedlingens insatser."
+      "partTimeWarning": "Om du arbetar deltid behöver du välja ytterligare alternativ för din planering då du behöver ha en planering på heltid.",
+      "sfi": "När du är SFI-studerande ska du också vara inskriven på och ha en aktuell planering med Arbetsförmedlingen och delta i Arbetsförmedlingens insatser. Om din planering med Arbetsförmedlingen är att du också ska söka jobb behöver du även välja att du är ”Arbetssökande” och redovisa sökta jobb.",
+      "other": "Om du är föräldraledig behöver du ansöka om föräldrapenning 7 dagar/vecka."
     },
     "typeLabel": "Typ av planering",
     "workExtentLabel": "Omfattning",
-    "workDescriptionLabel": "Ange omfattning",
+    "workDescriptionLabel": "Beskriv hur mycket du arbetar",
     "sickLeaveLevelLabel": "Sjukskrivningsgrad",
     "sickFromLabel": "Sjukskriven från",
     "sickToLabel": "Sjukskriven till",
@@ -324,7 +340,7 @@
     "jobApplication": {
       "heading": "Sökt jobb {{number}}",
       "dateLabel": "Datum",
-      "jobTitleLabel": "Tjänst",
+      "jobTitleLabel": "Typ av jobb/titel",
       "employerLabel": "Arbetsgivare och ort"
     }
   },
@@ -333,6 +349,7 @@
     "payoutQuestion": "Hur vill du ha eventuellt bistånd utbetalt?",
     "payoutQuestion_ni": "Hur vill ni ha eventuellt bistånd utbetalt?",
     "payoutInfoCohabiting": "Biståndet delas lika till er båda.",
+    "payoutAccountInfoCohabiting": "Ni behöver uppge varsitt konto som eventuell utbetalning kan göras till.",
     "methodLabel": "Utbetalningssätt",
     "newMethodLabel": "Nytt utbetalningssätt",
     "clearingLabel": "Clearingnummer",
@@ -348,7 +365,12 @@
     "heading": "Period och norm",
     "maritalStatusLabel": "Civilstånd",
     "periodChoiceLabel": "Vad avser ansökan?",
-    "otherBenefitPlaceholder": "Beskriv vilket annat bistånd ansökan avser",
+    "periodChoiceMonthInfo": "Om du ansöker om bistånd för att klara din försörjning under en månad (exempelvis mat och hyra) ska du välja den månad du ansöker för.",
+    "periodChoiceMonthInfo_ni": "Om ni ansöker om bistånd för att klara er försörjning under en månad (exempelvis mat och hyra) ska ni välja den månad ni ansöker för.",
+    "periodChoiceOtherInfo": "Om du endast ansöker om exempelvis en skuld väljer du ”Annat bistånd”.",
+    "periodChoiceOtherInfo_ni": "Om ni endast ansöker om exempelvis en skuld väljer ni ”Annat bistånd”.",
+    "otherBenefitPlaceholder": "Beskriv vad du ansöker om",
+    "otherBenefitPlaceholder_ni": "Beskriv vad ni ansöker om",
     "periodLabel": "Ansökningsperiod",
     "periodValue": "{{month}} {{year}}",
     "normTypeLabel": "Vilken norm ansöker du bistånd för?",
@@ -363,12 +385,18 @@
       "Socialtjänsten kan inhämta uppgifter från berörda myndigheter (exempelvis Försäkringskassan, Arbetsförmedlingen, A-kassa/Alfa-kassa, Transportstyrelsen, Skatteverket, Bolagsverket, CSN och SFI) för komplettering till och kontroll av de uppgifter du lämnat. Socialtjänsten kan göra kontroller bakåt i tiden.",
       "Om dina ekonomiska förhållanden ändras under tiden du uppbär ekonomiskt bistånd ska detta meddelas till enheten för ekonomiskt bistånd. Om du under tiden skulle vara berättigad till annan förmån från Försäkringskassan, kommer en framställan om återbetalning av utgivet ekonomiskt bistånd göras, med stöd av Socialförsäkringsbalken 107 kap 5 §."
     ],
+    "attestationInfo_ni": [
+      "Om ni lämnar felaktiga uppgifter eller inte meddelar förändringar som rör er ekonomiska situation kan en polisanmälan om misstänkt bidragsbrott göras och ni kan bli återbetalningsskyldiga.",
+      "Socialtjänsten kan inhämta uppgifter från berörda myndigheter (exempelvis Försäkringskassan, Arbetsförmedlingen, A-kassa/Alfa-kassa, Transportstyrelsen, Skatteverket, Bolagsverket, CSN och SFI) för komplettering till och kontroll av de uppgifter ni lämnat. Socialtjänsten kan göra kontroller bakåt i tiden.",
+      "Om era ekonomiska förhållanden ändras under tiden ni uppbär ekonomiskt bistånd ska detta meddelas till enheten för ekonomiskt bistånd. Om ni under tiden skulle vara berättigade till annan förmån från Försäkringskassan, kommer en framställan om återbetalning av utgivet ekonomiskt bistånd göras, med stöd av Socialförsäkringsbalken 107 kap 5 §."
+    ],
     "staysHeading": "Vistelse under ansökningsmånaden",
     "staysInfo": "Jag intygar att jag kommer att bo i och till största delen befinna mig i Sundsvall under perioden som ansökan avser.",
     "staysInfo_ni": "Vi intygar att vi kommer att bo i och till största delen befinna oss i Sundsvall under perioden som ansökan avser.",
     "stayDescriptionPlaceholder": "Beskriv varför",
     "attestation": "Jag försäkrar på heder och samvete att min ansökan är riktig och sanningsenlig. Jag medger att samtliga uppgifter, som jag lämnat ovan om mina förhållanden får kontrolleras. Jag är medveten om min skyldighet att anmäla sådana förhållanden som kan påverka beräkning av och/eller rätten till ekonomiskt bistånd.",
-    "messageInfo": "Om du vill informera om någonting kan du använda meddelandefunktionen på mina sidor för att få kontakt med din socialsekreterare.",
+    "attestation_ni": "Vi försäkrar på heder och samvete att vår ansökan är riktig och sanningsenlig. Vi medger att samtliga uppgifter, som vi lämnat ovan om våra förhållanden får kontrolleras. Vi är medvetna om vår skyldighet att anmäla sådana förhållanden som kan påverka beräkning av och/eller rätten till ekonomiskt bistånd.",
+    "messageInfo": "Om du vill informera om någonting i efterhand kan du använda meddelandefunktionen på mina sidor för att få kontakt med din socialsekreterare (exempelvis om du har barn som jobbar och får lön, om du har öppnat något nytt bankkonto eller om du planerar att flytta till en annan stad).",
     "submit": "Skicka in ansökan"
   },
   "placeholder": {
@@ -376,49 +404,72 @@
   },
   "attachments": {
     "heading": "Bilagor",
-    "requiredHeading": "Du behöver bifoga följande:",
+    "intro": "Utredningstiden blir så kort som möjlig om du lämnar in en komplett ansökan med alla efterfrågade underlag. Om du inte har möjlighet att skicka in alla underlag med ansökan så kan du komplettera ansökan i efterhand genom att bifoga filer i meddelandefunktionen. För att hitta till meddelandefunktionen går du in på ditt ärende via mina sidor på sundsvall.se. Vid behov finns det dator och skrivare att låna hos Kontakt Sundsvall i stadshuset, Kyrkogatan 19 och det finns en kopiator att låna i receptionen på Skolhusallén 9.",
+    "intro_ni": "Utredningstiden blir så kort som möjlig om ni lämnar in en komplett ansökan med alla efterfrågade underlag. Om ni inte har möjlighet att skicka in alla underlag med ansökan så kan ni komplettera ansökan i efterhand genom att bifoga filer i meddelandefunktionen. För att hitta till meddelandefunktionen går du in på ditt ärende via mina sidor på sundsvall.se. Vid behov finns det dator och skrivare att låna hos Kontakt Sundsvall i stadshuset, Kyrkogatan 19 och det finns en kopiator att låna i receptionen på Skolhusallén 9.",
+    "requiredHeading": "Följande behöver bifogas:",
+    "requiredHeadingNamed": "Följande behöver bifogas för {{applicant}} och {{coApplicant}}:",
+    "generalDocs": [
+      "Ekonomisk översikt/engagemang från den bank eller de banker du har, som visar en sammanställning av konton/fonder/aktier/annat sparande",
+      "Kontoutdrag från alla konton/aktier/fonder/annat sparande 2 månader bakåt. Skärmdumpar från bank-appar godkänns inte eftersom det inte visar alla uppgifter. Kontoutdragen ska visa bankens namn, kontoinnehavare, kontonummer, alla transaktioner/händelser och saldo",
+      "Din senaste deklaration från Skatteverket (alla sidor). Du har fått den skickad till dig via post eller digital brevlåda och den finns även att ladda ner på Skatteverkets hemsida. Om det av punkt 7-8 framgår kapitalinkomster/kapitalavdrag från en annan bank/långivare, bifoga ekonomisk översikt. Om du inte har deklarerat, hämta ”Kontroll- och inkomstuppgifter” från det senaste året hos Skatteverket.",
+      "Om du har inkomster som inte kommer från svensk myndighet eller A-kassa: Inkomstspecifikationer för samtliga inkomster 2 månader tillbaka, exempelvis lön från arbetsgivare, tjänstepension och utländska inkomster/ersättningar",
+      "Om du är medborgare i ett land utanför EU: Kopia av beslut om uppehållstillstånd (i pappersform från Migrationsverket)",
+      "Om du är under 29 år eller har barn som bor i hemmet: Kopia av ansökan/beslut om bostadsbidrag",
+      "Om du har barn med en förälder som avlidit: Kopia av ansökan/beslut om barnpension/efterlevandestöd",
+      "Om du har barn: Sammanställning från Försäkringskassan som visar kvarvarande föräldrapenningdagar"
+    ],
+    "generalDocs_ni": [
+      "Ekonomisk översikt/engagemang från den bank eller de banker ni har, som visar en sammanställning av konton/fonder/aktier/annat sparande",
+      "Kontoutdrag från alla konton/aktier/fonder/annat sparande 2 månader bakåt. Skärmdumpar från bank-appar godkänns inte eftersom det inte visar alla uppgifter. Kontoutdragen ska visa bankens namn, kontoinnehavare, kontonummer, alla transaktioner/händelser och saldo",
+      "Era senaste deklarationer från Skatteverket (alla sidor). Ni har fått dem skickade till er via post eller digital brevlåda och de finns även att ladda ner på Skatteverkets hemsida. Om det av punkt 7-8 framgår kapitalinkomster/kapitalavdrag från en annan bank/långivare, bifoga ekonomisk översikt. Om ni inte har deklarerat, hämta ”Kontroll- och inkomstuppgifter” från det senaste året hos Skatteverket.",
+      "Om någon av er har inkomster som inte kommer från svensk myndighet eller A-kassa: Inkomstspecifikationer för samtliga inkomster 2 månader tillbaka, exempelvis lön från arbetsgivare, tjänstepension och utländska inkomster/ersättningar",
+      "Om någon av er är medborgare i ett land utanför EU: Kopia av beslut om uppehållstillstånd (i pappersform från Migrationsverket)",
+      "Om någon av er är under 29 år eller har barn som bor i hemmet: Kopia av ansökan/beslut om bostadsbidrag",
+      "Om någon av er har barn med en förälder som avlidit: Kopia av ansökan/beslut om barnpension/efterlevandestöd",
+      "Om någon av er har barn: Sammanställning från Försäkringskassan som visar kvarvarande föräldrapenningdagar"
+    ],
+    "answersHeading": "Utifrån dina svar i ansökan behöver du även bifoga följande:",
+    "answersHeading_ni": "Utifrån era svar i ansökan behöver ni även bifoga följande:",
+    "planningHeading": "Planering",
+    "planningDocs": [
+      "Om du arbetar: Anställningsavtal",
+      "Om du är arbetssökande: Utdrag från planeringen från Arbetsförmedlingen. Logga in på ”Mina sidor”, tryck på ”Min planering” och ”Skriv ut handlingsplan”.",
+      "Om du är arbetssökande men inte har haft något planeringssamtal med Arbetsförmedlingen: Underlag från ”Mina sidor” som visar att du har ett inbokat samtal",
+      "Om du är arbetssökande och tidigare har arbetat: Kopia av ansökan/beslut om arbetslöshetsersättning från A-kassan. Om du har arbetat kan du ha rätt till ersättning från Alfa-kassan även om du inte är medlem",
+      "Om du deltar i etableringen: Beslut om plats i etableringsprogrammet från Arbetsförmedlingen.",
+      "Om du deltar i etableringen och har barn: Ansökan/beslut om bostadsersättning och etableringstillägg från Försäkringskassan.",
+      "Om du är sjukskriven: Aktuellt läkarintyg för perioden",
+      "Om du är sjukskriven: Ansökan/beslut om sjukpenning från Försäkringskassan",
+      "Om du är föräldraledig: Ansökan/beslut om föräldrapenning från Försäkringskassan. Ersättning ska sökas för alla dagar som du inte får annan ersättning",
+      "Om du deltar i behandling: Ansökan/beslut om förebyggande sjukpenning från Försäkringskassan.",
+      "Om du är pensionär: Ansökan/beslut om pension/bostadstillägg från pensionsmyndigheten.",
+      "Om du har nedsatt arbetsförmåga en längre tid: Ansökan/beslut om aktivitets-/sjukersättning och bostadstillägg från Försäkringskassan om det är aktuellt",
+      "Om du är studerande: Studieplan från skolan och ansökan/beslut om ersättning från CSN."
+    ],
+    "planningDocs_ni": [
+      "Om någon av er arbetar: Anställningsavtal",
+      "Om någon av er är arbetssökande: Utdrag från planeringen från Arbetsförmedlingen. Logga in på ”Mina sidor”, tryck på ”Min planering” och ”Skriv ut handlingsplan”.",
+      "Om någon av er är arbetssökande men inte har haft något planeringssamtal med Arbetsförmedlingen: Underlag från ”Mina sidor” som visar att ett samtal är inbokat",
+      "Om någon av er är arbetssökande och tidigare har arbetat: Kopia av ansökan/beslut om arbetslöshetsersättning från A-kassan. Den som har arbetat kan ha rätt till ersättning från Alfa-kassan även utan att vara medlem",
+      "Om någon av er deltar i etableringen: Beslut om plats i etableringsprogrammet från Arbetsförmedlingen.",
+      "Om någon av er deltar i etableringen och har barn: Ansökan/beslut om bostadsersättning och etableringstillägg från Försäkringskassan.",
+      "Om någon av er är sjukskriven: Aktuellt läkarintyg för perioden",
+      "Om någon av er är sjukskriven: Ansökan/beslut om sjukpenning från Försäkringskassan",
+      "Om någon av er är föräldraledig: Ansökan/beslut om föräldrapenning från Försäkringskassan. Ersättning ska sökas för alla dagar som ni inte får annan ersättning",
+      "Om någon av er deltar i behandling: Ansökan/beslut om förebyggande sjukpenning från Försäkringskassan.",
+      "Om någon av er är pensionär: Ansökan/beslut om pension/bostadstillägg från pensionsmyndigheten.",
+      "Om någon av er har nedsatt arbetsförmåga en längre tid: Ansökan/beslut om aktivitets-/sjukersättning och bostadstillägg från Försäkringskassan om det är aktuellt",
+      "Om någon av er är studerande: Studieplan från skolan och ansökan/beslut om ersättning från CSN."
+    ],
     "needLabel": "Behöver du bifoga några bilagor?",
     "needLabel_ni": "Behöver ni bifoga några bilagor?",
     "no": "Nej",
     "yes": "Ja, jag behöver styrka utgiften med underlag (exempelvis tandvård och glasögon)",
+    "yesRenewal": "Ja, det har skett förändringar/min socialsekreterare har informerat mig om att jag behöver lämna in underlag.",
     "dropHint": "Dra och släpp filer här, eller klicka för att välja filer",
     "maxSize": "Maximal filstorlek: 25 MB per fil.",
     "acceptedTypes": "Tillåtna filformat: PDF, Word (doc, docx), JPG och PNG.",
     "fileTypeError": "Filtypen stöds inte. Tillåtna format: PDF, Word (doc, docx), JPG och PNG.",
-    "newReferenceIntro": "Utredningstiden blir så kort som möjlig om du lämnar in en komplett ansökan med alla efterfrågade underlag. Om du inte har möjlighet att skicka in alla underlag med din ansökan så kan du komplettera din ansökan i efterhand genom att bifoga filer i meddelandefunktionen. För att hitta till meddelandefunktionen går du in på ditt ärende via mina sidor på sundsvall.se.",
-    "newReferenceHeading": "Följande underlag behöver bifogas:",
-    "newReferenceHeadingCohabiting": "Följande underlag behöver bifogas för både dig och din medsökande:",
-    "newReferenceApplicantHeading": "Underlag som gäller dig som sökande:",
-    "newReferenceCoApplicantHeading": "Underlag som gäller din medsökande:",
-    "newReferenceCommon": [
-      "Ekonomisk översikt/engagemang från den bank eller de banker ni har, som visar en sammanställning av konton/fonder/aktier/annat sparande",
-      "Kontoutdrag från alla konton/aktier/fonder/annat sparande 2 månader bakåt. Skärmdumpar från bank-appar godkänns inte eftersom det inte visar alla uppgifter. Kontoutdragen ska visa bankens namn, kontoinnehavare, kontonummer, alla transaktioner/händelser och saldo",
-      "Bådas senaste deklaration från Skatteverket (alla sidor). Ni har fått den skickad till er via post eller digital brevlåda och den finns även att ladda ner på Skatteverkets hemsida. Om det av punkt 7-8 framgår kapitalinkomster/kapitalavdrag från en annan bank/långivare, bifoga ekonomisk översikt.",
-      "Om ni inte har deklarerat, hämta \"Kontroll- och inkomstuppgifter\" från det senaste året hos Skatteverket",
-      "Inkomstspecifikationer för de inkomster/ersättningar ni har som inte kommer från annan svensk myndighet eller A-kassa, t.ex. lön från arbetsgivare, tjänstepension och utländska inkomster/ersättningar som visar 2 månader tillbaka",
-      "Kopia av beslut om uppehållstillstånd (i pappersform från Migrationsverket) om någon av er är medborgare i ett land utanför EU",
-      "Kopia av ansökan/beslut om bostadsbidrag om ni är under 29 år eller har barn som bor hos er",
-      "Kopia av ansökan/beslut om barnpension/efterlevandestöd om ni har barn med en förälder som avlidit",
-      "Sammanställning från Försäkringskassan som visar kvarvarande föräldrapenningdagar om ni har barn"
-    ],
-    "newReferenceApplicant": [
-      "Ansökan/beslut om föräldrapenning från Försäkringskassan om sökande är föräldraledig. Ersättning ska sökas för alla dagar som du inte får annan ersättning",
-      "Ansökan/beslut om förebyggande sjukpenning från Försäkringskassan om sökande deltar i behandling",
-      "Studieplan från skolan och ansökan/beslut om ersättning från CSN om sökande är studerande",
-      "Ansökan/beslut om pension/bostadstillägg från pensionsmyndigheten om sökande är pensionär",
-      "Ansökan/beslut om aktivitets-/sjukersättning och bostadstillägg från Försäkringskassan om det är aktuellt för sökande",
-      "Beslut om plats i etableringsprogrammet från Arbetsförmedlingen om sökande deltar i etableringen",
-      "Ansökan/beslut om bostadsersättning och etableringstillägg från Försäkringskassan om sökande deltar i etableringen och har barn"
-    ],
-    "newReferenceCoApplicant": [
-      "Ansökan/beslut om föräldrapenning från Försäkringskassan om medsökande är föräldraledig. Ersättning ska sökas för alla dagar som du inte får annan ersättning",
-      "Ansökan/beslut om förebyggande sjukpenning från Försäkringskassan om medsökande deltar i behandling",
-      "Studieplan från skolan och ansökan/beslut om ersättning från CSN om medsökande är studerande",
-      "Ansökan/beslut om pension/bostadstillägg från pensionsmyndigheten om medsökande är pensionär",
-      "Ansökan/beslut om aktivitets-/sjukersättning och bostadstillägg från Försäkringskassan om det är aktuellt för medsökande",
-      "Beslut om plats i etableringsprogrammet från Arbetsförmedlingen om medsökande deltar i etableringen",
-      "Ansökan/beslut om bostadsersättning och etableringstillägg från Försäkringskassan om medsökande deltar i etableringen och har barn"
-    ],
     "docs": {
       "rentalContract": "Hyreskontrakt",
       "rentalInvoice": "Hyresavi med specifikation/underlag som visar kostnaden",
@@ -426,15 +477,17 @@
       "originalRentalInvoice": "Ordinarie hyresavi med specifikation/underlag som visar kostnaden",
       "subletApproval": "Underlag på godkänd andrahandsuthyrning från fastighetsägaren (vid hyresrätt) eller bostadsrättsföreningen (vid bostadsrätt)",
       "lodgerContract": "Inneboendekontrakt",
-      "previousRentProof": "Underlag som visar tidigare betald hyra (t.ex. genom kontoutdrag/kvittens)",
-      "purchaseContract": "Köpekontrakt",
+      "condominiumPurchaseContract": "Köpekontrakt för bostadsrätt",
+      "housePurchaseContract": "Köpekontrakt för villa eller radhus",
+      "previousRentProof": "Underlag som visar tidigare betald hyra (exempelvis genom kontoutdrag/kvittens)",
       "feeInvoice": "Hyres-/avgiftsavi med specifikation",
       "interestStatements": "Underlag för räntor (lånespecifikationer med uppgift om räntekostnad och för vilken period räntan avser)",
-      "marketValue": "Underlag/information som visar aktuellt marknadsvärde (t.ex. värdering av mäklare)",
+      "marketValue": "Underlag/information som visar aktuellt marknadsvärde (exempelvis värdering av mäklare)",
       "heatingCosts": "Underlag för uppvärmning (el, olja, ved, helst för de senaste 12 månaderna)",
       "waterSewage": "Underlag för vatten/avlopp (helst för de senaste 12 månaderna)",
       "wasteCollection": "Underlag för renhållning (sophämtning/sotning, helst för de senaste 12 månaderna)",
       "sickCertificate": "Läkarintyg för aktuell period",
+      "sickCertificateNamed": "Läkarintyg för aktuell period för {{name}}",
       "bankSavingsValue": "Underlag som visar aktuellt värde för bankmedel, aktier, fonder, annat sparande och kontanter",
       "realEstatePurchaseContract": "Köpekontrakt för bostadsrätt, villa, fastighet eller fritidshus",
       "realEstateMarketValue": "Underlag som visar aktuellt marknadsvärde för bostadsrätt, villa, fastighet eller fritidshus",
@@ -444,7 +497,18 @@
       "vehicleValuation": "Aktuell värdering från bilfirma/verkstad för alla fordon",
       "vehicleLoan": "Underlag som visar eventuella lån för alla fordon",
       "otherAssetValue": "Underlag som visar värde på konst, smycken eller övriga tillgångar",
-      "acuteDental": "Kvitto för akut tandvård/basundersökning"
+      "acuteDental": "Kvitto för tandvård",
+      "rentInvoice": "Hyresavi med specifikation",
+      "electricityInvoice": "Elfaktura/elfakturor med specifikation",
+      "homeInsuranceLetter": "Försäkringsbrev för hemförsäkring som visar årskostnaden",
+      "internetInvoice": "Internetfaktura med specifikation",
+      "unemploymentFundInvoice": "Faktura för A-kassa med specifikation",
+      "unionFeeInvoice": "Faktura för fackföreningsavgift med specifikation",
+      "travelReceipt": "Underlag som visar resekostnaden (exempelvis kvitto)",
+      "medicalCareInvoice": "Faktura/kvitto för läkarvård med specifikation",
+      "medicineInvoice": "Faktura/kvitto för medicinkostnad med receptspecifikation",
+      "otherCostProof": "Underlag som visar kostnad för övrigt bistånd",
+      "municipalFeeInvoice": "Faktura för förskola/hemtjänst med specifikation"
     }
   },
   "bankid": {

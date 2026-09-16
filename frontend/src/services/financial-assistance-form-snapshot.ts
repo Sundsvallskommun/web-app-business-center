@@ -1,4 +1,12 @@
-import { ApplicationType, FinancialAssistanceFormData, PersonForm } from '@interfaces/financial-assistance';
+import { ApplicationType, FinancialAssistanceFormData, PeriodChoice, PersonForm } from '@interfaces/financial-assistance';
+import {
+  incomeAssetLabelSuffix,
+  interpreterQuestionLabel,
+  planningInfoText,
+  sickLeaveLevelLabel,
+} from '@services/financial-assistance-labels';
+import { asksWorkHistory } from '@services/financial-assistance-work-history';
+import { formatPeriodChoiceLabel } from '@utils/financial-assistance-period-choice';
 import { swedishMonthName } from '@utils/swedish-month';
 import { ApplicantIdentities } from '@services/financial-assistance-pdf-summary';
 
@@ -78,8 +86,7 @@ export interface FormSnapshot {
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 // Option-code catalogues (machine values), in render order — labels resolved from i18n.
-// Nyansökans periodval erbjuder bara månaderna ("Annat bistånd" täcks numera av kostnaden "Övrigt bistånd").
-const PERIOD_CHOICES = ['CURRENT_MONTH', 'NEXT_MONTH'];
+const PERIOD_CHOICES: PeriodChoice[] = ['CURRENT_MONTH', 'NEXT_MONTH', 'OTHER_BENEFIT'];
 const NORM_TYPES = ['NATIONAL_NORM', 'OTHER_NORM'];
 const HOUSING_FORMS = ['NO_HOUSING_OR_INSTITUTION', 'RENTAL', 'SUBLET', 'LODGER', 'CONDOMINIUM', 'OWNED_HOUSE', 'RENTED_HOUSE', 'LIVING_WITH_PARENTS'];
 const RESIDENCE_EXTENTS = ['FULL_TIME', 'HALF_TIME', 'OTHER'];
@@ -185,7 +192,7 @@ export const buildFormSnapshot = (
       // Tolk-frågan ställs på personuppgifter (nyansökan).
       ...(isNew
         ? [
-            radio('needsInterpreter', t(fa('personuppgifter.needsInterpreterLabel')), person.needsInterpreter),
+            radio('needsInterpreter', interpreterQuestionLabel(t, isCohabiting, person.role, identity?.name), person.needsInterpreter),
             textField('interpreterLanguage', t(fa('personuppgifter.interpreterLanguageLabel')), person.interpreterLanguage),
           ]
         : []),
@@ -242,16 +249,8 @@ export const buildFormSnapshot = (
       ? t(fa('periodNorm.periodValue'), { month: swedishMonthName(form.periodMonth), year: form.periodYear })
       : '';
   // "Denna/Nästa månad" visar månadens namn (samma logik som formuläret).
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
-  const periodChoiceLabel = (code: string): string => {
-    const base = t(fa(`periodChoice.${code}`));
-    if (code === 'CURRENT_MONTH') return `${base} (${swedishMonthName(currentMonth)})`;
-    if (code === 'NEXT_MONTH') return `${base} (${swedishMonthName(nextMonth)})`;
-    return base;
-  };
-  const selectedPeriods = form.periodChoices as string[];
+  const periodChoiceLabel = (code: PeriodChoice): string => formatPeriodChoiceLabel(code, t(fa(`periodChoice.${code}`)));
+  const selectedPeriods = form.periodChoices;
   const selectedNorms = form.normTypes as string[];
   const hasMonthPeriod = selectedPeriods.includes('CURRENT_MONTH') || selectedPeriods.includes('NEXT_MONTH');
   // NEW: "Vad avser ansökan?" som flerval. Renewal/supplementary: prefilled month (read-only).
@@ -299,7 +298,7 @@ export const buildFormSnapshot = (
     ? [
         periodField,
         ...(selectedPeriods.includes('OTHER_BENEFIT')
-          ? [textField('otherBenefitDescription', t(fa('periodNorm.otherBenefitPlaceholder')), form.otherBenefitDescription, 'TEXTAREA')]
+          ? [textField('otherBenefitDescription', q('periodNorm.otherBenefitPlaceholder'), form.otherBenefitDescription, 'TEXTAREA')]
           : []),
         ...(hasMonthPeriod ? [normMultiField] : []),
         costsField,
@@ -362,7 +361,7 @@ export const buildFormSnapshot = (
     : [
         // Nyansökan: obligatorisk fritext om försörjning, först i gruppen.
         ...(isNew ? [textField('livelihoodDescription', t(fa('income.livelihoodLabel')), form.livelihoodDescription, 'TEXTAREA')] : []),
-        radio('hasIncomes', q('economy.hasIncomesLabel'), form.hasIncomes, { helpText: q('income.incomesInfo') }),
+        radio('hasIncomes', q(`economy.hasIncomesLabel${incomeAssetLabelSuffix(applicationType)}`), form.hasIncomes, { helpText: q('income.incomesInfo') }),
         field({
           name: 'incomes',
           label: t(fa('economy.incomesHeading')),
@@ -386,7 +385,7 @@ export const buildFormSnapshot = (
             textField('applicantName', t(fa('economy.pendingBenefit.applicantNameLabel')), benefit.applicantName),
           ])),
         }),
-        radio('hasAssets', q('economy.hasAssetsLabel'), form.hasAssets, { helpText: t(fa('income.assetsInfo')) }),
+        radio('hasAssets', q(`economy.hasAssetsLabel${incomeAssetLabelSuffix(applicationType)}`), form.hasAssets, { helpText: t(fa('income.assetsInfo')) }),
         field({
           name: 'assets',
           label: t(fa('economy.assetsHeading')),
@@ -396,7 +395,6 @@ export const buildFormSnapshot = (
       ];
 
   // ── 4. Planering ────────────────────────────────────────────────────────────────────────────
-  const planningInfoKey: Record<string, string> = { JOBSEEKING: 'jobseeking', SICK_LEAVE: 'sickLeave', SFI: 'sfi' };
   const planningTypeFields = (planning: FinancialAssistanceFormData['plannings'][number]): FormSnapshotField[] => {
     switch (planning.planningType) {
       case 'WORK':
@@ -406,7 +404,7 @@ export const buildFormSnapshot = (
         ];
       case 'SICK_LEAVE':
         return [
-          textField('sickLeaveLevel', t(fa('planning.sickLeaveLevelLabel')), planning.sickLeaveLevel ? `${planning.sickLeaveLevel}%` : ''),
+          textField('sickLeaveLevel', t(fa('planning.sickLeaveLevelLabel')), sickLeaveLevelLabel(t, planning.sickLeaveLevel)),
           ...(isNew
             ? [
                 textField('sickLeaveFrom', t(fa('planning.sickFromLabel')), planning.sickLeaveFrom, 'DATE'),
@@ -437,14 +435,17 @@ export const buildFormSnapshot = (
           inputType: 'REPEATING_GROUP',
           items: form.plannings
             .filter((planning) => planning.planningType)
-            .map((planning) => group([
-              staticField('planningType', t(fa('planning.typeLabel')), t(fa(`planningType.${planning.planningType}`))),
-              ...recipientField(planning.person),
-              ...planningTypeFields(planning),
-              ...(planningInfoKey[planning.planningType]
-                ? [field({ name: 'info', label: t(fa(`planningType.${planning.planningType}`)), inputType: 'STATIC', infoTexts: [t(fa(`planning.info.${planningInfoKey[planning.planningType]}`))] })]
-                : []),
-            ])),
+            .map((planning) => {
+              const info = planningInfoText(t, planning.planningType, applicationType);
+              return group([
+                staticField('planningType', t(fa('planning.typeLabel')), t(fa(`planningType.${planning.planningType}`))),
+                ...recipientField(planning.person),
+                ...planningTypeFields(planning),
+                ...(info
+                  ? [field({ name: 'info', label: t(fa(`planningType.${planning.planningType}`)), inputType: 'STATIC', infoTexts: [info] })]
+                  : []),
+              ]);
+            }),
         }),
         ...(isNew
           ? [
@@ -472,17 +473,10 @@ export const buildFormSnapshot = (
               }),
             ]
           : []),
-        // Arbete senaste 12 mån — frågan ställs (nyansökan) för den som inte valt "Arbete" som planering.
+        // Arbete senaste 12 mån — frågan ställs (nyansökan) för den som valt planering men inte "Arbete".
         ...(isNew
           ? form.persons
-              .filter(
-                (person) =>
-                  !form.plannings.some(
-                    (planning) =>
-                      (planning.person === 'CO_APPLICANT' ? 'CO_APPLICANT' : 'APPLICANT') === person.role &&
-                      planning.planningType === 'WORK',
-                  ),
-              )
+              .filter((person) => asksWorkHistory(form.plannings, person.role))
               .flatMap((person) => {
                 const suffix = isCohabiting ? ` – ${t(fa(`recipient.${person.role}`))}` : '';
                 return [
@@ -557,7 +551,7 @@ export const buildFormSnapshot = (
     title: t(fa('header.title')),
     sections,
     attestation: {
-      label: t(fa('review.attestation')),
+      label: q('review.attestation'),
       answer: { value: String(form.attestation), display: t(fa(`common.${form.attestation ? 'yes' : 'no'}`)) },
     },
   };

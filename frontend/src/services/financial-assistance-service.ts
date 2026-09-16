@@ -13,6 +13,7 @@ import {
   PlannedActivityForm,
   PlanningForm,
 } from '@interfaces/financial-assistance';
+import { asksWorkHistory } from '@services/financial-assistance-work-history';
 
 /**
  * Drops blank values (`''`, `null`, `undefined`) from an object so the caremanagement
@@ -244,8 +245,13 @@ const buildPerson = (
       ? {
           needsInterpreter: person.needsInterpreter,
           interpreterLanguage: person.needsInterpreter === true ? person.interpreterLanguage.trim() : '',
-          hadWorkLast12Months: person.hadWorkLast12Months,
-          hadWorkDescription: person.hadWorkLast12Months === true ? person.hadWorkDescription.trim() : '',
+          // Frågan om arbete senaste 12 mån ställs bara när personen valt planering men inte "Arbete".
+          ...(asksWorkHistory(form.plannings, person.role)
+            ? {
+                hadWorkLast12Months: person.hadWorkLast12Months,
+                hadWorkDescription: person.hadWorkLast12Months === true ? person.hadWorkDescription.trim() : '',
+              }
+            : {}),
         }
       : { paymentSameAsPrevious: person.paymentSameAsPrevious }),
     ...contact,

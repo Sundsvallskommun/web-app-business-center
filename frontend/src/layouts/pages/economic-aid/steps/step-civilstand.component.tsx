@@ -1,5 +1,13 @@
-import { ApplicantProfile, CIVILSTAND_VALUES, Civilstand, EconomicAidApplicationV1, EligibilityResult } from '@interfaces/economic-aid';
+import {
+  ApplicantProfile,
+  CIVILSTAND_VALUES,
+  Civilstand,
+  EconomicAidApplicationV1,
+  EligibilityResult,
+  EligibilitySuggestion,
+} from '@interfaces/economic-aid';
 import { apiService, useApi } from '@services/api-service';
+import { capitalizeFirst } from '@utils/capitalize-first';
 import { eligibilitySuggestionKey } from '@utils/eligibility-suggestion-key';
 import { FormControl, FormErrorMessage, FormLabel, Icon, Input, RadioButton, useSnackbar } from '@sk-web-gui/react';
 import { Check } from 'lucide-react';
@@ -64,6 +72,15 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
   const recommended = suggestions.find((suggestion) => suggestion.recommended) ?? suggestions[0];
   const effectiveKey = selectedKey || (recommended ? eligibilitySuggestionKey(recommended) : '');
   const effectiveSuggestion = suggestions.find((suggestion) => eligibilitySuggestionKey(suggestion) === effectiveKey);
+
+  // Hjälptext per förslag: caremanagements beskrivning, annars vår text för ansökningstypen.
+  const suggestionDescription = (suggestion: EligibilitySuggestion): string =>
+    capitalizeFirst(
+      suggestion.description ||
+        (suggestion.applicationType
+          ? t(`economic-aid:formular.description.${suggestion.applicationType}`, { defaultValue: '' })
+          : '')
+    );
 
   // Återställer eligibility-förslagen — körs när civilstånd eller medsökande ändras så att gamla
   // förslag inte ligger kvar; sökanden får köra fram dem på nytt utifrån de nya uppgifterna.
@@ -289,12 +306,16 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
 
           {suggestions.length > 0 ? (
             <>
-              <p className="text-content">{eligibilityResult.introText || t('economic-aid:formular.intro')}</p>
+              <p className="text-content">
+                {eligibilityResult.introText ||
+                  t('economic-aid:formular.intro', showMedsokande ? { context: 'ni' } : undefined)}
+              </p>
               <div role="radiogroup" aria-label={t('economic-aid:formular.heading')} className="flex flex-col gap-16">
                 {suggestions.map((suggestion) => {
                   const suggestionKey = eligibilitySuggestionKey(suggestion);
                   const checked = effectiveKey === suggestionKey;
                   const inputId = `economic-aid-suggestion-${suggestionKey.replace(/:/g, '-')}`;
+                  const description = suggestionDescription(suggestion);
                   return (
                     <label key={suggestionKey} htmlFor={inputId} className={cardClass(checked)} data-cy={inputId}>
                       <RadioButton
@@ -304,15 +325,15 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
                         checked={checked}
                         onChange={() => setSelectedKey(suggestionKey)}
                         aria-labelledby={`${inputId}-label`}
-                        aria-describedby={suggestion.description ? `${inputId}-description` : undefined}
+                        aria-describedby={description ? `${inputId}-description` : undefined}
                       />
                       <span className="flex flex-col gap-4">
                         <span id={`${inputId}-label`} className="font-bold">
                           {suggestion.label}
                         </span>
-                        {suggestion.description ? (
+                        {description ? (
                           <span id={`${inputId}-description`} className="text-small text-dark-secondary">
-                            {suggestion.description}
+                            {description}
                           </span>
                         ) : null}
                       </span>
@@ -320,6 +341,8 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
                   );
                 })}
               </div>
+
+              <p className="text-content">{t('economic-aid:formular.otherApplication')}</p>
 
               <StepNavigation
                 onBack={onBack}

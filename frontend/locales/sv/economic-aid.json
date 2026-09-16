@@ -44,7 +44,7 @@
   },
   "civilstand": {
     "heading": "Vad har du för civilstånd?",
-    "ingress": "Ditt civilstånd avgör vilka uppgifter vi behöver i resten av ansökan.",
+    "ingress": "Om du är gift eller sambo behöver ni göra en gemensam ansökan då ni är skyldiga att försörja varandra.",
     "legend": "Välj civilstånd",
     "eligibilityError": "Det gick inte att hämta vilken ansökan som passar dig. Försök igen senare.",
     "options": {
@@ -67,8 +67,15 @@
   },
   "formular": {
     "heading": "Din ansökan",
-    "intro": "Utifrån dina uppgifter kan du göra följande ansökan:",
-    "empty": "Kontakta en socialsekreterare för att göra en ansökan.",
+    "intro": "Utifrån dina uppgifter kan du göra någon av följande ansökningar:",
+    "intro_ni": "Utifrån era uppgifter kan du göra någon av följande ansökningar:",
+    "description": {
+      "NEW": "Första gången du ansöker eller om det var längesen du ansökte",
+      "RENEWAL": "Du har ansökt tidigare och inte haft ett längre uppehåll",
+      "SUPPLEMENTARY": "Du har nyligen ansökt och vill lägga till något till din ansökan"
+    },
+    "otherApplication": "Om du vill göra någon annan ansökan än de föreslagna behöver du kontakta en socialsekreterare.",
+    "empty": "Du kan inte använda e-tjänsten. Ring till Kontakt Sundsvall på telefonnummer 060-19 10 00 för att få kontakt med en socialsekreterare för att göra en ansökan.",
     "recommended": "Rekommenderas",
     "start": "Nästa"
   }

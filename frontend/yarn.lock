@@ -2265,10 +2265,10 @@
     color-string "^1.9.1"
     usehooks-ts "^3.1.1"
 
-"@socialgouv/matomo-next@^1.14.2":
-  version "1.14.2"
-  resolved "https://registry.yarnpkg.com/@socialgouv/matomo-next/-/matomo-next-1.14.2.tgz#d35c6ede79308682a30d34b596c986013c4298cb"
-  integrity sha512-K7blGIQdkV9+ihxxtR/ABxeMsTTet/MiIluPW7BMkBBmoTOhWKzIfxzjc1MrLvZHC5aInCLeuNdW8hRMi4jkog==
+"@socialgouv/matomo-next@1.11.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@socialgouv/matomo-next/-/matomo-next-1.11.0.tgz#ec3bb787d129d023bab1a61330dc4ff570fb4ad4"
+  integrity sha512-48XLGnq4LzwOHf2wgm76UXFnGGKOKeOal4+QHeewQH+VY/gxJiIZ1k0o8LuUvKOHThW5Mqco8yAGNe25f7s28g==
 
 "@standard-schema/utils@^0.3.0":
   version "0.3.0"

@@ -5,14 +5,11 @@ import { getCaseReference } from '@utils/case-reference';
 import { downloadBlob } from '@utils/download-blob';
 import { Button, Icon, Spinner, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
-import sv from 'dayjs/locale/sv';
 import { Download, File } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { useAppContext } from '@contexts/app.context';
-
-dayjs.locale(sv);
 
 const DecisionCard: React.FC<{ item: ClientDecision }> = ({ item }) => {
   const attachment = item.attachments?.[0];

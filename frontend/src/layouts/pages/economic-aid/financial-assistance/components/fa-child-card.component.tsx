@@ -1,4 +1,4 @@
-import { ApplicationType, FinancialAssistanceFormData, ResidenceExtent } from '@interfaces/financial-assistance';
+import { FA_FIELD_MAX_LENGTH, ApplicationType, FinancialAssistanceFormData, ResidenceExtent } from '@interfaces/financial-assistance';
 import { Button, Card, FormControl, FormLabel, Icon, Input, Select } from '@sk-web-gui/react';
 import { X } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
@@ -44,12 +44,20 @@ export const FaChildCard: React.FC<FaChildCardProps> = ({ index, applicationType
       <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
         <FormControl className="w-full">
           <FormLabel htmlFor={`fa-child-${index}-firstName`}>{t('financial-assistance:child.firstName')}</FormLabel>
-          <Input id={`fa-child-${index}-firstName`} {...register(`children.${index}.firstName` as const)} />
+          <Input
+            id={`fa-child-${index}-firstName`}
+            maxLength={FA_FIELD_MAX_LENGTH.childName}
+            {...register(`children.${index}.firstName` as const)}
+          />
         </FormControl>
 
         <FormControl className="w-full">
           <FormLabel htmlFor={`fa-child-${index}-lastName`}>{t('financial-assistance:child.lastName')}</FormLabel>
-          <Input id={`fa-child-${index}-lastName`} {...register(`children.${index}.lastName` as const)} />
+          <Input
+            id={`fa-child-${index}-lastName`}
+            maxLength={FA_FIELD_MAX_LENGTH.childName}
+            {...register(`children.${index}.lastName` as const)}
+          />
         </FormControl>
       </div>
 
@@ -68,7 +76,11 @@ export const FaChildCard: React.FC<FaChildCardProps> = ({ index, applicationType
         {showSchool ? (
           <FormControl className="w-full">
             <FormLabel htmlFor={`fa-child-${index}-schoolName`}>{t('financial-assistance:child.schoolName')}</FormLabel>
-            <Input id={`fa-child-${index}-schoolName`} {...register(`children.${index}.schoolName` as const)} />
+            <Input
+              id={`fa-child-${index}-schoolName`}
+              maxLength={FA_FIELD_MAX_LENGTH.schoolName}
+              {...register(`children.${index}.schoolName` as const)}
+            />
           </FormControl>
         ) : null}
       </div>

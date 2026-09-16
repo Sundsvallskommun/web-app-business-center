@@ -353,11 +353,13 @@ export class EconomicAidController {
         typeSlug: suggestion.typeSlug ?? '',
         applicationType: suggestion.applicationType ?? null,
         label: suggestion.label ?? '',
+        description: suggestion.description ?? null,
         recommended: suggestion.recommended ?? false,
         periodMonth: suggestion.periodMonth ?? null,
         periodYear: suggestion.periodYear ?? null,
       })),
       message: eligibility.message ?? null,
+      introText: eligibility.introText ?? null,
       reasonCode: eligibility.reasonCode ?? null,
     };
 
@@ -653,7 +655,7 @@ export class EconomicAidController {
     const summaryPdf = await renderPdfFromHtml(buildApplicationPdfHtml(body.summary));
 
     // caremanagement create is multipart: a JSON "request" part, the citizen's own "attachments"
-    // (origin ERRAND) and an optional "caseData" part. The sammanställning goes in caseData — it is
+    // (documentType ERRAND) and an optional "caseData" part. The sammanställning goes in caseData — it is
     // stored as the single CASE_DATA attachment (ärendeuppgifter) and renamed to {errandNumber}.pdf,
     // so the errand and its snapshot are created in one call.
     // Build the multipart with the form-data package so each part's framing is fully controlled:

@@ -1,5 +1,6 @@
 import { ApplicantProfile, CIVILSTAND_VALUES, Civilstand, EconomicAidApplicationV1, EligibilityResult } from '@interfaces/economic-aid';
 import { apiService, useApi } from '@services/api-service';
+import { eligibilitySuggestionKey } from '@utils/eligibility-suggestion-key';
 import { FormControl, FormErrorMessage, FormLabel, Icon, Input, RadioButton, useSnackbar } from '@sk-web-gui/react';
 import { Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -53,7 +54,7 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
   const [lookupLoading, setLookupLoading] = useState(false);
   const [signOpen, setSignOpen] = useState(false);
   const [pendingResult, setPendingResult] = useState<EligibilityResult | null>(null);
-  const [selectedSlug, setSelectedSlug] = useState('');
+  const [selectedKey, setSelectedKey] = useState('');
 
   const eligibility = useApi<EligibilityResult>({ url: '/economic-aid/eligibility', method: 'post' });
 
@@ -61,13 +62,14 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
   const eligibilityResult = watch('eligibility');
   const suggestions = eligibilityResult?.suggestions ?? [];
   const recommended = suggestions.find((suggestion) => suggestion.recommended) ?? suggestions[0];
-  const effectiveSlug = selectedSlug || recommended?.typeSlug || '';
+  const effectiveKey = selectedKey || (recommended ? eligibilitySuggestionKey(recommended) : '');
+  const effectiveSuggestion = suggestions.find((suggestion) => eligibilitySuggestionKey(suggestion) === effectiveKey);
 
   // Återställer eligibility-förslagen — körs när civilstånd eller medsökande ändras så att gamla
   // förslag inte ligger kvar; sökanden får köra fram dem på nytt utifrån de nya uppgifterna.
   const resetEligibility = () => {
     if (getValues('eligibility')) setValue('eligibility', null, { shouldDirty: true });
-    setSelectedSlug('');
+    setSelectedKey('');
   };
 
   const select = (value: Civilstand) => {
@@ -115,13 +117,14 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
   // Sparar eligibility-resultatet så att ansökningsförslagen renderas inline i samma steg.
   const proceed = (result: EligibilityResult) => {
     setValue('eligibility', result, { shouldDirty: true });
-    setSelectedSlug('');
+    setSelectedKey('');
   };
 
   // Väljer ett förslag och lämnar över till financial-assistance-formuläret (chosenTypeSlug).
   const start = () => {
-    if (!effectiveSlug) return;
-    setValue('chosenTypeSlug', effectiveSlug, { shouldDirty: true });
+    if (!effectiveSuggestion) return;
+    setValue('chosenSuggestionKey', effectiveKey, { shouldDirty: true });
+    setValue('chosenTypeSlug', effectiveSuggestion.typeSlug, { shouldDirty: true });
   };
 
   const handleForward = async () => {
@@ -286,23 +289,32 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
 
           {suggestions.length > 0 ? (
             <>
-              <p className="text-content">{t('economic-aid:formular.intro')}</p>
+              <p className="text-content">{eligibilityResult.introText || t('economic-aid:formular.intro')}</p>
               <div role="radiogroup" aria-label={t('economic-aid:formular.heading')} className="flex flex-col gap-16">
                 {suggestions.map((suggestion) => {
-                  const checked = effectiveSlug === suggestion.typeSlug;
-                  const inputId = `economic-aid-suggestion-${suggestion.typeSlug}`;
+                  const suggestionKey = eligibilitySuggestionKey(suggestion);
+                  const checked = effectiveKey === suggestionKey;
+                  const inputId = `economic-aid-suggestion-${suggestionKey.replace(/:/g, '-')}`;
                   return (
-                    <label key={suggestion.typeSlug} htmlFor={inputId} className={cardClass(checked)} data-cy={inputId}>
+                    <label key={suggestionKey} htmlFor={inputId} className={cardClass(checked)} data-cy={inputId}>
                       <RadioButton
                         size="md"
                         name="economic-aid-suggestion"
                         id={inputId}
                         checked={checked}
-                        onChange={() => setSelectedSlug(suggestion.typeSlug)}
+                        onChange={() => setSelectedKey(suggestionKey)}
                         aria-labelledby={`${inputId}-label`}
+                        aria-describedby={suggestion.description ? `${inputId}-description` : undefined}
                       />
-                      <span id={`${inputId}-label`} className="font-bold">
-                        {suggestion.label}
+                      <span className="flex flex-col gap-4">
+                        <span id={`${inputId}-label`} className="font-bold">
+                          {suggestion.label}
+                        </span>
+                        {suggestion.description ? (
+                          <span id={`${inputId}-description`} className="text-small text-dark-secondary">
+                            {suggestion.description}
+                          </span>
+                        ) : null}
                       </span>
                     </label>
                   );
@@ -312,7 +324,7 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
               <StepNavigation
                 onBack={onBack}
                 onNext={start}
-                forwardDisabled={!effectiveSlug}
+                forwardDisabled={!effectiveSuggestion}
                 forwardLabel={t('economic-aid:formular.start')}
               />
             </>

@@ -1,4 +1,4 @@
-import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
+import { FA_FIELD_MAX_LENGTH, FinancialAssistanceFormData } from '@interfaces/financial-assistance';
 import { Button, Card, FormControl, FormLabel, Icon, Input } from '@sk-web-gui/react';
 import { X } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
@@ -37,7 +37,11 @@ export const FaPendingBenefitCard: React.FC<FaPendingBenefitCardProps> = ({ inde
           <FormLabel htmlFor={`fa-pending-benefit-${index}-name`}>
             {t('financial-assistance:economy.pendingBenefit.benefitNameLabel')}
           </FormLabel>
-          <Input id={`fa-pending-benefit-${index}-name`} {...register(`pendingBenefits.${index}.benefitName` as const)} />
+          <Input
+            id={`fa-pending-benefit-${index}-name`}
+            maxLength={FA_FIELD_MAX_LENGTH.pendingBenefitText}
+            {...register(`pendingBenefits.${index}.benefitName` as const)}
+          />
         </FormControl>
 
         <FormControl className="w-full">
@@ -46,6 +50,7 @@ export const FaPendingBenefitCard: React.FC<FaPendingBenefitCardProps> = ({ inde
           </FormLabel>
           <Input
             id={`fa-pending-benefit-${index}-applicant`}
+            maxLength={FA_FIELD_MAX_LENGTH.pendingBenefitText}
             {...register(`pendingBenefits.${index}.applicantName` as const)}
           />
         </FormControl>

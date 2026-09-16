@@ -212,7 +212,7 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
 
         {checked ? (
           <div className="flex flex-col gap-16 mt-12 ml-32">
-            <FaPlanningFields index={index} planningType={type} />
+            <FaPlanningFields index={index} planningType={type} showSickLeavePeriod={isNew} />
             {type === 'JOBSEEKING' && isNew ? renderJobseekingExtras(person) : null}
           </div>
         ) : null}

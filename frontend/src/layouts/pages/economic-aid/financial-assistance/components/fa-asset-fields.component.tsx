@@ -1,4 +1,4 @@
-import { AssetCategory, FinancialAssistanceFormData, PropertyType, VehicleType } from '@interfaces/financial-assistance';
+import { FA_FIELD_MAX_LENGTH, AssetCategory, FinancialAssistanceFormData, PropertyType, VehicleType } from '@interfaces/financial-assistance';
 import { FormControl, FormLabel, Input, Select } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -104,7 +104,11 @@ export const FaAssetFields: React.FC<FaAssetFieldsProps> = ({ index, category })
           <FormLabel htmlFor={`${fieldId}-company-name`}>
             {t('financial-assistance:economy.asset.companyNameLabel')}
           </FormLabel>
-          <Input id={`${fieldId}-company-name`} {...register(`assets.${index}.companyName` as const)} />
+          <Input
+            id={`${fieldId}-company-name`}
+            maxLength={FA_FIELD_MAX_LENGTH.companyName}
+            {...register(`assets.${index}.companyName` as const)}
+          />
         </FormControl>
         <FormControl className="w-full">
           <FormLabel htmlFor={`${fieldId}-company-sum`}>
@@ -153,7 +157,11 @@ export const FaAssetFields: React.FC<FaAssetFieldsProps> = ({ index, category })
           <FormLabel htmlFor={`${fieldId}-registration`}>
             {t('financial-assistance:economy.asset.registrationNumberLabel')}
           </FormLabel>
-          <Input id={`${fieldId}-registration`} {...register(`assets.${index}.registrationNumber` as const)} />
+          <Input
+            id={`${fieldId}-registration`}
+            maxLength={FA_FIELD_MAX_LENGTH.registrationNumber}
+            {...register(`assets.${index}.registrationNumber` as const)}
+          />
         </FormControl>
         <FormControl className="w-full">
           <FormLabel htmlFor={`${fieldId}-purchase-date`}>

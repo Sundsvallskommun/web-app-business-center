@@ -1,4 +1,4 @@
-import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
+import { FA_FIELD_MAX_LENGTH, FinancialAssistanceFormData } from '@interfaces/financial-assistance';
 import { FormControl, FormLabel, Input } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -24,14 +24,22 @@ export const FaJobApplicationFields: React.FC<FaJobApplicationFieldsProps> = ({ 
           <FormLabel htmlFor={`${fieldId}-title`}>
             {t('financial-assistance:planning.jobApplication.jobTitleLabel')}
           </FormLabel>
-          <Input id={`${fieldId}-title`} {...register(`jobApplications.${index}.jobTitle` as const)} />
+          <Input
+            id={`${fieldId}-title`}
+            maxLength={FA_FIELD_MAX_LENGTH.jobApplicationText}
+            {...register(`jobApplications.${index}.jobTitle` as const)}
+          />
         </FormControl>
       </div>
       <FormControl className="w-full">
         <FormLabel htmlFor={`${fieldId}-employer`}>
           {t('financial-assistance:planning.jobApplication.employerLabel')}
         </FormLabel>
-        <Input id={`${fieldId}-employer`} {...register(`jobApplications.${index}.employerAndPlace` as const)} />
+        <Input
+          id={`${fieldId}-employer`}
+          maxLength={FA_FIELD_MAX_LENGTH.jobApplicationText}
+          {...register(`jobApplications.${index}.employerAndPlace` as const)}
+        />
       </FormControl>
     </>
   );

@@ -207,6 +207,8 @@ export interface EligibilitySuggestion {
   applicationType: string | null;
   /** Human-readable Swedish label for the suggestion. */
   label: string;
+  /** Swedish explanation of when this application type applies. Null when no wording has been agreed. */
+  description: string | null;
   /** True for the primary suggestion the citizen should be guided towards. */
   recommended: boolean;
   /** Month (1-12) the suggestion concerns. Null for a new application. */
@@ -241,6 +243,11 @@ export interface EligibilityResult {
   suggestions: EligibilitySuggestion[];
   /** Human-readable Swedish explanation of the result. */
   message: string | null;
-  /** Machine-readable code for the gate that drove the suggestion (NO_EXISTING_CASE, CIVILSTAND_CHANGED, EXISTING_CASE). */
+  /** Swedish introduction shown above the suggestion list. Null when no application can be offered. */
+  introText: string | null;
+  /**
+   * Machine-readable code for the gate that drove the suggestion (NO_EXISTING_CASE, MARITAL_STATUS_CHANGED,
+   * RECENTLY_CLOSED, NO_RECENT_DECISION, ONGOING_APPLICATION, EXISTING_CASE, ALL_TYPES_TEST).
+   */
   reasonCode: string | null;
 }

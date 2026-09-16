@@ -236,6 +236,8 @@ export interface EligibilitySuggestion {
   typeSlug: string;
   applicationType: string | null;
   label: string;
+  /** När ansökningstypen gäller — null när ingen formulering är beslutad för typen. */
+  description: string | null;
   recommended: boolean;
   periodMonth: number | null;
   periodYear: number | null;
@@ -245,7 +247,12 @@ export interface EligibilitySuggestion {
 export interface EligibilityResult {
   suggestions: EligibilitySuggestion[];
   message: string | null;
-  /** NO_EXISTING_CASE | CIVILSTAND_CHANGED | EXISTING_CASE. */
+  /** Introduktion ovanför förslagslistan — null när ingen ansökan kan erbjudas. */
+  introText: string | null;
+  /**
+   * NO_EXISTING_CASE | MARITAL_STATUS_CHANGED | RECENTLY_CLOSED | NO_RECENT_DECISION |
+   * ONGOING_APPLICATION | EXISTING_CASE | ALL_TYPES_TEST.
+   */
   reasonCode: string | null;
 }
 
@@ -261,6 +268,11 @@ export interface EconomicAidApplicationV1 {
    * Transient — when set, the financial-assistance application form takes over.
    */
   chosenTypeSlug: string | null;
+  /**
+   * Key (typeSlug + period) of the picked suggestion — several suggestions can share a typeSlug, so
+   * this is what resolves the chosen period. Transient, set together with chosenTypeSlug.
+   */
+  chosenSuggestionKey: string | null;
   vagval: VagvalStep;
   identitet: IdentitetStep;
   hushall: HushallStep;
@@ -277,6 +289,7 @@ export const emptyEconomicAidApplication = (): EconomicAidApplicationV1 => ({
   schemaVersion: ECONOMIC_AID_SCHEMA_VERSION,
   eligibility: null,
   chosenTypeSlug: null,
+  chosenSuggestionKey: null,
   vagval: { kind: null },
   identitet: {
     vistelseadressStammer: null,

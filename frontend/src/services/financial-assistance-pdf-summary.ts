@@ -374,7 +374,15 @@ export const buildApplicationPdfSummary = (
           [t(fa('planning.workDescriptionLabel')), planning.workDescription],
         ];
       case 'SICK_LEAVE':
-        return [[t(fa('planning.sickLeaveLevelLabel')), planning.sickLeaveLevel ? `${planning.sickLeaveLevel}%` : '']];
+        return [
+          [t(fa('planning.sickLeaveLevelLabel')), planning.sickLeaveLevel ? `${planning.sickLeaveLevel}%` : ''],
+          ...(isNew
+            ? ([
+                [t(fa('planning.sickFromLabel')), planning.sickLeaveFrom],
+                [t(fa('planning.sickToLabel')), planning.sickLeaveTo],
+              ] as RawRow[])
+            : []),
+        ];
       case 'SFI':
         return [
           [t(fa('planning.sfiStudyPathLabel')), planning.sfiStudyPath],

@@ -28,13 +28,15 @@ const Warning: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 interface FaPlanningFieldsProps {
   index: number;
   planningType: PlanningType;
+  /** Nyansökan: fråga även efter läkarintygets sjukskrivningsperiod (från/till). */
+  showSickLeavePeriod: boolean;
 }
 
 /**
  * Typspecifika fält för en planeringspost (errand_fa_planning). Typen styrs av rutan i
  * planeringsväljaren. JOBSEEKING-typens aktiviteter/sökta jobb hanteras separat i väljaren.
  */
-export const FaPlanningFields: React.FC<FaPlanningFieldsProps> = ({ index, planningType }) => {
+export const FaPlanningFields: React.FC<FaPlanningFieldsProps> = ({ index, planningType, showSickLeavePeriod }) => {
   const { t } = useTranslation('financial-assistance');
   const { register, watch, setValue } = useFormContext<FinancialAssistanceFormData>();
   const fieldId = `fa-planning-${index}`;
@@ -111,6 +113,18 @@ export const FaPlanningFields: React.FC<FaPlanningFieldsProps> = ({ index, plann
             ))}
           </Select>
         </FormControl>
+        {showSickLeavePeriod ? (
+          <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
+            <FormControl className="w-full">
+              <FormLabel htmlFor={`${fieldId}-sick-from`}>{t('financial-assistance:planning.sickFromLabel')}</FormLabel>
+              <Input id={`${fieldId}-sick-from`} type="date" {...register(`plannings.${index}.sickLeaveFrom` as const)} />
+            </FormControl>
+            <FormControl className="w-full">
+              <FormLabel htmlFor={`${fieldId}-sick-to`}>{t('financial-assistance:planning.sickToLabel')}</FormLabel>
+              <Input id={`${fieldId}-sick-to`} type="date" {...register(`plannings.${index}.sickLeaveTo` as const)} />
+            </FormControl>
+          </div>
+        ) : null}
         {sickLevel && sickLevel !== '100' ? (
           <Warning>{t('financial-assistance:planning.info.partialSickWarning')}</Warning>
         ) : null}

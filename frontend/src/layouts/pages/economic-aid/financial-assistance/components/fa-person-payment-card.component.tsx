@@ -1,4 +1,4 @@
-import { ApplicationType, FinancialAssistanceFormData, PaymentMethod, PersonRole } from '@interfaces/financial-assistance';
+import { FA_FIELD_MAX_LENGTH, ApplicationType, FinancialAssistanceFormData, PaymentMethod, PersonRole } from '@interfaces/financial-assistance';
 import { Card, FormControl, FormLabel, Input, RadioButton, Select } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -110,13 +110,21 @@ export const FaPersonPaymentCard: React.FC<FaPersonPaymentCardProps> = ({ index,
                 <FormLabel htmlFor={`fa-person-${index}-clearing`}>
                   {t('financial-assistance:payment.clearingLabel')}
                 </FormLabel>
-                <Input id={`fa-person-${index}-clearing`} {...register(`persons.${index}.clearingNumber` as const)} />
+                <Input
+                  id={`fa-person-${index}-clearing`}
+                  maxLength={FA_FIELD_MAX_LENGTH.clearingNumber}
+                  {...register(`persons.${index}.clearingNumber` as const)}
+                />
               </FormControl>
               <FormControl className="w-full">
                 <FormLabel htmlFor={`fa-person-${index}-account`}>
                   {t('financial-assistance:payment.accountLabel')}
                 </FormLabel>
-                <Input id={`fa-person-${index}-account`} {...register(`persons.${index}.accountNumber` as const)} />
+                <Input
+                  id={`fa-person-${index}-account`}
+                  maxLength={FA_FIELD_MAX_LENGTH.accountNumber}
+                  {...register(`persons.${index}.accountNumber` as const)}
+                />
               </FormControl>
             </div>
           ) : null}

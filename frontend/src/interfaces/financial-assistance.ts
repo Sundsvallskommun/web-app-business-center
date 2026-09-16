@@ -131,6 +131,10 @@ export interface PlanningForm {
   workExtent: WorkExtent | '';
   workDescription: string;
   sickLeaveLevel: SickLeaveLevel | '';
+  /** Nyansökan: sjukskrivningsperiodens första dag enligt läkarintyget (ISO-datum). */
+  sickLeaveFrom: string;
+  /** Nyansökan: sjukskrivningsperiodens sista dag enligt läkarintyget (ISO-datum). */
+  sickLeaveTo: string;
   sfiStudyPath: SfiStudyPath | '';
   sfiCourse: SfiCourse | '';
   otherDescription: string;
@@ -336,6 +340,8 @@ export const emptyPlanning = (): PlanningForm => ({
   workExtent: '',
   workDescription: '',
   sickLeaveLevel: '',
+  sickLeaveFrom: '',
+  sickLeaveTo: '',
   sfiStudyPath: '',
   sfiCourse: '',
   otherDescription: '',
@@ -393,3 +399,21 @@ export const FA_GROUPS_BY_TYPE: Record<ApplicationType, FaGroupKey[]> = {
   RENEWAL: ['household-housing', 'economy', 'income', 'planning', 'payment', 'review'],
   SUPPLEMENTARY: ['household-housing', 'economy', 'payment', 'review'],
 };
+
+/**
+ * Max lengths caremanagement enforces on the free-text fields of FinancialAssistanceData (from its
+ * OpenAPI constraints). Applied as input maxLength so the applicant cannot type past what the API
+ * accepts — an over-long value would otherwise fail the whole submission with a 400.
+ */
+export const FA_FIELD_MAX_LENGTH = {
+  email: 128,
+  phone: 32,
+  clearingNumber: 16,
+  accountNumber: 32,
+  childName: 100,
+  schoolName: 255,
+  pendingBenefitText: 255,
+  companyName: 255,
+  registrationNumber: 16,
+  jobApplicationText: 255,
+} as const;

@@ -56,15 +56,20 @@ export interface Violation {
   message?: string;
 }
 
-/** Request to create or replace an EB monitoring on an errand. */
+/** Request to create or replace a financial assistance monitoring on an errand. */
 export interface MonitoringRequest {
   /** Provenance, defaults to CASEWORKER when omitted. RPA POSTs LIFECARE (with lifecareId) to surface a monitoring read out of Lifecare onto the errand. */
   source?: MonitoringRequestSourceEnum;
-  /** The monitoring's id in Lifecare. Set by RPA when surfacing a LIFECARE-sourced monitoring (the idempotency key) or when stamping back the id of a mirrored caseworker monitoring. */
+  /**
+   * The monitoring's id in Lifecare. Set by RPA when surfacing a LIFECARE-sourced monitoring (the idempotency key) or when stamping back the id of a mirrored caseworker monitoring.
+   * @minLength 0
+   * @maxLength 64
+   */
   lifecareId?: string;
   /**
    * Short headline for the monitoring
-   * @minLength 1
+   * @minLength 0
+   * @maxLength 255
    */
   title: string;
   /** Free-text details of what to watch for */
@@ -79,11 +84,15 @@ export interface MonitoringRequest {
    * @format date
    */
   endDate?: string;
-  /** The caseworker who created the monitoring */
+  /**
+   * The caseworker who created the monitoring
+   * @minLength 0
+   * @maxLength 64
+   */
   createdBy?: string;
 }
 
-/** An EB monitoring (date-bound watch/reminder) on an errand. */
+/** A financial assistance monitoring (date-bound watch/reminder) on an errand. */
 export interface Monitoring {
   /** The monitoring id */
   id?: string;
@@ -119,6 +128,138 @@ export interface Monitoring {
   updated?: string;
 }
 
+/** NamespaceConfig model */
+export interface NamespaceConfig {
+  /**
+   * Unique identifier
+   * @format int64
+   */
+  id?: number;
+  /**
+   * Display name of the namespace
+   * @minLength 0
+   * @maxLength 255
+   */
+  displayName?: string;
+  /**
+   * Short code for the namespace
+   * @minLength 0
+   * @maxLength 16
+   */
+  shortCode?: string;
+  /**
+   * Created timestamp
+   * @format date-time
+   */
+  created?: string;
+  /**
+   * Modified timestamp
+   * @format date-time
+   */
+  modified?: string;
+}
+
+/** Lookup model - metadata entry (category, status, type, role, contact reason) */
+export interface Lookup {
+  /**
+   * Name (machine-friendly key) of the lookup
+   * @minLength 0
+   * @maxLength 255
+   */
+  name?: string;
+  /**
+   * Display name
+   * @minLength 0
+   * @maxLength 255
+   */
+  displayName?: string;
+  /**
+   * Created timestamp
+   * @format date-time
+   */
+  created?: string;
+  /**
+   * Modified timestamp
+   * @format date-time
+   */
+  modified?: string;
+}
+
+/** Errand envelope */
+export interface Errand {
+  /** Unique identifier of the errand */
+  id?: string;
+  /** Municipality id */
+  municipalityId?: string;
+  /** Namespace */
+  namespace?: string;
+  /** Human-readable errand number */
+  errandNumber?: string;
+  /**
+   * Errand type slug. Types whose module owns a dedicated create endpoint (e.g. financial-assistance) are rejected on this generic endpoint and must be created through that endpoint; any other slug is accepted as-is.
+   * @minLength 0
+   * @maxLength 64
+   */
+  typeSlug?: string;
+  /**
+   * Title for the errand
+   * @minLength 0
+   * @maxLength 255
+   */
+  title?: string;
+  /**
+   * Status of the errand
+   * @minLength 0
+   * @maxLength 64
+   */
+  status?: string;
+  /** Description of the errand */
+  description?: string;
+  /**
+   * Priority of the errand
+   * @minLength 0
+   * @maxLength 16
+   */
+  priority?: string;
+  /**
+   * User id of the reporter
+   * @minLength 0
+   * @maxLength 64
+   */
+  reporterUserId?: string;
+  /**
+   * User id of the assignee
+   * @minLength 0
+   * @maxLength 64
+   */
+  assignedUserId?: string;
+  /** Denormalized display name of the errand's applicant, maintained from the APPLICANT stakeholder. Sortable and searchable on the errand list (e.g. ?sort=applicantName,asc). Null for errand types with no applicant. */
+  applicantName?: string;
+  /**
+   * Name of the Operaton process definition associated with the errand. Recorded on the errand; the core create endpoint does not itself start a process — process start, when applicable, is handled per errand type by a type module reacting to the errand-created domain event.
+   * @minLength 0
+   * @maxLength 128
+   */
+  processDefinitionName?: string;
+  /** Id of the Operaton process instance started for this errand */
+  processInstanceId?: string;
+  /**
+   * Created timestamp
+   * @format date-time
+   */
+  created?: string;
+  /**
+   * Modified timestamp
+   * @format date-time
+   */
+  modified?: string;
+  /**
+   * Touched timestamp
+   * @format date-time
+   */
+  touched?: string;
+}
+
 /** An asset owned by the applicant or co-applicant. */
 export interface Asset {
   /** The category of asset */
@@ -130,22 +271,30 @@ export interface Asset {
   /** Type of real estate property */
   propertyType?: AssetPropertyTypeEnum;
   /**
-   * Year the asset was purchased
+   * Year the property was purchased (REAL_ESTATE only — the form asks for a year, not a full date, for property). Vehicles carry purchaseDate instead.
    * @format int32
    */
   purchaseYear?: number;
   /** Price paid when the asset was purchased */
   purchasePrice?: number;
-  /** Name of the company asset */
+  /**
+   * Name of the company asset
+   * @minLength 0
+   * @maxLength 255
+   */
   companyName?: string;
   /** Total sum of the company's assets */
   companyAssetSum?: number;
   /** Type of vehicle */
   vehicleType?: AssetVehicleTypeEnum;
-  /** Vehicle registration number */
+  /**
+   * Vehicle registration number
+   * @minLength 0
+   * @maxLength 16
+   */
   registrationNumber?: string;
   /**
-   * The date the asset was purchased
+   * The date the vehicle was purchased (VEHICLE only — the form asks for a full date here). Property carries purchaseYear instead.
    * @format date
    */
   purchaseDate?: string;
@@ -153,13 +302,29 @@ export interface Asset {
 
 /** A child included in the financial assistance application. */
 export interface Child {
-  /** Party id (personId GUID) of the child */
+  /**
+   * Party id (personId GUID) of the child
+   * @minLength 0
+   * @maxLength 36
+   */
   partyId?: string;
-  /** First name */
+  /**
+   * First name
+   * @minLength 0
+   * @maxLength 100
+   */
   firstName?: string;
-  /** Last name */
+  /**
+   * Last name
+   * @minLength 0
+   * @maxLength 100
+   */
   lastName?: string;
-  /** Name of the child's school */
+  /**
+   * Name of the child's school
+   * @minLength 0
+   * @maxLength 255
+   */
   schoolName?: string;
   /** Extent of residence in the home */
   residenceExtent?: ChildResidenceExtentEnum;
@@ -184,6 +349,22 @@ export interface Cost {
   recipientOrPeriod?: string;
 }
 
+/** Request to create a financial assistance errand. */
+export interface CreateFinancialAssistanceRequest {
+  /** Title of the errand */
+  title?: string;
+  /** Description of the errand */
+  description?: string;
+  /** Priority of the errand */
+  priority?: string;
+  /** Id of the reporting user */
+  reporterUserId?: string;
+  /** Id of the assigned user */
+  assignedUserId?: string;
+  /** The typed financial assistance application payload */
+  data?: FinancialAssistanceData;
+}
+
 /** The typed financial assistance application payload. */
 export interface FinancialAssistanceData {
   /** The type of application */
@@ -202,8 +383,7 @@ export interface FinancialAssistanceData {
   periodYear?: number;
   /** Choice of application period */
   periodChoice?: FinancialAssistanceDataPeriodChoiceEnum;
-  /** The norm type used for the calculation */
-  normType?: FinancialAssistanceDataNormTypeEnum;
+  normType?: FinancialAssistanceDataNormTypeEnum[];
   /** Description of the other benefit */
   otherBenefitDescription?: string;
   /** Description of the applicant's livelihood */
@@ -293,17 +473,33 @@ export interface JobApplication {
    * @format date
    */
   applicationDate?: string;
-  /** The job title applied for */
+  /**
+   * The job title applied for
+   * @minLength 0
+   * @maxLength 255
+   */
   jobTitle?: string;
-  /** Employer and place of work */
+  /**
+   * Employer and place of work
+   * @minLength 0
+   * @maxLength 255
+   */
   employerAndPlace?: string;
 }
 
 /** A benefit the applicant has applied for but not yet received a decision on. */
 export interface PendingBenefit {
-  /** Name of the pending benefit */
+  /**
+   * Name of the pending benefit
+   * @minLength 0
+   * @maxLength 255
+   */
   benefitName?: string;
-  /** Name of the person who applied for the benefit */
+  /**
+   * Name of the person who applied for the benefit
+   * @minLength 0
+   * @maxLength 255
+   */
   applicantName?: string;
 }
 
@@ -311,11 +507,19 @@ export interface PendingBenefit {
 export interface Person {
   /** Role of the person */
   role?: PersonRoleEnum;
-  /** Party id (personId GUID) of the person */
+  /**
+   * Party id (personId GUID) of the person
+   * @minLength 0
+   * @maxLength 36
+   */
   partyId?: string;
   /** Whether the person needs an interpreter */
   needsInterpreter?: boolean;
-  /** Language the interpreter should use */
+  /**
+   * Language the interpreter should use
+   * @minLength 0
+   * @maxLength 64
+   */
   interpreterLanguage?: string;
   /** Whether the person had work during the last 12 months */
   hadWorkLast12Months?: boolean;
@@ -323,17 +527,33 @@ export interface Person {
   hadWorkDescription?: string;
   /** Payment method */
   paymentMethod?: PersonPaymentMethodEnum;
-  /** Clearing number of the bank account */
+  /**
+   * Clearing number of the bank account
+   * @minLength 0
+   * @maxLength 16
+   */
   clearingNumber?: string;
-  /** Bank account number */
+  /**
+   * Bank account number
+   * @minLength 0
+   * @maxLength 32
+   */
   accountNumber?: string;
   /** Description of the payment method when OTHER */
   otherPaymentDescription?: string;
   /** Whether the payment details are the same as previously used */
   paymentSameAsPrevious?: boolean;
-  /** Email address used for notifications about the application */
+  /**
+   * Email address used for notifications about the application
+   * @minLength 0
+   * @maxLength 128
+   */
   email?: string;
-  /** Phone number used for SMS notifications about the application */
+  /**
+   * Phone number used for SMS notifications about the application
+   * @minLength 0
+   * @maxLength 32
+   */
   phone?: string;
   /** Whether the person wants notifications about the application by email */
   notifyByEmail?: boolean;
@@ -371,6 +591,16 @@ export interface Planning {
   workDescription?: string;
   /** Level of sick leave (percent) */
   sickLeaveLevel?: PlanningSickLeaveLevelEnum;
+  /**
+   * First day of the sick-leave period stated on the medical certificate
+   * @format date
+   */
+  sickLeaveFrom?: string;
+  /**
+   * Last day of the sick-leave period stated on the medical certificate
+   * @format date
+   */
+  sickLeaveTo?: string;
   /** SFI study path */
   sfiStudyPath?: PlanningSfiStudyPathEnum;
   /** SFI course */
@@ -379,111 +609,13 @@ export interface Planning {
   otherDescription?: string;
 }
 
-/** NamespaceConfig model */
-export interface NamespaceConfig {
-  /**
-   * Unique identifier
-   * @format int64
-   */
-  id?: number;
-  /** Display name of the namespace */
-  displayName?: string;
-  /** Short code for the namespace */
-  shortCode?: string;
-  /**
-   * Created timestamp
-   * @format date-time
-   */
-  created?: string;
-  /**
-   * Modified timestamp
-   * @format date-time
-   */
-  modified?: string;
-}
-
-/** Lookup model - metadata entry (category, status, type, role, contact reason) */
-export interface Lookup {
-  /** Name (machine-friendly key) of the lookup */
-  name?: string;
-  /** Display name */
-  displayName?: string;
-  /**
-   * Created timestamp
-   * @format date-time
-   */
-  created?: string;
-  /**
-   * Modified timestamp
-   * @format date-time
-   */
-  modified?: string;
-}
-
-/** Errand envelope */
-export interface Errand {
-  /** Unique identifier of the errand */
-  id?: string;
-  /** Municipality id */
-  municipalityId?: string;
-  /** Namespace */
-  namespace?: string;
-  /** Human-readable errand number */
-  errandNumber?: string;
-  /** Registered errand type slug — validated against ErrandTypeRegistry */
-  typeSlug?: string;
-  /** Title for the errand */
-  title?: string;
-  /** Status of the errand */
-  status?: string;
-  /** Description of the errand */
-  description?: string;
-  /** Priority of the errand */
-  priority?: string;
-  /** User id of the reporter */
-  reporterUserId?: string;
-  /** User id of the assignee */
-  assignedUserId?: string;
-  /** Name of the Operaton process definition to start when the errand is created */
-  processDefinitionName?: string;
-  /** Id of the Operaton process instance started for this errand */
-  processInstanceId?: string;
-  /**
-   * Created timestamp
-   * @format date-time
-   */
-  created?: string;
-  /**
-   * Modified timestamp
-   * @format date-time
-   */
-  modified?: string;
-  /**
-   * Touched timestamp
-   * @format date-time
-   */
-  touched?: string;
-}
-
-/** Request to create a financial assistance errand. */
-export interface CreateFinancialAssistanceRequest {
-  /** Title of the errand */
-  title?: string;
-  /** Description of the errand */
-  description?: string;
-  /** Priority of the errand */
-  priority?: string;
-  /** Id of the reporting user */
-  reporterUserId?: string;
-  /** Id of the assigned user */
-  assignedUserId?: string;
-  /** The typed financial assistance application payload */
-  data?: FinancialAssistanceData;
-}
-
 /** ContactChannel model */
 export interface ContactChannel {
-  /** The key of the contact channel */
+  /**
+   * The key of the contact channel
+   * @minLength 0
+   * @maxLength 64
+   */
   key?: string;
   /** The value of the contact channel */
   value?: string;
@@ -493,27 +625,67 @@ export interface ContactChannel {
 export interface Stakeholder {
   /** Unique identifier */
   id?: string;
-  /** External id for the stakeholder */
+  /**
+   * External id for the stakeholder
+   * @minLength 0
+   * @maxLength 255
+   */
   externalId?: string;
-  /** Type of external id */
+  /**
+   * Type of external id
+   * @minLength 0
+   * @maxLength 32
+   */
   externalIdType?: string;
-  /** Role of the stakeholder — validated against StakeholderRoleRegistry for the errand's typeSlug */
+  /** Role of the stakeholder on the errand */
   role?: string;
-  /** First name */
+  /**
+   * First name
+   * @minLength 0
+   * @maxLength 100
+   */
   firstName?: string;
-  /** Last name */
+  /**
+   * Last name
+   * @minLength 0
+   * @maxLength 100
+   */
   lastName?: string;
-  /** Organization name */
+  /**
+   * Organization name
+   * @minLength 0
+   * @maxLength 255
+   */
   organizationName?: string;
-  /** Address */
+  /**
+   * Address
+   * @minLength 0
+   * @maxLength 255
+   */
   address?: string;
-  /** Care of */
+  /**
+   * Care of
+   * @minLength 0
+   * @maxLength 255
+   */
   careOf?: string;
-  /** Zip code */
+  /**
+   * Zip code
+   * @minLength 0
+   * @maxLength 10
+   */
   zipCode?: string;
-  /** City */
+  /**
+   * City
+   * @minLength 0
+   * @maxLength 100
+   */
   city?: string;
-  /** Country */
+  /**
+   * Country
+   * @minLength 0
+   * @maxLength 100
+   */
   country?: string;
   /** Contact channels for the stakeholder */
   contactChannels?: ContactChannel[];
@@ -643,14 +815,26 @@ export interface Notification {
   id?: string;
   /** Id of the errand the notification belongs to (server-assigned from path) */
   errandId?: string;
-  /** User id of the recipient (the user who should see this notification) */
+  /**
+   * User id of the recipient (the user who should see this notification)
+   * @minLength 0
+   * @maxLength 64
+   */
   ownerId?: string;
-  /** User or system id that produced the notification. Automatically acknowledged if equal to ownerId. */
+  /**
+   * User or system id that produced the notification. Automatically acknowledged if equal to ownerId.
+   * @minLength 0
+   * @maxLength 64
+   */
   createdBy?: string;
   /** Notification type */
   type?: NotificationTypeEnum;
+  /** Swedish display name for the notification type */
+  typeDisplayName?: string;
   /** Notification sub-type */
   subType?: NotificationSubTypeEnum;
+  /** Swedish display name for the notification sub-type */
+  subTypeDisplayName?: string;
   /** Short human-readable description */
   description?: string;
   /** Optional longer content / body */
@@ -724,39 +908,29 @@ export interface CreateJournalEntry {
    * Journal entry type (Lifecare 'Typ'/Journaltyp)
    * @minLength 0
    * @maxLength 255
-   * @example "Journalfört meddelande"
    */
   type: string;
   /**
    * Heading (Lifecare 'Rubrik')
    * @minLength 0
    * @maxLength 255
-   * @example "Journalfört meddelande: 2025-05-30 Info"
    */
   heading: string;
   /**
    * Free-text body of the journal entry; optional
    * @minLength 0
    * @maxLength 1048576
-   * @example "Hej! Vill bara informera att jag fått jobb på Mejeriet."
    */
   text?: string;
   /**
-   * Documented date (Lifecare 'Datum')
-   * @format date
-   * @example "2025-05-30"
+   * Documented date and time (Lifecare 'Datum'/'Tid')
+   * @format date-time
    */
-  entryDate: string;
-  /**
-   * Documented time (Lifecare 'Tid'); optional
-   * @example "14:30"
-   */
-  entryTime?: string;
+  entryDateTime: string;
   /**
    * User id of the author (Lifecare 'Upprättad av'); optional
    * @minLength 0
    * @maxLength 64
-   * @example "carola01winberg"
    */
   createdBy?: string;
 }
@@ -766,7 +940,6 @@ export interface LockJournalEntry {
    * User id of whoever locks the entry; optional
    * @minLength 0
    * @maxLength 64
-   * @example "carola01winberg"
    */
   lockedBy?: string;
 }
@@ -777,61 +950,38 @@ export interface JournalEntry {
   id?: string;
   /** Errand id this journal entry belongs to */
   errandId?: string;
-  /**
-   * Journal entry type (Lifecare 'Typ'/Journaltyp). A municipality-configured value; see the metadata catalogue for a provisional set.
-   * @example "Journalfört meddelande"
-   */
+  /** Provenance — CASEWORKER for a journal entry authored in Draken, LIFECARE for one read out of Lifecare by RPA and mirrored onto the errand */
+  source?: string;
+  /** The journal entry's id in Lifecare's document list — set on LIFECARE-sourced mirrors (the RPA upsert key) */
+  lifecareId?: string;
+  /** Journal entry type (Lifecare 'Typ'/Journaltyp). A municipality-configured value; see the metadata catalogue for a provisional set. */
   type?: string;
-  /**
-   * Heading (Lifecare 'Rubrik')
-   * @example "Journalfört meddelande: 2025-05-30 Info"
-   */
+  /** Heading (Lifecare 'Rubrik') */
   heading?: string;
-  /**
-   * Free-text body of the journal entry
-   * @example "Hej! Vill bara informera att jag fått jobb på Mejeriet."
-   */
+  /** Free-text body of the journal entry */
   text?: string;
   /**
-   * Documented date (Lifecare 'Datum'), distinct from the system created timestamp
-   * @format date
-   * @example "2025-05-30"
+   * Documented date and time (Lifecare 'Datum'/'Tid'), distinct from the system created timestamp
+   * @format date-time
    */
-  entryDate?: string;
-  /**
-   * Documented time (Lifecare 'Tid'); optional
-   * @example "14:30"
-   */
-  entryTime?: string;
-  /**
-   * Skrivskydd status — WORKING is an editable arbetsanteckning, LOCKED is an upprättad handling
-   * @example "WORKING"
-   */
+  entryDateTime?: string;
+  /** Write-protection status — WORKING is an editable working note, LOCKED is a finalised record */
   status?: JournalEntryStatusEnum;
-  /**
-   * User id of the author (Lifecare 'Upprättad av'/'Ägare')
-   * @example "carola01winberg"
-   */
+  /** User id of the author (Lifecare 'Upprättad av'/'Ägare') */
   createdBy?: string;
   /**
    * Created timestamp
    * @format date-time
    */
   created?: string;
-  /**
-   * User id of the last editor (Lifecare 'Ändrat av'); null until the entry has been edited
-   * @example "ebb14eri"
-   */
+  /** User id of the last editor (Lifecare 'Ändrat av'); null until the entry has been edited */
   modifiedBy?: string;
   /**
    * Last modified timestamp; null until the entry has been edited
    * @format date-time
    */
   modified?: string;
-  /**
-   * User id of whoever locked the entry; null while WORKING
-   * @example "carola01winberg"
-   */
+  /** User id of whoever locked the entry; null while WORKING */
   lockedBy?: string;
   /**
    * Timestamp when the entry was locked (became an upprättad handling); null while WORKING
@@ -845,39 +995,29 @@ export interface CreateDocument {
    * Document type (Lifecare 'Typ'/Dokumenttyp)
    * @minLength 0
    * @maxLength 255
-   * @example "Brev"
    */
   type: string;
   /**
    * Heading (Lifecare 'Rubrik')
    * @minLength 0
    * @maxLength 255
-   * @example "Beslut om ekonomiskt bistånd 2025-05"
    */
   heading: string;
   /**
    * Free-text body of the document; optional
    * @minLength 0
    * @maxLength 1048576
-   * @example "Beslut har fattats enligt nedan ..."
    */
   text?: string;
   /**
-   * Documented date (Lifecare 'Datum')
-   * @format date
-   * @example "2025-05-30"
+   * Documented date and time (Lifecare 'Datum'/'Tid')
+   * @format date-time
    */
-  documentDate: string;
-  /**
-   * Documented time (Lifecare 'Tid'); optional
-   * @example "14:30"
-   */
-  documentTime?: string;
+  documentDateTime: string;
   /**
    * User id of the author (Lifecare 'Upprättad av'); optional
    * @minLength 0
    * @maxLength 64
-   * @example "carola01winberg"
    */
   createdBy?: string;
 }
@@ -887,72 +1027,48 @@ export interface LockDocument {
    * User id of whoever locks the document; optional
    * @minLength 0
    * @maxLength 64
-   * @example "carola01winberg"
    */
   lockedBy?: string;
 }
 
-/** A Dokument (formal case document) attached to an errand */
+/** A document (formal case document) attached to an errand */
 export interface Document {
   /** Unique identifier */
   id?: string;
   /** Errand id this document belongs to */
   errandId?: string;
-  /**
-   * Document type (Lifecare 'Typ'/Dokumenttyp). A municipality-configured value; see the metadata catalogue for a provisional set.
-   * @example "Brev"
-   */
+  /** Provenance — CASEWORKER for a document authored in Draken, LIFECARE for one read out of Lifecare by RPA and mirrored onto the errand */
+  source?: string;
+  /** The document's id in Lifecare's document list — set on LIFECARE-sourced mirrors (the RPA upsert key) */
+  lifecareId?: string;
+  /** Document type (Lifecare 'Typ'/Dokumenttyp). A municipality-configured value; see the metadata catalogue for a provisional set. */
   type?: string;
-  /**
-   * Heading (Lifecare 'Rubrik')
-   * @example "Beslut om ekonomiskt bistånd 2025-05"
-   */
+  /** Heading (Lifecare 'Rubrik') */
   heading?: string;
-  /**
-   * Free-text body of the document
-   * @example "Beslut har fattats enligt nedan ..."
-   */
+  /** Free-text body of the document */
   text?: string;
   /**
-   * Documented date (Lifecare 'Datum'), distinct from the system created timestamp
-   * @format date
-   * @example "2025-05-30"
+   * Documented date and time (Lifecare 'Datum'/'Tid'), distinct from the system created timestamp
+   * @format date-time
    */
-  documentDate?: string;
-  /**
-   * Documented time (Lifecare 'Tid'); optional
-   * @example "14:30"
-   */
-  documentTime?: string;
-  /**
-   * Skrivskydd status — WORKING is an editable draft, LOCKED is an upprättad handling
-   * @example "WORKING"
-   */
+  documentDateTime?: string;
+  /** Write-protection status — WORKING is an editable draft, LOCKED is a finalised record */
   status?: DocumentStatusEnum;
-  /**
-   * User id of the author (Lifecare 'Upprättad av'/'Ägare')
-   * @example "carola01winberg"
-   */
+  /** User id of the author (Lifecare 'Upprättad av'/'Ägare') */
   createdBy?: string;
   /**
    * Created timestamp
    * @format date-time
    */
   created?: string;
-  /**
-   * User id of the last editor (Lifecare 'Ändrat av'); null until the document has been edited
-   * @example "ebb14eri"
-   */
+  /** User id of the last editor (Lifecare 'Ändrat av'); null until the document has been edited */
   modifiedBy?: string;
   /**
    * Last modified timestamp; null until the document has been edited
    * @format date-time
    */
   modified?: string;
-  /**
-   * User id of whoever locked the document; null while WORKING
-   * @example "carola01winberg"
-   */
+  /** User id of whoever locked the document; null while WORKING */
   lockedBy?: string;
   /**
    * Timestamp when the document was locked (became an upprättad handling); null while WORKING
@@ -965,15 +1081,31 @@ export interface Document {
 export interface Decision {
   /** Unique identifier */
   id?: string;
-  /** Decision category. Free-form string; conventionally `RECOMMENDATION` for DMN-produced suggestions and `PAYMENT` for caseworker APPROVE/REJECT decisions, but namespaces are encouraged to define their own. */
+  /**
+   * Decision category. Free-form string; conventionally `RECOMMENDATION` for DMN-produced suggestions and `PAYMENT` for caseworker APPROVE/REJECT decisions, but namespaces are encouraged to define their own.
+   * @minLength 0
+   * @maxLength 32
+   */
   decisionType?: string;
-  /** Decision value. For binary outcomes use `APPROVED`/`REJECTED`; for richer outputs (e.g. a calculated amount) use the value itself or a short label. */
+  /**
+   * Decision value. For binary outcomes use `APPROVED`/`REJECTED`; for richer outputs (e.g. a calculated amount) use the value itself or a short label.
+   * @minLength 0
+   * @maxLength 255
+   */
   value?: string;
-  /** Optional human-readable description or motivation for the decision */
+  /**
+   * Optional human-readable description or motivation for the decision
+   * @minLength 0
+   * @maxLength 4096
+   */
   description?: string;
-  /** Optional decision amount, in SEK. For a financial-assistance beslut this is the granted belopp (0 for a rejection); for a recommendation it is the recommended amount when the pipeline has computed one. */
+  /** Optional decision amount, in SEK. For a financial-assistance decision this is the granted amount (0 for a rejection); for a recommendation it is the recommended amount when the pipeline has computed one. */
   amount?: number;
-  /** Optional decision message (beslutsmeddelande) communicated to the applicant — the free-text justification shown on the decision letter, kept separate from the internal `description`. */
+  /**
+   * Optional decision message communicated to the applicant — the free-text justification shown on the decision letter, kept separate from the internal `description`.
+   * @minLength 0
+   * @maxLength 8192
+   */
   decisionMessage?: string;
   /**
    * Optional date the decision applies (the caseworker-chosen decision date), distinct from the server-assigned `created` audit timestamp.
@@ -981,7 +1113,7 @@ export interface Decision {
    */
   decisionDate?: string;
   /**
-   * Optional start of the period the decision covers (the month applied for, for a financial-assistance beslut).
+   * Optional start of the period the decision covers (the month applied for, for a financial-assistance decision).
    * @format date
    */
   periodFrom?: string;
@@ -990,7 +1122,11 @@ export interface Decision {
    * @format date
    */
   periodTo?: string;
-  /** Identifier of the actor that produced the decision. Use the caseworker userId for human decisions or a system identifier (e.g. `operaton`, `dmn-engine`) for automated ones. */
+  /**
+   * Identifier of the actor that produced the decision. Use the caseworker userId for human decisions or a system identifier (e.g. `operaton`, `dmn-engine`) for automated ones.
+   * @minLength 0
+   * @maxLength 64
+   */
   createdBy?: string;
   /**
    * Timestamp the decision was recorded (server-assigned)
@@ -999,7 +1135,7 @@ export interface Decision {
   created?: string;
 }
 
-/** Request to create an EB income warning on an errand (no Lifecare round-trip). */
+/** Request to create a financial assistance income warning on an errand (no Lifecare round-trip). */
 export interface CreateWarningRequest {
   /**
    * The warning type
@@ -1011,22 +1147,30 @@ export interface CreateWarningRequest {
    * @minLength 1
    */
   message: string;
-  /** A stable key for the income the warning concerns (benefit/incomeType) — the dedup key. Derived from the message when omitted. */
+  /**
+   * A stable key for the income the warning concerns (benefit/incomeType) — the dedup key. Derived from the message when omitted.
+   * @minLength 0
+   * @maxLength 255
+   */
   sourceKey?: string;
 }
 
-/** An EB income warning the caseworker can acknowledge or close. */
+/** A financial assistance income warning the caseworker can acknowledge or close. */
 export interface Warning {
   /** The warning id */
   id?: string;
-  /** The warning type */
+  /** The warning type (machine code; use typeDisplayName for the label) */
   type?: WarningTypeEnum;
+  /** Swedish display name for the warning type */
+  typeDisplayName?: string;
   /** A stable key for the income the warning concerns (benefit/incomeType) — the dedup key */
   sourceKey?: string;
-  /** Human-readable warning text */
+  /** Human-readable warning text (Swedish) */
   message?: string;
-  /** The warning status */
+  /** The warning status (machine code; use statusDisplayName for the label) */
   status?: WarningStatusEnum;
+  /** Swedish display name for the warning status */
+  statusDisplayName?: string;
   /** Whether the warning was closed automatically (its cause resolved) rather than by a caseworker */
   autoResolved?: boolean;
   /**
@@ -1041,13 +1185,131 @@ export interface Warning {
   updated?: string;
 }
 
+/** One row from Lifecare's document list — journal notes (documentType 3) and regular documents (documentType 0) share this shape. */
+export interface LifecareDocumentRow {
+  /** The row's id in Lifecare's document list — the upsert key together with documentType. Rows without it are skipped. */
+  id?: string;
+  /** Title (Lifecare 'Rubrik'); becomes the mirrored heading */
+  title?: string;
+  /** Documented date (yyyy-MM-dd). Required — rows without a parseable date are reported FAILED. */
+  date?: string;
+  /** Documented time (HH:mm); optional, midnight when absent */
+  time?: string;
+  /** Type display text (Lifecare 'Typ'); becomes the mirrored type, falling back to typeCode */
+  type?: string;
+  /** Type code (Lifecare notes: 1 Journalanteckning; documents: e.g. 13 BE Brev, 14 BE Dokument) */
+  typeCode?: string;
+  /** Row discriminator: 3 = journal note, 0 = regular document. Other values are reported SKIPPED. */
+  documentType?: string;
+  /** Body as Lifecare returns it — HTML with entities. Decoded and stripped to plain text before storage. */
+  content?: string;
+  /** The signature of the last writer in Lifecare; becomes the mirrored author */
+  updateSignature?: string;
+  /** Lifecare's last-update date (yyyy-MM-dd, day precision only); informational */
+  updateDate?: string;
+  /** Lifecare's textual name for documentType; informational */
+  documentType_Name?: string;
+}
+
+/** The jobbstimulans periods from Lifecare's GetJobStimulusForService — the applicant's and, when present, the co-applicant's. */
+export interface LifecareJobStimulus {
+  /** The applicant's period set */
+  applicant?: LifecareJobStimulusParty;
+  /** The co-applicant's period set; null or an empty object when there is no co-applicant */
+  coApplicant?: LifecareJobStimulusParty;
+}
+
+/** One party's jobbstimulans periods. */
+export interface LifecareJobStimulusParty {
+  /** The party's periods */
+  periods?: LifecareJobStimulusPeriod[];
+}
+
+/** One jobbstimulans period. Lifecare's unstable jobStimulusId is intentionally absent. */
+export interface LifecareJobStimulusPeriod {
+  /** Period start (yyyy-MM-dd). Required — periods without a parseable date are reported FAILED. */
+  fromDate?: string;
+  /** Period end (yyyy-MM-dd); optional */
+  toDate?: string;
+  /** Lifecare's removal flag — a period marked for removal is dropped on ingest */
+  markedForRemoval?: boolean;
+}
+
+/** One bevakning row as Lifecare's ListRemindersByServiceId returns it. The stable reminderId is the upsert key. */
+export interface LifecareReminder {
+  /** Lifecare's stable reminder id — the idempotency key. Rows without it are skipped. */
+  reminderId?: string;
+  /** The monitoring date (yyyy-MM-dd). Required — rows without a parseable date are reported FAILED. */
+  reminderDate?: string;
+  /** Status code (Lifecare: 1 Pågår, 2 Klar, 3 Ej påbörjad, 4 Väntar — a snapshot, not a definition) */
+  status?: string;
+  /** Status display text; may be null */
+  statusText?: string;
+  /** Priority code (Lifecare: 1 Hög, 2 Normal, 3 Låg) */
+  priority?: string;
+  /** Priority display text; may be null */
+  priorityText?: string;
+  /** Reminder type code */
+  type?: string;
+  /** Reminder type display text; may be null */
+  typeText?: string;
+  /** The caseworker's free text */
+  text?: string;
+  /** The caseworker id in Lifecare */
+  caseworkerId?: string;
+  /** The caseworker's display name */
+  caseworkerName?: string;
+  /** What the reminder sits on (Lifecare: 7083 IFO.Insats, 7040 IFO.Aktualisering) */
+  objectType?: string;
+  /** Object type display name */
+  objectTypeName?: string;
+}
+
+/** RPA supplements delivery envelope — a near-raw dump of the Lifecare Professional Web responses for the errand's client. An omitted section means 'not fetched this run'; an empty section means 'fetched, nothing there'. Unknown fields are ignored. */
+export interface LifecareSupplements {
+  /** The robot's capture date (day precision — Lifecare's own timestamps carry no more) */
+  capturedAt?: string;
+  /** Rows from Lifecare's ListRemindersByServiceId (bevakningar). Upserted as LIFECARE-sourced monitorings on the errand, keyed per reminderId. */
+  reminders?: LifecareReminder[];
+  /** Rows from Lifecare's document list — journal notes (documentType 3) and regular documents (documentType 0) alike. CareManagement routes each row on documentType; the robot does not need to tell them apart. */
+  documents?: LifecareDocumentRow[];
+  /** The response from Lifecare's GetJobStimulusForService. Replaces the errand's full jobbstimulans period set — Lifecare regenerates all period ids on every save, so ids are never used as keys. */
+  jobStimulus?: LifecareJobStimulus;
+}
+
+/** Receipt for one delivered item in a supplements ingest. */
+export interface SupplementsIngestOutcome {
+  /** The envelope section the item came from */
+  section?: SupplementsIngestOutcomeSectionEnum;
+  /** The item's Lifecare id, when it has one */
+  lifecareId?: string;
+  /** What happened to the item */
+  outcome?: SupplementsIngestOutcomeOutcomeEnum;
+  /** Human-readable detail — the skip/failure reason, or a summary for REPLACED */
+  detail?: string;
+}
+
+/** Receipt for a supplements ingest — one outcome per delivered item. */
+export interface SupplementsIngestResult {
+  /** One outcome per delivered item, in delivery order */
+  results?: SupplementsIngestOutcome[];
+}
+
 /** What a caseworker sends to add or patch a person row (identity + caseworker-writable fields only). */
 export interface NormPersonInput {
-  /** The party id of the household member */
+  /**
+   * The party id of the household member
+   * @minLength 0
+   * @maxLength 36
+   */
   partyId?: string;
   /** The role of the household member */
   role?: NormPersonInputRoleEnum;
-  /** The name of the household member */
+  /**
+   * The name of the household member
+   * @minLength 0
+   * @maxLength 255
+   */
   name?: string;
   /**
    * The number of days the caseworker decided
@@ -1066,7 +1328,11 @@ export interface NormPersonInput {
    * @format date
    */
   deviationToDate?: string;
-  /** The norm interval applied to the member */
+  /**
+   * The norm interval applied to the member
+   * @minLength 0
+   * @maxLength 64
+   */
   normInterval?: string;
   /** The job stimulus amount applied to the member */
   jobStimulusAmount?: number;
@@ -1080,6 +1346,11 @@ export interface NormPersonRow {
   id?: string;
   /** Who created the row: the process or a caseworker */
   origin?: NormPersonRowOriginEnum;
+  /**
+   * Stable 0-based position of the row within its section; assigned on creation and kept across refreshes so the row stays in place
+   * @format int32
+   */
+  position?: number;
   /** The party id of the household member */
   partyId?: string;
   /** The role of the household member */
@@ -1136,11 +1407,15 @@ export interface NormPersonRow {
 /** What a caseworker sends to add or patch an income row (identity + caseworker-writable fields only). */
 export interface NormIncomeInput {
   /**
-   * The FC income-type id
+   * The FamilyCare income-type id
    * @format int32
    */
   typeId?: number;
-  /** The FC income-type name */
+  /**
+   * The FamilyCare income-type name
+   * @minLength 0
+   * @maxLength 255
+   */
   typeName?: string;
   /** The amount the caseworker decided for the applicant */
   applicantCaseworkerAmount?: number;
@@ -1160,18 +1435,23 @@ export interface NormIncomeInput {
   note?: string;
 }
 
-/** One income row of the calculation draft (FC income type with applicant/co-applicant sides, process vs caseworker amounts). */
+/** One income row of the calculation draft (FamilyCare income type with applicant/co-applicant sides, process vs caseworker amounts). */
 export interface NormIncomeRow {
   /** The row id */
   id?: string;
   /** Who created the row: the process or a caseworker */
   origin?: NormIncomeRowOriginEnum;
   /**
-   * The FC income-type id
+   * Stable 0-based position of the row within its section; assigned on creation and kept across refreshes so the row stays in place
+   * @format int32
+   */
+  position?: number;
+  /**
+   * The FamilyCare income-type id
    * @format int32
    */
   typeId?: number;
-  /** The FC income-type name */
+  /** The FamilyCare income-type name */
   typeName?: string;
   /** The amount the process decided for the applicant (from the classified SSBTEK income) */
   applicantProcessAmount?: number;
@@ -1213,15 +1493,23 @@ export interface NormIncomeRow {
 
 /** What a caseworker sends to add or patch an expense row (identity + caseworker-writable fields only). */
 export interface NormExpenseInput {
-  /** The cost type */
+  /**
+   * The cost type
+   * @minLength 0
+   * @maxLength 64
+   */
   costType?: string;
   /** Which Lifecare bucket the expense posts to */
   bucket?: NormExpenseInputBucketEnum;
-  /** The other sub-type (when the cost type is 'other') */
+  /**
+   * The other sub-type (when the cost type is 'other')
+   * @minLength 0
+   * @maxLength 32
+   */
   otherSubType?: string;
   /** The cost specification */
   specification?: string;
-  /** The amount applied for (ansökt). Honoured only when creating a new row; ignored on a patch. */
+  /** The amount applied for (ansökt). Honoured on both create and patch. */
   appliedAmount?: number;
   /** The amount the caseworker decided */
   caseworkerAmount?: number;
@@ -1235,6 +1523,11 @@ export interface NormExpenseRow {
   id?: string;
   /** Who created the row: the process or a caseworker */
   origin?: NormExpenseRowOriginEnum;
+  /**
+   * Stable 0-based position of the row within its section; assigned on creation and kept across refreshes so the row stays in place
+   * @format int32
+   */
+  position?: number;
   /** Which Lifecare bucket the expense posts to */
   bucket?: NormExpenseRowBucketEnum;
   /** The cost type */
@@ -1243,7 +1536,7 @@ export interface NormExpenseRow {
   otherSubType?: string;
   /** The cost specification */
   specification?: string;
-  /** The amount the citizen applied for */
+  /** The amount the citizen applied for (ansökt); editable by a caseworker */
   appliedAmount?: number;
   /** The amount the rules allowed (the process amount) */
   processAmount?: number;
@@ -1301,12 +1594,12 @@ export interface ApplicationSuggestion {
   /** The application type the slug maps to */
   applicationType?: ApplicationSuggestionApplicationTypeEnum;
   /**
-   * Month (1-12) the suggested application concerns. Null for a new application (new application), which has no prior period.
+   * Month (1-12) the suggested application concerns. Null for a new application, which has no prior period.
    * @format int32
    */
   periodMonth?: number;
   /**
-   * Year the suggested application concerns. Null for a new application (new application).
+   * Year the suggested application concerns. Null for a new application.
    * @format int32
    */
   periodYear?: number;
@@ -1314,6 +1607,8 @@ export interface ApplicationSuggestion {
   recommended?: boolean;
   /** Human-readable Swedish label for the suggestion */
   label?: string;
+  /** Swedish explanation of when this application type applies, shown to the citizen next to the label. Null when no wording has been agreed for the type. */
+  description?: string;
 }
 
 /** Eligibility result: which application(s) the citizen should be offered, plus the supporting facts. */
@@ -1324,23 +1619,31 @@ export interface EligibilityResponse {
   reasonCode?: EligibilityResponseReasonCodeEnum;
   /** Human-readable Swedish explanation of the suggestion */
   message?: string;
-  /** True when the applicant already has an EB errand in caremanagement */
+  /** Swedish introduction shown to the citizen above the suggestion list, phrased for one or two applicants. Null when no application can be offered. */
+  introText?: string;
+  /** True when the applicant already has a financial assistance errand in caremanagement */
   existsInCm?: boolean;
-  /** True when the applicant has an EB footprint in Lifecare (actualisation/decision/calculation) */
+  /** True when the applicant has a financial assistance footprint in Lifecare (actualisation/decision/calculation) */
   existsInLc?: boolean;
+  /** True when Lifecare shows an actualisation with an open status, false when the statuses were readable but none is open, null when no actualisation carried a readable status (or Lifecare was not reached). */
+  hasOpenCase?: boolean;
   /** Whether the requested marital status (alone vs with a partner) matches the previous application. Null when not evaluated (no existing case). */
   maritalStatusMatches?: boolean;
   /**
-   * The duplicate-application window in days that was applied to the per-month check
+   * The staleness bound in days applied to ongoing caremanagement applications in the per-month check
    * @format int32
    */
   windowDays?: number;
-  /** True when an application/decision already exists for the current month */
+  /** True when the current month is already taken — an ongoing application in caremanagement, or a decision in Lifecare */
   applicationExistsThisMonth?: boolean;
-  /** True when an application/decision already exists for next month */
+  /** True when next month is already taken — an ongoing application in caremanagement, or a decision in Lifecare */
   applicationExistsNextMonth?: boolean;
   /** True when Lifecare shows a decision for the current month (the current month is decided/closed) */
   currentMonthDecided?: boolean;
+  /** True when Lifecare shows a decision for the previous month */
+  previousMonthDecided?: boolean;
+  /** True when Lifecare shows a decision for the month before the previous one */
+  monthBeforePreviousDecided?: boolean;
   /**
    * Month (1-12) of the most recent Lifecare decision, when one exists
    * @format int32
@@ -1357,6 +1660,13 @@ export interface EligibilityResponse {
   lifecareChecked?: boolean;
   /** True when the request included a co-applicant (co-applicant) */
   hasCoApplicant?: boolean;
+  /** When reasonCode is RECENTLY_CLOSED: the id of the recently closed errand a caseworker can reopen (in Lifecare) and release. Null otherwise. */
+  reopenableErrandId?: string;
+  /**
+   * When reasonCode is RECENTLY_CLOSED: when the reopenable errand was closed. Null otherwise.
+   * @format date-time
+   */
+  closedAt?: string;
 }
 
 /** Request to build and post the SSBTEK-driven calculation for an application month. */
@@ -1370,9 +1680,9 @@ export interface CalculationRequest {
    * @pattern ^\d{4}-(0[1-9]|1[0-2])$
    */
   applicationMonth: string;
-  /** The id of the caremanagement errand the calculation concerns. When present, a Decision(RECOMMENDATION) summarising the income warnings is recorded on the errand for the caseworker to review; when omitted, the calculation is built without recording a recommendation. */
-  errandId?: string;
-  /** The incomes classified by the operaton rules (the evaluate-income-rules worker output), as JSON. When present, caremanagement maps these to FC income rows instead of fetching SSBTEK and evaluating the raw list itself. */
+  /** The id of the caremanagement errand the calculation concerns — used to load the errand and, on the daily prepare, to record the Decision(RECOMMENDATION) the caseworker reviews. */
+  errandId: string;
+  /** The incomes classified by the operaton rules (the evaluate-income-rules worker output), as JSON. When present, caremanagement maps these to FamilyCare income rows instead of fetching SSBTEK and evaluating the raw list itself. */
   classifiedIncomes?: string;
   /** The unhandled-income warnings from the operaton rules, recorded on the errand recommendation */
   unhandledIncomes?: string[];
@@ -1383,7 +1693,7 @@ export interface CalculationRequest {
 /** The created Lifecare calculation id plus the income warnings to review. */
 export interface CalculationResponse {
   /**
-   * The id of the calculation created in Lifecare FC
+   * The id of the calculation created in Lifecare FamilyCare
    * @format int32
    */
   calculationId?: number;
@@ -1395,6 +1705,20 @@ export interface CalculationResponse {
   informationComplete?: boolean;
   /** Previous-month income types not yet present this month (the SSBTEK data still being awaited) */
   missingIncomeTypes?: string[];
+}
+
+/** Optional metadata for archiving a document to a Lifecare actualisation. */
+export interface ArchiveActualisationRequest {
+  /** The id of the caremanagement errand the archive concerns. When present, the target actualisation id is recorded on the errand as a Decision(ACTUALISATION) — setting the errand's Lifecare actualisation to the one archived to. */
+  errandId?: string;
+  /** The document title shown in Lifecare. Defaults to the uploaded file name when omitted. */
+  title?: string;
+  /** The Lifecare InsertDocumentType code for the document. Server default when omitted. */
+  documentType?: string;
+  /** The Lifecare InsertDocumentSenderType code for the document. Server default when omitted. */
+  documentSenderType?: string;
+  /** The sender name shown in Lifecare. Server default when omitted. */
+  senderName?: string;
 }
 
 /** Request to create the Lifecare actualisation (case intake) for an application month. */
@@ -1413,7 +1737,7 @@ export interface ActualisationRequest {
 /** The created Lifecare actualisation id. */
 export interface ActualisationResponse {
   /**
-   * The id of the actualisation created in Lifecare FC
+   * The id of the actualisation created in Lifecare FamilyCare
    * @format int32
    */
   actualisationId?: number;
@@ -1421,17 +1745,37 @@ export interface ActualisationResponse {
 
 /** PatchErrand model — patchable envelope fields only */
 export interface PatchErrand {
-  /** Title for the errand */
+  /**
+   * Title for the errand
+   * @minLength 0
+   * @maxLength 255
+   */
   title?: string;
-  /** Status of the errand */
+  /**
+   * Status of the errand
+   * @minLength 0
+   * @maxLength 64
+   */
   status?: string;
   /** Description of the errand */
   description?: string;
-  /** Priority of the errand */
+  /**
+   * Priority of the errand
+   * @minLength 0
+   * @maxLength 16
+   */
   priority?: string;
-  /** User id of the reporter */
+  /**
+   * User id of the reporter
+   * @minLength 0
+   * @maxLength 64
+   */
   reporterUserId?: string;
-  /** User id of the assignee */
+  /**
+   * User id of the assignee
+   * @minLength 0
+   * @maxLength 64
+   */
   assignedUserId?: string;
 }
 
@@ -1454,25 +1798,16 @@ export interface Note {
   id?: string;
   /** Errand id this note belongs to */
   errandId?: string;
-  /**
-   * Note body
-   * @example "Spoke to family today, awaiting docs."
-   */
+  /** Note body */
   body?: string;
-  /**
-   * Author user id
-   * @example "jane01doe"
-   */
+  /** Author user id */
   author?: string;
   /**
    * Created timestamp
    * @format date-time
    */
   created?: string;
-  /**
-   * User id of the last editor
-   * @example "jane01doe"
-   */
+  /** User id of the last editor */
   modifiedBy?: string;
   /**
    * Last modified timestamp; null until the note has been edited
@@ -1486,39 +1821,29 @@ export interface UpdateJournalEntry {
    * Journal entry type (Lifecare 'Typ'/Journaltyp)
    * @minLength 0
    * @maxLength 255
-   * @example "Journalfört meddelande"
    */
   type: string;
   /**
    * Heading (Lifecare 'Rubrik')
    * @minLength 0
    * @maxLength 255
-   * @example "Journalfört meddelande: 2025-05-30 Info"
    */
   heading: string;
   /**
    * Free-text body of the journal entry; optional
    * @minLength 0
    * @maxLength 1048576
-   * @example "Hej! Vill bara informera att jag fått jobb på Mejeriet."
    */
   text?: string;
   /**
-   * Documented date (Lifecare 'Datum')
-   * @format date
-   * @example "2025-05-30"
+   * Documented date and time (Lifecare 'Datum'/'Tid')
+   * @format date-time
    */
-  entryDate: string;
-  /**
-   * Documented time (Lifecare 'Tid'); optional
-   * @example "14:30"
-   */
-  entryTime?: string;
+  entryDateTime: string;
   /**
    * User id of the editor (Lifecare 'Ändrat av'); optional
    * @minLength 0
    * @maxLength 64
-   * @example "ebb14eri"
    */
   modifiedBy?: string;
 }
@@ -1528,52 +1853,40 @@ export interface UpdateDocument {
    * Document type (Lifecare 'Typ'/Dokumenttyp)
    * @minLength 0
    * @maxLength 255
-   * @example "Brev"
    */
   type: string;
   /**
    * Heading (Lifecare 'Rubrik')
    * @minLength 0
    * @maxLength 255
-   * @example "Beslut om ekonomiskt bistånd 2025-05"
    */
   heading: string;
   /**
    * Free-text body of the document; optional
    * @minLength 0
    * @maxLength 1048576
-   * @example "Beslut har fattats enligt nedan ..."
    */
   text?: string;
   /**
-   * Documented date (Lifecare 'Datum')
-   * @format date
-   * @example "2025-05-30"
+   * Documented date and time (Lifecare 'Datum'/'Tid')
+   * @format date-time
    */
-  documentDate: string;
-  /**
-   * Documented time (Lifecare 'Tid'); optional
-   * @example "14:30"
-   */
-  documentTime?: string;
+  documentDateTime: string;
   /**
    * User id of the editor (Lifecare 'Ändrat av'); optional
    * @minLength 0
    * @maxLength 64
-   * @example "ebb14eri"
    */
   modifiedBy?: string;
 }
 
-/** Set the approval state of an EB view section. */
+/** Set the approval state of a financial assistance view section. */
 export interface SectionApprovalRequest {
   /** Whether the section is approved (true) or its approval withdrawn (false) */
   approved: boolean;
-  /** The caseworker approving the section (stored when approving, ignored when withdrawing) */
-  approvedBy?: string;
 }
 
-/** A caseworker's approval of one section of the EB view (calculation / payment / decision). */
+/** A caseworker's approval of one section of the financial assistance view (calculation / payment / decision). */
 export interface SectionApproval {
   /** The section this approval concerns */
   section?: SectionApprovalSectionEnum;
@@ -1591,12 +1904,11 @@ export interface SectionApproval {
 /** Caseworker edit of the calculation header — norm, calculation dates and custom household size. */
 export interface NormHeaderInput {
   /**
-   * The selected FC norm id (Norm)
+   * The selected FamilyCare norm id (Norm)
    * @format int32
    */
   normId?: number;
-  /** The norm type */
-  normType?: NormHeaderInputNormTypeEnum;
+  normType?: NormHeaderInputNormTypeEnum[];
   /**
    * Calculation period start (from)
    * @format date
@@ -1632,8 +1944,8 @@ export interface CalculationDraft {
    * @format int32
    */
   normId?: number;
-  /** The selected norm type */
-  normType?: string;
+  /** The selected norm types */
+  normType?: string[];
   /**
    * The start date of the calculation period
    * @format date
@@ -1834,7 +2146,7 @@ export interface UnreadCount {
   unreadCount?: number;
 }
 
-export interface ErrandEvent {
+export interface ErrandEventEntry {
   id?: string;
   errandId?: string;
   municipalityId?: string;
@@ -1876,8 +2188,8 @@ export interface Attachment {
    * @format int32
    */
   fileSize?: number;
-  /** Where the file came from: APPLICATION (citizen's application files), CONVERSATION (sent in a message thread), GENERATED (a consolidated PDF produced by the platform), ERRAND (uploaded directly to the errand), CASE_DATA (ärendeuppgifter — a case-data document for the errand) or MESSAGE_HISTORY (meddelandehistorik — the archived conversation PDF for a closed errand) */
-  origin?: AttachmentOriginEnum;
+  /** What kind of document this is: APPLICATION (citizen's application files), CONVERSATION (sent in a message thread), GENERATED (a consolidated PDF produced by the platform), ERRAND (uploaded directly to the errand), CASE_DATA (a case-data document for the errand), DECISION (a decision document for the errand) or MESSAGE_HISTORY (the archived conversation PDF for a closed errand) */
+  documentType?: AttachmentDocumentTypeEnum;
   /** Who the file came from: CLIENT (applicant) or CASEWORKER (caseworker). May be null for files predating the distinction or with no clear sender. */
   senderRole?: AttachmentSenderRoleEnum;
   /** For CONVERSATION attachments, the id of the message the file is attached to — download it via .../messages/{messageId}/attachments/{id}/file. Null for non-conversation attachments, which download via .../attachments/{id}/file. */
@@ -1902,15 +2214,9 @@ export interface JournalEntryMetadata {
 
 /** A selectable journal entry type — the code and the Swedish Lifecare label. */
 export interface JournalEntryType {
-  /**
-   * The type code
-   * @example "JOURNALED_MESSAGE"
-   */
+  /** The type code */
   code?: string;
-  /**
-   * Human-readable Swedish label (the Lifecare 'Typ' value)
-   * @example "Journalfört meddelande"
-   */
+  /** Human-readable Swedish label (the Lifecare 'Typ' value) */
   displayName?: string;
 }
 
@@ -1953,15 +2259,20 @@ export interface FinancialAssistanceView {
    * @format date-time
    */
   touched?: string;
+  /**
+   * When the financial assistance process last ran its daily loop for this errand (the calculation /prepare step). Null until the first loop has run.
+   * @format date-time
+   */
+  lastDailyRunAt?: string;
   /** The typed financial assistance application payload */
   data?: FinancialAssistanceData;
   /** The most recent automated recommendation on the errand (the latest RECOMMENDATION decision the caseworker reviews), or null when none has been produced. Carries the recommended value and, when the pipeline has computed it, the recommended amount/period to prefill the Decision form. */
   recommendation?: Decision;
-  /** The caseworker approval state of the three EB view sections (calculation, payment, decision) — whether each has been verified as approved. Always present with all three sections. */
+  /** The caseworker approval state of the three financial assistance view sections (calculation, payment, decision) — whether each has been verified as approved. Always present with all three sections. */
   sectionApprovals?: SectionApprovals;
 }
 
-/** The caseworker approval state of the three EB view sections (calculation, payment, decision). */
+/** The caseworker approval state of the three financial assistance view sections (calculation, payment, decision). */
 export interface SectionApprovals {
   /** Approval of the calculation (calculation) section */
   calculation?: SectionApproval;
@@ -1980,6 +2291,16 @@ export interface WarningCount {
   count?: number;
 }
 
+/** The context an RPA robot needs to act on an errand in Lifecare. Fetched per queue item so personal numbers never persist in the Orchestrator queue store; every read is recorded in the errand's event log. */
+export interface RpaContext {
+  /** The errand's human-readable number — what a person searches for in Draken */
+  errandNumber?: string;
+  /** The applicant's personal number (12 characters, may contain letters). Null when it could not be resolved — treat as an error on the robot side. */
+  applicantPersonId?: string;
+  /** The co-applicant's personal number; null when there is no co-applicant or it could not be resolved */
+  coApplicantPersonId?: string;
+}
+
 /** The number of monitorings on the errand */
 export interface MonitoringCount {
   /**
@@ -1987,6 +2308,22 @@ export interface MonitoringCount {
    * @format int64
    */
   count?: number;
+}
+
+/** A jobbstimulans period on the errand, mirrored out of Lifecare. */
+export interface JobStimulusPeriod {
+  /** Whose period it is */
+  role?: JobStimulusPeriodRoleEnum;
+  /**
+   * Period start
+   * @format date
+   */
+  fromDate?: string;
+  /**
+   * Period end; null for an open period
+   * @format date
+   */
+  toDate?: string;
 }
 
 /** Self-describing snapshot of the form as it was rendered and answered. */
@@ -2054,14 +2391,20 @@ export interface FormSnapshotField {
   options?: FormSnapshotOption[];
   /** The answer given, when the field has a single answer */
   answer?: FormSnapshotAnswer;
-  /** For REPEATING_GROUP fields, one entry per repeated instance; each is the list of nested fields */
-  items?: FormSnapshotField[][];
+  /** For REPEATING_GROUP fields, one entry per repeated instance */
+  items?: FormSnapshotGroup[];
   /** Whether the field was required as rendered */
   required?: boolean;
   /** Whether the field was visible to the applicant */
   visible?: boolean;
   /** The visibility rule that was active, human-readable */
   condition?: string;
+}
+
+/** One repeated instance of a REPEATING_GROUP field — its nested fields, in render order. */
+export interface FormSnapshotGroup {
+  /** The nested fields for this repeated instance, in render order */
+  fields?: FormSnapshotField[];
 }
 
 /** An info / warning / error notice shown to the applicant. */
@@ -2112,26 +2455,199 @@ export interface RenewalPrefill {
   lifecareChecked?: boolean;
 }
 
-/** EB type catalogue for the frontend dropdowns: income and cost types with labels, groups and the citizen flag. */
+/** Financial assistance type catalogue for the frontend dropdowns: income and cost types with labels, groups and the citizen flag. */
 export interface FinancialAssistanceMetadata {
-  /** The income types (inkomster) */
+  /** The income types */
   incomeTypes?: TypeOption[];
-  /** The cost types (kostnader), grouped by their Mina-sidor form section */
+  /** The cost types, grouped by their Mina-sidor form section */
   costTypes?: TypeOption[];
 }
 
-/** A selectable EB income/cost type — the payload code plus its Mina-sidor + Lifecare labels, form group and citizen flag. */
+/** A selectable financial assistance income/cost type — the payload code plus its Mina-sidor + Lifecare labels, form group and citizen flag. */
 export interface TypeOption {
   /** The type code, as stored on the payload (incomeType / costType) */
   code?: string;
-  /** The citizen Mina-sidor label; null for handläggare-only types not on the citizen form */
+  /** The citizen Mina-sidor label; null for caseworker-only types not on the citizen form */
   externalDisplayName?: string;
-  /** The matching Lifecare handläggare-dropdown label, or null when there is no Lifecare counterpart */
+  /** The matching Lifecare caseworker dropdown label, or null when there is no Lifecare counterpart */
   internalDisplayName?: string;
   /** Stable code for the Mina-sidor form section the type is shown under; null for income */
   group?: TypeOptionGroupEnum;
   /** Whether the type is offered on the citizen Mina-sidor form */
   citizenReportable?: boolean;
+}
+
+/** A Lifecare document, metadata only. */
+export interface LifecareDocument {
+  /** The Lifecare document id */
+  id?: string;
+  /** The document title */
+  title?: string;
+  /** The document date as Lifecare reports it */
+  date?: string;
+  /** The document type */
+  documentType?: string;
+  /** The id of the entity the document belongs to */
+  ownerId?: string;
+  /** The type of the entity the document belongs to */
+  ownerType?: string;
+}
+
+/** A Lifecare decision, full breakdown. */
+export interface LifecareDecision {
+  /**
+   * The Lifecare decision id
+   * @format int32
+   */
+  id?: number;
+  /** The decision date as Lifecare reports it */
+  date?: string;
+  /** The decision type */
+  type?: string;
+  /** The start date of the decision period */
+  fromDate?: string;
+  /** The end date of the decision period */
+  toDate?: string;
+  /** The reason for the decision */
+  reason?: string;
+  /** The decision maker */
+  decisionMaker?: string;
+  /** The organization the decision belongs to */
+  organization?: string;
+  /** The decided amount */
+  amount?: number;
+  /** The co-applicant the decision covers, when any */
+  coApplicant?: string;
+  /** The reason concerning the co-applicant, when any */
+  reasonCoApplicant?: string;
+  persons?: LifecareDecisionPerson[];
+}
+
+/** A person on a Lifecare decision. */
+export interface LifecareDecisionPerson {
+  /** The Lifecare person id */
+  personId?: string;
+  /** The person name */
+  name?: string;
+  /** Whether the person is the co-applicant */
+  coApplicant?: boolean;
+}
+
+/** A Lifecare calculation, full breakdown. */
+export interface LifecareCalculation {
+  /**
+   * The Lifecare calculation id
+   * @format int32
+   */
+  id?: number;
+  /** The norm the calculation is based on */
+  norm?: string;
+  /** The start date of the calculation period */
+  fromDate?: string;
+  /** The end date of the calculation period */
+  toDate?: string;
+  /** The sum of all incomes */
+  incomeSum?: number;
+  /** The sum of all regular expenses */
+  expenseSum?: number;
+  /** The sum of all special expenses */
+  specialExpenseSum?: number;
+  /** The sum of the norm */
+  normSum?: number;
+  /** The common household cost */
+  commonHouseholdCost?: number;
+  /** The family cost */
+  familyCost?: number;
+  /** The balance of the calculation */
+  balance?: number;
+  /** The total sum of the calculation */
+  totalSum?: number;
+  /** Whether the calculation is final */
+  isFinal?: boolean;
+  persons?: LifecareCalculationPerson[];
+  incomes?: LifecareCalculationIncome[];
+  expenses?: LifecareCalculationExpense[];
+  specialExpenses?: LifecareCalculationExpense[];
+}
+
+/** An expense row on a Lifecare calculation. */
+export interface LifecareCalculationExpense {
+  /** The expense type */
+  type?: string;
+  /** The applied amount */
+  appliedAmount?: number;
+  /** The approved amount */
+  approvedAmount?: number;
+}
+
+/** An income row on a Lifecare calculation. */
+export interface LifecareCalculationIncome {
+  /** The income type */
+  type?: string;
+  /** The income amount for the applicant */
+  amountApplicant?: number;
+  /** The search date Lifecare used for the applicant */
+  applicantSearchDate?: string;
+  /** The income amount for the co-applicant */
+  amountCoApplicant?: number;
+  /** The search date Lifecare used for the co-applicant */
+  coApplicantSearchDate?: string;
+}
+
+/** A household member on a Lifecare calculation. */
+export interface LifecareCalculationPerson {
+  /** The Lifecare person id */
+  personId?: string;
+  /** The person name */
+  name?: string;
+  /** The amount the person contributes to the norm */
+  amount?: number;
+  /** The start date of the deviation period, when any */
+  deviationFromDate?: string;
+  /** The end date of the deviation period, when any */
+  deviationToDate?: string;
+}
+
+/** A Lifecare actualisation (case intake) registered on a person. */
+export interface Actualisation {
+  /**
+   * The Lifecare actualisation id
+   * @format int32
+   */
+  id?: number;
+  /** The actualisation type */
+  type?: string;
+  /** The actualisation name */
+  name?: string;
+  /** The actualisation date as Lifecare reports it */
+  date?: string;
+  /** The reason for the actualisation */
+  reason?: string;
+  /** What the actualisation regards */
+  regards?: string;
+  /** Who the actualisation came from */
+  fromWho?: string;
+  /** The caseworker the actualisation is registered on */
+  caseworker?: string;
+  /** The organization the actualisation belongs to */
+  organization?: string;
+  /** The actualisation status */
+  status?: string;
+  /**
+   * The linked investigation id, when any
+   * @format int32
+   */
+  investigationId?: number;
+  /**
+   * The linked service id, when any
+   * @format int32
+   */
+  serviceId?: number;
+  /**
+   * The linked decision id, when any
+   * @format int32
+   */
+  decisionId?: number;
 }
 
 /** Document metadata — the catalogue of selectable document types. */
@@ -2142,16 +2658,19 @@ export interface DocumentMetadata {
 
 /** A selectable document type — the code and the Swedish Lifecare label. */
 export interface DocumentType {
-  /**
-   * The type code
-   * @example "LETTER"
-   */
+  /** The type code */
   code?: string;
-  /**
-   * Human-readable Swedish label (the Lifecare 'Typ' value)
-   * @example "Brev"
-   */
+  /** Human-readable Swedish label (the Lifecare 'Typ' value) */
   displayName?: string;
+}
+
+/** Count of errands matching the supplied filter */
+export interface CountResponse {
+  /**
+   * Number of matching errands
+   * @format int64
+   */
+  count?: number;
 }
 
 /** An allowed decision outcome (decision alternatives) for an errand type. */
@@ -2160,7 +2679,7 @@ export interface DecisionOption {
   code?: string;
   /** Human-readable label for the outcome */
   displayName?: string;
-  /** Whether the outcome carries a belopp — true for outcomes that grant an amount, false for ones that imply 0 (e.g. avslag) */
+  /** Whether the outcome carries an amount — true for outcomes that grant an amount, false for ones that imply 0 (e.g. a rejection) */
   carriesAmount?: boolean;
 }
 
@@ -2172,8 +2691,8 @@ export interface ErrandTypeSchema {
   applicationType?: string;
   /** Human-readable display name of the type */
   displayName?: string;
-  /** Allowed status codes for the type, sorted */
-  statuses?: string[];
+  /** Allowed statuses for the type — code plus human-readable display name, in lifecycle order */
+  statuses?: StatusDefinition[];
   /** Stakeholder roles valid for the type */
   roles?: RoleDefinition[];
   /** The fields the type's data payload should carry, as form guidance */
@@ -2208,6 +2727,14 @@ export interface RoleDefinition {
   /** @format int32 */
   maxOccurrences?: number;
   required?: boolean;
+}
+
+/** An allowed status for an errand type — the stored code plus its human-readable label. */
+export interface StatusDefinition {
+  /** The status code stored on the errand */
+  code?: string;
+  /** Human-readable label for the status */
+  displayName?: string;
 }
 
 /** Provenance, defaults to CASEWORKER when omitted. RPA POSTs LIFECARE (with lifecareId) to surface a monitoring read out of Lifecare onto the errand. */
@@ -2299,7 +2826,7 @@ export enum FinancialAssistanceDataPeriodChoiceEnum {
   OTHER_BENEFIT = "OTHER_BENEFIT",
 }
 
-/** The norm type used for the calculation */
+/** The norm types used for the calculation */
 export enum FinancialAssistanceDataNormTypeEnum {
   NATIONAL_NORM = "NATIONAL_NORM",
   OTHER_NORM = "OTHER_NORM",
@@ -2443,19 +2970,13 @@ export enum CreateMessageDirectionEnum {
   OUTBOUND = "OUTBOUND",
 }
 
-/**
- * Skrivskydd status — WORKING is an editable arbetsanteckning, LOCKED is an upprättad handling
- * @example "WORKING"
- */
+/** Write-protection status — WORKING is an editable working note, LOCKED is a finalised record */
 export enum JournalEntryStatusEnum {
   WORKING = "WORKING",
   LOCKED = "LOCKED",
 }
 
-/**
- * Skrivskydd status — WORKING is an editable draft, LOCKED is an upprättad handling
- * @example "WORKING"
- */
+/** Write-protection status — WORKING is an editable draft, LOCKED is a finalised record */
 export enum DocumentStatusEnum {
   WORKING = "WORKING",
   LOCKED = "LOCKED",
@@ -2476,19 +2997,43 @@ export enum CreateWarningRequestTypeEnum {
   HOUSEHOLD_CHANGE = "HOUSEHOLD_CHANGE",
 }
 
-/** The warning type */
+/** The warning type (machine code; use typeDisplayName for the label) */
 export enum WarningTypeEnum {
   UNHANDLED_INCOME = "UNHANDLED_INCOME",
   INCOME_CHANGE = "INCOME_CHANGE",
   MISSING_SSBTEK = "MISSING_SSBTEK",
   NEW_INCOME = "NEW_INCOME",
+  NEW_EXPENSE = "NEW_EXPENSE",
+  NEW_PERSON = "NEW_PERSON",
+  INCOME_DROPPED = "INCOME_DROPPED",
+  HOUSEHOLD_CHANGE = "HOUSEHOLD_CHANGE",
+  HOUSING_COST_CHANGE = "HOUSING_COST_CHANGE",
+  EXPENSE_REVIEW = "EXPENSE_REVIEW",
+  EXPENSE_CAPPED = "EXPENSE_CAPPED",
+  INCOME_DUPLICATED = "INCOME_DUPLICATED",
 }
 
-/** The warning status */
+/** The warning status (machine code; use statusDisplayName for the label) */
 export enum WarningStatusEnum {
   OPEN = "OPEN",
   ACKNOWLEDGED = "ACKNOWLEDGED",
   CLOSED = "CLOSED",
+}
+
+/** The envelope section the item came from */
+export enum SupplementsIngestOutcomeSectionEnum {
+  Reminders = "reminders",
+  Documents = "documents",
+  JobStimulus = "jobStimulus",
+}
+
+/** What happened to the item */
+export enum SupplementsIngestOutcomeOutcomeEnum {
+  CREATED = "CREATED",
+  UPDATED = "UPDATED",
+  REPLACED = "REPLACED",
+  SKIPPED = "SKIPPED",
+  FAILED = "FAILED",
 }
 
 /** The role of the household member */
@@ -2553,6 +3098,9 @@ export enum ApplicationSuggestionApplicationTypeEnum {
 export enum EligibilityResponseReasonCodeEnum {
   NO_EXISTING_CASE = "NO_EXISTING_CASE",
   MARITAL_STATUS_CHANGED = "MARITAL_STATUS_CHANGED",
+  RECENTLY_CLOSED = "RECENTLY_CLOSED",
+  NO_RECENT_DECISION = "NO_RECENT_DECISION",
+  ONGOING_APPLICATION = "ONGOING_APPLICATION",
   EXISTING_CASE = "EXISTING_CASE",
   ALL_TYPES_TEST = "ALL_TYPES_TEST",
 }
@@ -2582,13 +3130,14 @@ export enum MessageAttachmentSenderRoleEnum {
   CASEWORKER = "CASEWORKER",
 }
 
-/** Where the file came from: APPLICATION (citizen's application files), CONVERSATION (sent in a message thread), GENERATED (a consolidated PDF produced by the platform), ERRAND (uploaded directly to the errand), CASE_DATA (ärendeuppgifter — a case-data document for the errand) or MESSAGE_HISTORY (meddelandehistorik — the archived conversation PDF for a closed errand) */
-export enum AttachmentOriginEnum {
+/** What kind of document this is: APPLICATION (citizen's application files), CONVERSATION (sent in a message thread), GENERATED (a consolidated PDF produced by the platform), ERRAND (uploaded directly to the errand), CASE_DATA (a case-data document for the errand), DECISION (a decision document for the errand) or MESSAGE_HISTORY (the archived conversation PDF for a closed errand) */
+export enum AttachmentDocumentTypeEnum {
   APPLICATION = "APPLICATION",
   CONVERSATION = "CONVERSATION",
   GENERATED = "GENERATED",
   ERRAND = "ERRAND",
   CASE_DATA = "CASE_DATA",
+  DECISION = "DECISION",
   MESSAGE_HISTORY = "MESSAGE_HISTORY",
 }
 
@@ -2596,6 +3145,12 @@ export enum AttachmentOriginEnum {
 export enum AttachmentSenderRoleEnum {
   CLIENT = "CLIENT",
   CASEWORKER = "CASEWORKER",
+}
+
+/** Whose period it is */
+export enum JobStimulusPeriodRoleEnum {
+  APPLICANT = "APPLICANT",
+  CO_APPLICANT = "CO_APPLICANT",
 }
 
 /** The input kind as rendered */
@@ -2646,7 +3201,6 @@ export enum ReadLookupsParamsKindEnum {
   ROLE = "ROLE",
   CONTACT_REASON = "CONTACT_REASON",
   JOURNAL_ENTRY_TYPE = "JOURNAL_ENTRY_TYPE",
-  DOCUMENT_TYPE = "DOCUMENT_TYPE",
 }
 
 /** Lookup kind */
@@ -2657,16 +3211,17 @@ export enum CreateLookupParamsKindEnum {
   ROLE = "ROLE",
   CONTACT_REASON = "CONTACT_REASON",
   JOURNAL_ENTRY_TYPE = "JOURNAL_ENTRY_TYPE",
-  DOCUMENT_TYPE = "DOCUMENT_TYPE",
 }
 
-/** Only return attachments with this origin */
-export enum ReadAttachmentsParamsOriginEnum {
+/** Only return attachments with this documentType */
+export enum ReadAttachmentsParamsDocumentTypeEnum {
   APPLICATION = "APPLICATION",
   CONVERSATION = "CONVERSATION",
   GENERATED = "GENERATED",
   ERRAND = "ERRAND",
   CASE_DATA = "CASE_DATA",
+  DECISION = "DECISION",
+  MESSAGE_HISTORY = "MESSAGE_HISTORY",
 }
 
 /** Only return attachments from this sender */
@@ -2675,10 +3230,11 @@ export enum ReadAttachmentsParamsSenderRoleEnum {
   CASEWORKER = "CASEWORKER",
 }
 
-/** What the uploaded file is: ERRAND (a plain manual upload, the default) or CASE_DATA (ärendeuppgifter — a case-data document). Defaults to ERRAND when omitted. */
-export enum CreateAttachmentParamsOriginEnum {
+/** What the uploaded file is: ERRAND (a plain manual upload, the default), CASE_DATA (a case-data document) or DECISION (a decision document). Defaults to ERRAND when omitted. */
+export enum CreateAttachmentParamsDocumentTypeEnum {
   ERRAND = "ERRAND",
   CASE_DATA = "CASE_DATA",
+  DECISION = "DECISION",
 }
 
 /** Lookup kind */
@@ -2689,7 +3245,6 @@ export enum ReadLookupParamsKindEnum {
   ROLE = "ROLE",
   CONTACT_REASON = "CONTACT_REASON",
   JOURNAL_ENTRY_TYPE = "JOURNAL_ENTRY_TYPE",
-  DOCUMENT_TYPE = "DOCUMENT_TYPE",
 }
 
 /** Lookup kind */
@@ -2700,7 +3255,6 @@ export enum DeleteLookupParamsKindEnum {
   ROLE = "ROLE",
   CONTACT_REASON = "CONTACT_REASON",
   JOURNAL_ENTRY_TYPE = "JOURNAL_ENTRY_TYPE",
-  DOCUMENT_TYPE = "DOCUMENT_TYPE",
 }
 
 /** Lookup kind */
@@ -2711,7 +3265,6 @@ export enum UpdateLookupParamsKindEnum {
   ROLE = "ROLE",
   CONTACT_REASON = "CONTACT_REASON",
   JOURNAL_ENTRY_TYPE = "JOURNAL_ENTRY_TYPE",
-  DOCUMENT_TYPE = "DOCUMENT_TYPE",
 }
 
 /** The target status */

@@ -156,7 +156,7 @@ const buildAsset = (asset: AssetForm): Record<string, unknown> =>
       : {}),
   });
 
-const buildPlanning = (planning: PlanningForm): Record<string, unknown> =>
+const buildPlanning = (planning: PlanningForm, applicationType: ApplicationType): Record<string, unknown> =>
   compact({
     person: planning.person,
     planningType: planning.planningType,
@@ -167,8 +167,15 @@ const buildPlanning = (planning: PlanningForm): Record<string, unknown> =>
           ...(planning.workExtent === 'PART' ? { workDescription: planning.workDescription.trim() } : {}),
         }
       : {}),
-    // Sjukskrivning: bara grad (från/till har tagits bort).
-    ...(planning.planningType === 'SICK_LEAVE' ? { sickLeaveLevel: planning.sickLeaveLevel } : {}),
+    // Sjukskrivning: grad, och vid nyansökan även läkarintygets period (från/till).
+    ...(planning.planningType === 'SICK_LEAVE'
+      ? {
+          sickLeaveLevel: planning.sickLeaveLevel,
+          ...(applicationType === 'NEW'
+            ? { sickLeaveFrom: planning.sickLeaveFrom.trim(), sickLeaveTo: planning.sickLeaveTo.trim() }
+            : {}),
+        }
+      : {}),
     ...(planning.planningType === 'SFI' ? { sfiStudyPath: planning.sfiStudyPath, sfiCourse: planning.sfiCourse } : {}),
     ...(planning.planningType === 'OTHER' ? { otherDescription: planning.otherDescription.trim() } : {}),
   });
@@ -338,7 +345,7 @@ export const buildFinancialAssistanceData = (
 
   // Planning — not part of the supplementary application.
   if (!isSupplementary) {
-    const plannings = form.plannings.map(buildPlanning).filter(hasFields);
+    const plannings = form.plannings.map((planning) => buildPlanning(planning, applicationType)).filter(hasFields);
     if (plannings.length > 0) data.plannings = plannings;
 
     if (applicationType === 'NEW') {

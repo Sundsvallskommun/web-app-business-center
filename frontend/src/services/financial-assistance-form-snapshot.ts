@@ -45,9 +45,13 @@ export interface FormSnapshotField {
   infoTexts?: string[];
   options?: FormSnapshotOption[];
   answer?: FormSnapshotAnswer;
-  items?: FormSnapshotField[][];
+  items?: FormSnapshotGroup[];
   required?: boolean;
   visible?: boolean;
+}
+/** One repeated instance of a REPEATING_GROUP field — its nested fields, in render order. */
+export interface FormSnapshotGroup {
+  fields: FormSnapshotField[];
 }
 export interface FormSnapshotSection {
   id?: string;
@@ -151,6 +155,9 @@ export const buildFormSnapshot = (
   const staticField = (name: string, label: string, value: string): FormSnapshotField =>
     field({ name, label, inputType: 'STATIC', ...(value && value.trim() ? { answer: { value: value.trim(), display: value.trim() } } : {}) });
 
+  // A REPEATING_GROUP item is one repeated instance wrapping its nested fields.
+  const group = (fields: FormSnapshotField[]): FormSnapshotGroup => ({ fields });
+
   // ── 1. Personuppgifter ──────────────────────────────────────────────────────────────────────
   const personContactItem = (person: PersonForm): FormSnapshotField[] => {
     const isCo = person.role === 'CO_APPLICANT';
@@ -187,7 +194,7 @@ export const buildFormSnapshot = (
 
   const personalFields: FormSnapshotField[] = [
     choice('civilstand', t(fa('periodNorm.maritalStatusLabel')), 'RADIO', ['gift', 'sambo', 'ensamstaende'], 'civilstand', form.civilstandChoice),
-    field({ name: 'persons', label: t(fa('personuppgifter.heading')), inputType: 'REPEATING_GROUP', items: form.persons.map(personContactItem) }),
+    field({ name: 'persons', label: t(fa('personuppgifter.heading')), inputType: 'REPEATING_GROUP', items: form.persons.map((person) => group(personContactItem(person))) }),
   ];
   if (!isSupplementary) {
     personalFields.push(
@@ -196,14 +203,14 @@ export const buildFormSnapshot = (
         name: 'children',
         label: t(fa('householdHousing.heading')),
         inputType: 'REPEATING_GROUP',
-        items: form.children.map((child) => [
+        items: form.children.map((child) => group([
           textField('firstName', t(fa('child.firstName')), child.firstName),
           textField('lastName', t(fa('child.lastName')), child.lastName),
           textField('personalNumber', t(fa('child.personalNumber')), child.personalNumber),
           textField('schoolName', t(fa('child.schoolName')), child.schoolName),
           choice('residenceExtent', t(fa('child.residenceExtent')), 'SELECT', RESIDENCE_EXTENTS, 'residenceExtent', child.residenceExtent),
           numberField('daysInHome', t(fa('child.daysInHome')), child.daysInHome),
-        ]),
+        ])),
       }),
     );
     if (isRenewal) {
@@ -279,14 +286,14 @@ export const buildFormSnapshot = (
     inputType: 'REPEATING_GROUP',
     items: form.costs
       .filter((cost) => cost.costType)
-      .map((cost) => [
+      .map((cost) => group([
         staticField('costType', t(fa('economy.cost.typeLabel')), t(fa(`costType.${cost.costType}`))),
         ...(cost.costType === 'OTHER'
           ? [choice('otherSubType', t(fa('economy.cost.subTypeLabel')), 'SELECT', COST_OTHER_SUBTYPES, 'costOtherSubType', cost.otherSubType)]
           : []),
         ...(cost.costType === 'OTHER' ? [textField('specification', t(fa('economy.cost.specificationLabel')), cost.specification)] : []),
         numberField('appliedAmount', t(fa('economy.cost.amountLabel')), cost.appliedAmount),
-      ]),
+      ])),
   });
   const economyFields: FormSnapshotField[] = isNew
     ? [
@@ -362,29 +369,29 @@ export const buildFormSnapshot = (
           inputType: 'REPEATING_GROUP',
           items: form.incomes
             .filter((income) => income.incomeType)
-            .map((income) => [
+            .map((income) => group([
               staticField('incomeType', t(fa('economy.income.typeLabel')), t(fa(`incomeType.${income.incomeType}`))),
               numberField('amount', t(fa('economy.income.amountLabel')), income.amount),
               textField('incomeDate', t(fa('economy.income.dateLabel')), income.incomeDate, 'DATE'),
               ...(isCohabiting ? [choice('recipient', t(fa('economy.recipientLabel')), 'SELECT', RECIPIENTS, 'recipient', income.recipient)] : []),
-            ]),
+            ])),
         }),
         radio('hasPendingBenefits', q('economy.hasPendingBenefitsLabel'), form.hasPendingBenefits, { helpText: q('income.pendingBenefitsInfo') }),
         field({
           name: 'pendingBenefits',
           label: t(fa('economy.pendingBenefitsHeading')),
           inputType: 'REPEATING_GROUP',
-          items: form.pendingBenefits.map((benefit) => [
+          items: form.pendingBenefits.map((benefit) => group([
             textField('benefitName', t(fa('economy.pendingBenefit.benefitNameLabel')), benefit.benefitName),
             textField('applicantName', t(fa('economy.pendingBenefit.applicantNameLabel')), benefit.applicantName),
-          ]),
+          ])),
         }),
         radio('hasAssets', q('economy.hasAssetsLabel'), form.hasAssets, { helpText: t(fa('income.assetsInfo')) }),
         field({
           name: 'assets',
           label: t(fa('economy.assetsHeading')),
           inputType: 'REPEATING_GROUP',
-          items: form.assets.filter((asset) => asset.assetCategory).map(assetItem),
+          items: form.assets.filter((asset) => asset.assetCategory).map((asset) => group(assetItem(asset))),
         }),
       ];
 
@@ -398,7 +405,15 @@ export const buildFormSnapshot = (
           textField('workDescription', t(fa('planning.workDescriptionLabel')), planning.workDescription),
         ];
       case 'SICK_LEAVE':
-        return [textField('sickLeaveLevel', t(fa('planning.sickLeaveLevelLabel')), planning.sickLeaveLevel ? `${planning.sickLeaveLevel}%` : '')];
+        return [
+          textField('sickLeaveLevel', t(fa('planning.sickLeaveLevelLabel')), planning.sickLeaveLevel ? `${planning.sickLeaveLevel}%` : ''),
+          ...(isNew
+            ? [
+                textField('sickLeaveFrom', t(fa('planning.sickFromLabel')), planning.sickLeaveFrom, 'DATE'),
+                textField('sickLeaveTo', t(fa('planning.sickToLabel')), planning.sickLeaveTo, 'DATE'),
+              ]
+            : []),
+        ];
       case 'SFI':
         return [
           textField('sfiStudyPath', t(fa('planning.sfiStudyPathLabel')), planning.sfiStudyPath),
@@ -422,14 +437,14 @@ export const buildFormSnapshot = (
           inputType: 'REPEATING_GROUP',
           items: form.plannings
             .filter((planning) => planning.planningType)
-            .map((planning) => [
+            .map((planning) => group([
               staticField('planningType', t(fa('planning.typeLabel')), t(fa(`planningType.${planning.planningType}`))),
               ...recipientField(planning.person),
               ...planningTypeFields(planning),
               ...(planningInfoKey[planning.planningType]
                 ? [field({ name: 'info', label: t(fa(`planningType.${planning.planningType}`)), inputType: 'STATIC', infoTexts: [t(fa(`planning.info.${planningInfoKey[planning.planningType]}`))] })]
                 : []),
-            ]),
+            ])),
         }),
         ...(isNew
           ? [
@@ -437,23 +452,23 @@ export const buildFormSnapshot = (
                 name: 'plannedActivities',
                 label: t(fa('planning.activitiesHeading')),
                 inputType: 'REPEATING_GROUP',
-                items: form.plannedActivities.map((activity) => [
+                items: form.plannedActivities.map((activity) => group([
                   ...recipientField(activity.person),
                   textField('activity', t(fa('planning.activity.activityLabel')), activity.activity),
                   textField('periodFrom', t(fa('planning.activity.fromLabel')), activity.periodFrom, 'DATE'),
                   textField('periodTo', t(fa('planning.activity.toLabel')), activity.periodTo, 'DATE'),
-                ]),
+                ])),
               }),
               field({
                 name: 'jobApplications',
                 label: t(fa('planning.jobApplicationsHeading')),
                 inputType: 'REPEATING_GROUP',
-                items: form.jobApplications.map((application) => [
+                items: form.jobApplications.map((application) => group([
                   ...recipientField(application.person),
                   textField('jobTitle', t(fa('planning.jobApplication.jobTitleLabel')), application.jobTitle),
                   textField('employerAndPlace', t(fa('planning.jobApplication.employerLabel')), application.employerAndPlace),
                   textField('applicationDate', t(fa('planning.jobApplication.dateLabel')), application.applicationDate, 'DATE'),
-                ]),
+                ])),
               }),
             ]
           : []),
@@ -493,7 +508,7 @@ export const buildFormSnapshot = (
     ];
   };
   const paymentFields: FormSnapshotField[] = [
-    field({ name: 'persons', label: q('payment.payoutQuestion'), inputType: 'REPEATING_GROUP', items: form.persons.map(paymentItem) }),
+    field({ name: 'persons', label: q('payment.payoutQuestion'), inputType: 'REPEATING_GROUP', items: form.persons.map((person) => group(paymentItem(person))) }),
   ];
   if (!isSupplementary) {
     paymentFields.push(
@@ -516,7 +531,11 @@ export const buildFormSnapshot = (
   // Recurse into repeating-group items, dropping each item's blank fields and then items left empty.
   const keepShownFields = (fields: FormSnapshotField[]): FormSnapshotField[] =>
     fields
-      .map((f) => (f.items ? { ...f, items: f.items.map(keepShownFields).filter((item) => item.length > 0) } : f))
+      .map((f) =>
+        f.items
+          ? { ...f, items: f.items.map((item) => group(keepShownFields(item.fields))).filter((item) => item.fields.length > 0) }
+          : f,
+      )
       .filter(fieldShown);
 
   const sections: FormSnapshotSection[] = [

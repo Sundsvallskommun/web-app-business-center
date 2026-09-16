@@ -1,4 +1,5 @@
 import {
+  FA_FIELD_MAX_LENGTH,
   AssetCategory,
   FinancialAssistanceFormData,
   PropertyType,
@@ -173,7 +174,11 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
             <FormLabel htmlFor={`fa-asset-${index}-company-name`}>
               {t('financial-assistance:economy.asset.companyNameLabel')}
             </FormLabel>
-            <Input id={`fa-asset-${index}-company-name`} {...register(`assets.${index}.companyName` as const)} />
+            <Input
+              id={`fa-asset-${index}-company-name`}
+              maxLength={FA_FIELD_MAX_LENGTH.companyName}
+              {...register(`assets.${index}.companyName` as const)}
+            />
           </FormControl>
           <FormControl className="w-full">
             <FormLabel htmlFor={`fa-asset-${index}-company-sum`}>
@@ -223,6 +228,7 @@ export const FaAssetCard: React.FC<FaAssetCardProps> = ({ index, onRemove }) => 
               </FormLabel>
               <Input
                 id={`fa-asset-${index}-registration`}
+                maxLength={FA_FIELD_MAX_LENGTH.registrationNumber}
                 {...register(`assets.${index}.registrationNumber` as const)}
               />
             </FormControl>

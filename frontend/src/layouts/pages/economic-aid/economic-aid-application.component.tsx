@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { MaritalStatus, isFinancialAssistanceSlug } from '@interfaces/financial-assistance';
 import { FinancialAssistanceApplication } from './financial-assistance/financial-assistance-application.component';
 import { STEP_COMPONENTS } from './steps/step-registry';
+import { eligibilitySuggestionKey } from '@utils/eligibility-suggestion-key';
 
 const FIRST_STEP = 0;
 const LAST_STEP = ECONOMIC_AID_STEPS.length - 1;
@@ -109,9 +110,13 @@ export const EconomicAidApplication: React.FC = () => {
   if (chosenTypeSlug && isFinancialAssistanceSlug(chosenTypeSlug)) {
     const civilstand = form.getValues('hushall.civilstand');
     const maritalStatus: MaritalStatus = civilstand === 'gift' || civilstand === 'sambo' ? 'COHABITING' : 'SINGLE';
-    const suggestion = (form.getValues('eligibility')?.suggestions ?? []).find(
-      (item) => item.typeSlug === chosenTypeSlug,
-    );
+    const suggestions = form.getValues('eligibility')?.suggestions ?? [];
+    const chosenSuggestionKey = form.getValues('chosenSuggestionKey');
+    // Several suggestions can share a typeSlug (different periods) — resolve by key, with the slug as
+    // fallback for drafts saved before the key existed.
+    const suggestion =
+      suggestions.find((item) => eligibilitySuggestionKey(item) === chosenSuggestionKey) ??
+      suggestions.find((item) => item.typeSlug === chosenTypeSlug);
     return (
       <FinancialAssistanceApplication
         slug={chosenTypeSlug}
@@ -120,7 +125,10 @@ export const EconomicAidApplication: React.FC = () => {
         periodMonth={suggestion?.periodMonth ?? null}
         periodYear={suggestion?.periodYear ?? null}
         coApplicantPersonalNumber={form.getValues('hushall.medsokande.personnummer')}
-        onExit={() => form.setValue('chosenTypeSlug', null)}
+        onExit={() => {
+          form.setValue('chosenTypeSlug', null);
+          form.setValue('chosenSuggestionKey', null);
+        }}
       />
     );
   }

@@ -17,7 +17,7 @@ const ALLOWED_TYPE = 'PARKINGPERMIT';
 // Asset carrying a single jsonParameters entry (the shape toServiceDetails reads).
 // `value` may be a JSON string or an already-parsed object; schemaId is omitted so
 // no RJSF schema is fetched and enum titles fall back to the raw values.
-const serviceAsset = (value: unknown): Asset => ({ jsonParameters: [{ value }] } as unknown as Asset);
+const serviceAsset = (value: unknown): Asset => ({ jsonParameters: [{ value }] }) as unknown as Asset;
 
 const findValues = (params: ExtraParameter[], key: string) => params.find(p => p.key === key)?.values;
 

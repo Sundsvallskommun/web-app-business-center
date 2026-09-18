@@ -22,7 +22,6 @@ declare module 'express-session' {
       };
     };
     signs: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       details: Record<string, any>;
       pending: Record<string, GrpInitiateResponseWithStartTime>;
       completed: Record<string, GrpCollectResponseWithRef>;

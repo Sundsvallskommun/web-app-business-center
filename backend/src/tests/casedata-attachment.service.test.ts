@@ -16,7 +16,7 @@ const mockFile = (overrides: Partial<Express.Multer.File> = {}): Express.Multer.
     mimetype: 'application/pdf',
     buffer: Buffer.from('file content'),
     ...overrides,
-  } as Express.Multer.File);
+  }) as Express.Multer.File;
 
 const attachmentOptions = { category: AttachmentCategory.MEDICAL_CONFIRMATION, note: 'Läkarintyg' };
 

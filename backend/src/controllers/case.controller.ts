@@ -164,7 +164,7 @@ export class CaseController {
   @ResponseSchema(CasesApiResponse)
   @UseBefore(authMiddleware)
   async getCases(@Req() req: RequestWithUser): Promise<ApiResponse<CaseStatusResponse[]>> {
-    const { representing } = req?.session;
+    const { representing } = req.session;
 
     const controller = new AbortController();
     const { signal } = controller;

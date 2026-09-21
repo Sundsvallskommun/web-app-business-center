@@ -1,11 +1,11 @@
 import { ApplicantProfile } from '@interfaces/economic-aid';
-import { FA_FIELD_MAX_LENGTH, FinancialAssistanceFormData } from '@interfaces/financial-assistance';
+import { FinancialAssistanceFormData } from '@interfaces/financial-assistance';
 import { useApi } from '@services/api-service';
 import { Checkbox, Divider, FormControl, FormErrorMessage, FormLabel } from '@sk-web-gui/react';
 import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { FaEditableContactField } from './fa-editable-contact-field.component';
+import { FaContactDetails } from './fa-contact-details.component';
 
 type EmailField = 'contactEmail' | 'coApplicantEmail';
 type PhoneField = 'contactPhone' | 'coApplicantPhone';
@@ -24,11 +24,11 @@ interface FaContactSectionProps {
 }
 
 /**
- * Kontaktuppgifter + notisval för en person (sökande eller medsökande). Personnummer + adress
- * visas skrivskyddat; e-post/telefon förifylls från Mina sidor och är låsta tills man trycker
- * "Ändra" (FaEditableContactField) — fältet låses igen när det tappar fokus. Notisvalet
- * (minst en kanal) sparas på personens stakeholder i caremanagement, och ändrade kontaktuppgifter
- * synkas tillbaka till personens contactsettings vid inskick.
+ * Kontaktuppgifter + notisval för en person (sökande eller medsökande). Personnummer och adress
+ * visas skrivskyddat; telefonnummer och e-postadress förifylls från Mina sidor, visas som text och
+ * redigeras i en dialog (FaContactDetails). Notisvalet (minst en kanal) sparas på personens
+ * stakeholder i caremanagement, och ändrade kontaktuppgifter synkas tillbaka till personens
+ * contactsettings vid inskick.
  */
 export const FaContactSection: React.FC<FaContactSectionProps> = ({
   heading,
@@ -88,8 +88,8 @@ export const FaContactSection: React.FC<FaContactSectionProps> = ({
         <FormLabel className="font-bold">{notifyLabel}</FormLabel>
         <p className="text-small text-dark-secondary mb-8">{t('financial-assistance:personuppgifter.notifyInfo')}</p>
         <div className="flex flex-col gap-8">
-          <Checkbox {...register(notifyEmailField)}>{t('financial-assistance:personuppgifter.notifyEmail')}</Checkbox>
           <Checkbox {...register(notifySmsField)}>{t('financial-assistance:personuppgifter.notifySms')}</Checkbox>
+          <Checkbox {...register(notifyEmailField)}>{t('financial-assistance:personuppgifter.notifyEmail')}</Checkbox>
         </div>
         {notifyMissing ? (
           <FormErrorMessage className="text-error">
@@ -98,29 +98,14 @@ export const FaContactSection: React.FC<FaContactSectionProps> = ({
         ) : null}
       </FormControl>
 
-      {/* Kontaktuppgifter (redigerbara) — ett fält visas bara när dess notiskanal är vald. */}
+      {/* Kontaktuppgifter — en uppgift visas bara när dess notiskanal är vald. */}
       {notifyByEmail || notifyBySms ? (
-        <>
-          <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
-            {notifyByEmail ? (
-              <FaEditableContactField
-                name={emailField}
-                label={t('financial-assistance:personuppgifter.emailLabel')}
-                type="email"
-                maxLength={FA_FIELD_MAX_LENGTH.email}
-              />
-            ) : null}
-            {notifyBySms ? (
-              <FaEditableContactField
-                name={phoneField}
-                label={t('financial-assistance:personuppgifter.phoneLabel')}
-                inputMode="tel"
-                maxLength={FA_FIELD_MAX_LENGTH.phone}
-              />
-            ) : null}
-          </div>
-          <p className="text-small text-dark-secondary">{t('financial-assistance:personuppgifter.contactInfo')}</p>
-        </>
+        <FaContactDetails
+          emailField={emailField}
+          phoneField={phoneField}
+          showEmail={notifyByEmail}
+          showPhone={notifyBySms}
+        />
       ) : null}
 
       <Divider />

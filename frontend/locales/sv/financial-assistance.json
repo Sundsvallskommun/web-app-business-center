@@ -256,7 +256,6 @@
       "applicantNameLabel": "Namn på den som sökt ersättningen"
     },
     "asset": {
-      "heading": "Tillgång {{number}}",
       "categoryLabel": "Typ av tillgång",
       "valueLabel": "Värde (kr)",
       "descriptionLabel": "Beskrivning",

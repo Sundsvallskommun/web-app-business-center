@@ -1,9 +1,16 @@
 import { FinancialAssistanceFormData, IncomeType, Recipient, emptyIncome } from '@interfaces/financial-assistance';
 import { Button, Checkbox, FormControl, FormLabel, Icon, Input, Select } from '@sk-web-gui/react';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { compactFieldClass, DATE_INPUT_MAX, numberFieldOptions, selectableBoxClass } from './fa-form-helpers';
+import {
+  DATE_INPUT_MAX,
+  dateFieldWidthClass,
+  fieldWidthClass,
+  numberFieldOptions,
+  selectableBoxClass,
+} from './fa-form-helpers';
+import { FaRemoveButton } from './fa-remove-button.component';
 import { useApplicantNames } from './use-applicant-names';
 
 const INCOME_TYPES: IncomeType[] = [
@@ -62,22 +69,10 @@ export const FaIncomeSelector: React.FC<FaIncomeSelectorProps> = ({ showRecipien
                       className={`flex flex-col gap-12 ${rowNumber > 0 ? 'border-t border-divider pt-12' : ''}`}
                       data-cy={`fa-income-row-${type}-${rowNumber}`}
                     >
-                      {indices.length > 1 ? (
-                        <div className="flex justify-end">
-                          <Button
-                            variant="link"
-                            size="sm"
-                            color="error"
-                            onClick={() => remove(index)}
-                            leftIcon={<Icon icon={<X />} />}
-                          >
-                            {t('financial-assistance:economy.remove')}
-                          </Button>
-                        </div>
-                      ) : null}
-
-                      <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
-                        <FormControl className="w-full">
+                      {/* Belopp, datum och (vid medsökande) "Avser" på en rad, med "Ta bort" längst ut
+                          till höger. Första raden kan inte tas bort — den avmarkeras med rutan. */}
+                      <div className="flex flex-wrap items-end gap-16">
+                        <FormControl className={fieldWidthClass}>
                           <FormLabel htmlFor={`${fieldId}-amount`}>
                             {t('financial-assistance:economy.income.amountLabel')}
                           </FormLabel>
@@ -88,40 +83,48 @@ export const FaIncomeSelector: React.FC<FaIncomeSelectorProps> = ({ showRecipien
                             {...register(`incomes.${index}.amount` as const, numberFieldOptions)}
                           />
                         </FormControl>
-                        <FormControl className="w-full">
+                        <FormControl className={dateFieldWidthClass}>
                           <FormLabel htmlFor={`${fieldId}-date`}>
                             {t('financial-assistance:economy.income.dateLabel')}
                           </FormLabel>
                           <Input id={`${fieldId}-date`} type="date" max={DATE_INPUT_MAX} {...register(`incomes.${index}.incomeDate` as const)} />
                         </FormControl>
-                      </div>
 
-                      {showRecipient ? (
-                        <FormControl className="w-full">
-                          <FormLabel htmlFor={`${fieldId}-recipient`}>
-                            {t('financial-assistance:economy.recipientLabel')}
-                          </FormLabel>
-                          <Select
-                            id={`${fieldId}-recipient`}
-                            className={compactFieldClass}
-                            value={watch(`incomes.${index}.recipient` as const) || ''}
-                            onSelectValue={(next) =>
-                              setValue(`incomes.${index}.recipient` as const, (next as Recipient | '') || '', {
-                                shouldDirty: true,
-                              })
-                            }
-                          >
-                            <Select.Option value="" disabled>
-                              {t('financial-assistance:economy.select')}
-                            </Select.Option>
-                            {RECIPIENTS.map((value) => (
-                              <Select.Option key={value} value={value}>
-                                {nameForRole(value) ?? t(`financial-assistance:recipient.${value}`)}
+                        {showRecipient ? (
+                          <FormControl className="w-full max-w-[16rem]">
+                            <FormLabel htmlFor={`${fieldId}-recipient`}>
+                              {t('financial-assistance:economy.recipientLabel')}
+                            </FormLabel>
+                            <Select
+                              id={`${fieldId}-recipient`}
+                              className="w-full"
+                              value={watch(`incomes.${index}.recipient` as const) || ''}
+                              onSelectValue={(next) =>
+                                setValue(`incomes.${index}.recipient` as const, (next as Recipient | '') || '', {
+                                  shouldDirty: true,
+                                })
+                              }
+                            >
+                              <Select.Option value="" disabled>
+                                {t('financial-assistance:economy.select')}
                               </Select.Option>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      ) : null}
+                              {RECIPIENTS.map((value) => (
+                                <Select.Option key={value} value={value}>
+                                  {nameForRole(value) ?? t(`financial-assistance:recipient.${value}`)}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        ) : null}
+
+                        {rowNumber > 0 ? (
+                          <FaRemoveButton
+                            className="ml-auto"
+                            dataCy={`fa-income-remove-${type}-${rowNumber}`}
+                            onRemove={() => remove(index)}
+                          />
+                        ) : null}
+                      </div>
                     </div>
                   );
                 })}
@@ -134,7 +137,7 @@ export const FaIncomeSelector: React.FC<FaIncomeSelectorProps> = ({ showRecipien
                     onClick={() => append({ ...emptyIncome(), incomeType: type })}
                     leftIcon={<Icon icon={<Plus />} />}
                   >
-                    {t('financial-assistance:economy.addRow')}
+                    {t('financial-assistance:economy.addIncomeRow')}
                   </Button>
                 </div>
               </div>

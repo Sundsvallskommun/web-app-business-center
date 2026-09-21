@@ -10,6 +10,15 @@ export const numberFieldOptions = {
  */
 export const compactFieldClass = 'max-w-[12rem] w-full';
 
+/** Bredd för ett fält på en rad med flera fält (t.ex. belopp) — smalt, med full bredd i mobil. */
+export const fieldWidthClass = 'w-full max-w-[12rem]';
+
+/**
+ * Bredd för ett datumfält. Bredare än {@link fieldWidthClass} eftersom hela datumet (åååå-mm-dd)
+ * plus kalenderikonen måste rymmas utan att klippas.
+ */
+export const dateFieldWidthClass = 'w-full max-w-[18rem]';
+
 /**
  * `max` for date inputs. Without it the browser accepts a five- or six-digit year; capping the
  * date at 9999-12-31 limits the year segment to four digits.

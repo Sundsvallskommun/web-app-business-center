@@ -10,7 +10,7 @@ import {
 import { useApi } from '@services/api-service';
 import { asksWorkHistory } from '@services/financial-assistance-work-history';
 import { Button, Checkbox, Divider, Icon } from '@sk-web-gui/react';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +18,7 @@ import { StepNavigation } from '../../components/step-navigation.component';
 import { FaJobApplicationFields } from '../components/fa-job-application-fields.component';
 import { FaPlannedActivityFields } from '../components/fa-planned-activity-fields.component';
 import { FaPlanningFields } from '../components/fa-planning-fields.component';
+import { FaRemoveButton } from '../components/fa-remove-button.component';
 import { FaWorkHistoryQuestion } from '../components/fa-work-history-question.component';
 import { selectableBoxClass } from '../components/fa-form-helpers';
 import { FaStepProps } from './fa-step-registry';
@@ -142,12 +143,10 @@ export const StepPlanning: React.FC<FaStepProps> = ({ applicationType, onBack, o
         className={`flex flex-col gap-12 ${rowNumber > 0 ? 'border-t border-divider pt-12' : ''}`}
         data-cy={`${cyPrefix}-row-${rowNumber}`}
       >
-        <div className="flex justify-end">
-          <Button variant="link" size="sm" color="error" onClick={() => onRemove(index)} leftIcon={<Icon icon={<X />} />}>
-            {t('financial-assistance:planning.remove')}
-          </Button>
-        </div>
         {renderFields(index)}
+        <div className="flex justify-end">
+          <FaRemoveButton label={t('financial-assistance:planning.remove')} onRemove={() => onRemove(index)} />
+        </div>
       </div>
     ));
 

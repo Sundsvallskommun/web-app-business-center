@@ -23,15 +23,6 @@ import { StepProps } from './step-registry';
 const PERSONNUMMER_PATTERN = /^\d{8}-?\d{4}$/;
 const CIVILSTAND_WITH_PARTNER: ReadonlySet<Civilstand> = new Set(['gift', 'sambo']);
 
-const cardClass = (checked: boolean): string =>
-  [
-    'flex items-start gap-16 p-20 rounded-12 cursor-pointer border-2 transition',
-    'hover:border-vattjom-surface-primary',
-    checked
-      ? 'border-vattjom-surface-primary bg-vattjom-background-100'
-      : 'border-divider bg-background-content',
-  ].join(' ');
-
 interface CoApplicantLookup {
   found: boolean;
   name: string;
@@ -219,36 +210,21 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
 
       <FormControl>
         <FormLabel className="sr-only">{t('economic-aid:civilstand.legend')}</FormLabel>
-        <div
-          role="radiogroup"
-          aria-labelledby="economic-aid-step-civilstand-heading"
-          className="grid gap-16 desktop:grid-cols-2"
-        >
-          {CIVILSTAND_VALUES.map((value) => {
-            const checked = civilstand === value;
-            const inputId = `civilstand-${value}`;
-            return (
-              <label
-                key={value}
-                htmlFor={inputId}
-                className={cardClass(checked)}
-                data-cy={`economic-aid-civilstand-${value}`}
-              >
-                <RadioButton
-                  size="md"
-                  name="civilstand"
-                  id={inputId}
-                  value={value}
-                  checked={checked}
-                  onChange={() => select(value)}
-                  aria-labelledby={`${inputId}-label`}
-                />
-                <span id={`${inputId}-label`} className="font-bold">
-                  {t(`economic-aid:civilstand.options.${value}`)}
-                </span>
-              </label>
-            );
-          })}
+        <div role="radiogroup" aria-labelledby="economic-aid-step-civilstand-heading" className="flex flex-col gap-12">
+          {CIVILSTAND_VALUES.map((value) => (
+            <RadioButton
+              key={value}
+              size="sm"
+              name="civilstand"
+              id={`civilstand-${value}`}
+              data-cy={`economic-aid-civilstand-${value}`}
+              value={value}
+              checked={civilstand === value}
+              onChange={() => select(value)}
+            >
+              {t(`economic-aid:civilstand.options.${value}`)}
+            </RadioButton>
+          ))}
         </div>
       </FormControl>
 
@@ -310,34 +286,30 @@ export const StepCivilstand: React.FC<StepProps> = ({ onBack }) => {
                 {eligibilityResult.introText ||
                   t('economic-aid:formular.intro', showMedsokande ? { context: 'ni' } : undefined)}
               </p>
-              <div role="radiogroup" aria-label={t('economic-aid:formular.heading')} className="flex flex-col gap-16">
+              <div role="radiogroup" aria-label={t('economic-aid:formular.heading')} className="flex flex-col gap-12">
                 {suggestions.map((suggestion) => {
                   const suggestionKey = eligibilitySuggestionKey(suggestion);
-                  const checked = effectiveKey === suggestionKey;
                   const inputId = `economic-aid-suggestion-${suggestionKey.replace(/:/g, '-')}`;
                   const description = suggestionDescription(suggestion);
                   return (
-                    <label key={suggestionKey} htmlFor={inputId} className={cardClass(checked)} data-cy={inputId}>
+                    <div key={suggestionKey} className="flex flex-col">
                       <RadioButton
-                        size="md"
+                        size="sm"
                         name="economic-aid-suggestion"
                         id={inputId}
-                        checked={checked}
+                        data-cy={inputId}
+                        checked={effectiveKey === suggestionKey}
                         onChange={() => setSelectedKey(suggestionKey)}
-                        aria-labelledby={`${inputId}-label`}
                         aria-describedby={description ? `${inputId}-description` : undefined}
-                      />
-                      <span className="flex flex-col gap-4">
-                        <span id={`${inputId}-label`} className="font-bold">
-                          {suggestion.label}
+                      >
+                        {suggestion.label}
+                      </RadioButton>
+                      {description ? (
+                        <span id={`${inputId}-description`} className="text-small text-dark-secondary ml-32">
+                          {description}
                         </span>
-                        {description ? (
-                          <span id={`${inputId}-description`} className="text-small text-dark-secondary">
-                            {description}
-                          </span>
-                        ) : null}
-                      </span>
-                    </label>
+                      ) : null}
+                    </div>
                   );
                 })}
               </div>

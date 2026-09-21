@@ -1,8 +1,8 @@
 import { FA_FIELD_MAX_LENGTH, ApplicationType, FinancialAssistanceFormData, ResidenceExtent } from '@interfaces/financial-assistance';
-import { Button, Card, FormControl, FormLabel, Icon, Input, Select } from '@sk-web-gui/react';
-import { X } from 'lucide-react';
+import { Card, FormControl, FormLabel, Input, Select } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { FaRemoveButton } from './fa-remove-button.component';
 
 const RESIDENCE_EXTENTS: ResidenceExtent[] = ['FULL_TIME', 'HALF_TIME', 'OTHER'];
 
@@ -27,19 +27,7 @@ export const FaChildCard: React.FC<FaChildCardProps> = ({ index, applicationType
       {/* partyId har ingen synlig input — registreras dolt så React Hook Form behåller värdet
           (krävs för dedup/filtrering av prefill-förslag och som auktoritativ id vid inskick). */}
       <input type="hidden" {...register(`children.${index}.partyId` as const)} />
-      <header className="flex items-center justify-between gap-8">
-        <h4 className="text-h5-md font-bold">{t('financial-assistance:child.heading', { number: index + 1 })}</h4>
-        <Button
-          variant="link"
-          size="sm"
-          color="error"
-          data-cy={`fa-child-${index}-remove`}
-          onClick={onRemove}
-          leftIcon={<Icon icon={<X />} />}
-        >
-          {t('financial-assistance:child.remove')}
-        </Button>
-      </header>
+      <h4 className="text-h5-md font-bold">{t('financial-assistance:child.heading', { number: index + 1 })}</h4>
 
       <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
         <FormControl className="w-full">
@@ -127,6 +115,15 @@ export const FaChildCard: React.FC<FaChildCardProps> = ({ index, applicationType
             />
           </FormControl>
         ) : null}
+      </div>
+
+      {/* "Ta bort" nere till höger, samma knapp som på övriga rader. */}
+      <div className="flex justify-end">
+        <FaRemoveButton
+          dataCy={`fa-child-${index}-remove`}
+          label={t('financial-assistance:child.remove')}
+          onRemove={onRemove}
+        />
       </div>
     </Card>
   );

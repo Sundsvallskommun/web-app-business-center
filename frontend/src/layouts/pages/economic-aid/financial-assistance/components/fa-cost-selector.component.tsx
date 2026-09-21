@@ -1,9 +1,10 @@
 import { CostOtherSubType, CostType, FinancialAssistanceFormData, emptyCost } from '@interfaces/financial-assistance';
 import { Button, Checkbox, FormControl, FormLabel, Icon, Input, Select } from '@sk-web-gui/react';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { compactFieldClass, numberFieldOptions } from './fa-form-helpers';
+import { compactFieldClass, fieldWidthClass, numberFieldOptions } from './fa-form-helpers';
+import { FaRemoveButton } from './fa-remove-button.component';
 
 // "För vem / vilken period" har tagits bort från alla kostnader — den frågan ställs numera bara
 // för normen (under rubriken Övrigt på tilläggsansökan).
@@ -114,20 +115,6 @@ export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ otherExtra }) =>
                   className={`flex flex-col gap-12 ${rowNumber > 0 ? 'border-t border-divider pt-12' : ''}`}
                   data-cy={`fa-cost-OTHER-row-${rowNumber}`}
                 >
-                  {indices.length > 1 ? (
-                    <div className="flex justify-end">
-                      <Button
-                        variant="link"
-                        size="sm"
-                        color="error"
-                        data-cy={`fa-cost-OTHER-remove-${rowNumber}`}
-                        onClick={() => remove(index)}
-                        leftIcon={<Icon icon={<X />} />}
-                      >
-                        {t('financial-assistance:economy.remove')}
-                      </Button>
-                    </div>
-                  ) : null}
 
                   <FormControl className="w-full">
                     <FormLabel htmlFor={`${fieldId}-subtype`}>
@@ -167,16 +154,25 @@ export const FaCostSelector: React.FC<FaCostSelectorProps> = ({ otherExtra }) =>
                     </p>
                   </FormControl>
 
-                  <FormControl className="w-full">
-                    <FormLabel htmlFor={`${fieldId}-amount`}>{t('financial-assistance:costAmount.OTHER')}</FormLabel>
-                    <Input
-                      id={`${fieldId}-amount`}
-                      className={compactFieldClass}
-                      type="number"
-                      min={0}
-                      {...register(`costs.${index}.appliedAmount` as const, numberFieldOptions)}
-                    />
-                  </FormControl>
+                  <div className="flex flex-wrap items-end gap-16">
+                    <FormControl className={fieldWidthClass}>
+                      <FormLabel htmlFor={`${fieldId}-amount`}>{t('financial-assistance:costAmount.OTHER')}</FormLabel>
+                      <Input
+                        id={`${fieldId}-amount`}
+                        type="number"
+                        min={0}
+                        {...register(`costs.${index}.appliedAmount` as const, numberFieldOptions)}
+                      />
+                    </FormControl>
+                    {/* Första raden tas bort genom att avmarkera rutan. */}
+                    {rowNumber > 0 ? (
+                      <FaRemoveButton
+                        className="ml-auto"
+                        dataCy={`fa-cost-OTHER-remove-${rowNumber}`}
+                        onRemove={() => remove(index)}
+                      />
+                    ) : null}
+                  </div>
                 </div>
               );
             })}

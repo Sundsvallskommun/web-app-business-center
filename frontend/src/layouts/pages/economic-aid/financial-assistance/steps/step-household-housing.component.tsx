@@ -253,7 +253,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
                     <div key={child.partyId ?? child.name ?? ''} className="flex items-center justify-between gap-8">
                       <span>{[child.name, child.personnummer].filter(Boolean).join(' ')}</span>
                       <Button
-                        variant="link"
+                        variant="secondary"
                         size="sm"
                         onClick={() => addPrefilledChild(child)}
                         leftIcon={<Icon icon={<Plus />} />}
@@ -270,7 +270,7 @@ export const StepHouseholdHousing: React.FC<FaStepProps> = ({ applicationType, o
               ))}
               <div>
                 <Button
-                  variant="link"
+                  variant="secondary"
                   size="sm"
                   data-cy="fa-child-add"
                   onClick={() => append(emptyChild())}

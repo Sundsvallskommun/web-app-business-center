@@ -129,7 +129,7 @@ export const StepIncome: React.FC<FaStepProps> = ({ applicationType, onBack, onN
             ))}
             <div>
               <Button
-                variant="link"
+                variant="secondary"
                 size="sm"
                 data-cy="fa-pending-benefit-add"
                 onClick={() => pendingBenefits.append(emptyPendingBenefit())}

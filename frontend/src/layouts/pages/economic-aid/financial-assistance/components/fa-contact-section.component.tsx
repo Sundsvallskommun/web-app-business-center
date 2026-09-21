@@ -1,10 +1,11 @@
 import { ApplicantProfile } from '@interfaces/economic-aid';
 import { FA_FIELD_MAX_LENGTH, FinancialAssistanceFormData } from '@interfaces/financial-assistance';
 import { useApi } from '@services/api-service';
-import { Checkbox, Divider, FormControl, FormErrorMessage, FormLabel, Input } from '@sk-web-gui/react';
+import { Checkbox, Divider, FormControl, FormErrorMessage, FormLabel } from '@sk-web-gui/react';
 import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { FaEditableContactField } from './fa-editable-contact-field.component';
 
 type EmailField = 'contactEmail' | 'coApplicantEmail';
 type PhoneField = 'contactPhone' | 'coApplicantPhone';
@@ -24,7 +25,8 @@ interface FaContactSectionProps {
 
 /**
  * Kontaktuppgifter + notisval för en person (sökande eller medsökande). Personnummer + adress
- * visas skrivskyddat; e-post/telefon förifylls från Mina sidor men kan redigeras. Notisvalet
+ * visas skrivskyddat; e-post/telefon förifylls från Mina sidor och är låsta tills man trycker
+ * "Ändra" (FaEditableContactField) — fältet låses igen när det tappar fokus. Notisvalet
  * (minst en kanal) sparas på personens stakeholder i caremanagement, och ändrade kontaktuppgifter
  * synkas tillbaka till personens contactsettings vid inskick.
  */
@@ -48,7 +50,8 @@ export const FaContactSection: React.FC<FaContactSectionProps> = ({
   const notifyBySms = watch(notifySmsField);
   const notifyMissing = !notifyByEmail && !notifyBySms;
 
-  // Förifyll e-post/telefon från Mina sidor — bara när fälten inte redan ändrats.
+  // Förifyll e-post/telefon från personens contactsettings. Bara tomma fält fylls i, så en uppgift
+  // som sökanden redan ändrat i ansökan skrivs inte över när profilen laddas om.
   useEffect(() => {
     if (!profile) return;
     if (profile.epost && getValues(emailField) === '') setValue(emailField, profile.epost, { shouldDirty: false });
@@ -100,26 +103,20 @@ export const FaContactSection: React.FC<FaContactSectionProps> = ({
         <>
           <div className="grid grid-cols-1 desktop:grid-cols-2 gap-16">
             {notifyByEmail ? (
-              <FormControl className="w-full">
-                <FormLabel htmlFor={`fa-${emailField}`}>{t('financial-assistance:personuppgifter.emailLabel')}</FormLabel>
-                <Input
-                  id={`fa-${emailField}`}
-                  type="email"
-                  maxLength={FA_FIELD_MAX_LENGTH.email}
-                  {...register(emailField)}
-                />
-              </FormControl>
+              <FaEditableContactField
+                name={emailField}
+                label={t('financial-assistance:personuppgifter.emailLabel')}
+                type="email"
+                maxLength={FA_FIELD_MAX_LENGTH.email}
+              />
             ) : null}
             {notifyBySms ? (
-              <FormControl className="w-full">
-                <FormLabel htmlFor={`fa-${phoneField}`}>{t('financial-assistance:personuppgifter.phoneLabel')}</FormLabel>
-                <Input
-                  id={`fa-${phoneField}`}
-                  inputMode="tel"
-                  maxLength={FA_FIELD_MAX_LENGTH.phone}
-                  {...register(phoneField)}
-                />
-              </FormControl>
+              <FaEditableContactField
+                name={phoneField}
+                label={t('financial-assistance:personuppgifter.phoneLabel')}
+                inputMode="tel"
+                maxLength={FA_FIELD_MAX_LENGTH.phone}
+              />
             ) : null}
           </div>
           <p className="text-small text-dark-secondary">{t('financial-assistance:personuppgifter.contactInfo')}</p>

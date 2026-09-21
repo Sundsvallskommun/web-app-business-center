@@ -1,10 +1,11 @@
 import { AssetCategory, FinancialAssistanceFormData, emptyAsset } from '@interfaces/financial-assistance';
 import { Button, Checkbox, Icon } from '@sk-web-gui/react';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { selectableBoxClass } from './fa-form-helpers';
 import { FaAssetFields } from './fa-asset-fields.component';
+import { FaRemoveButton } from './fa-remove-button.component';
 
 const ASSET_CATEGORIES: AssetCategory[] = ['BANK_SAVINGS', 'REAL_ESTATE', 'COMPANY', 'VEHICLE', 'OTHER'];
 
@@ -45,20 +46,16 @@ export const FaAssetSelector: React.FC = () => {
                     className={`flex flex-col gap-12 ${rowNumber > 0 ? 'border-t border-divider pt-12' : ''}`}
                     data-cy={`fa-asset-row-${category}-${rowNumber}`}
                   >
-                    {indices.length > 1 ? (
+                    <FaAssetFields index={index} category={category} />
+                    {/* Första raden tas bort genom att avmarkera rutan. */}
+                    {rowNumber > 0 ? (
                       <div className="flex justify-end">
-                        <Button
-                          variant="link"
-                          size="sm"
-                          color="error"
-                          onClick={() => remove(index)}
-                          leftIcon={<Icon icon={<X />} />}
-                        >
-                          {t('financial-assistance:economy.remove')}
-                        </Button>
+                        <FaRemoveButton
+                          dataCy={`fa-asset-remove-${category}-${rowNumber}`}
+                          onRemove={() => remove(index)}
+                        />
                       </div>
                     ) : null}
-                    <FaAssetFields index={index} category={category} />
                   </div>
                 ))}
 

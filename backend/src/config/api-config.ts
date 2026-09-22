@@ -10,7 +10,7 @@ export const APIS = [
   },
   {
     name: 'supportmanagement',
-    version: '14.8',
+    version: '15.6',
   },
   {
     name: 'webmessagecollector',
@@ -22,7 +22,7 @@ export const APIS = [
   },
   {
     name: 'partyassets',
-    version: '6.4',
+    version: '6.5',
   },
   {
     name: 'jsonschema',
@@ -38,7 +38,7 @@ export const APIS = [
   },
   {
     name: 'messaging',
-    version: '7.3',
+    version: '7.11',
   },
   {
     name: 'invoices',

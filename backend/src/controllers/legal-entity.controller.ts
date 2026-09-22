@@ -18,7 +18,7 @@ export class LegalEntityController {
   @OpenAPI({ summary: 'Return a list of business engagements for current logged in user' })
   @UseBefore(authMiddleware)
   async businessEngagments(@Req() req: RequestWithUser): Promise<ApiResponse<Engagement[]>> {
-    const { personNumber } = req?.user;
+    const { personNumber } = req.user;
 
     if (!personNumber) {
       throw new HttpException(400, 'Bad Request');

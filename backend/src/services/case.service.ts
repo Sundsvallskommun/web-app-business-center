@@ -130,7 +130,7 @@ export const normalizeWebMessageCollectorMessages = (messages: MessageDTO[]): Fr
               attachmentId: `${attachment.attachmentId}`,
               name: attachment.name,
               contentType: attachment.mimeType,
-            } as AttachmentResponse),
+            }) as AttachmentResponse,
         ) || [],
   }));
 

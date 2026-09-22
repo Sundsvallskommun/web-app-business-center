@@ -1,12 +1,19 @@
 import { WHITELIST_ASSET_TYPES } from '@/config';
-import { ExtraParameter } from '@/data-contracts/case-data/data-contracts';
+import { Errand, ExtraParameter } from '@/data-contracts/case-data/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
 import { ServiceDetails } from '@/interfaces/asset.interface';
+import { Owned } from '@/interfaces/owned';
 import { User } from '@/interfaces/users.interface';
 import { enumTitles, getRjsfSchema } from '@/services/jsonschema.service';
 
 export const isAllowedAsset = (asset: Asset): boolean => {
   return !!asset?.type && WHITELIST_ASSET_TYPES.has(asset.type);
+};
+
+const PARKING_PERMIT_TYPES: ReadonlySet<string> = new Set(['PERMIT', 'PARKINGPERMIT']);
+
+export const isParkingPermitAsset = (asset: Asset): boolean => {
+  return !!asset?.type && PARKING_PERMIT_TYPES.has(asset.type);
 };
 
 const HIDDEN_STATUSES: ReadonlySet<Status> = new Set([Status.DRAFT, Status.REPLACED]);
@@ -19,7 +26,14 @@ const isAddressable = (asset: Asset): boolean => {
   return !!asset?.id;
 };
 
-export const toClientAsset = (asset: Asset): Asset => {
+/**
+ * Strip internal fields from an asset before it is returned to a client.
+ *
+ * Takes `Owned<Asset>` so that serialising an asset implies it passed an ownership gate.
+ *
+ * @param asset an asset whose ownership has been established
+ */
+export const toClientAsset = (asset: Owned<Asset>): Asset => {
   const clientAsset = { ...asset };
   delete clientAsset.partyId;
   delete clientAsset.jsonParameters;
@@ -45,7 +59,15 @@ const normalizeArray = (values: unknown): string[] => {
     .filter((value): value is string => Boolean(value));
 };
 
-export const toServiceDetails = async (asset: Asset, user: User): Promise<ServiceDetails | undefined> => {
+/**
+ * Project an asset's `jsonParameters` onto the service details returned alongside it.
+ *
+ * Takes `Owned<Asset>` for the same reason as {@link toClientAsset}: it reads the internal
+ * `jsonParameters` that `toClientAsset` strips, and puts the applicant's answers in the response.
+ *
+ * @param asset an asset whose ownership has been established
+ */
+export const toServiceDetails = async (asset: Owned<Asset>, user: User): Promise<ServiceDetails | undefined> => {
   const param = asset.jsonParameters?.[0];
   if (!param?.value) return undefined;
 
@@ -92,6 +114,11 @@ export interface ParkingPermitRenewalBody {
   medicalConfirmationRequired?: string; // 'yes' | 'no'
 }
 
+// The multi-valued walking aids are written by buildRenewalExtraParameters directly rather
+// than through RENEWAL_PARAMETER_KEYS (the body carries them JSON-encoded), so the key has
+// to be named here too for the inverse map to cover it.
+const WALKING_AIDS_PARAMETER_KEY = 'disability.aid';
+
 // Direct body-field -> extraParameter key map. Keys + value encodings mirror
 // Draken's ExtraParametersDto (draken .../data-contracts/backend/data-contracts.ts).
 const RENEWAL_PARAMETER_KEYS: Record<string, string> = {
@@ -110,6 +137,11 @@ const RENEWAL_PARAMETER_KEYS: Record<string, string> = {
   date: 'application.renewal.expirationDate',
   medicalConfirmationRequired: 'application.renewal.medicalConfirmationRequired',
 };
+
+// Fixed summary filed when the applicant states nothing has changed since the current permit.
+// The carried-over summary describes the original application rather than this renewal, so it
+// is replaced instead of being refiled as if the applicant had written it for this errand.
+const UNCHANGED_CIRCUMSTANCES_CASE_MEANING = 'Den sökande har angett att förutsättningarna inte har ändrats';
 
 // Maps a Mina sidor parking-permit renewal submission to CaseData extraParameters.
 // Empty fields are omitted so hidden/conditional fields simply don't appear.
@@ -131,12 +163,25 @@ export const buildRenewalExtraParameters = (body: ParkingPermitRenewalBody): Ext
     });
   }
 
+  if (body.circumstancesChanged === 'FALSE') {
+    const caseMeaningIndex = extraParameters.findIndex(parameter => parameter.key === RENEWAL_PARAMETER_KEYS.caseMeaning);
+    const caseMeaning: ExtraParameter = {
+      key: RENEWAL_PARAMETER_KEYS.caseMeaning,
+      values: [UNCHANGED_CIRCUMSTANCES_CASE_MEANING],
+    };
+    if (caseMeaningIndex === -1) {
+      extraParameters.push(caseMeaning);
+    } else {
+      extraParameters[caseMeaningIndex] = caseMeaning;
+    }
+  }
+
   // Walking aids arrive as a JSON-encoded string[]; emit only when non-empty.
   if (body.walkingAids) {
     try {
       const walkingAidsArray: string[] = JSON.parse(body.walkingAids);
       if (Array.isArray(walkingAidsArray) && walkingAidsArray.length > 0) {
-        extraParameters.push({ key: 'disability.aid', values: walkingAidsArray });
+        extraParameters.push({ key: WALKING_AIDS_PARAMETER_KEY, values: walkingAidsArray });
       }
     } catch {
       // Invalid JSON, skip walkingAids
@@ -144,4 +189,69 @@ export const buildRenewalExtraParameters = (body: ParkingPermitRenewalBody): Ext
   }
 
   return extraParameters;
+};
+
+export interface ParkingPermitRenewalPrefill {
+  caseMeaning?: string;
+  capacity?: string;
+  reason?: string;
+  walkingAids?: string[];
+  walkingAbility?: string;
+  walkingDistanceBeforeRest?: string;
+  walkingDistanceMax?: string;
+  duration?: string;
+  canBeAloneWhileParking?: string;
+  canBeAloneWhileParkingNote?: string;
+  consentContactDoctor?: string;
+  consentViewTransportationService?: string;
+  signingAbility?: string;
+  expirationDate?: string;
+}
+
+const RENEWAL_KEYS_TO_FIELDS: Record<string, string> = {
+  ...Object.fromEntries(Object.entries(RENEWAL_PARAMETER_KEYS).map(([field, key]) => [key, field])),
+  [WALKING_AIDS_PARAMETER_KEY]: 'walkingAids',
+};
+
+const firstValue = (values?: string[]): string | undefined => {
+  const value = values?.[0];
+  return value ? value : undefined;
+};
+
+/**
+ * Map a CaseData errand's extraParameters back onto the renewal form model.
+ *
+ * Unknown keys (Draken's own `process.*` / `artefact.*` bookkeeping) are ignored, and the permit's
+ * expiry is taken from the asset since the origin errand carries no renewal date. Takes
+ * `Owned<Errand>` because it produces the response payload holding the applicant's medical answers.
+ *
+ * @param errand an errand whose ownership has been established
+ * @param validTo expiry date of the permit being renewed
+ */
+export const buildRenewalPrefill = (errand: Owned<Pick<Errand, 'extraParameters'>>, validTo?: string): ParkingPermitRenewalPrefill => {
+  const prefill: ParkingPermitRenewalPrefill = {};
+
+  for (const parameter of errand?.extraParameters ?? []) {
+    const field = parameter.key ? RENEWAL_KEYS_TO_FIELDS[parameter.key] : undefined;
+    if (!field) continue;
+
+    if (field === 'walkingAids') {
+      const aids = (parameter.values ?? []).filter(Boolean);
+      if (aids.length > 0) prefill.walkingAids = aids;
+      continue;
+    }
+
+    if (field === 'date' || field === 'circumstancesChanged' || field === 'medicalConfirmationRequired') continue;
+
+    const value = firstValue(parameter.values);
+    if (value !== undefined) {
+      (prefill as Record<string, unknown>)[field] = value;
+    }
+  }
+
+  if (validTo) {
+    prefill.expirationDate = validTo;
+  }
+
+  return prefill;
 };

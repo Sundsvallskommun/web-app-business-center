@@ -22,7 +22,7 @@ export const APIS = [
   },
   {
     name: 'partyassets',
-    version: '6.4',
+    version: '6.5',
   },
   {
     name: 'jsonschema',
@@ -55,6 +55,10 @@ export const APIS = [
   {
     name: 'myrepresentatives',
     version: '4.4',
+  },
+  {
+    name: 'relations',
+    version: '1.1',
   },
 ] as const;
 

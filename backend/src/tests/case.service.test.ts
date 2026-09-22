@@ -7,12 +7,14 @@ import { User } from '@/interfaces/users.interface';
 import {
   buildMessagingWebMessageRequest,
   caseIsAllowed,
+  caseMessagesAllowed,
   collectSenderIdentifiers,
   conversationInit,
   filterNewUserMessages,
   normalizeWebMessageCollectorMessages,
   sortMessagesBySentDesc,
   toFrontendMessage,
+  withMessagePermission,
 } from '@/services/case.service';
 import { mockUser as sharedUser } from './helpers/fixtures';
 import { TEST_OTHER_PARTY_ID, TEST_USER_PARTY_ID } from './helpers/constants';
@@ -59,6 +61,49 @@ describe('case.service', () => {
       expect(caseIsAllowed({ namespace: CaseDataNamespace.SBK_MEX, system: 'CASE_DATA', externalStatus: 'Sparat' } as CaseStatusResponse)).toBe(
         false,
       );
+    });
+  });
+
+  describe('caseMessagesAllowed', () => {
+    it('allows the systems that have a message channel', () => {
+      expect(caseMessagesAllowed({ system: 'SUPPORT_MANAGEMENT' } as CaseStatusResponse)).toBe(true);
+      expect(caseMessagesAllowed({ system: 'CASE_DATA' } as CaseStatusResponse)).toBe(true);
+      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM' } as CaseStatusResponse)).toBe(true);
+    });
+
+    it('rejects systems without a message channel, and cases with no system at all', () => {
+      expect(caseMessagesAllowed({ system: 'BYGGR' } as CaseStatusResponse)).toBe(false);
+      expect(caseMessagesAllowed({ system: 'ECOS' } as CaseStatusResponse)).toBe(false);
+      expect(caseMessagesAllowed({} as CaseStatusResponse)).toBe(false);
+    });
+
+    it('does not care about errandNumber, which every system may carry', () => {
+      expect(caseMessagesAllowed({ system: 'CASE_DATA', errandNumber: 'PRH-2026-000001' } as CaseStatusResponse)).toBe(true);
+      expect(caseMessagesAllowed({ system: 'SUPPORT_MANAGEMENT', errandNumber: 'KC-2026-000001' } as CaseStatusResponse)).toBe(true);
+      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', errandNumber: 'MK-2026-000123' } as CaseStatusResponse)).toBe(true);
+    });
+
+    it('rejects a case forwarded to ByggR, which casestatus reports under its destination system', () => {
+      expect(
+        caseMessagesAllowed({
+          caseId: 'BYGG 2026-000051',
+          errandNumber: 'BYGG 2026-000051',
+          externalCaseId: '5745',
+          system: 'BYGGR',
+        } as CaseStatusResponse),
+      ).toBe(false);
+    });
+  });
+
+  describe('withMessagePermission', () => {
+    it('keeps the case untouched and adds the computed flag', () => {
+      const _case = { caseId: 'c1', system: 'OPEN_E_PLATFORM', caseType: 'Ansökan/anmälan eget avlopp' } as CaseStatusResponse;
+      expect(withMessagePermission(_case)).toEqual({ ..._case, messagesAllowed: true });
+      expect(withMessagePermission({ ..._case, system: 'BYGGR' })).toEqual({
+        ..._case,
+        system: 'BYGGR',
+        messagesAllowed: false,
+      });
     });
   });
 

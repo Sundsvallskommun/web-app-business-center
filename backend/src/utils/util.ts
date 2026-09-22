@@ -40,6 +40,11 @@ export const formatOrgNr = (orgNr: string, format: OrgNumberFormat = OrgNumberFo
   return null;
 };
 
+// UUIDs are case-insensitive (RFC 4122 section 3). The ownership gates compare ids that were
+// written by different systems, each free to pick its own casing, so comparing them with === can
+// reject a genuine match. Both sides must be present: a missing id is never a match.
+export const isSameUuid = (a?: string, b?: string): boolean => !!a && !!b && a.toLowerCase() === b.toLowerCase();
+
 export const isValidUrl = (string: string) => {
   let url;
   try {

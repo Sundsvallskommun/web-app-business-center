@@ -10,7 +10,7 @@ export const APIS = [
   },
   {
     name: 'supportmanagement',
-    version: '15.6',
+    version: '14.8',
   },
   {
     name: 'webmessagecollector',
@@ -38,7 +38,7 @@ export const APIS = [
   },
   {
     name: 'messaging',
-    version: '7.11',
+    version: '7.3',
   },
   {
     name: 'invoices',
@@ -55,6 +55,10 @@ export const APIS = [
   {
     name: 'myrepresentatives',
     version: '4.4',
+  },
+  {
+    name: 'relations',
+    version: '1.1',
   },
 ] as const;
 

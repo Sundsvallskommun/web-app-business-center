@@ -17,7 +17,7 @@ describe('Privat', () => {
     });
   });
   it('should render Ärenden when clicked', () => {
-    cy.contains('[role="navigationitem"]', 'Ärenden').click();
+    cy.contains('[role="menuitem"]', 'Ärenden').click();
     cy.wait('@getCases').then(() => {
       cy.url().should('include', '/privat/arenden');
       testCases(RepresentingMode.PRIVATE);
@@ -25,7 +25,7 @@ describe('Privat', () => {
   });
   // Temporarily disabled due to the fact that api doesnt provide all invoices
   it('should render Fakturor when clicked', () => {
-    cy.contains('[role="navigationitem"]', 'Fakturor').click();
+    cy.contains('[role="menuitem"]', 'Fakturor').click();
     cy.wait('@getInvoices').then(() => {
       cy.url().should('include', '/privat/fakturor');
       // testInvoices(RepresentingMode.PRIVATE);
@@ -40,14 +40,14 @@ describe('Privat', () => {
     });
   });
   it('should render assets list /privat', () => {
-    cy.contains('[role="navigationitem"]', 'Beslut och dokument').click();
+    cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
     cy.wait('@getAssets').then(() => {
       cy.url().should('include', '/privat/beslut-och-dokument');
       testAssets(RepresentingMode.PRIVATE);
     });
   });
   it('should render decisions list /privat', () => {
-    cy.contains('[role="navigationitem"]', 'Beslut och dokument').click();
+    cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
     cy.wait('@getDecisions').then(() => {
       cy.url().should('include', '/privat/beslut-och-dokument');
       testDecisions();

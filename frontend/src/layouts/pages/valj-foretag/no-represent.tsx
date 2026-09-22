@@ -22,7 +22,7 @@ export const NoRepresent: React.FC = ({}) => {
   const onLogout = () => {
     window.location.assign(
       `${process.env.NEXT_PUBLIC_API_URL}/saml/logout?successRedirect=${appURL()}/login?loggedout`
-    ); // eslint-disable-next-line react-hooks/exhaustive-deps
+    );
   };
 
   return (

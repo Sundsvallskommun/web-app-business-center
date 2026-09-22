@@ -33,7 +33,7 @@ const convMessage = (overrides: Partial<MessageWithConversationId<Message>> = {}
     type: MessageTypeEnum.USER_CREATED,
     createdBy: { type: 'partyId', value: TEST_OTHER_PARTY_ID },
     ...overrides,
-  } as MessageWithConversationId<Message>);
+  }) as MessageWithConversationId<Message>;
 
 describe('case.service', () => {
   describe('caseIsAllowed', () => {
@@ -118,7 +118,7 @@ describe('case.service', () => {
   });
 
   describe('buildMessagingWebMessageRequest', () => {
-    const file = (name: string) => ({ buffer: Buffer.from(name), originalname: name, mimetype: 'text/plain' } as Express.Multer.File);
+    const file = (name: string) => ({ buffer: Buffer.from(name), originalname: name, mimetype: 'text/plain' }) as Express.Multer.File;
 
     it('references the case as a flowInstanceId external reference', () => {
       const result = buildMessagingWebMessageRequest(TEST_USER_PARTY_ID, 'case-1', 'hi', []);
@@ -229,7 +229,7 @@ describe('case.service', () => {
         lastName: 'Andersson',
         attachments: [],
         ...overrides,
-      } as MessageDTO);
+      }) as MessageDTO;
 
     it('maps OUTBOUND/INBOUND direction and composes the sender name', () => {
       expect(normalizeWebMessageCollectorMessages([dto({ direction: MessageDtoDirectionEnum.OUTBOUND })])[0]).toMatchObject({
@@ -268,7 +268,7 @@ describe('case.service', () => {
   });
 
   describe('filterNewUserMessages', () => {
-    const msg = (id: string, type: MessageTypeEnum = MessageTypeEnum.USER_CREATED): Message => ({ id, content: 'c', type } as Message);
+    const msg = (id: string, type: MessageTypeEnum = MessageTypeEnum.USER_CREATED): Message => ({ id, content: 'c', type }) as Message;
 
     it('keeps only user-created messages not already seen and tags them with the conversation id', () => {
       const seen = [convMessage({ id: 'a' })];
@@ -281,7 +281,7 @@ describe('case.service', () => {
   });
 
   describe('sortMessagesBySentDesc', () => {
-    const m = (sent: string | undefined): FrontendMessageResponse => ({ sent } as FrontendMessageResponse);
+    const m = (sent: string | undefined): FrontendMessageResponse => ({ sent }) as FrontendMessageResponse;
 
     it('orders newest first', () => {
       const sorted = sortMessagesBySentDesc([m('2025-01-01'), m('2025-03-01'), m('2025-02-01')]);

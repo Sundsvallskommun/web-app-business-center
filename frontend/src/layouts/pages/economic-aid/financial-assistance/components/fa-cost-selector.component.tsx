@@ -17,7 +17,7 @@ interface CostGroup {
 // Kostnaderna grupperade som i designen: ruta + checkbox per kostnad. När en kostnad bockas i
 // expanderar rutan och visar hjälptext samt beloppsfält. "Övrigt bistånd" kan ha flera rader.
 const COST_GROUPS: CostGroup[] = [
-  { category: 'boende', types: ['RENT', 'ELECTRICITY', 'HOME_INSURANCE', 'INTERNET'] },
+  { category: 'boende', types: ['RENT', 'ELECTRICITY', 'HOME_INSURANCE'] },
   { category: 'work', types: ['UNEMPLOYMENT_FUND', 'UNION_FEE', 'TRAVEL_APPROVED', 'TRAVEL_MEDICAL_TRANSPORT'] },
   { category: 'health', types: ['MEDICAL_CARE', 'MEDICINE'] },
   { category: 'other', types: ['OTHER'] },

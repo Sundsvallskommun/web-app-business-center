@@ -40,7 +40,6 @@ const COST_DOCUMENTS: Record<Exclude<CostType, 'OTHER'>, string> = {
   RENT: 'rentInvoice',
   ELECTRICITY: 'electricityInvoice',
   HOME_INSURANCE: 'homeInsuranceLetter',
-  INTERNET: 'internetInvoice',
   UNEMPLOYMENT_FUND: 'unemploymentFundInvoice',
   UNION_FEE: 'unionFeeInvoice',
   TRAVEL_APPROVED: 'travelReceipt',

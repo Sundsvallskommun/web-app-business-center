@@ -50,7 +50,6 @@ export type CostType =
   | 'RENT'
   | 'ELECTRICITY'
   | 'HOME_INSURANCE'
-  | 'INTERNET'
   | 'UNEMPLOYMENT_FUND'
   | 'UNION_FEE'
   | 'TRAVEL_APPROVED'

@@ -8,17 +8,19 @@ import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts'
 import { CaseMessageDto } from '@/dtos/case-data.dto';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
-import { CaseMessage, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
+import { CaseMessage, CaseStatusResponseWithPermissions, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import ApiService from '@/services/api.service';
 import {
   buildMessagingWebMessageRequest,
   caseIsAllowed,
+  caseMessagesAllowed,
   collectSenderIdentifiers,
   conversationInit,
   filterNewUserMessages,
   normalizeWebMessageCollectorMessages,
   sortMessagesBySentDesc,
   toFrontendMessage,
+  withMessagePermission,
 } from '@/services/case.service';
 import { getCitizen } from '@/services/citizen.service';
 import { getUserData } from '@/services/user.service';
@@ -46,7 +48,7 @@ export class CaseController {
   private apiService = new ApiService();
   private apiBase = getApiBase('casestatus');
 
-  private setBusinesCasesCache(req: RequestWithUser, orgNumber: string, data: CaseStatusResponse[]) {
+  private setBusinesCasesCache(req: RequestWithUser, orgNumber: string, data: CaseStatusResponseWithPermissions[]) {
     if (!req.session.cache) {
       req.session.cache = {
         cases: {},
@@ -60,7 +62,7 @@ export class CaseController {
     req.session.cache.cases.BUSINESS[orgNumber] = data;
   }
 
-  private setPrivateCasesCache(req: RequestWithUser, data: CaseStatusResponse[]) {
+  private setPrivateCasesCache(req: RequestWithUser, data: CaseStatusResponseWithPermissions[]) {
     if (!req.session.cache) {
       req.session.cache = {
         cases: {},
@@ -70,7 +72,7 @@ export class CaseController {
     req.session.cache.cases.PRIVATE = data;
   }
 
-  private setCasesCache(req: RequestWithUser, data: CaseStatusResponse[]) {
+  private setCasesCache(req: RequestWithUser, data: CaseStatusResponseWithPermissions[]) {
     const { representing } = req.session;
     if (!representing) {
       throw new HttpException(400, 'Bad Request');
@@ -86,12 +88,12 @@ export class CaseController {
     }
   }
 
-  private getCaseFromCache(req: RequestWithUser, caseId: string): CaseStatusResponse | null {
+  private getCaseFromCache(req: RequestWithUser, caseId: string): CaseStatusResponseWithPermissions | null {
     const { representing } = req.session;
     if (!representing) {
       throw new HttpException(400, 'Bad Request');
     }
-    let cases: CaseStatusResponse[] | null;
+    let cases: CaseStatusResponseWithPermissions[] | null;
     if (representing.mode === RepresentingMode.BUSINESS) {
       const orgNumber = representing.BUSINESS && formatOrgNr(representing.BUSINESS.organizationNumber);
       if (!orgNumber) {
@@ -163,7 +165,7 @@ export class CaseController {
   @OpenAPI({ summary: 'Return a list of cases for current logged in user' })
   @ResponseSchema(CasesApiResponse)
   @UseBefore(authMiddleware)
-  async getCases(@Req() req: RequestWithUser): Promise<ApiResponse<CaseStatusResponse[]>> {
+  async getCases(@Req() req: RequestWithUser): Promise<ApiResponse<CaseStatusResponseWithPermissions[]>> {
     const { representing } = req?.session;
 
     const controller = new AbortController();
@@ -179,7 +181,7 @@ export class CaseController {
         if (!res.data) {
           throw new HttpException(500, 'No data from API');
         }
-        const cases = res.data.filter(caseIsAllowed);
+        const cases = res.data.filter(caseIsAllowed).map(withMessagePermission);
         this.setCasesCache(req, cases);
 
         return { data: cases, message: 'success' };
@@ -221,7 +223,7 @@ export class CaseController {
   @Get('/cases/:caseId')
   @OpenAPI({ summary: 'Return a case' })
   @UseBefore(authMiddleware)
-  async getCase(@Req() req: RequestWithUser, @Param('caseId') caseId: string): Promise<ApiResponse<CaseStatusResponse | null>> {
+  async getCase(@Req() req: RequestWithUser, @Param('caseId') caseId: string): Promise<ApiResponse<CaseStatusResponseWithPermissions | null>> {
     if (!caseId) {
       throw new HttpException(400, 'Bad Request');
     }
@@ -298,6 +300,10 @@ export class CaseController {
 
     if (!_case) {
       throw new HttpException(400, 'Bad request');
+    }
+
+    if (!caseMessagesAllowed(_case)) {
+      throw new HttpException(403, 'Messages are not available for this case');
     }
 
     try {
@@ -432,6 +438,13 @@ export class CaseController {
     const _case = (await this.getCase(req, caseId)).data;
     if (!_case) {
       throw new HttpException(400, 'Bad request');
+    }
+
+    // An open-e case that caseManagement has handed over to Ecos or ByggR would
+    // otherwise take the OPEN_E_PLATFORM branch below and post a web message
+    // into open-e, where it is never read.
+    if (!caseMessagesAllowed(_case)) {
+      throw new HttpException(403, 'Messages are not available for this case');
     }
 
     // url is assigned in every reachable branch below (directly or inside buildMessageData);

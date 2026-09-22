@@ -2,7 +2,7 @@ import { AttachmentResponse, Message, MessageResponseDirectionEnum, MessageTypeE
 import { CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepInstanceEnum } from '@/data-contracts/messaging/data-contracts';
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
-import { FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
+import { CaseStatusResponseWithPermissions, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import { CaseDataNamespace } from '@/interfaces/casedata.interface';
 import { User } from '@/interfaces/users.interface';
 import dayjs from 'dayjs';
@@ -26,6 +26,29 @@ const draftStatuses: ReadonlySet<string> = new Set(['Sparat', 'Väntar på flerp
 const isDraft = (c: CaseStatusResponse): boolean => !!c.externalStatus && draftStatuses.has(c.externalStatus);
 export const caseIsAllowed = (c: CaseStatusResponse): boolean =>
   (namespaceIsAllowed(c) || (c.namespace === undefined && systemIsAllowed(c))) && (!isDraft(c) || c.system === 'OPEN_E_PLATFORM');
+
+// --- Message visibility ------------------------------------------------------
+
+const allowedMessageSystems: ReadonlySet<string> = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM']);
+
+// The single source of truth for whether a case may show and exchange messages.
+// Sent to the frontend as `messagesAllowed` so the rule is not duplicated there,
+// and enforced on the message endpoints in case.controller.ts.
+//
+// HYDRAN-2983 wants a further exclusion here: e-services that caseManagement
+// integrates with Ecos or ByggR should offer no communication at all. It is not
+// implemented yet because no field on the case identifies one. Note that
+// casestatus reports a forwarded case under its destination system, e.g. a
+// ByggR case carries `system: 'BYGGR'` with the open-e flow instance left in
+// `externalCaseId`, so while a case still sits in open-e nothing in the payload
+// says where it is headed. Resolving this needs either a destination field from
+// casestatus or a list of the integrated e-services to match on `caseType`.
+export const caseMessagesAllowed = (c: CaseStatusResponse): boolean => !!c.system && allowedMessageSystems.has(c.system);
+
+export const withMessagePermission = (c: CaseStatusResponse): CaseStatusResponseWithPermissions => ({
+  ...c,
+  messagesAllowed: caseMessagesAllowed(c),
+});
 
 // --- Conversation / message payload builders ---------------------------------
 

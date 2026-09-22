@@ -5,13 +5,9 @@ import { useApi } from '@services/api-service';
 import { formatAssetValidity, getAssetStatusProps } from '@services/asset-service';
 import { Button, Icon, Label, Spinner } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
-import dayjs from 'dayjs';
-import sv from 'dayjs/locale/sv';
 import { ChevronRight, FileCheck2 } from 'lucide-react';
 import NextLink from 'next/link';
 import { useTranslation } from 'react-i18next';
-
-dayjs.locale(sv);
 
 const AssetCard: React.FC<{ item: AssetWithService }> = ({ item }) => {
   const { representingMode } = useAppContext();

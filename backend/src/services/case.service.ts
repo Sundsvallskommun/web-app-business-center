@@ -13,6 +13,7 @@ const allowedNamespaces: ReadonlySet<string> = new Set([
   CaseDataNamespace.SBK_MEX,
   CaseDataNamespace.SBK_PARKING_PERMIT,
   CaseDataNamespace.CONTACTSUNDSVALL,
+  CaseDataNamespace.BOU,
 ]);
 const namespaceIsAllowed = (c: CaseStatusResponse): boolean => !!c?.namespace && allowedNamespaces.has(c.namespace);
 

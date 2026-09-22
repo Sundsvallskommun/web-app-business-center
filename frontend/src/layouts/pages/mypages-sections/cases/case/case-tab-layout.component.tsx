@@ -17,8 +17,6 @@ export enum CaseCurrentTab {
   MEDDELANDEN = 'meddelanden',
 }
 
-const MESSAGES_ALLOWED_SYSTEMS = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM']);
-
 export default function CaseTabLayout({
   caseId,
   currentTab: _currentTab,
@@ -30,18 +28,19 @@ export default function CaseTabLayout({
   const { representingMode } = useAppContext();
   const { caseData } = useContext(CaseContext);
   const router = useRouter();
-  const currentTab = Object.keys(CaseCurrentTab).indexOf(currentTabWithDefault.toUpperCase());
 
   const handleGotoTab = (tab: string) => {
     router.push(`${getRepresentingModeRoute(representingMode)}/arenden/${caseId}/${tab}`);
   };
 
-  const messageAllowed = (caseData: ICaseStatusResponse | undefined) => {
-    if (caseData?.system && MESSAGES_ALLOWED_SYSTEMS.has(caseData?.system)) {
-      return true;
-    }
-    return false;
-  };
+  // Decided by the backend, which also rejects the message endpoints for the
+  // same cases. See caseMessagesAllowed in backend/src/services/case.service.ts.
+  const messageAllowed = (caseData: ICaseStatusResponse | undefined) => caseData?.messagesAllowed === true;
+
+  // A link straight to /meddelanden on a case without messages has no tab to
+  // select, so it falls back to the first one.
+  const requestedTab = Object.keys(CaseCurrentTab).indexOf(currentTabWithDefault.toUpperCase());
+  const currentTab = requestedTab > 0 && !messageAllowed(caseData) ? 0 : requestedTab;
 
   return (
     <div>

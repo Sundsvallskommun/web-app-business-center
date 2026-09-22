@@ -52,6 +52,7 @@ export interface CaseStatusResponse {
   namespace?: string;
   errandNumber?: string;
   propertyDesignations?: string[];
+  messagesAllowed: boolean;
 }
 
 export interface AttachmentResponse {

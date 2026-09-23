@@ -25,7 +25,9 @@ envalid.cleanEnv(process.env, {
 module.exports = withBundleAnalyzer({
   output: 'standalone',
   allowedDevOrigins: ['dev.test'],
-  turbopack: {},
+  turbopack: {
+    root: __dirname,
+  },
   images: {
     remotePatterns: [{ hostname: process.env.DOMAIN_NAME || 'localhost' }],
     formats: ['image/avif', 'image/webp'],
@@ -33,7 +35,7 @@ module.exports = withBundleAnalyzer({
   basePath: process.env.BASE_PATH,
   transpilePackages: ['lucide-react'],
   experimental: {
-    optimizePackageImports: ['@sk-web-gui/core', '@sk-web-gui/react', 'dayjs'],
+    optimizePackageImports: ['@sk-web-gui/core', '@sk-web-gui/react'],
   },
   async rewrites() {
     return [{ source: '/napi/:path*', destination: '/api/:path*' }];

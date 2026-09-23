@@ -161,13 +161,15 @@ const samlStrategy = new Strategy(
   },
 );
 
+type ControllerClass = new (...args: any[]) => object;
+
 class App {
   public app: express.Application;
   public env: string;
   public port: string | number;
   public swaggerEnabled: boolean;
 
-  constructor(Controllers: Function[]) {
+  constructor(Controllers: ControllerClass[]) {
     this.app = express();
     this.env = NODE_ENV || 'development';
     this.port = PORT || 3000;
@@ -236,20 +238,26 @@ class App {
       `${BASE_URL_PREFIX}/saml/login`,
       samlLimiter,
       (req, _res, next) => {
+        let relayState: string | undefined;
         if (req.session.returnTo) {
-          req.query.RelayState = req.session.returnTo;
-        } else if (req.query.successRedirect) {
-          req.query.RelayState = req.query.successRedirect;
+          relayState = req.session.returnTo;
+        } else if (typeof req.query.successRedirect === 'string') {
+          relayState = req.query.successRedirect;
         }
         // Carry the representing mode through the SAML round-trip via RelayState (the IdP
         // echoes it back in the callback). The pre-auth session cannot be relied on: its
         // cookie is not sent on the cross-site IdP callback POST (sameSite=lax), and
         // passport's req.login regenerates the session. representing is therefore set in
         // the callback, after req.login, on the authenticated session.
-        if (req.query.representingMode && typeof req.query.RelayState === 'string' && isValidUrl(req.query.RelayState)) {
-          const relay = new URL(req.query.RelayState);
+        if (req.query.representingMode && relayState && isValidUrl(relayState)) {
+          const relay = new URL(relayState);
           relay.searchParams.set('representingMode', req.query.representingMode as string);
-          req.query.RelayState = relay.toString();
+          relayState = relay.toString();
+        }
+        // Express 5 re-parses req.query from req.url on every access, so assigning to it is
+        // lost. passport-saml reads RelayState from req.query, so rewrite the URL instead.
+        if (relayState) {
+          req.url = `${req.path}?RelayState=${encodeURIComponent(relayState)}`;
         }
         next();
       },
@@ -444,7 +452,7 @@ class App {
     });
   }
 
-  private initializeRoutes(controllers: Function[]) {
+  private initializeRoutes(controllers: ControllerClass[]) {
     useExpressServer(this.app, {
       routePrefix: BASE_URL_PREFIX,
       cors: {
@@ -457,7 +465,7 @@ class App {
     });
   }
 
-  private initializeSwagger(controllers: Function[]) {
+  private initializeSwagger(controllers: ControllerClass[]) {
     const schemas = validationMetadatasToSchemas({
       classTransformerMetadataStorage: defaultMetadataStorage,
       refPointerPrefix: '#/components/schemas/',

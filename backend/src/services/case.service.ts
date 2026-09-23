@@ -13,6 +13,7 @@ const allowedNamespaces: ReadonlySet<string> = new Set([
   CaseDataNamespace.SBK_MEX,
   CaseDataNamespace.SBK_PARKING_PERMIT,
   CaseDataNamespace.CONTACTSUNDSVALL,
+  CaseDataNamespace.BOU,
 ]);
 const namespaceIsAllowed = (c: CaseStatusResponse): boolean => !!c?.namespace && allowedNamespaces.has(c.namespace);
 
@@ -21,7 +22,11 @@ const systemIsAllowed = (c: CaseStatusResponse): boolean => !!c?.system && allow
 
 // A case is shown when its namespace is whitelisted, or — when it has no
 // namespace at all — when its originating system is whitelisted.
-export const caseIsAllowed = (c: CaseStatusResponse): boolean => namespaceIsAllowed(c) || (typeof c.namespace === 'undefined' && systemIsAllowed(c));
+// Drafts are currently only allowed if they are from OPEN_E_PLATFORM
+const draftStatuses: ReadonlySet<string> = new Set(['Sparat', 'Väntar på flerpartssignering']);
+const isDraft = (c: CaseStatusResponse): boolean => !!c.externalStatus && draftStatuses.has(c.externalStatus);
+export const caseIsAllowed = (c: CaseStatusResponse): boolean =>
+  (namespaceIsAllowed(c) || (c.namespace === undefined && systemIsAllowed(c))) && (!isDraft(c) || c.system === 'OPEN_E_PLATFORM');
 
 // --- Conversation / message payload builders ---------------------------------
 
@@ -125,7 +130,7 @@ export const normalizeWebMessageCollectorMessages = (messages: MessageDTO[]): Fr
               attachmentId: `${attachment.attachmentId}`,
               name: attachment.name,
               contentType: attachment.mimeType,
-            } as AttachmentResponse),
+            }) as AttachmentResponse,
         ) || [],
   }));
 

@@ -164,7 +164,7 @@ export class CaseController {
   @ResponseSchema(CasesApiResponse)
   @UseBefore(authMiddleware)
   async getCases(@Req() req: RequestWithUser): Promise<ApiResponse<CaseStatusResponse[]>> {
-    const { representing } = req?.session;
+    const { representing } = req.session;
 
     const controller = new AbortController();
     const { signal } = controller;
@@ -212,8 +212,9 @@ export class CaseController {
         return { data: req.session.cache.cases.PRIVATE, message: 'success' };
       }
 
-      url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses`;
+      url = `${this.apiBase}/${MUNICIPALITY_ID}/party/${req.user.partyId}/statuses?includeDrafts=true`;
     }
+
     return fetchCases(url);
   }
 

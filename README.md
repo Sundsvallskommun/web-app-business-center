@@ -1,4 +1,5 @@
-# Företagscenter - Mina sidor
+# Kommunens Mina Sidor
+Mina Sidor för privatpersoner och företagare
 
 ## APIer som används
 

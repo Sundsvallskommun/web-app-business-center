@@ -20,6 +20,9 @@ describe('Parking Permit Renewal', () => {
       data: { success: true },
       message: 'ok',
     }).as('extendParkingPermit');
+    cy.intercept('GET', '**/api/assets/asset-id-0/renewal-prefill', { data: {}, message: 'success' }).as(
+      'getAssetPrefill'
+    );
 
     cy.visit('/privat/beslut-och-dokument');
     cy.wait('@getAssets');

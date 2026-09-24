@@ -30,7 +30,7 @@ export default function CaseInformation() {
           href={openEErrandUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="sk-btn sk-btn-md sk-btn-secondary w-1/3"
+          className="sk-btn sk-btn-md sk-btn-secondary w-fit"
           aria-label={t('cases:information.showErrandAriaLabel')}
         >
           {t('cases:information.showErrand')}

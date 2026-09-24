@@ -1,5 +1,6 @@
 import { RepresentingMode } from '@interfaces/app';
 import { getAssets } from 'cypress/fixtures/getAssets';
+import { getDocuments, toDocumentDetails } from 'cypress/fixtures/getDocuments';
 import { setIntercepts } from 'cypress/support/e2e';
 
 // Create expiring asset fixture
@@ -16,6 +17,9 @@ describe('Parking Permit Renewal', () => {
     const expiringAsset = getExpiringAsset();
 
     cy.intercept('GET', /(.*)api\/assets$/, expiringAsset).as('getAssets');
+    cy.intercept('GET', /(.*)api\/documents$/, getDocuments(RepresentingMode.PRIVATE, expiringAsset.data)).as(
+      'getDocuments'
+    );
     cy.intercept('POST', '**/api/assets/parkingpermit/extend', {
       data: { success: true },
       message: 'ok',
@@ -25,15 +29,15 @@ describe('Parking Permit Renewal', () => {
     );
 
     cy.visit('/privat/beslut-och-dokument');
-    cy.wait('@getAssets');
+    cy.wait('@getDocuments');
   });
 
   // Helper to navigate to asset page with fresh intercept
   const navigateToAssetPage = () => {
     const expiringAsset = getExpiringAsset();
-    cy.intercept('GET', '**/api/assets/*', { data: expiringAsset.data[0], message: 'success' }).as('getAsset');
-    cy.get('ul[aria-label="Dokument"] li a').first().click();
-    cy.wait('@getAsset');
+    cy.intercept('GET', '**/api/documents/*', toDocumentDetails(expiringAsset.data[0])).as('getDocument');
+    cy.get('ul[aria-label="Dokument"] > li a').first().click();
+    cy.wait('@getDocument');
   };
 
   it('should display renewal alert for expiring parking permit', () => {

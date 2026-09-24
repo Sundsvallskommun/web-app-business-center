@@ -1,5 +1,6 @@
 import { RepresentingMode } from '@interfaces/app';
-import { testAssets, testCases, testContactSettings, testDecisions } from 'cypress/e2e/utils';
+import { testCases, testContactSettings, testDocuments, testUnlinkedDecisions } from 'cypress/e2e/utils';
+import { getDocumentsWithUnavailable } from 'cypress/fixtures/getDocuments';
 import { setIntercepts } from 'cypress/support/e2e';
 
 describe('Privat', () => {
@@ -39,18 +40,29 @@ describe('Privat', () => {
       testContactSettings(RepresentingMode.PRIVATE);
     });
   });
-  it('should render assets list /privat', () => {
+  it('should render documents list /privat', () => {
     cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
-    cy.wait('@getAssets').then(() => {
+    cy.wait('@getDocuments').then(() => {
       cy.url().should('include', '/privat/beslut-och-dokument');
-      testAssets(RepresentingMode.PRIVATE);
+      testDocuments(RepresentingMode.PRIVATE);
     });
   });
-  it('should render decisions list /privat', () => {
+  it('should render unlinked decisions list /privat', () => {
     cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
-    cy.wait('@getDecisions').then(() => {
+    cy.wait('@getDocuments').then(() => {
       cy.url().should('include', '/privat/beslut-och-dokument');
-      testDecisions();
+      testUnlinkedDecisions();
+    });
+  });
+  it('should name the unavailable source when one cannot be fetched /privat', () => {
+    cy.intercept('GET', /(.*)api\/documents$/, getDocumentsWithUnavailable(['CASEDATA'])).as('getDocuments');
+    cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
+    cy.wait('@getDocuments').then(() => {
+      cy.get('[data-cy="documents-source-unavailable"]')
+        .should('be.visible')
+        .and('contain.text', 'Beslut i dina ärenden kunde inte hämtas just nu.');
+      // The rest of the page still renders from the sources that answered
+      cy.get('ul[aria-label="Dokument"] > li').should('have.length', 1);
     });
   });
 });

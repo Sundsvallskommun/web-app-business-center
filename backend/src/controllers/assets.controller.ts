@@ -4,7 +4,7 @@ import { AddressAddressCategoryEnum, Errand, Stakeholder, StakeholderTypeEnum } 
 import { Asset } from '@/data-contracts/partyassets/data-contracts';
 import { AssetWithService } from '@/interfaces/asset.interface';
 import { AttachmentCategory, CaseDataNamespace, ParkingPermitCaseType, StakeholderRole } from '@/interfaces/casedata.interface';
-import { asOwned, Owned } from '@/interfaces/owned';
+import { Owned } from '@/interfaces/owned';
 import { HttpException } from '@/exceptions/HttpException';
 import { RequestWithUser } from '@/interfaces/auth.interface';
 import { ApiResponse } from '@/interfaces/service';
@@ -16,14 +16,13 @@ import { findSourceErrandForAsset } from '@/services/asset-relations.service';
 import {
   buildRenewalExtraParameters,
   buildRenewalPrefill,
-  isAllowedAsset,
+  fetchOwnedAssets,
+  findOwnedAsset,
   isParkingPermitAsset,
-  isVisibleStatus,
   ParkingPermitRenewalBody,
   ParkingPermitRenewalPrefill,
   toClientAsset,
   toServiceDetails,
-  toVisibleAssets,
 } from '@/services/asset.service';
 import { fetchErrandById } from '@/services/casedata-errand.service';
 import { toAttachmentMetadata, uploadErrandAttachment } from '@/services/casedata-attachment.service';
@@ -32,7 +31,7 @@ import { buildMyPagesErrand } from '@/utils/casedata-errand-utils';
 import { fileUploadOptions } from '@/utils/files/fileUploadOptions';
 import { getRepresentedPartyId } from '@/utils/getRepresentedPartyId';
 import { logger } from '@/utils/logger';
-import { apiURL, isSameUuid } from '@/utils/util';
+import { apiURL } from '@/utils/util';
 import { AssetsApiResponse, ParkingPermitRenewalPrefillApiResponse } from '@/responses/asset.response';
 import { Body, Controller, Get, Param, Post, Req, UploadedFiles, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
@@ -53,7 +52,6 @@ interface CreateErrandOptions {
 @UseBefore(authMiddleware)
 export class AssetsController {
   private apiService = new ApiService();
-  private apiBase = getApiBase('partyassets');
   private casedataApiBase = getApiBase('case-data');
 
   /**
@@ -163,11 +161,21 @@ export class AssetsController {
     return { data: { success: true }, message: 'ok' };
   }
 
+  private abortSignal(req: RequestWithUser): AbortSignal {
+    const controller = new AbortController();
+    req.on('aborted', () => {
+      controller.abort();
+      req.destroy();
+    });
+
+    return controller.signal;
+  }
+
   /**
    * List the assets of the entity the caller represents.
    *
-   * The upstream `?partyId=` filter is backed by the same `partyId` check `findOwnedAsset` makes,
-   * so that `Owned` means the same thing whichever of the two paths minted it.
+   * Ownership is decided in `fetchOwnedAssets`, which the documents overview shares, so the two
+   * endpoints can never disagree on which assets the party may see.
    */
   @Get('/assets')
   @OpenAPI({ summary: 'Return a list of assets for current representing entity' })
@@ -175,49 +183,26 @@ export class AssetsController {
   async getAssets(@Req() req: RequestWithUser): Promise<ApiResponse<AssetWithService[]>> {
     const partyId = this.getPartyId(req);
 
-    const controller = new AbortController();
-    const { signal } = controller;
-    req.on('aborted', () => {
-      controller.abort();
-      req.destroy();
-    });
-
     try {
-      const params = { partyId };
-      const url = `${this.apiBase}/${MUNICIPALITY_ID}/assets`;
-      const res = await this.apiService.get<Asset[]>({ url, signal, params }, req.user);
-
-      if (!res.data) {
-        throw new HttpException(500, 'No data from API');
-      }
-
-      const assets: Owned<Asset>[] = toVisibleAssets(res.data)
-        .filter(a => isSameUuid(a.partyId, partyId))
-        .map(asOwned);
+      const assets = await fetchOwnedAssets(partyId, req.user, this.abortSignal(req));
       const data = await Promise.all(assets.map(async asset => ({ ...toClientAsset(asset), service: await toServiceDetails(asset, req.user) })));
 
       return { data, message: 'success' };
-    } catch (error) {
-      if (error instanceof HttpException && error.status === 404) {
-        return { data: [], message: '404 from api, Assumed empty array' };
-      } else {
-        throw new HttpException(500, 'Something went wrong');
-      }
+    } catch (_error) {
+      throw new HttpException(500, 'Something went wrong');
     }
   }
 
   /**
    * Validate that an asset is among the assets the user actually owns
    *
-   * The user's partyId is extracted from the session, and this partyId
-   * is then used for filtering the /assets endpoint in PartyAssets. The
-   * list of assets is then filtered by the asset id parameter. The asset
+   * Resolves the represented partyId from the session and looks the id up
+   * among the assets `fetchOwnedAssets` returns for that party, so the asset
    * is only returned if it is found, is of a whitelisted type, has an
-   * allowed status and has a partyId matching the request user's partyId
+   * allowed status and has a partyId matching the request user's partyId.
    *
-   * This is the single point where asset ownership is decided: every
-   * endpoint that resolves an asset by id must go through this rather
-   * than fetching it directly.
+   * Every endpoint in this controller that resolves an asset by id must go
+   * through this rather than fetching it directly.
    *
    * @param req Request object containing user to search assets for
    * @param id Id of the asset to locate
@@ -235,45 +220,19 @@ export class AssetsController {
       throw new HttpException(400, 'Bad Request');
     }
 
-    const controller = new AbortController();
-    const { signal } = controller;
-    req.on('aborted', () => {
-      controller.abort();
-      req.destroy();
-    });
-
+    let asset: Owned<Asset> | undefined;
     try {
-      const params = { partyId };
-      const url = `${this.apiBase}/${MUNICIPALITY_ID}/assets`;
-      const res = await this.apiService.get<Asset[]>({ url, signal, params }, req.user);
-
-      if (!res.data) {
-        throw new HttpException(500, 'No data from API');
-      }
-
-      const asset = res.data.find(a => a.id === id && isSameUuid(a.partyId, partyId));
-
-      if (!asset || !isAllowedAsset(asset) || !isVisibleStatus(asset)) {
-        throw new HttpException(404, 'Asset not found');
-      }
-
-      return asOwned(asset);
+      asset = await findOwnedAsset(partyId, id, req.user, this.abortSignal(req));
     } catch (error) {
       console.error(error);
-      if (error instanceof HttpException && error.status === 404) {
-        throw new HttpException(404, 'Asset not found');
-      }
       throw new HttpException(500, 'Something went wrong');
     }
-  }
 
-  @Get('/assets/:id')
-  @OpenAPI({ summary: 'Return a asset' })
-  async getAsset(@Req() req: RequestWithUser, @Param('id') id: string): Promise<ApiResponse<AssetWithService>> {
-    const asset = await this.findOwnedAsset(req, id);
-    const service = await toServiceDetails(asset, req.user);
+    if (!asset) {
+      throw new HttpException(404, 'Asset not found');
+    }
 
-    return { data: { ...toClientAsset(asset), service }, message: 'success' };
+    return asset;
   }
 
   @Get('/assets/:id/renewal-prefill')

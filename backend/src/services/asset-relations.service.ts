@@ -36,33 +36,54 @@ const isTargetingAsset = (relation: Relation, assetId: string): boolean =>
 const isErrandAssetLink = (relation: Relation, assetId: string): boolean =>
   relation.type === LINK_RELATION_TYPE && isCaseSource(relation) && isTargetingAsset(relation, assetId);
 
-interface SourceErrandRef {
+export interface SourceErrandRef {
   id: string;
   namespace: string;
 }
 
 /**
- * Find relations of type LINK that have the asset id as target.
+ * A relation can be turned into an errand ref only when it names both the errand and its
+ * namespace; the rest are logged and dropped.
+ */
+const toSourceErrandRef = (link: Relation, assetId: string): SourceErrandRef | undefined => {
+  if (!link.source.resourceId) {
+    logger.warn(`Relation ${link.id} for asset ${assetId} carries no source errand id`);
+    return undefined;
+  }
+
+  if (!link.source.namespace) {
+    logger.warn(`Relation ${link.id} for asset ${assetId} carries no source namespace`);
+    return undefined;
+  }
+
+  return {
+    id: link.source.resourceId,
+    namespace: link.source.namespace,
+  };
+};
+
+/**
+ * Find every relation of type LINK that has the asset id as target, and return the errands they
+ * come from. An asset is typically linked from the errand it was issued on, and may also be linked
+ * from later errands about it, such as a renewal or a lost-card report.
  *
- * The returned id and namespace can then be used to fetch the errand data.
- *
- * Takes `Owned<Asset>` because this walks from an asset id to an errand id without checking any
- * party itself: the caller has to have settled ownership of the asset first. The ref it returns is
- * deliberately unbranded — nothing here establishes that the errand belongs to anyone, which is
+ * Takes `Owned<Asset>` because this walks from an asset id to errand ids without checking any
+ * party itself: the caller has to have settled ownership of the asset first. The refs it returns are
+ * deliberately unbranded — nothing here establishes that an errand belongs to anyone, which is
  * what `fetchErrandById` verifies before branding it.
  *
  * @param asset the asset to find relations for, whose ownership has been established
  * @param user user from request object
- * @returns `SourceErrandRef` for the related errand, or `undefined` when no relation links this
- * asset to a CaseData errand, or the relation is missing the errand id or namespace
+ * @returns the linked errands, in the order the relations service returned them. Empty when no
+ * relation links this asset to a CaseData errand, or when the relations service cannot be reached
  */
-export const findSourceErrandForAsset = async (
+export const findSourceErrandsForAsset = async (
   asset: Owned<Asset>,
   user: User,
   api: Pick<ApiService, 'get'> = defaultApi,
-): Promise<SourceErrandRef | undefined> => {
+): Promise<SourceErrandRef[]> => {
   const assetId = asset?.id;
-  if (!assetId) return undefined;
+  if (!assetId) return [];
 
   const filter = `target.resourceId%3A%27${encodeURIComponent(assetId)}%27`;
   const url = `${getApiBase('relations')}/${MUNICIPALITY_ID}/relations?filter=${filter}`;
@@ -76,27 +97,27 @@ export const findSourceErrandForAsset = async (
       logger.error(`Relations query for asset ${assetId} returned ${foreignTargets} relation(s) targeting other resources`);
     }
 
-    const link = relations.find(relation => isErrandAssetLink(relation, assetId));
-    if (!link) {
-      return undefined;
-    }
-
-    if (!link.source.resourceId) {
-      logger.warn(`Relation ${link.id} for asset ${assetId} carries no source errand id`);
-      return undefined;
-    }
-
-    if (!link.source.namespace) {
-      logger.warn(`Relation ${link.id} for asset ${assetId} carries no source namespace`);
-      return undefined;
-    }
-
-    return {
-      id: link.source.resourceId,
-      namespace: link.source.namespace,
-    };
+    return relations
+      .filter(relation => isErrandAssetLink(relation, assetId))
+      .map(link => toSourceErrandRef(link, assetId))
+      .filter((ref): ref is SourceErrandRef => !!ref);
   } catch (error) {
     logger.error(`Failed to fetch relations for asset ${assetId}: `, error);
-    return undefined;
+    return [];
   }
+};
+
+/**
+ * The errand the asset was issued from: the first usable LINK relation targeting it.
+ *
+ * @returns `SourceErrandRef` for the related errand, or `undefined` when no relation links this
+ * asset to a CaseData errand, or every relation is missing the errand id or namespace
+ */
+export const findSourceErrandForAsset = async (
+  asset: Owned<Asset>,
+  user: User,
+  api: Pick<ApiService, 'get'> = defaultApi,
+): Promise<SourceErrandRef | undefined> => {
+  const [first] = await findSourceErrandsForAsset(asset, user, api);
+  return first;
 };

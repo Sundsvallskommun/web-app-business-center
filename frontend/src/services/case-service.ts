@@ -92,12 +92,6 @@ export const getCasesInNeedOfData: (cs: CasesData) => CasesData = (cs) => ({
   ),
 });
 
-export const getCasePdf: (caseId: string) => Promise<string> = (caseId) =>
-  apiService
-    .get<ApiResponse<string>>(`cases/${caseId}/pdf`)
-    .then((res) => res.data.data)
-    .catch(() => '');
-
 export const getCaseMessageAttachment: (url: string) => Promise<string> = (url) =>
   apiService
     .get<ApiResponse<string>>(url)

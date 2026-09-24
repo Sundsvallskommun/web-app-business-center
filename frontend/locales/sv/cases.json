@@ -10,5 +10,9 @@
     "title": "Avslutade",
     "empty": "Det finns inga avslutade ärenden",
     "loading": "Laddar avslutade ärenden"
+  },
+  "information": {
+    "showErrand": "Visa ärendet",
+    "showErrandAriaLabel": "Visa ärendet i e-tjänsteportalen (öppnas i ny flik)"
   }
 }

@@ -17,7 +17,7 @@ const allowedNamespaces: ReadonlySet<string> = new Set([
 ]);
 const namespaceIsAllowed = (c: CaseStatusResponse): boolean => !!c?.namespace && allowedNamespaces.has(c.namespace);
 
-const allowedSystems: ReadonlySet<string> = new Set(['OPEN_E_PLATFORM', 'BYGGR']);
+const allowedSystems: ReadonlySet<string> = new Set(['OPEN_E_PLATFORM', 'BYGGR', 'ECOS']);
 const systemIsAllowed = (c: CaseStatusResponse): boolean => !!c?.system && allowedSystems.has(c.system);
 
 // A case is shown when its namespace is whitelisted, or — when it has no

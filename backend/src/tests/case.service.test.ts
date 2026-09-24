@@ -50,7 +50,7 @@ describe('case.service', () => {
     it('falls back to the system whitelist only when namespace is undefined', () => {
       expect(caseIsAllowed({ system: 'OPEN_E_PLATFORM' } as CaseStatusResponse)).toBe(true);
       expect(caseIsAllowed({ system: 'BYGGR' } as CaseStatusResponse)).toBe(true);
-      expect(caseIsAllowed({ system: 'ECOS' } as CaseStatusResponse)).toBe(false);
+      expect(caseIsAllowed({ system: 'ECOS' } as CaseStatusResponse)).toBe(true);
       expect(caseIsAllowed({ system: 'CASE_DATA' } as CaseStatusResponse)).toBe(false);
     });
 
@@ -81,6 +81,18 @@ describe('case.service', () => {
       expect(caseMessagesAllowed({ system: 'CASE_DATA', errandNumber: 'PRH-2026-000001' } as CaseStatusResponse)).toBe(true);
       expect(caseMessagesAllowed({ system: 'SUPPORT_MANAGEMENT', errandNumber: 'KC-2026-000001' } as CaseStatusResponse)).toBe(true);
       expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', errandNumber: 'MK-2026-000123' } as CaseStatusResponse)).toBe(true);
+    });
+
+    it('lists a case forwarded to Ecos but gives it no messages', () => {
+      const ecosCase = {
+        caseId: 'ab137f67-5bee-41d4-b7e6-be3f1a0bb8c7',
+        errandNumber: 'MK-2026-13',
+        externalCaseId: '5788',
+        caseType: 'Ansökan/anmälan eget avlopp',
+        system: 'ECOS',
+      } as CaseStatusResponse;
+      expect(caseIsAllowed(ecosCase)).toBe(true);
+      expect(caseMessagesAllowed(ecosCase)).toBe(false);
     });
 
     it('rejects a case forwarded to ByggR, which casestatus reports under its destination system', () => {

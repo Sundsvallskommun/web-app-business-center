@@ -1,7 +1,7 @@
 import { DecisionItem, DocumentItem, SourceStatus } from '@data-contracts/backend/data-contracts';
 import { ApiResponse, apiService } from './api-service';
 
-export type DocumentSource = DocumentItem['source'];
+type DocumentSource = DocumentItem['source'];
 
 // Ids on the documents API are composite, `<source key>-<id in that source>`, so a
 // document can be addressed regardless of which upstream it came from. Mirrors
@@ -30,7 +30,7 @@ const decisionOutcomeLabels: Record<string, string> = {
   CANCELLATION: 'Avskrivning',
 };
 
-export const getDecisionOutcomeLabel = (outcome?: string): string => {
+const getDecisionOutcomeLabel = (outcome?: string): string => {
   if (!outcome) return '';
   return decisionOutcomeLabels[outcome] ?? outcome;
 };
@@ -44,9 +44,9 @@ export const getDecisionTitle = (decision: DecisionItem, defaultTitle: string): 
 export const getUnavailableSources = (sources?: SourceStatus[]): string[] =>
   sources?.filter((source) => source.status === 'UNAVAILABLE').map((source) => source.source) ?? [];
 
-export const joinList = (items: string[], and: string): string => {
+const joinList = (items: string[], and: string): string => {
   if (items.length <= 1) return items[0] ?? '';
-  return `${items.slice(0, -1).join(', ')} ${and} ${items[items.length - 1]}`;
+  return `${items.slice(0, -1).join(', ')} ${and} ${items.at(-1)}`;
 };
 
 export const getSourceUnavailableMessage = (

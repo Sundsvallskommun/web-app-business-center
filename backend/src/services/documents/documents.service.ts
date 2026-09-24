@@ -5,7 +5,7 @@ import { casedataSource } from './casedata.source';
 import { DocumentSourceAdapter, DocumentSourceContext, SourceDecision, SourceDocument, toClientDecision, toClientDocument } from './document-source';
 import { partyassetsSource } from './partyassets.source';
 
-export const getDocumentSources = (): DocumentSourceAdapter[] => [partyassetsSource, ...(USE_DECISIONS ? [casedataSource] : [])];
+const getDocumentSources = (): DocumentSourceAdapter[] => [partyassetsSource, ...(USE_DECISIONS ? [casedataSource] : [])];
 
 /**
  * The key a decision and a document are matched on: a casedata errand id. Surrounding whitespace
@@ -17,7 +17,7 @@ export const normalizeMatchKey = (value?: string): string | undefined => {
 };
 
 const timestamp = (date?: string): number => {
-  const time = date ? new Date(date).getTime() : NaN;
+  const time = date ? new Date(date).getTime() : Number.NaN;
   return Number.isNaN(time) ? 0 : time;
 };
 
@@ -35,23 +35,25 @@ export const sortDocuments = <T extends { issued?: string }>(documents: T[]): T[
  * its errand. Decisions no document owns are returned as unlinked. Match keys are stripped from
  * the decisions on the way out; input arrays are not mutated.
  */
+const indexDocumentsByKey = (documents: SourceDocument[]): Map<string, SourceDocument[]> => {
+  const ownersByKey = new Map<string, SourceDocument[]>();
+
+  for (const document of documents) {
+    const keys = new Set(document.matchKeys.map(normalizeMatchKey).filter((key): key is string => !!key));
+    for (const key of keys) {
+      ownersByKey.set(key, [...(ownersByKey.get(key) ?? []), document]);
+    }
+  }
+
+  return ownersByKey;
+};
+
 export const groupDecisionsByDocument = (
   documents: SourceDocument[],
   decisions: SourceDecision[],
 ): { documents: SourceDocument[]; unlinkedDecisions: DecisionItem[] } => {
   const grouped = documents.map(document => ({ ...document, decisions: [...document.decisions] }));
-
-  const ownersByKey = new Map<string, SourceDocument[]>();
-  for (const document of grouped) {
-    for (const rawKey of document.matchKeys) {
-      const key = normalizeMatchKey(rawKey);
-      if (!key) continue;
-      const owners = ownersByKey.get(key) ?? [];
-      if (!owners.includes(document)) {
-        ownersByKey.set(key, [...owners, document]);
-      }
-    }
-  }
+  const ownersByKey = indexDocumentsByKey(grouped);
 
   const unlinkedDecisions: DecisionItem[] = [];
   for (const decision of decisions) {

@@ -17,7 +17,7 @@ describe('Parking Permit Renewal', () => {
     const expiringAsset = getExpiringAsset();
 
     cy.intercept('GET', /(.*)api\/assets$/, expiringAsset).as('getAssets');
-    cy.intercept('GET', /(.*)api\/documents$/, getDocuments(RepresentingMode.PRIVATE, expiringAsset.data)).as(
+    cy.intercept('GET', '**/api/documents', getDocuments(RepresentingMode.PRIVATE, expiringAsset.data)).as(
       'getDocuments'
     );
     cy.intercept('POST', '**/api/assets/parkingpermit/extend', {

@@ -8,7 +8,7 @@ describe('Report Lost Parking Permit', () => {
     setIntercepts(RepresentingMode.PRIVATE);
 
     cy.intercept('GET', /(.*)api\/assets$/, getAssets(RepresentingMode.PRIVATE)).as('getAssets');
-    cy.intercept('GET', /(.*)api\/documents$/, getDocuments(RepresentingMode.PRIVATE)).as('getDocuments');
+    cy.intercept('GET', '**/api/documents', getDocuments(RepresentingMode.PRIVATE)).as('getDocuments');
     cy.intercept('POST', '**/api/assets/parkingpermit/lost', {
       data: { success: true },
       message: 'ok',

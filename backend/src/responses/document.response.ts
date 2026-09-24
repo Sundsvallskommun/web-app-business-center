@@ -17,7 +17,7 @@ import { IsIn, IsInt, IsOptional, IsString, ValidateNested } from 'class-validat
 
 const SOURCE_STATUSES = ['OK', 'UNAVAILABLE'] as const;
 
-export class DecisionAttachment implements DecisionAttachmentType {
+class DecisionAttachment implements DecisionAttachmentType {
   @IsInt()
   id!: number;
   @IsString()
@@ -30,7 +30,7 @@ export class DecisionAttachment implements DecisionAttachmentType {
   extension?: string;
 }
 
-export class DecisionItem implements DecisionItemType {
+class DecisionItem implements DecisionItemType {
   @IsString()
   id!: string;
   @IsIn(DOCUMENT_SOURCES)
@@ -61,7 +61,7 @@ export class DecisionItem implements DecisionItemType {
   attachments!: DecisionAttachment[];
 }
 
-export class DocumentItem implements DocumentItemType {
+class DocumentItem implements DocumentItemType {
   @IsString()
   id!: string;
   @IsIn(DOCUMENT_SOURCES)
@@ -82,14 +82,14 @@ export class DocumentItem implements DocumentItemType {
   decisions!: DecisionItem[];
 }
 
-export class SourceStatus implements SourceStatusType {
+class SourceStatus implements SourceStatusType {
   @IsString()
   source!: string;
   @IsIn(SOURCE_STATUSES)
   status!: (typeof SOURCE_STATUSES)[number];
 }
 
-export class DocumentsOverview implements DocumentsOverviewType {
+class DocumentsOverview implements DocumentsOverviewType {
   @ValidateNested({ each: true })
   @Type(() => DocumentItem)
   documents!: DocumentItem[];
@@ -109,7 +109,7 @@ export class DocumentsOverviewApiResponse implements ApiResponse<DocumentsOvervi
   message!: string;
 }
 
-export class DocumentDetails extends DocumentItem implements DocumentDetailsType {
+class DocumentDetails extends DocumentItem implements DocumentDetailsType {
   @ValidateNested()
   @Type(() => Asset)
   @IsOptional()

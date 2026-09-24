@@ -36,7 +36,7 @@ const isTargetingAsset = (relation: Relation, assetId: string): boolean =>
 const isErrandAssetLink = (relation: Relation, assetId: string): boolean =>
   relation.type === LINK_RELATION_TYPE && isCaseSource(relation) && isTargetingAsset(relation, assetId);
 
-export interface SourceErrandRef {
+interface SourceErrandRef {
   id: string;
   namespace: string;
 }

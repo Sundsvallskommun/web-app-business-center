@@ -42,16 +42,20 @@ export default function AssetLayout(props: { id: string; children: React.ReactNo
     redirect(`${getRepresentingModeRoute(representingMode)}/beslut-och-dokument`);
   }
 
-  const content = isPending ? (
-    <div className="flex items-center" data-cy="document-loading">
-      <p className="text-secondary">{t('decisions:loadingDocument')}</p>
-      <Spinner className="ml-10" size={2} />
-    </div>
-  ) : documentError ? (
-    <p role="alert">{t('decisions:loadDocumentError')}</p>
-  ) : (
-    children
-  );
+  const renderContent = () => {
+    if (isPending) {
+      return (
+        <div className="flex items-center" data-cy="document-loading">
+          <p className="text-secondary">{t('decisions:loadingDocument')}</p>
+          <Spinner className="ml-10" size={2} />
+        </div>
+      );
+    }
+    if (documentError) {
+      return <p role="alert">{t('decisions:loadDocumentError')}</p>;
+    }
+    return children;
+  };
 
   return (
     <PagesBreadcrumbsLayout
@@ -77,7 +81,7 @@ export default function AssetLayout(props: { id: string; children: React.ReactNo
           assetData,
         }}
       >
-        {content}
+        {renderContent()}
       </AssetsContext.Provider>
     </PagesBreadcrumbsLayout>
   );

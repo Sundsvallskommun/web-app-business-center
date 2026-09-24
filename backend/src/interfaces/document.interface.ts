@@ -14,7 +14,7 @@ export interface DecisionAttachment {
 }
 
 export interface DecisionItem {
-  /** Composite id, `<source>:<id in that source>`. Unique across sources. */
+  /** Composite id, `<source key>-<id in that source>`, e.g. `pa-<uuid>` or `cd-123`. Unique across sources. */
   id: string;
   source: DocumentSource;
   title?: string;
@@ -31,7 +31,7 @@ export interface DecisionItem {
 }
 
 export interface DocumentItem {
-  /** Composite id, `<source>:<id in that source>`. Unique across sources. */
+  /** Composite id, `<source key>-<id in that source>`, e.g. `pa-<uuid>` or `cd-123`. Unique across sources. */
   id: string;
   source: DocumentSource;
   title: string;
@@ -57,7 +57,7 @@ export interface DocumentDetails extends DocumentItem {
   asset?: AssetWithService;
 }
 
-export const DOCUMENT_SOURCE_KEYS: Record<DocumentSource, string> = {
+const DOCUMENT_SOURCE_KEYS: Record<DocumentSource, string> = {
   PARTYASSETS: 'pa',
   CASEDATA: 'cd',
 };

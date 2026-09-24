@@ -188,7 +188,8 @@ export class AssetsController {
       const data = await Promise.all(assets.map(async asset => ({ ...toClientAsset(asset), service: await toServiceDetails(asset, req.user) })));
 
       return { data, message: 'success' };
-    } catch (_error) {
+    } catch (error) {
+      logger.error('Failed to list assets: ', error);
       throw new HttpException(500, 'Something went wrong');
     }
   }

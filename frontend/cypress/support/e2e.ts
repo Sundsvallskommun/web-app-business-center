@@ -35,7 +35,7 @@ export const setIntercepts = (representingMode: RepresentingMode = representingM
   cy.intercept('GET', '**/api/invoices', getInvoices(representingMode)).as('getInvoices');
   cy.intercept('GET', '**/api/contactsettings', getContactSettings(representingMode)).as('getContactSettings');
   cy.intercept('GET', /(.*)api\/assets$/, getAssets(representingMode)).as('getAssets');
-  cy.intercept('GET', /(.*)api\/documents$/, getDocuments(representingMode)).as('getDocuments');
+  cy.intercept('GET', '**/api/documents', getDocuments(representingMode)).as('getDocuments');
   cy.intercept('GET', '**/api/documents/*', getDocument(representingMode)).as('getDocument');
 };
 

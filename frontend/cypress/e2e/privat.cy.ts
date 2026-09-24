@@ -55,7 +55,7 @@ describe('Privat', () => {
     });
   });
   it('should name the unavailable source when one cannot be fetched /privat', () => {
-    cy.intercept('GET', /(.*)api\/documents$/, getDocumentsWithUnavailable(['CASEDATA'])).as('getDocuments');
+    cy.intercept('GET', '**/api/documents', getDocumentsWithUnavailable(['CASEDATA'])).as('getDocuments');
     cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
     cy.wait('@getDocuments').then(() => {
       cy.get('[data-cy="documents-source-unavailable"]')

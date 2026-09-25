@@ -1,9 +1,11 @@
 import { ApplicationType, FinancialAssistanceFormData } from '@interfaces/financial-assistance';
 import {
+  ApplicationPdfList,
   ApplicationPdfRow,
   ApplicationPdfSection,
   buildApplicationPdfSummary,
 } from '@services/financial-assistance-pdf-summary';
+import { Divider } from '@sk-web-gui/react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useApplicantIdentities } from './use-applicant-identities';
@@ -23,18 +25,39 @@ const SummaryRow: React.FC<{ row: ApplicationPdfRow }> = ({ row }) => (
   </div>
 );
 
+/** A bulleted list with its optional lead-in, e.g. the documents to attach. */
+const SummaryList: React.FC<{ list: ApplicationPdfList }> = ({ list }) => (
+  <div className="flex flex-col gap-4">
+    {list.heading ? <p className="font-bold">{list.heading}</p> : null}
+    <ul className="list-disc flex flex-col gap-4 pl-20">
+      {list.items.map((item, index) => (
+        <li key={index}>{item}</li>
+      ))}
+    </ul>
+  </div>
+);
+
 const SummarySection: React.FC<{ section: ApplicationPdfSection }> = ({ section }) => (
-  <section className="flex flex-col gap-4">
-    {section.heading ? <h4 className="text-h5-md font-bold">{section.heading}</h4> : null}
-    {section.info ? <p className="text-small italic text-dark-secondary whitespace-pre-line">{section.info}</p> : null}
-    {section.rows.length ? (
-      <dl className="flex flex-col">
-        {section.rows.map((row, index) => (
-          <SummaryRow key={index} row={row} />
-        ))}
-      </dl>
-    ) : null}
-  </section>
+  <>
+    <section className="flex flex-col gap-4">
+      {section.heading ? <h4 className="text-h5-md font-bold">{section.heading}</h4> : null}
+      {section.info ? <p className="text-small italic text-dark-secondary whitespace-pre-line">{section.info}</p> : null}
+      {section.lists?.map((list, index) => <SummaryList key={index} list={list} />)}
+      {section.rows.length ? (
+        <dl className="flex flex-col">
+          {section.rows.map((row, index) => (
+            <SummaryRow key={index} row={row} />
+          ))}
+        </dl>
+      ) : null}
+      {section.note ? (
+        <p role="note" className="bg-vattjom-background-200 rounded-button px-14 py-12">
+          {section.note}
+        </p>
+      ) : null}
+    </section>
+    {section.divider ? <Divider /> : null}
+  </>
 );
 
 /**

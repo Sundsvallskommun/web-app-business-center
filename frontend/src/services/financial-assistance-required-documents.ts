@@ -124,3 +124,10 @@ export const getRequiredDocuments = (
 
   return [];
 };
+
+/**
+ * Återansökan and tilläggsansökan ask "Behöver du bifoga några bilagor?" when the answers do not
+ * already require documents. Shared by the form and the PDF summary.
+ */
+export const asksNeedsAttachments = (applicationType: ApplicationType, requiredDocuments: RequiredDocument[]): boolean =>
+  applicationType !== 'NEW' && requiredDocuments.length === 0;

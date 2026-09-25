@@ -1,5 +1,6 @@
 import { ApplicationType, FinancialAssistanceFormData } from '@interfaces/financial-assistance';
-import { RequiredDocument, getRequiredDocuments } from '@services/financial-assistance-required-documents';
+import { requiredDocumentLabel, requiredDocumentsHeading } from '@services/financial-assistance-labels';
+import { RequiredDocument, asksNeedsAttachments, getRequiredDocuments } from '@services/financial-assistance-required-documents';
 import {
   CustomOnChangeEventUploadFile,
   FileUpload,
@@ -49,7 +50,7 @@ export const FaAttachments: React.FC<FaAttachmentsProps> = ({ applicationType })
   const requiredDocuments = getRequiredDocuments(watch(), applicationType);
   const attachments = watch('attachments');
   const needsAttachments = watch('needsAttachments');
-  const askNeedsAttachments = !isNew && requiredDocuments.length === 0;
+  const askNeedsAttachments = asksNeedsAttachments(applicationType, requiredDocuments);
   const showUpload = isNew || requiredDocuments.length > 0 || needsAttachments === true;
 
   const asList = (key: string): string[] => {
@@ -57,23 +58,11 @@ export const FaAttachments: React.FC<FaAttachmentsProps> = ({ applicationType })
     return Array.isArray(value) ? (value as string[]) : [];
   };
 
-  const applicantName = nameForRole('APPLICANT');
-  const coApplicantName = nameForRole('CO_APPLICANT');
-  const requiredHeading =
-    applicantName && coApplicantName
-      ? t('financial-assistance:attachments.requiredHeadingNamed', {
-          applicant: applicantName,
-          coApplicant: coApplicantName,
-        })
-      : t('financial-assistance:attachments.requiredHeading');
+  const requiredHeading = requiredDocumentsHeading(t, nameForRole('APPLICANT'), nameForRole('CO_APPLICANT'));
 
   // Läkarintyg m.fl. gäller en person — namnge personen när man ansöker tillsammans.
   const documentLabel = (document: RequiredDocument): string =>
-    document.role && isCohabiting
-      ? t(`financial-assistance:attachments.docs.${document.id}Named`, {
-          name: nameForRole(document.role) ?? t(`financial-assistance:recipient.${document.role}`).toLowerCase(),
-        })
-      : t(`financial-assistance:attachments.docs.${document.id}`);
+    requiredDocumentLabel(t, document, isCohabiting, document.role ? nameForRole(document.role) : null);
 
   const renderList = (items: string[]) => (
     <ul className="list-disc flex flex-col gap-4 pl-20">

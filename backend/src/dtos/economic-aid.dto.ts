@@ -298,6 +298,18 @@ export class ApplicationPdfRowDto {
   info?: string;
 }
 
+/** A bulleted list in the sammanställning-PDF, e.g. the documents to attach. */
+export class ApplicationPdfListDto {
+  // Optional lead-in above the list.
+  @IsOptional()
+  @IsString()
+  heading?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  items!: string[];
+}
+
 /** A titled group of question/answer rows (a sub-section within a numbered group). */
 export class ApplicationPdfSectionDto {
   // Optional sub-heading within a group.
@@ -314,6 +326,23 @@ export class ApplicationPdfSectionDto {
   @IsOptional()
   @IsString()
   info?: string;
+
+  // Bulleted lists shown after the help text.
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ApplicationPdfListDto)
+  lists?: ApplicationPdfListDto[];
+
+  // A highlighted note box shown after the rows.
+  @IsOptional()
+  @IsString()
+  note?: string;
+
+  // Draws a divider line after the section.
+  @IsOptional()
+  @IsBoolean()
+  divider?: boolean;
 
   // Person sections carry the role so the backend can attach the right person.
   @IsOptional()

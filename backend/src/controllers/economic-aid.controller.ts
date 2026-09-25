@@ -35,6 +35,7 @@ import ApiTokenService from '@/services/api-token.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
 import { renderPdfFromHtml } from '@/services/templating.service';
 import { buildApplicationPdfHtml } from '@/utils/economic-aid-application-pdf';
+import { fillPersonNamePlaceholders } from '@/utils/economic-aid-pdf-person-names';
 import { getCitizen, getCitizenPersonnumber } from '@/services/citizen.service';
 import { makeClientContactSetting } from '@/services/contact-setting.service';
 import { caremanagementUrl } from '@/utils/caremanagement-url';
@@ -543,6 +544,9 @@ export class EconomicAidController {
       }
       identityByRole.set(role, identity);
     }
+
+    // Texts that name a person (e.g. "Vilken planering har …?") carry a placeholder from the client.
+    fillPersonNamePlaceholders(summary, new Map([...identityByRole].map(([role, identity]) => [role, identity.name])));
 
     // Bara när det finns en medsökande visar vi namn på personsektioner (t.ex. utbetalning) — för
     // att skilja personerna åt. Ensam sökande får ingen "Sökande"-rubrik.

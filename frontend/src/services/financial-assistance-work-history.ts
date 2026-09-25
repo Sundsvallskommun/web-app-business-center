@@ -1,7 +1,7 @@
 import { PersonRole, PlanningForm } from '@interfaces/financial-assistance';
 
 /** Planning entries without a person belong to the applicant (same rule as the planning step). */
-const planningRole = (person: string): PersonRole => (person === 'CO_APPLICANT' ? 'CO_APPLICANT' : 'APPLICANT');
+export const planningRole =(person: string): PersonRole => (person === 'CO_APPLICANT' ? 'CO_APPLICANT' : 'APPLICANT');
 
 /**
  * Whether "Har du haft arbete under de senaste 12 månaderna?" is asked for a person (nyansökan):

@@ -1,11 +1,22 @@
-import { ApplicationType, AssetForm, FinancialAssistanceFormData, PeriodChoice, PersonForm, PlanningForm } from '@interfaces/financial-assistance';
+import {
+  ApplicationType,
+  AssetForm,
+  FinancialAssistanceFormData,
+  PeriodChoice,
+  PersonForm,
+  PersonRole,
+  PlanningForm,
+} from '@interfaces/financial-assistance';
 import {
   incomeAssetLabelSuffix,
   interpreterQuestionLabel,
   planningInfoText,
+  requiredDocumentLabel,
+  requiredDocumentsHeading,
   sickLeaveLevelLabel,
 } from '@services/financial-assistance-labels';
-import { asksWorkHistory } from '@services/financial-assistance-work-history';
+import { asksNeedsAttachments, getRequiredDocuments } from '@services/financial-assistance-required-documents';
+import { asksWorkHistory, planningRole } from '@services/financial-assistance-work-history';
 import { formatPeriodChoiceLabel } from '@utils/financial-assistance-period-choice';
 import { swedishMonthName } from '@utils/swedish-month';
 
@@ -17,13 +28,12 @@ const NORM_TYPE_ORDER = ['NATIONAL_NORM', 'OTHER_NORM'] as const;
  * The frontend owns the form questions and their Swedish labels, so the question/answer text is
  * assembled here; the backend only lays it out.
  *
- * Structure mirrors the official sammanställning exactly — six numbered groups in wizard order:
- *   1. Personuppgifter (person identity + contact, civilstånd, barn) — persons at the top
- *   2. Boendesituation
- *   3. Utgifter (ansökningsperiod + norm + kostnader)
- *   4. Inkomster och tillgångar
- *   5. Planering
- *   6. Utbetalning och försäkran (utbetalning per person + vistelse + försäkran)
+ * Structure mirrors the form — five numbered groups in wizard order:
+ *   1. Personuppgifter (civilstånd, per person identity + contact details, barn, boende)
+ *   2. Kostnader (ansökningsperiod + norm + kostnader)
+ *   3. Inkomster och tillgångar
+ *   4. Planering (per person)
+ *   5. Utbetalning och försäkran (utbetalning per person + bilagor + vistelse + försäkran)
  * Empty rows/sections/groups are omitted.
  */
 
@@ -33,12 +43,24 @@ export interface ApplicationPdfRow {
   /** The form's help text for this question, when it has one. */
   info?: string;
 }
+/** A bulleted list, e.g. the documents the applicant needs to attach. */
+export interface ApplicationPdfList {
+  /** Optional lead-in above the list (e.g. "Följande behöver bifogas:"). */
+  heading?: string;
+  items: string[];
+}
 export interface ApplicationPdfSection {
   /** Optional sub-heading within a group (e.g. "Sökande", "Vilka kostnader söker du bistånd för?"). */
   heading?: string;
   rows: ApplicationPdfRow[];
   /** The form's help text for this section, when it has one. */
   info?: string;
+  /** Bulleted lists shown after the help text, before the rows. */
+  lists?: ApplicationPdfList[];
+  /** A highlighted note box shown after the rows (e.g. the tip about the message function). */
+  note?: string;
+  /** Draws a divider line after the section, like the dividers in the form. */
+  divider?: boolean;
   /** Person sections — lets the backend attach the right person (name in heading). */
   role?: 'APPLICANT' | 'CO_APPLICANT';
   /** When true, the backend prepends this person's personnummer + folkbokföringsadress (Citizen). */
@@ -68,6 +90,12 @@ export interface PersonIdentity {
  */
 export type ApplicantIdentities = Partial<Record<'APPLICANT' | 'CO_APPLICANT', PersonIdentity>>;
 
+/**
+ * Stands in for a person's name in the submit payload (e.g. "Vilken planering har %APPLICANT_NAME%?").
+ * The backend owns person identity and replaces it with the name from Citizen.
+ */
+export const personNamePlaceholder = (role: PersonRole): string => `%${role}_NAME%`;
+
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 type RawRow = [label: string, value: string | null | undefined, info?: string | null];
 
@@ -90,6 +118,10 @@ const toRows = (rawRows: RawRow[]): ApplicationPdfRow[] =>
 const compactSections = (sections: (ApplicationPdfSection | null)[]): ApplicationPdfSection[] =>
   sections.filter((section): section is ApplicationPdfSection => section !== null);
 
+/** Draws a divider after the last of the sections — closes a person's block, like in the form. */
+const withDividerAfter = (sections: ApplicationPdfSection[]): ApplicationPdfSection[] =>
+  sections.map((section, index) => (index === sections.length - 1 ? { ...section, divider: true } : section));
+
 export const buildApplicationPdfSummary = (
   form: FinancialAssistanceFormData,
   applicationType: ApplicationType,
@@ -104,26 +136,42 @@ export const buildApplicationPdfSummary = (
   // back to the base key when no `_ni` variant exists, so routing question labels through q is safe).
   const niCtx = isCohabiting ? { context: 'ni' } : undefined;
   const q = (key: string): string => t(fa(key), niCtx);
-  const infoArray = (key: string): string => {
+  /** A translation that is a list of paragraphs or items (e.g. the försäkran texts, the documents to attach). */
+  const textList = (key: string): string[] => {
     const value = t(fa(key), { returnObjects: true, ...niCtx }) as unknown;
-    if (Array.isArray(value)) return value.filter((part): part is string => typeof part === 'string').join('\n\n');
-    return typeof value === 'string' ? value : '';
+    return Array.isArray(value) ? value.filter((part): part is string => typeof part === 'string') : [];
   };
   const yesNo = (value: boolean | null): string => (value == null ? '' : t(fa(`common.${value ? 'yes' : 'no'}`)));
 
-  /** A section that is dropped when it has no rows (and no standalone info). */
+  // The preview passes identities and shows the real name (undefined while it is loading). The submit
+  // payload carries a placeholder that the backend replaces with the name from Citizen.
+  const personName = (role: PersonRole): string | undefined =>
+    identities ? identities[role]?.name || undefined : personNamePlaceholder(role);
+
+  /** A section that is dropped when it has no rows (and no standalone info, lists or note). */
   const section = (
     heading: string | undefined,
     rawRows: RawRow[],
-    extra?: { info?: string; role?: 'APPLICANT' | 'CO_APPLICANT'; identity?: boolean; keepEmpty?: boolean },
+    extra?: {
+      info?: string;
+      lists?: ApplicationPdfList[];
+      note?: string;
+      role?: 'APPLICANT' | 'CO_APPLICANT';
+      identity?: boolean;
+      keepEmpty?: boolean;
+    },
   ): ApplicationPdfSection | null => {
     const rows = toRows(rawRows);
     const info = extra?.info?.trim();
-    if (!rows.length && !info && !extra?.keepEmpty) return null;
+    const lists = (extra?.lists ?? []).filter((list) => list.items.length > 0);
+    const note = extra?.note?.trim();
+    if (!rows.length && !info && !lists.length && !note && !extra?.keepEmpty) return null;
     return {
       ...(heading ? { heading } : {}),
       rows,
       ...(info ? { info } : {}),
+      ...(lists.length ? { lists } : {}),
+      ...(note ? { note } : {}),
       ...(extra?.role ? { role: extra.role } : {}),
       ...(extra?.identity ? { identity: true } : {}),
     };
@@ -135,9 +183,15 @@ export const buildApplicationPdfSummary = (
   };
 
   // ── 1. Personuppgifter ──────────────────────────────────────────────────────────────────────
-  // Per-person contact section. Identity (personnummer + folkbokföringsadress, name in heading) is
-  // added by the backend from Citizen; here only the entered contact fields + notisval.
-  const contactSection = (person: PersonForm): ApplicationPdfSection => {
+  // Civilstånd first, as in the form.
+  const civilstandSection = section(undefined, [
+    [t(fa('periodNorm.maritalStatusLabel')), form.civilstandChoice ? t(fa(`civilstand.${form.civilstandChoice}`)) : ''],
+  ]);
+
+  // Per person: identity + notisval, "Dina kontaktuppgifter" and (nyansökan) the interpreter question,
+  // closed by a divider as in the form. Identity (namn, personnummer, folkbokföringsadress) is added
+  // by the backend from Citizen; the preview supplies it itself.
+  const personSections = (person: PersonForm): ApplicationPdfSection[] => {
     const isCo = person.role === 'CO_APPLICANT';
     const contact = isCo
       ? { email: form.coApplicantEmail, phone: form.coApplicantPhone, byEmail: form.coNotifyByEmail, bySms: form.coNotifyBySms }
@@ -146,10 +200,8 @@ export const buildApplicationPdfSummary = (
       contact.byEmail && t(fa('personuppgifter.notifyEmail')),
       contact.bySms && t(fa('personuppgifter.notifySms')),
     ]);
-    // Identity (Namn + personnummer + folkbokföringsadress) shown first. Supplied for the preview;
-    // for the submit payload the backend adds it (the `identity` flag marks this section).
     const identity = identities?.[person.role];
-    return {
+    const identitySection: ApplicationPdfSection = {
       heading: t(fa(`recipient.${person.role}`)),
       role: person.role,
       identity: true,
@@ -166,31 +218,39 @@ export const buildApplicationPdfSummary = (
           notify,
           t(fa('personuppgifter.notifyInfo')),
         ],
-        [t(fa('personuppgifter.emailLabel')), contact.email],
-        [t(fa('personuppgifter.phoneLabel')), contact.phone],
-        // Tolk-frågan ställs på personuppgifter (nyansökan).
-        ...(isNew
-          ? ([
-              [interpreterQuestionLabel(t, isCohabiting, person.role, identity?.name), yesNo(person.needsInterpreter)],
-              [t(fa('personuppgifter.interpreterLanguageLabel')), person.interpreterLanguage],
-            ] as RawRow[])
-          : []),
       ]),
     };
+    // As in the form, a contact detail is shown only when its notification channel is chosen ("—" when empty).
+    const contactDetailsSection =
+      contact.byEmail || contact.bySms
+        ? section(
+            t(fa('personuppgifter.contactHeading')),
+            [
+              [t(fa('personuppgifter.phoneLabel')), contact.bySms ? contact.phone || '—' : ''],
+              [t(fa('personuppgifter.emailLabel')), contact.byEmail ? contact.email || '—' : ''],
+            ],
+            { info: t(fa('personuppgifter.contactInfo')) },
+          )
+        : null;
+    // Tolk-frågan ställs på personuppgifter (nyansökan).
+    const interpreterSection = isNew
+      ? section(undefined, [
+          [interpreterQuestionLabel(t, isCohabiting, person.role, personName(person.role)), yesNo(person.needsInterpreter)],
+          [t(fa('personuppgifter.interpreterLanguageLabel')), person.interpreterLanguage],
+        ])
+      : null;
+    return withDividerAfter(compactSections([identitySection, contactDetailsSection, interpreterSection]));
   };
 
-  const householdSection = section(undefined, [
-    [t(fa('periodNorm.maritalStatusLabel')), form.civilstandChoice ? t(fa(`civilstand.${form.civilstandChoice}`)) : ''],
-    ...(!isSupplementary
-      ? ([[q('householdHousing.hasChildrenLabel'), yesNo(form.hasChildrenUnder21), q('householdHousing.hasChildrenInfo')]] as RawRow[])
-      : []),
-  ]);
+  const hasChildrenSection = isSupplementary
+    ? null
+    : section(undefined, [[q('householdHousing.hasChildrenLabel'), yesNo(form.hasChildrenUnder21), q('householdHousing.hasChildrenInfo')]]);
 
   const childrenSections = isSupplementary
     ? []
     : form.children.map((child, index) =>
         section(t(fa('child.heading'), { number: index + 1 }), [
-          ['Namn', joinParts([child.firstName, child.lastName])],
+          [t(fa('personuppgifter.nameLabel')), [child.firstName, child.lastName].map((part) => part.trim()).filter(Boolean).join(' ')],
           [t(fa('child.personalNumber')), child.personalNumber],
           [t(fa('child.schoolName')), child.schoolName],
           [t(fa('child.residenceExtent')), child.residenceExtent ? t(fa(`residenceExtent.${child.residenceExtent}`)) : ''],
@@ -214,10 +274,11 @@ export const buildApplicationPdfSummary = (
         [t(fa('householdHousing.housingDescriptionLabel')), form.housingDescription],
       ]);
 
-  // ── 1. Personuppgifter (personer, civilstånd, barn, boende) ──────────────────────────────────
+  // ── 1. Personuppgifter (civilstånd, personer, barn, boende) ──────────────────────────────────
   const personalGroup = group('1. ' + t(fa('groups.household-housing')), [
-    ...form.persons.map(contactSection),
-    householdSection,
+    civilstandSection,
+    ...form.persons.flatMap(personSections),
+    hasChildrenSection,
     ...childrenSections,
     housingSection,
   ]);
@@ -256,16 +317,20 @@ export const buildApplicationPdfSummary = (
           : []),
       ];
   const periodNormSection = section(undefined, periodNormRows);
+  const appliedCosts = form.costs.filter((cost) => cost.costType);
+  // "Övrigt bistånd" can be applied for several times, but — as in the form — its help text is shown once.
+  const firstOtherCostIndex = appliedCosts.findIndex((cost) => cost.costType === 'OTHER');
   const costsSection = section(
     t(fa(isSupplementary ? 'economy.costsHeadingSupplementary' : 'economy.costsHeading'), niCtx),
-    form.costs
-      .filter((cost) => cost.costType)
-      .map((cost): RawRow => {
-        const base = t(fa(`costType.${cost.costType}`));
-        const label =
-          cost.costType === 'OTHER' && cost.otherSubType ? `${base} – ${t(fa(`costOtherSubType.${cost.otherSubType}`))}` : base;
-        return [label, joinParts([kr(cost.appliedAmount), cost.specification]), t(fa(`costInfo.${cost.costType}`))];
-      }),
+    appliedCosts.map((cost, index): RawRow => {
+      const base = t(fa(`costType.${cost.costType}`));
+      const label =
+        cost.costType === 'OTHER' && cost.otherSubType ? `${base} – ${t(fa(`costOtherSubType.${cost.otherSubType}`))}` : base;
+      const showInfo = cost.costType !== 'OTHER' || index === firstOtherCostIndex;
+      return [label, joinParts([kr(cost.appliedAmount), cost.specification]), showInfo ? t(fa(`costInfo.${cost.costType}`)) : undefined];
+    }),
+    // Ny- och återansökan: "Sök endast för de utgifter …" under the heading, as in the form.
+    { info: !isSupplementary && appliedCosts.length ? t(fa('economy.costsInfo'), niCtx) : undefined },
   );
   // Tilläggsansökan: Riksnorm/Annan norm som utgiftsboxar under "Övrigt" — varje vald norm visas med
   // sin infotext och sin egen specifikation (för vem/vilka och vilken period).
@@ -359,9 +424,13 @@ export const buildApplicationPdfSummary = (
       ];
   const incomeGroup = group('3. ' + t(fa('groups.income')), incomeSections);
 
-  // ── 4. Planering — generell info + fråga, och egna fält per planering ────────────────────────
-  const recipientRow = (person: string): RawRow[] =>
-    isCohabiting && person ? ([[t(fa('economy.recipientLabel')), t(fa(`recipient.${person}`))]] as RawRow[]) : [];
+  // ── 4. Planering — per person, as in the form ("Vilken planering har <namn>?") ───────────────
+  // Söker man själv står det "du"; finns en medsökande används namnet, med rollen som reserv.
+  const planningHeading = (role: PersonRole): string => {
+    const name = isCohabiting ? personName(role) : undefined;
+    if (name) return t(fa('planning.personPlanning'), { name });
+    return t(fa(role === 'CO_APPLICANT' ? 'planning.coApplicantPlanning' : 'planning.planningsHeading'));
+  };
   const planningTypeRows = (planning: PlanningForm): RawRow[] => {
     switch (planning.planningType) {
       case 'WORK':
@@ -390,56 +459,65 @@ export const buildApplicationPdfSummary = (
         return [];
     }
   };
-  const planningSections: (ApplicationPdfSection | null)[] = isSupplementary
-    ? []
-    : [
-        section(t(fa('planning.planningsHeading')), [], { info: t(fa('planning.planningIntro')) }),
-        ...form.plannings
-          .filter((planning) => planning.planningType)
-          .map((planning) =>
-            section(t(fa(`planningType.${planning.planningType}`)), [...recipientRow(planning.person), ...planningTypeRows(planning)], {
-              info: planningInfoText(t, planning.planningType, applicationType),
-            }),
-          ),
-        ...(isNew
-          ? form.plannedActivities.map((activity, index) =>
-              section(t(fa('planning.activity.heading'), { number: index + 1 }), [
-                ...recipientRow(activity.person),
-                [t(fa('planning.activity.activityLabel')), activity.activity],
-                [t(fa('planning.activity.fromLabel')), activity.periodFrom],
-                [t(fa('planning.activity.toLabel')), activity.periodTo],
-              ]),
-            )
-          : []),
-        ...(isNew
-          ? form.jobApplications.map((application, index) =>
-              section(t(fa('planning.jobApplication.heading'), { number: index + 1 }), [
-                ...recipientRow(application.person),
-                [t(fa('planning.jobApplication.jobTitleLabel')), application.jobTitle],
-                [t(fa('planning.jobApplication.employerLabel')), application.employerAndPlace],
-                [t(fa('planning.jobApplication.dateLabel')), application.applicationDate],
-              ]),
-            )
-          : []),
-        // Arbete senaste 12 mån — frågan ställs (nyansökan) för den som valt planering men inte "Arbete".
-        ...(isNew
-          ? form.persons
-              .filter((person) => asksWorkHistory(form.plannings, person.role))
-              .map((person) =>
-                section(isCohabiting ? (identities?.[person.role]?.name ?? t(fa(`recipient.${person.role}`))) : undefined, [
-                  [t(fa('planning.hadWorkLabel')), yesNo(person.hadWorkLast12Months)],
-                  [t(fa('planning.hadWorkDescriptionLabel')), person.hadWorkDescription],
-                ]),
-              )
-          : []),
-      ];
+  // One person's planning: heading + intro, the chosen plannings, (nyansökan) activities and sökta jobb,
+  // and the work-history question. The heading names the person, so there is no "Avser" row.
+  const personPlanningSections = (role: PersonRole): (ApplicationPdfSection | null)[] => {
+    const person = form.persons.find((entry) => entry.role === role);
+    const activities = isNew ? form.plannedActivities.filter((activity) => planningRole(activity.person) === role) : [];
+    const jobApplications = isNew ? form.jobApplications.filter((application) => planningRole(application.person) === role) : [];
+    return [
+      section(planningHeading(role), [], { info: t(fa('planning.planningIntro')) }),
+      ...form.plannings
+        .filter((planning) => planning.planningType && planningRole(planning.person) === role)
+        .map((planning) =>
+          section(t(fa(`planningType.${planning.planningType}`)), planningTypeRows(planning), {
+            info: planningInfoText(t, planning.planningType, applicationType),
+          }),
+        ),
+      ...activities.map((activity, index) =>
+        section(t(fa('planning.activity.heading'), { number: index + 1 }), [
+          [t(fa('planning.activity.activityLabel')), activity.activity],
+          [t(fa('planning.activity.fromLabel')), activity.periodFrom],
+          [t(fa('planning.activity.toLabel')), activity.periodTo],
+        ]),
+      ),
+      ...jobApplications.map((application, index) =>
+        section(t(fa('planning.jobApplication.heading'), { number: index + 1 }), [
+          [t(fa('planning.jobApplication.jobTitleLabel')), application.jobTitle],
+          [t(fa('planning.jobApplication.employerLabel')), application.employerAndPlace],
+          [t(fa('planning.jobApplication.dateLabel')), application.applicationDate],
+        ]),
+      ),
+      // Arbete senaste 12 mån — frågan ställs (nyansökan) för den som valt planering men inte "Arbete".
+      isNew && person && asksWorkHistory(form.plannings, role)
+        ? section(undefined, [
+            [t(fa('planning.hadWorkLabel')), yesNo(person.hadWorkLast12Months)],
+            [t(fa('planning.hadWorkDescriptionLabel')), person.hadWorkDescription],
+          ])
+        : null,
+    ];
+  };
+  const planningRoles: PersonRole[] = isCohabiting ? ['APPLICANT', 'CO_APPLICANT'] : ['APPLICANT'];
+  const planningSections = isSupplementary ? [] : planningRoles.flatMap(personPlanningSections);
   const planningGroup = group('4. ' + t(fa('groups.planning')), planningSections);
 
   // ── 5. Utbetalning och försäkran ────────────────────────────────────────────────────────────
+  // "Hur vill du/ni ha eventuellt bistånd utbetalt?" heads the persons' payments, as in the form.
+  const payoutSection = section(q('payment.payoutQuestion'), [], {
+    info: [
+      isCohabiting && t(fa('payment.payoutInfoCohabiting')),
+      isCohabiting && isNew && t(fa('payment.payoutAccountInfoCohabiting')),
+    ]
+      .filter(Boolean)
+      .join('\n'),
+    keepEmpty: true,
+  });
   // Per-person payment section (no identity rows — those live in group 1).
   const paymentSection = (person: PersonForm): ApplicationPdfSection | null => {
     const methodAnswer = person.paymentMethod ? t(fa(`paymentMethod.${person.paymentMethod}`)) : '';
     const showPayoutMethod = isNew || person.paymentSameAsPrevious === false;
+    // Återansökan/tillägg med "Nej" på samma konto väljer ett nytt utbetalningssätt (samma etikett som kortet).
+    const methodLabel = t(fa(!isNew && person.paymentSameAsPrevious === false ? 'payment.newMethodLabel' : 'payment.methodLabel'));
     const identity = identities?.[person.role];
     // Inget "Sökande" — bara namnet, och bara när det finns en medsökande (för att skilja korten åt).
     // Ensam sökande får ingen rubrik. För submit-payloaden (utan identities) sätter backend namnet
@@ -449,7 +527,7 @@ export const buildApplicationPdfSummary = (
       heading,
       [
         ...(!isNew ? ([[t(fa('payment.sameAsPreviousLabel')), yesNo(person.paymentSameAsPrevious)]] as RawRow[]) : []),
-        ...(showPayoutMethod ? ([[q('payment.payoutQuestion'), methodAnswer]] as RawRow[]) : []),
+        ...(showPayoutMethod ? ([[methodLabel, methodAnswer]] as RawRow[]) : []),
         [t(fa('payment.clearingLabel')), person.clearingNumber],
         [t(fa('payment.accountLabel')), person.accountNumber],
         [t(fa('payment.otherDescriptionLabel')), person.otherPaymentDescription],
@@ -457,6 +535,30 @@ export const buildApplicationPdfSummary = (
       { role: person.role },
     );
   };
+  // Bilagor — the same texts and documents the form shows, based on the answers.
+  const requiredDocuments = getRequiredDocuments(form, applicationType);
+  const requiredDocumentLabels = requiredDocuments.map((document) =>
+    requiredDocumentLabel(t, document, isCohabiting, document.role ? personName(document.role) : null),
+  );
+  const requiredHeading = isCohabiting
+    ? requiredDocumentsHeading(t, personName('APPLICANT'), personName('CO_APPLICANT'))
+    : requiredDocumentsHeading(t);
+  const attachmentLists: ApplicationPdfList[] = isNew
+    ? [
+        { heading: requiredHeading, items: textList('attachments.generalDocs') },
+        { heading: q('attachments.answersHeading'), items: requiredDocumentLabels },
+        { heading: t(fa('attachments.planningHeading')), items: textList('attachments.planningDocs') },
+      ]
+    : [{ heading: requiredHeading, items: requiredDocumentLabels }];
+  const needsAttachmentsAnswer = form.needsAttachments
+    ? t(fa(isRenewal ? 'attachments.yesRenewal' : 'attachments.yes'))
+    : t(fa('attachments.no'));
+  const attachmentsSection = section(
+    t(fa('attachments.heading')),
+    asksNeedsAttachments(applicationType, requiredDocuments) ? [[q('attachments.needLabel'), needsAttachmentsAnswer]] : [],
+    { info: isNew || isRenewal ? q('attachments.intro') : undefined, lists: attachmentLists },
+  );
+
   const staysSection = section(t(fa('review.staysHeading')), [
     [q('review.staysInfo'), yesNo(form.staysInMunicipality)],
     [t(fa('review.stayDescriptionPlaceholder')), form.stayDescription],
@@ -464,12 +566,17 @@ export const buildApplicationPdfSummary = (
   const attestationSection = section(
     t(fa('review.attestationHeading')),
     [[q('review.attestation'), form.attestation ? '✓' : '']],
-    { info: infoArray('review.attestationInfo') },
+    { info: textList('review.attestationInfo').join('\n\n') },
   );
+  // Tipset om meddelandefunktionen — rutan sist i formuläret.
+  const messageSection = section(undefined, [], { note: t(fa('review.messageInfo')) });
   const paymentGroup = group('5. ' + t(fa('groups.payment')), [
+    payoutSection,
     ...form.persons.map(paymentSection),
+    attachmentsSection,
     staysSection,
     attestationSection,
+    messageSection,
   ]);
 
   const groups = [personalGroup, expensesGroup, incomeGroup, planningGroup, paymentGroup].filter(

@@ -1,4 +1,10 @@
-import { ApplicationPdfDocument, ApplicationPdfGroup, ApplicationPdfSection, ApplicationPdfSignature } from '@/interfaces/application-pdf.interface';
+import {
+  ApplicationPdfDocument,
+  ApplicationPdfGroup,
+  ApplicationPdfList,
+  ApplicationPdfSection,
+  ApplicationPdfSignature,
+} from '@/interfaces/application-pdf.interface';
 
 /**
  * Builds a finished, print-ready HTML document from an {@link ApplicationPdfDocument}. The HTML is
@@ -48,6 +54,10 @@ const renderHeader = (title: string, subtitle?: string): string => {
     </header>`;
 };
 
+const renderList = (list: ApplicationPdfList): string => `
+      ${list.heading ? `<p class="list-heading">${escapeHtml(list.heading)}</p>` : ''}
+      <ul class="list">${list.items.map(item => `<li>${formatValue(item)}</li>`).join('')}</ul>`;
+
 const renderSection = (section: ApplicationPdfSection): string => {
   const rows = (section.rows ?? [])
     .map(
@@ -65,8 +75,11 @@ const renderSection = (section: ApplicationPdfSection): string => {
     <section class="section">
       ${section.heading ? `<h3>${escapeHtml(section.heading)}</h3>` : ''}
       ${section.info ? `<p class="section-info">${formatValue(section.info)}</p>` : ''}
+      ${(section.lists ?? []).map(renderList).join('')}
       ${rows ? `<dl class="rows">${rows}</dl>` : ''}
-    </section>`;
+      ${section.note ? `<p class="note">${formatValue(section.note)}</p>` : ''}
+    </section>
+    ${section.divider ? '<hr class="divider" />' : ''}`;
 };
 
 const renderGroup = (group: ApplicationPdfGroup): string => `
@@ -124,6 +137,11 @@ const STYLES = `
   .row dd { flex: 1 1 55%; margin: 0; }
   .row dd .answer { font-weight: 600; }
   .row-info { color: #777; font-size: 10px; font-style: italic; margin-top: 2px; }
+  .list-heading { font-weight: 700; margin: 8px 0 4px; }
+  .list { margin: 0 0 8px; padding-left: 18px; }
+  .list li { margin-bottom: 3px; }
+  .note { margin: 8px 0 0; padding: 10px 12px; background: #e3eff2; border-radius: 6px; }
+  .divider { border: 0; border-top: 1px solid #ccc; margin: 0 0 14px; }
   .bock { display: inline-block; width: 7px; height: 12px; border: solid #0a5564; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
   .signatures { margin-top: 24px; border-top: 2px solid #0a5564; padding-top: 16px; }
   .signature { margin-bottom: 12px; }

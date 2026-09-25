@@ -1,4 +1,5 @@
 import { ApplicationType, PersonRole, PlanningType, SickLeaveLevel } from '@interfaces/financial-assistance';
+import { RequiredDocument } from '@services/financial-assistance-required-documents';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -49,6 +50,35 @@ export const planningInfoText = (
 /** Sjukskrivningsgrad as shown in the form, e.g. "Deltid 75%"; empty when unset. */
 export const sickLeaveLevelLabel = (t: Translate, level: SickLeaveLevel | ''): string =>
   level ? t(fa(`sickLeaveLevel.${level}`)) : '';
+
+/**
+ * Lead-in above the documents to attach. Names both persons ("Följande behöver bifogas för Anna och
+ * Bo:") once both names are known. Shared by the form and the PDF summary.
+ */
+export const requiredDocumentsHeading = (
+  t: Translate,
+  applicantName?: string | null,
+  coApplicantName?: string | null
+): string =>
+  applicantName && coApplicantName
+    ? t(fa('attachments.requiredHeadingNamed'), { applicant: applicantName, coApplicant: coApplicantName })
+    : t(fa('attachments.requiredHeading'));
+
+/**
+ * A document to attach. One that concerns a single person (e.g. läkarintyg) names that person when
+ * applying together, with the role name as fallback. Shared by the form and the PDF summary.
+ */
+export const requiredDocumentLabel = (
+  t: Translate,
+  document: RequiredDocument,
+  isCohabiting: boolean,
+  personName?: string | null
+): string =>
+  document.role && isCohabiting
+    ? t(fa(`attachments.docs.${document.id}Named`), {
+        name: personName ?? t(fa(`recipient.${document.role}`)).toLowerCase(),
+      })
+    : t(fa(`attachments.docs.${document.id}`));
 
 /** Question-label key suffix: återansökan asks about incomes/assets "sedan senaste ansökan". */
 export const incomeAssetLabelSuffix = (applicationType: ApplicationType): string =>

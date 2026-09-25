@@ -391,3 +391,65 @@ export interface CitizenLookupDto {
    */
   personnumber: string;
 }
+
+export interface DecisionAttachment {
+  id: number;
+  name: string;
+  mimeType?: string;
+  extension?: string;
+}
+
+export interface DecisionItem {
+  id: string;
+  source: "PARTYASSETS" | "CASEDATA";
+  title?: string;
+  outcome?: string;
+  decidedAt?: string;
+  validFrom?: string;
+  validTo?: string;
+  errandId?: number;
+  errandNumber?: string;
+  attachments: DecisionAttachment[];
+}
+
+export interface DocumentItem {
+  id: string;
+  source: "PARTYASSETS" | "CASEDATA";
+  title: string;
+  status?: "ACTIVE" | "EXPIRED" | "BLOCKED" | "TEMPORARY";
+  issued?: string;
+  validTo?: string;
+  decisions: DecisionItem[];
+}
+
+export interface SourceStatus {
+  source: string;
+  status: "OK" | "UNAVAILABLE";
+}
+
+export interface DocumentsOverview {
+  documents: DocumentItem[];
+  unlinkedDecisions: DecisionItem[];
+  sources: SourceStatus[];
+}
+
+export interface DocumentsOverviewApiResponse {
+  data: DocumentsOverview;
+  message: string;
+}
+
+export interface DocumentDetails {
+  asset?: Asset;
+  id: string;
+  source: "PARTYASSETS" | "CASEDATA";
+  title: string;
+  status?: "ACTIVE" | "EXPIRED" | "BLOCKED" | "TEMPORARY";
+  issued?: string;
+  validTo?: string;
+  decisions: DecisionItem[];
+}
+
+export interface DocumentDetailsApiResponse {
+  data: DocumentDetails;
+  message: string;
+}

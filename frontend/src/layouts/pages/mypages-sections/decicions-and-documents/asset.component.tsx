@@ -14,6 +14,7 @@ import { ArrowRight, Car, Cog, FileCheck2, PlusCircle } from 'lucide-react';
 import { ReactNode, useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AssetsContext } from './asset-layout.component';
+import { DecisionList } from './decision-card.component';
 import ParkingPermitLost from './parkingpermits/parkingpermit-lost.component';
 import ParkingPermitRenewalAlert from './parkingpermits/parkingpermit-renewal-alert.component';
 import ParkingPermitRenewal from './parkingpermits/parkingpermit-renewal.component';
@@ -49,12 +50,15 @@ const Section = ({ icon, label, children }: { icon?: ReactNode; label: string; c
 export default function Asset() {
   const { t } = useTranslation('decisions');
   const [isEditing, setisEditing] = useState<null | 'PERMIT_RENEWAL' | 'LOST_PERMIT'>(null);
-  const { assetData } = useContext(AssetsContext);
-  const statusProps = getAssetStatusProps(assetData?.status);
+  const { document, assetData } = useContext(AssetsContext);
+  const statusProps = getAssetStatusProps(document?.status);
   const service = assetData?.service;
-  const title = service?.restyp?.length ? service.restyp.join(', ') : assetData?.description;
-  const validity = formatAssetValidity(assetData, t);
-  const issued = formatAssetDate(assetData?.issued);
+  const title = document?.title;
+  const validity = formatAssetValidity(document, t);
+  const issued = formatAssetDate(document?.issued);
+  const decisions = document?.decisions ?? [];
+  const parkingPermit = assetData && isParkingPermit(assetData) ? assetData : undefined;
+
   return isEditing === 'PERMIT_RENEWAL' ? (
     <ParkingPermitRenewal setIsEditing={setisEditing} />
   ) : isEditing === 'LOST_PERMIT' ? (
@@ -83,10 +87,8 @@ export default function Asset() {
         </span>
       </div>
       <Divider className="my-0" />
-      {assetData && isParkingPermit(assetData) && soonExpiring(assetData) ? (
-        <ParkingPermitRenewalAlert setIsEditing={setisEditing} />
-      ) : null}
-      {assetData && isParkingPermit(assetData) ? (
+      {parkingPermit && soonExpiring(parkingPermit) ? <ParkingPermitRenewalAlert setIsEditing={setisEditing} /> : null}
+      {parkingPermit ? (
         <div className="mt-0 w-full desktop:w-auto">
           <Button
             className="w-full desktop:w-auto"
@@ -103,10 +105,10 @@ export default function Asset() {
         {assetData?.assetId ? (
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">{t('decisions:asset.cardNumber')}</div>
-            <div>{assetData?.assetId}</div>
+            <div>{assetData.assetId}</div>
           </div>
         ) : null}
-        {assetData?.issued || assetData?.validTo ? (
+        {document?.issued || document?.validTo ? (
           <div className="flex flex-col items-start gap-4">
             <div className="font-bold">{t('decisions:asset.validityPeriod')}</div>
             <div>{validity}</div>
@@ -142,6 +144,15 @@ export default function Asset() {
             ) : null}
           </div>
         </>
+      ) : null}
+      {decisions.length > 0 ? (
+        <div>
+          <Divider className="mb-32" />
+          <h4 className="text-h4-md mb-24">{t('decisions:decisionsForDocument', { title: title })}</h4>
+          <div className="flex flex-col gap-8">
+            <DecisionList decisions={decisions} aria-label={t('decisions:decisionsForDocument', { title: title })} />
+          </div>
+        </div>
       ) : null}
     </Card>
   );

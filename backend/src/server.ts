@@ -14,7 +14,7 @@ import { LegalEntityController } from './controllers/legal-entity.controller';
 import { MandateController } from './controllers/mandate.controller';
 import { SignController } from './controllers/sign.controller';
 import { CitizenController } from './controllers/citizen.controller';
-import { DecisionsController } from './controllers/decisions.controller';
+import { DocumentsController } from './controllers/documents.controller';
 
 validateEnv();
 
@@ -23,7 +23,7 @@ const app = new App([
   CaseController,
   AssetsController,
   LegalEntityController,
-  DecisionsController,
+  DocumentsController,
   RepresentingController,
   UserController,
   NotificationsController,

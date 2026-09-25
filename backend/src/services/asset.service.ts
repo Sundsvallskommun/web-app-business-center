@@ -1,10 +1,16 @@
-import { WHITELIST_ASSET_TYPES } from '@/config';
+import { MUNICIPALITY_ID, WHITELIST_ASSET_TYPES } from '@/config';
+import { getApiBase } from '@/config/api-config';
 import { Errand, ExtraParameter } from '@/data-contracts/case-data/data-contracts';
 import { Asset, Status } from '@/data-contracts/partyassets/data-contracts';
+import { HttpException } from '@/exceptions/HttpException';
 import { ServiceDetails } from '@/interfaces/asset.interface';
-import { Owned } from '@/interfaces/owned';
+import { asOwned, Owned } from '@/interfaces/owned';
 import { User } from '@/interfaces/users.interface';
+import ApiService from '@/services/api.service';
 import { enumTitles, getRjsfSchema } from '@/services/jsonschema.service';
+import { isSameUuid } from '@/utils/util';
+
+const defaultApi = new ApiService();
 
 export const isAllowedAsset = (asset: Asset): boolean => {
   return !!asset?.type && WHITELIST_ASSET_TYPES.has(asset.type);
@@ -42,6 +48,58 @@ export const toClientAsset = (asset: Owned<Asset>): Asset => {
 
 export const toVisibleAssets = (assets: Asset[]): Asset[] => {
   return assets.filter(isAllowedAsset).filter(isVisibleStatus).filter(isAddressable);
+};
+
+/**
+ * Fetch the assets the represented party owns and may see.
+ *
+ * @returns the party's visible assets, branded `Owned`. Empty when the upstream answers 404.
+ * @throws `HttpException` 500 when the upstream answers without a body; other upstream errors are rethrown
+ */
+export const fetchOwnedAssets = async (
+  partyId: string,
+  user: User,
+  signal?: AbortSignal,
+  api: Pick<ApiService, 'get'> = defaultApi,
+): Promise<Owned<Asset>[]> => {
+  const url = `${getApiBase('partyassets')}/${MUNICIPALITY_ID}/assets`;
+
+  let assets: Asset[] | undefined;
+  try {
+    const res = await api.get<Asset[]>({ url, signal, params: { partyId } }, user);
+    assets = res.data;
+  } catch (error) {
+    if ((error as { status?: number })?.status === 404) {
+      return [];
+    }
+    throw error;
+  }
+
+  if (!assets) {
+    throw new HttpException(500, 'No data from API');
+  }
+
+  return toVisibleAssets(assets)
+    .filter(asset => isSameUuid(asset.partyId, partyId))
+    .map(asOwned);
+};
+
+/**
+ * Locate one of the party's assets by its partyassets id.
+ *
+ * @returns the asset branded `Owned`, or undefined when it is not among the party's visible assets
+ */
+export const findOwnedAsset = async (
+  partyId: string,
+  id: string,
+  user: User,
+  signal?: AbortSignal,
+  api: Pick<ApiService, 'get'> = defaultApi,
+): Promise<Owned<Asset> | undefined> => {
+  if (!id) return undefined;
+
+  const assets = await fetchOwnedAssets(partyId, user, signal, api);
+  return assets.find(asset => asset.id === id);
 };
 
 const normalizeArray = (values: unknown): string[] => {

@@ -230,40 +230,57 @@ export const testInvoices = (representingMode: RepresentingMode = representingMo
   // testPaidInvoicesPdf();
 };
 
-export const testAssetPage = (representingMode: RepresentingMode = representingModeDefault) => {
-  cy.wait('@getAsset').its('response.statusCode').should('eq', 200);
-  cy.url().should('include', '/beslut-och-dokument/asset-id-0');
+export const testDocumentPage = (representingMode: RepresentingMode = representingModeDefault) => {
+  cy.wait('@getDocument').its('response.statusCode').should('eq', 200);
+  cy.url().should('include', '/beslut-och-dokument/pa-asset-id-0');
+  // The page is held behind a spinner until the document has loaded
+  cy.get('[data-cy="document-loading"]').should('not.exist');
   cy.get('main').contains('Parkeringstillstånd för funktionshindrad').should('exist');
   cy.get('main').contains(RepresentingMode[representingMode]).should('exist');
   cy.get('main').contains('Kortnummer').next().should('contain.text', 'assetId-0').should('be.visible');
-  cy.get('main').contains('Beslutad').next().should('contain.text', '1 jan 2021').should('be.visible');
+  cy.get('main')
+    .contains(/^Beslutad$/)
+    .next()
+    .should('contain.text', '1 jan 2021')
+    .should('be.visible');
   cy.get('main')
     .contains(/^Giltighetstid$/)
     .next()
     .should('contain.text', '1 jan 2021 - 31 dec 2025')
     .should('be.visible');
-};
-
-export const testAssets = (representingMode: RepresentingMode = representingModeDefault) => {
-  cy.get('ul[aria-label="Dokument"] li').should('have.length', 1);
-  cy.get('ul[aria-label="Dokument"] li').within(() => {
-    cy.contains('Parkeringstillstånd för funktionshindrad').should('exist');
-    cy.contains(RepresentingMode[representingMode]).should('exist');
-    cy.contains('1 jan 2021').should('exist');
-  });
-  cy.get('ul[aria-label="Dokument"] li a[aria-label*="Parkeringstillstånd för funktionshindrad"]')
-    .click()
-    .then(() => {
-      testAssetPage(representingMode);
+  cy.get('main [data-cy="document-decisions"] li').should('have.length', 1);
+  cy.get('main [data-cy="document-decisions"] li')
+    .first()
+    .within(() => {
+      cy.contains('Beslut - Bifall').should('exist');
+      cy.contains('Beslutad 15 januari 2024').should('exist');
+      cy.contains('button', 'Ladda ner').should('exist');
     });
 };
 
-export const testDecisions = () => {
-  cy.get('ul[aria-label="Beslut i ärenden"] li').should('have.length', 2);
-  cy.get('ul[aria-label="Beslut i ärenden"] li')
+export const testDocuments = (representingMode: RepresentingMode = representingModeDefault) => {
+  cy.get('ul[aria-label="Dokument"] > li').should('have.length', 1);
+  cy.get('ul[aria-label="Dokument"] > li').within(() => {
+    cy.contains('Parkeringstillstånd för funktionshindrad').should('exist');
+    cy.contains(RepresentingMode[representingMode]).should('exist');
+    cy.contains('1 jan 2021').should('exist');
+    // The decisions a document owns are shown on its detail page, not in the listing
+    cy.get('[data-cy="document-decisions"]').should('not.exist');
+  });
+  cy.get('ul[aria-label="Dokument"] > li a[aria-label*="Parkeringstillstånd för funktionshindrad"]')
+    .click()
+    .then(() => {
+      testDocumentPage(representingMode);
+    });
+};
+
+export const testUnlinkedDecisions = () => {
+  cy.get('ul[aria-label="Övriga beslut"] > li').should('have.length', 1);
+  cy.get('ul[aria-label="Övriga beslut"] > li')
     .first()
     .within(() => {
-      cy.contains('Beslut').should('exist');
+      cy.contains('Beslut - Avslag').should('exist');
       cy.contains('Beslutad 20 februari 2024').should('exist');
+      cy.contains('PRH-2024-000002').should('exist');
     });
 };

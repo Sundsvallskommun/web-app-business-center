@@ -7,7 +7,7 @@ import { getInvoices } from 'cypress/fixtures/getInvoices';
 import { getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { getMe } from '../fixtures/getMe';
 import { getAssets } from 'cypress/fixtures/getAssets';
-import { getDecisions } from 'cypress/fixtures/getDecisions';
+import { getDocument, getDocuments } from 'cypress/fixtures/getDocuments';
 
 // Ignore React 19 / Next.js 15 dev mode performance measurement errors
 Cypress.on('uncaught:exception', (err) => {
@@ -35,10 +35,8 @@ export const setIntercepts = (representingMode: RepresentingMode = representingM
   cy.intercept('GET', '**/api/invoices', getInvoices(representingMode)).as('getInvoices');
   cy.intercept('GET', '**/api/contactsettings', getContactSettings(representingMode)).as('getContactSettings');
   cy.intercept('GET', /(.*)api\/assets$/, getAssets(representingMode)).as('getAssets');
-  cy.intercept('GET', '**/api/assets/*', { data: getAssets(representingMode).data[0], message: 'success' }).as(
-    'getAsset'
-  );
-  cy.intercept('GET', '**/api/decisions', getDecisions(representingMode)).as('getDecisions');
+  cy.intercept('GET', '**/api/documents', getDocuments(representingMode)).as('getDocuments');
+  cy.intercept('GET', '**/api/documents/*', getDocument(representingMode)).as('getDocument');
 };
 
 beforeEach(() => {

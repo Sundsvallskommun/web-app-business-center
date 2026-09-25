@@ -7,11 +7,23 @@ import {
 } from '@/interfaces/application-pdf.interface';
 
 /**
- * Builds a finished, print-ready HTML document from an {@link ApplicationPdfDocument}. The HTML is
- * self-contained (inline CSS) so the templating service only has to convert it to PDF — no template
- * variables are used. The frontend supplies all labels/values; this module only lays them out as
- * numbered groups (1. Personuppgifter, 2. Boendesituation, …) with sub-sections and a signature block.
+ * Builds a finished, print-ready HTML document from an {@link ApplicationPdfDocument}, styled after
+ * the municipality's letter template (logo top left, black on white, Arial). Templating renders the
+ * HTML as a template, which resolves the {% include %} of the shared logo and letter style; all text
+ * is escaped so it is never evaluated as template code. The frontend supplies all labels/values; this
+ * module only lays them out as numbered groups (1. Personuppgifter, 2. Kostnader, …) with
+ * sub-sections and a signature block.
  */
+
+/** Shared templating resources, pulled in with {% include %} when they are stored in templating. */
+export const PDF_LOGO_TEMPLATE = 'resource.image.logo.sundsvallskommun-medium';
+export const PDF_LETTER_STYLE_TEMPLATE = 'resource.style.letter.default';
+
+/** Which of the shared resources are stored in templating — an include of a missing one fails the render. */
+export interface ApplicationPdfResources {
+  logo: boolean;
+  letterStyle: boolean;
+}
 
 // `{` and `}` are encoded as well: templating renders the document as a (Pebble) template, so text an
 // applicant typed, such as "{{ … }}" or "{% … %}", must never be evaluated.
@@ -38,31 +50,23 @@ const renderAnswer = (value: string): string => {
   return formatValue(value);
 };
 
-/**
- * Optional logo as a data URI (e.g. "data:image/png;base64,...."). Left empty for now — the header
- * falls back to a styled wordmark. Drop a base64 logo here to brand the PDF without other changes.
- */
-const LOGO_DATA_URI = '';
+// Logo top left, laid out as in the letter template; a text wordmark where the logo resource is missing.
+const renderLogo = (hasLogo: boolean): string => `
+    <div class="logo">
+      <div class="logo-image">${hasLogo ? `{% include "${PDF_LOGO_TEMPLATE}" %}` : '<span class="wordmark">Sundsvalls kommun</span>'}</div>
+    </div>`;
 
-const renderHeader = (title: string, subtitle?: string): string => {
-  const brand = LOGO_DATA_URI
-    ? `<img class="brand-logo" src="${LOGO_DATA_URI}" alt="Sundsvalls kommun" />`
-    : `<div class="brand-wordmark">Sundsvalls kommun</div>`;
-  return `
+const renderHeader = (title: string, subtitle?: string): string => `
     <header class="doc-header">
-      ${brand}
-      <div class="doc-title">
-        <h1>${escapeHtml(title)}</h1>
-        ${subtitle ? `<p class="doc-subtitle">${escapeHtml(subtitle)}</p>` : ''}
-      </div>
+      <h1>${escapeHtml(title)}</h1>
+      ${subtitle ? `<p class="doc-subtitle">${escapeHtml(subtitle)}</p>` : ''}
     </header>`;
-};
 
 const renderList = (list: ApplicationPdfList): string => `
       ${list.heading ? `<p class="list-heading">${escapeHtml(list.heading)}</p>` : ''}
       <ul class="list">${list.items.map(item => `<li>${formatValue(item)}</li>`).join('')}</ul>`;
 
-const renderSection = (section: ApplicationPdfSection): string => {
+const renderSection = (section: ApplicationPdfSection, withDivider: boolean): string => {
   const rows = (section.rows ?? [])
     .map(
       row => `
@@ -83,14 +87,19 @@ const renderSection = (section: ApplicationPdfSection): string => {
       ${rows ? `<dl class="rows">${rows}</dl>` : ''}
       ${section.note ? `<p class="note">${formatValue(section.note)}</p>` : ''}
     </section>
-    ${section.divider ? '<hr class="divider" />' : ''}`;
+    ${withDivider ? '<hr class="divider" />' : ''}`;
 };
 
-const renderGroup = (group: ApplicationPdfGroup): string => `
+const renderGroup = (group: ApplicationPdfGroup): string => {
+  const lastIndex = group.sections.length - 1;
+  // A divider after the group's last section would sit right on top of the next group heading's rule.
+  const sections = group.sections.map((section, index) => renderSection(section, section.divider === true && index < lastIndex));
+  return `
     <div class="group">
       <h2 class="group-heading">${escapeHtml(group.heading)}</h2>
-      ${group.sections.map(renderSection).join('')}
+      ${sections.join('')}
     </div>`;
+};
 
 /**
  * MOCK: BankID-signering. Renderar de mockade signaturerna längst ner. När riktig BankID-signering
@@ -122,46 +131,58 @@ const renderSignatures = (signatures: ApplicationPdfSignature[] | undefined): st
     </div>`;
 };
 
+// Styled after the letter template: A4, Arial, black on white, bold headings and thin black rules.
+// Comes after the shared letter style, so the layout is the same whether or not that is available.
 const STYLES = `
+  @page { size: A4; margin: 14mm 18mm 18mm 18mm; }
   * { box-sizing: border-box; }
-  body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; font-size: 12px; margin: 32px; }
-  .doc-header { display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #0a5564; padding-bottom: 16px; margin-bottom: 24px; }
-  .brand-logo { height: 48px; }
-  .brand-wordmark { font-size: 18px; font-weight: 700; color: #0a5564; }
-  .doc-title h1 { font-size: 20px; margin: 0; }
-  .doc-subtitle { margin: 4px 0 0; color: #555; font-size: 12px; }
-  .group { margin-bottom: 22px; }
-  .group-heading { font-size: 16px; color: #0a5564; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin: 0 0 10px; }
-  .section { margin-bottom: 14px; page-break-inside: avoid; }
-  .section h3 { font-size: 13px; margin: 0 0 6px; }
-  .section-info { margin: 0 0 8px; color: #555; font-size: 11px; font-style: italic; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 9.5pt; line-height: 1.3; margin: 0; }
+  .logo { position: relative; height: 80px; }
+  .logo-image { position: absolute; left: 0; }
+  .wordmark { font-size: 16pt; font-weight: 700; }
+  .doc-header { margin: 16px 0 22px; }
+  .doc-header h1 { font-size: 13pt; font-weight: 700; margin: 0; }
+  .doc-subtitle { margin: 3px 0 0; font-size: 10pt; }
+  .group { margin-bottom: 18px; }
+  .group-heading { font-size: 11.5pt; font-weight: 700; border-bottom: 0.75pt solid #000; padding-bottom: 3px; margin: 0 0 8px; }
+  .section { margin-bottom: 12px; page-break-inside: avoid; }
+  .section h3 { font-size: 10pt; font-weight: 700; margin: 0 0 4px; }
+  .section-info { margin: 0 0 6px; color: #444; font-size: 8.5pt; font-style: italic; }
   .rows { margin: 0; }
-  .row { display: flex; gap: 12px; padding: 3px 0; border-bottom: 1px solid #eee; align-items: flex-start; }
-  .row dt { flex: 0 0 45%; color: #555; margin: 0; display: flex; flex-direction: column; }
-  .row dd { flex: 1 1 55%; margin: 0; }
-  .row dd .answer { font-weight: 600; }
-  .row-info { color: #777; font-size: 10px; font-style: italic; margin-top: 2px; }
-  .list-heading { font-weight: 700; margin: 8px 0 4px; }
-  .list { margin: 0 0 8px; padding-left: 18px; }
-  .list li { margin-bottom: 3px; }
-  .note { margin: 8px 0 0; padding: 10px 12px; background: #e3eff2; border-radius: 6px; }
-  .divider { border: 0; border-top: 1px solid #ccc; margin: 0 0 14px; }
-  .bock { display: inline-block; width: 7px; height: 12px; border: solid #0a5564; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
-  .signatures { margin-top: 24px; border-top: 2px solid #0a5564; padding-top: 16px; }
-  .signature { margin-bottom: 12px; }
-  .sig-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .row { display: flex; gap: 12px; padding: 3px 0; border-bottom: 0.5pt solid #d9d9d9; align-items: flex-start; }
+  .row dt { flex: 0 0 48%; margin: 0; display: flex; flex-direction: column; }
+  .row dd { flex: 1 1 52%; margin: 0; }
+  .row dd .answer { font-weight: 700; }
+  .row-info { color: #444; font-size: 8pt; font-style: italic; margin-top: 2px; }
+  .list-heading { font-weight: 700; margin: 6px 0 3px; }
+  .list { margin: 0 0 6px; padding-left: 16px; }
+  .list li { margin-bottom: 2px; }
+  .note { margin: 8px 0 0; padding: 8px 10px; border: 0.75pt solid #000; }
+  .divider { border: 0; border-top: 0.75pt solid #000; margin: 0 0 12px; }
+  .bock { display: inline-block; width: 6px; height: 11px; border: solid #000; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .signatures { margin-top: 20px; }
+  .signature { margin-bottom: 12px; page-break-inside: avoid; }
+  .sig-name { font-weight: 700; font-size: 10pt; margin-bottom: 4px; }
   .checksum { font-family: "Courier New", monospace; font-weight: 400; word-break: break-all; }
 `;
 
-export const buildApplicationPdfHtml = (doc: ApplicationPdfDocument): string => {
-  const body = [renderHeader(doc.title, doc.subtitle), ...doc.groups.map(renderGroup), renderSignatures(doc.signatures)].join('\n');
+export const buildApplicationPdfHtml = (doc: ApplicationPdfDocument, resources: ApplicationPdfResources): string => {
+  const body = [
+    renderLogo(resources.logo),
+    renderHeader(doc.title, doc.subtitle),
+    ...doc.groups.map(renderGroup),
+    renderSignatures(doc.signatures),
+  ].join('\n');
 
   return `<!doctype html>
 <html lang="sv">
 <head>
   <meta charset="utf-8" />
   <title>${escapeHtml(doc.title)}</title>
-  <style>${STYLES}</style>
+  <style>
+    ${resources.letterStyle ? `{% include "${PDF_LETTER_STYLE_TEMPLATE}" %}` : ''}
+    ${STYLES}
+  </style>
 </head>
 <body>
 ${body}

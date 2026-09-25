@@ -33,8 +33,8 @@ import { ContactMethod } from '@/data-contracts/contactsettings/data-contracts';
 import ApiService from '@/services/api.service';
 import ApiTokenService from '@/services/api-token.service';
 import CaremanagementApiService from '@/services/caremanagement-api.service';
-import { renderPdfFromHtml } from '@/services/templating.service';
-import { buildApplicationPdfHtml } from '@/utils/economic-aid-application-pdf';
+import { renderPdfFromHtml, templateExists } from '@/services/templating.service';
+import { PDF_LETTER_STYLE_TEMPLATE, PDF_LOGO_TEMPLATE, buildApplicationPdfHtml } from '@/utils/economic-aid-application-pdf';
 import { fillPersonNamePlaceholders } from '@/utils/economic-aid-pdf-person-names';
 import { getCitizen, getCitizenPersonnumber } from '@/services/citizen.service';
 import { makeClientContactSetting } from '@/services/contact-setting.service';
@@ -656,7 +656,10 @@ export class EconomicAidController {
     // via templating and attach it. Generated BEFORE the errand is created and intentionally NOT
     // wrapped in a try/catch — if the PDF cannot be produced the whole submission fails (the errand
     // must always carry the sammanställning).
-    const summaryPdf = await renderPdfFromHtml(buildApplicationPdfHtml(body.summary));
+    // The logo and letter style are shared templating resources. Include only those that are stored in
+    // this templating instance — an include of a missing one would fail the render.
+    const [logo, letterStyle] = await Promise.all([templateExists(PDF_LOGO_TEMPLATE), templateExists(PDF_LETTER_STYLE_TEMPLATE)]);
+    const summaryPdf = await renderPdfFromHtml(buildApplicationPdfHtml(body.summary, { logo, letterStyle }));
 
     // caremanagement create is multipart: a JSON "request" part, the citizen's own "attachments"
     // (documentType ERRAND) and an optional "caseData" part. The sammanställning goes in caseData — it is

@@ -19,13 +19,33 @@ interface DirectRenderResponse {
   output?: string;
 }
 
+const templatingBaseUrl = (): string => String(TEMPLATING_BASE_URL ?? '').replace(/\/+$/, '');
+
 /**
- * Renders a finished HTML document to a PDF via templating and returns the raw PDF bytes.
+ * Whether a template — e.g. a shared resource such as the municipality logo — is stored in templating.
+ * An {% include %} of a missing template fails the whole render, so optional includes are checked
+ * first. Any failure (not found, unreachable) counts as missing.
+ */
+export const templateExists = async (identifier: string): Promise<boolean> => {
+  const base = templatingBaseUrl();
+  if (!base) return false;
+  try {
+    await axios.get(`${base}/${MUNICIPALITY_ID}/templates/${encodeURIComponent(identifier)}`);
+    return true;
+  } catch (error) {
+    logger.warn(`[templating] template ${identifier} is not available: ${(error as Error)?.message ?? error}`);
+    return false;
+  }
+};
+
+/**
+ * Renders a finished HTML document to a PDF via templating and returns the raw PDF bytes. The HTML
+ * is rendered as a template, so any {% include %} in it is resolved by templating.
  * Throws an HttpException on any failure so callers that must not proceed without the PDF
  * (e.g. attaching an application sammanställning) fail loudly rather than silently dropping it.
  */
 export const renderPdfFromHtml = async (html: string): Promise<Buffer> => {
-  const base = String(TEMPLATING_BASE_URL ?? '').replace(/\/+$/, '');
+  const base = templatingBaseUrl();
   if (!base) {
     throw new HttpException(500, 'TEMPLATING_BASE_URL is not configured');
   }

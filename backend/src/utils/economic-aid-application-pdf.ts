@@ -13,13 +13,17 @@ import {
  * numbered groups (1. Personuppgifter, 2. Boendesituation, …) with sub-sections and a signature block.
  */
 
+// `{` and `}` are encoded as well: templating renders the document as a (Pebble) template, so text an
+// applicant typed, such as "{{ … }}" or "{% … %}", must never be evaluated.
 const escapeHtml = (value: string): string =>
   String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/'/g, '&#39;')
+    .replace(/{/g, '&#123;')
+    .replace(/}/g, '&#125;');
 
 // Preserve line breaks entered in free-text answers / multi-paragraph help texts.
 const formatValue = (value: string): string => escapeHtml(value).replace(/\r?\n/g, '<br />');

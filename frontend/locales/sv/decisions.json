@@ -2,13 +2,26 @@
   "title": "Dina beslut och dokument",
   "description": "Här samlar vi dina avtal, beslut och andra dokument som du får från oss.",
   "pendingCaseInfo": "Väntar du på ett beslut eller har ett pågående ärende så hittar du det under Ärenden i menyn.",
-  "decisionsInCases": "Beslut i dina ärenden",
-  "loading": "Laddar beslut",
+  "unlinkedDecisions": "Övriga beslut",
   "decision": "Beslut",
+  "decidedAt": "Beslutad {{date}}",
+  "decisionsForDocument": "Beslut och dokument kopplade till {{title}}",
   "case": "Ärende",
+  "download": "Ladda ner",
+  "downloadError": "Det gick inte att hämta beslutet. Försök igen senare.",
   "documents": "Dokument",
   "noDocuments": "Du har inga beslut eller dokument ännu.",
   "loadingDocuments": "Laddar beslut och dokument",
+  "loadingDocument": "Laddar dokument",
+  "loadDocumentError": "Det gick inte att hämta dokumentet. Försök igen senare.",
+  "loadError": "Det gick inte att hämta dina beslut och dokument. Försök igen senare.",
+  "sourceUnavailable": "Vissa beslut och dokument kunde inte hämtas just nu. Försök igen senare.",
+  "sourceUnavailableNamed": "{{sources}} kunde inte hämtas just nu. Försök igen senare.",
+  "and": "och",
+  "sources": {
+    "PARTYASSETS": "dina dokument",
+    "CASEDATA": "beslut i dina ärenden"
+  },
   "goToDecisions": "Gå till beslut",
   "asset": {
     "status": {

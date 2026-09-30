@@ -1,5 +1,5 @@
 import { RepresentingMode } from '@interfaces/app';
-import { testAssets, testCases, testContactSettings, testDecisions } from 'cypress/e2e/utils';
+import { testCases, testContactSettings, testDocuments, testUnlinkedDecisions } from 'cypress/e2e/utils';
 import { getBusinessRepresentFromEngagements, getRepresentingEntity } from 'cypress/fixtures/getRepresentingEntity';
 import { setIntercepts } from 'cypress/support/e2e';
 
@@ -56,18 +56,18 @@ describe('Företag', () => {
         cy.contains('[data-cy="representingLabel"]', 'Styrbjörns cyklar').should('be.visible');
       });
   });
-  it('should render assets list /foretag', () => {
+  it('should render documents list /foretag', () => {
     cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
-    cy.wait('@getAssets').then(() => {
+    cy.wait('@getDocuments').then(() => {
       cy.url().should('include', '/foretag/beslut-och-dokument');
-      testAssets(RepresentingMode.BUSINESS);
+      testDocuments(RepresentingMode.BUSINESS);
     });
   });
-  it('should render decisions list /foretag', () => {
+  it('should render unlinked decisions list /foretag', () => {
     cy.contains('[role="menuitem"]', 'Beslut och dokument').click();
-    cy.wait('@getDecisions').then(() => {
+    cy.wait('@getDocuments').then(() => {
       cy.url().should('include', '/foretag/beslut-och-dokument');
-      testDecisions();
+      testUnlinkedDecisions();
     });
   });
 });

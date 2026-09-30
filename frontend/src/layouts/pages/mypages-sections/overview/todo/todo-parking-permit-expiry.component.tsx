@@ -1,4 +1,5 @@
 import { Asset } from '@data-contracts/backend/data-contracts';
+import { toDocumentId } from '@services/document-service';
 import { Button, Icon } from '@sk-web-gui/react';
 import dayjs from 'dayjs';
 import { ArrowRight, Mail } from 'lucide-react';
@@ -32,7 +33,7 @@ export const TodoParkingPermitExpiry = ({ asset }: TodoParkingPermitExpiryProps)
         </div>
       </div>
       <div className={styles['todo-action']}>
-        <NextLink href={`beslut-och-dokument/${asset.id}`}>
+        <NextLink href={`beslut-och-dokument/${toDocumentId('PARTYASSETS', asset.id ?? '')}`}>
           <Button
             className={styles['todo-action-button']}
             color="vattjom"

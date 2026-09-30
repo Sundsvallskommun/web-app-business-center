@@ -4,6 +4,8 @@ import { asOwned, Owned } from '@/interfaces/owned';
 import {
   buildRenewalExtraParameters,
   buildRenewalPrefill,
+  fetchOwnedAssets,
+  findOwnedAsset,
   isAllowedAsset,
   isParkingPermitAsset,
   isVisibleStatus,
@@ -13,6 +15,7 @@ import {
   toVisibleAssets,
 } from '@/services/asset.service';
 import { mockUser } from './helpers/fixtures';
+import { createMockApiService } from './helpers/mockApiService';
 
 // 'PARKINGPERMIT' is the single whitelisted type wired up in tests/setup.ts.
 const ALLOWED_TYPE = 'PARKINGPERMIT';
@@ -359,6 +362,106 @@ describe('asset.service', () => {
 
     it.each([['PARATRANSIT'], [undefined]])('rejects %s', type => {
       expect(isParkingPermitAsset({ type } as Asset)).toBe(false);
+    });
+  });
+});
+
+describe('asset.service ownership', () => {
+  const PARTY_ID = 'party-1';
+  const ownedAsset = (overrides: Partial<Asset> = {}): Asset => ({
+    id: 'asset-1',
+    partyId: PARTY_ID,
+    type: ALLOWED_TYPE,
+    status: Status.ACTIVE,
+    ...overrides,
+  });
+
+  describe('fetchOwnedAssets', () => {
+    it('queries partyassets for the party and returns its visible assets branded as owned', async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({ data: [ownedAsset()], message: 'success' });
+
+      const assets = await fetchOwnedAssets(PARTY_ID, mockUser, undefined, api);
+
+      expect(assets).toEqual([ownedAsset()]);
+      expect(api.get).toHaveBeenCalledWith(expect.objectContaining({ params: { partyId: PARTY_ID } }), mockUser);
+    });
+
+    it('drops assets that belong to another party even when the upstream returns them', async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({ data: [ownedAsset(), ownedAsset({ id: 'asset-2', partyId: 'party-2' })], message: 'success' });
+
+      await expect(fetchOwnedAssets(PARTY_ID, mockUser, undefined, api)).resolves.toEqual([ownedAsset()]);
+    });
+
+    it('drops hidden statuses, non whitelisted types and assets without an id', async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({
+        data: [
+          ownedAsset(),
+          ownedAsset({ id: 'asset-2', status: Status.REPLACED }),
+          ownedAsset({ id: 'asset-3', type: 'OTHER' }),
+          ownedAsset({ id: undefined }),
+        ],
+        message: 'success',
+      });
+
+      await expect(fetchOwnedAssets(PARTY_ID, mockUser, undefined, api)).resolves.toEqual([ownedAsset()]);
+    });
+
+    it('matches the party id regardless of case', async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({ data: [ownedAsset({ partyId: PARTY_ID.toUpperCase() })], message: 'success' });
+
+      await expect(fetchOwnedAssets(PARTY_ID, mockUser, undefined, api)).resolves.toHaveLength(1);
+    });
+
+    it('treats an upstream 404 as no assets', async () => {
+      const api = createMockApiService();
+      api.get.mockRejectedValue({ status: 404 });
+
+      await expect(fetchOwnedAssets(PARTY_ID, mockUser, undefined, api)).resolves.toEqual([]);
+    });
+
+    it('rethrows other upstream failures', async () => {
+      const api = createMockApiService();
+      api.get.mockRejectedValue({ status: 500 });
+
+      await expect(fetchOwnedAssets(PARTY_ID, mockUser, undefined, api)).rejects.toEqual({ status: 500 });
+    });
+
+    it('fails when the upstream answers without a body', async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({ data: undefined, message: 'success' });
+
+      await expect(fetchOwnedAssets(PARTY_ID, mockUser, undefined, api)).rejects.toMatchObject({ status: 500 });
+    });
+  });
+
+  describe('findOwnedAsset', () => {
+    it('returns the asset with the given id among the party assets', async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({ data: [ownedAsset(), ownedAsset({ id: 'asset-2' })], message: 'success' });
+
+      await expect(findOwnedAsset(PARTY_ID, 'asset-2', mockUser, undefined, api)).resolves.toEqual(ownedAsset({ id: 'asset-2' }));
+    });
+
+    it('returns undefined when the id belongs to another party or a hidden asset', async () => {
+      const api = createMockApiService();
+      api.get.mockResolvedValue({
+        data: [ownedAsset({ partyId: 'party-2' }), ownedAsset({ id: 'asset-2', status: Status.DRAFT })],
+        message: 'success',
+      });
+
+      await expect(findOwnedAsset(PARTY_ID, 'asset-1', mockUser, undefined, api)).resolves.toBeUndefined();
+      await expect(findOwnedAsset(PARTY_ID, 'asset-2', mockUser, undefined, api)).resolves.toBeUndefined();
+    });
+
+    it('never queries upstream without an id', async () => {
+      const api = createMockApiService();
+
+      await expect(findOwnedAsset(PARTY_ID, '', mockUser, undefined, api)).resolves.toBeUndefined();
+      expect(api.get).not.toHaveBeenCalled();
     });
   });
 });

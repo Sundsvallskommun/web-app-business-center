@@ -1,29 +1,7 @@
 import { Attachment, Decision, DecisionDecisionTypeEnum } from '@/data-contracts/case-data/data-contracts';
 import { CaseDataNamespace } from '@/interfaces/casedata.interface';
-import { ClientDecision } from '@/interfaces/decision.interface';
 
 export const isFinalDecision = (decision: Decision): boolean => decision.decisionType === DecisionDecisionTypeEnum.FINAL;
-
-export const toClientDecision = (decision: Decision): ClientDecision => ({
-  id: decision.id,
-  errandId: decision.errandId,
-  errandNumber: decision.errandNumber,
-  decisionType: decision.decisionType,
-  decisionOutcome: decision.decisionOutcome,
-  description: decision.description,
-  decidedAt: decision.decidedAt,
-  validFrom: decision.validFrom,
-  validTo: decision.validTo,
-  created: decision.created,
-  attachments: decision.attachments
-    ?.filter(attachment => !!attachment.id && !!attachment.name)
-    ?.map(attachment => ({
-      id: attachment.id as number,
-      name: attachment.name as string,
-      mimeType: attachment.mimeType,
-      extension: attachment.extension,
-    })),
-});
 
 interface OwnedDecisionAttachment {
   decision: Decision;

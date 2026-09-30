@@ -2,6 +2,7 @@ import { Asset } from '@data-contracts/backend/data-contracts';
 import { RepresentingMode } from '@interfaces/app';
 import { ApiResponse } from '@services/api-service';
 import { getCases } from 'cypress/fixtures/getCases';
+import { toDocumentDetails } from 'cypress/fixtures/getDocuments';
 import { setIntercepts } from 'cypress/support/e2e';
 import dayjs from 'dayjs';
 
@@ -95,10 +96,11 @@ describe('Att göra (Todo section)', () => {
 
     it('should navigate to permit page when clicking Till ärendet on parking permit expiry', () => {
       cy.intercept('GET', /(.*)api\/assets$/, getAssetsWithExpiringPermit(RepresentingMode.PRIVATE)).as('getAssets');
-      cy.intercept('GET', '**/api/assets/*', {
-        data: getAssetsWithExpiringPermit(RepresentingMode.PRIVATE).data[0],
-        message: 'success',
-      }).as('getAsset');
+      cy.intercept(
+        'GET',
+        '**/api/documents/*',
+        toDocumentDetails(getAssetsWithExpiringPermit(RepresentingMode.PRIVATE).data[0])
+      ).as('getDocument');
       cy.visit('/privat/oversikt');
       cy.wait(['@getCases', '@getAssets']);
 
@@ -110,7 +112,7 @@ describe('Att göra (Todo section)', () => {
           cy.get('a[href*="beslut-och-dokument"]').click();
         });
 
-      cy.url().should('include', '/privat/beslut-och-dokument/asset-id-expiring');
+      cy.url().should('include', '/privat/beslut-och-dokument/pa-asset-id-expiring');
     });
 
     it('should navigate to case page when clicking Till ärendet on case todo', () => {
@@ -166,10 +168,11 @@ describe('Att göra (Todo section)', () => {
 
     it('should navigate to permit page in business mode', () => {
       cy.intercept('GET', /(.*)api\/assets$/, getAssetsWithExpiringPermit(RepresentingMode.BUSINESS)).as('getAssets');
-      cy.intercept('GET', '**/api/assets/*', {
-        data: getAssetsWithExpiringPermit(RepresentingMode.BUSINESS).data[0],
-        message: 'success',
-      }).as('getAsset');
+      cy.intercept(
+        'GET',
+        '**/api/documents/*',
+        toDocumentDetails(getAssetsWithExpiringPermit(RepresentingMode.BUSINESS).data[0])
+      ).as('getDocument');
       cy.visit('/foretag/oversikt');
       cy.wait(['@getCases', '@getAssets']);
 
@@ -181,7 +184,7 @@ describe('Att göra (Todo section)', () => {
         .first()
         .click({ force: true });
 
-      cy.url().should('include', '/foretag/beslut-och-dokument/asset-id-expiring');
+      cy.url().should('include', '/foretag/beslut-och-dokument/pa-asset-id-expiring');
     });
   });
 });

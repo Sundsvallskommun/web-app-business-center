@@ -1,7 +1,7 @@
 import { Engagement } from '@/services/legal-entity.service';
 import { User } from '@/interfaces/users.interface';
 import { RepresentingEntity } from '../interfaces/representing.interface';
-import { CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
+import { CaseStatusResponseWithPermissions } from '@/interfaces/case.interface';
 import { GrpCollectResponseWithRef, GrpInitiateResponseWithStartTime } from '@/interfaces/grp.interface';
 import { SignMandateCache } from '@/interfaces/mandates.interface';
 
@@ -15,9 +15,9 @@ declare module 'express-session' {
     messages: string[];
     cache?: {
       cases: {
-        PRIVATE?: CaseStatusResponse[];
+        PRIVATE?: CaseStatusResponseWithPermissions[];
         BUSINESS?: {
-          [key: string]: CaseStatusResponse[];
+          [key: string]: CaseStatusResponseWithPermissions[];
         };
       };
     };

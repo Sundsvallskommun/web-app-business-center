@@ -6,11 +6,11 @@ import { representingModeDefault } from 'cypress/support/e2e';
 // messagesAllowed is computed by the backend, so it is part of every case it
 // serves. Derived here rather than written out per case, to keep the fixture in
 // one shape. See caseMessagesAllowed in backend/src/services/case.service.ts.
-const messageSystems = ['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM'];
+const messageSystems = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM']);
 const withMessagesAllowed = <T extends { system?: string }>(cases: T[]) =>
   cases.map((c) => ({
     ...c,
-    messagesAllowed: messageSystems.includes(c.system ?? ''),
+    messagesAllowed: messageSystems.has(c.system ?? ''),
   }));
 
 export const getCases: (representingMode?: RepresentingMode) => ApiResponse<CaseStatusResponse[]> = (

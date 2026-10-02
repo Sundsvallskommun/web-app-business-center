@@ -3,9 +3,6 @@ import { RepresentingMode } from '@interfaces/app';
 import { ApiResponse } from '@services/api-service';
 import { representingModeDefault } from 'cypress/support/e2e';
 
-// messagesAllowed is computed by the backend, so it is part of every case it
-// serves. Derived here rather than written out per case, to keep the fixture in
-// one shape. See caseMessagesAllowed in backend/src/services/case.service.ts.
 const messageSystems = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM']);
 const withMessagesAllowed = <T extends { system?: string }>(cases: T[]) =>
   cases.map((c) => ({

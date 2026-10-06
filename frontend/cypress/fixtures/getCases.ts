@@ -3,10 +3,17 @@ import { RepresentingMode } from '@interfaces/app';
 import { ApiResponse } from '@services/api-service';
 import { representingModeDefault } from 'cypress/support/e2e';
 
+const messageSystems = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM']);
+const withMessagesAllowed = <T extends { system?: string }>(cases: T[]) =>
+  cases.map((c) => ({
+    ...c,
+    messagesAllowed: messageSystems.has(c.system ?? ''),
+  }));
+
 export const getCases: (representingMode?: RepresentingMode) => ApiResponse<CaseStatusResponse[]> = (
   representingMode = representingModeDefault
 ) => ({
-  data: [
+  data: withMessagesAllowed([
     {
       caseType: `caseType-Inskickat-${RepresentingMode[representingMode]}`,
       caseId: 'caseId-0',
@@ -340,6 +347,6 @@ export const getCases: (representingMode?: RepresentingMode) => ApiResponse<Case
       isOpenEErrand: true,
       system: 'OPEN_E_PLATFORM',
     },
-  ],
+  ]),
   message: 'success',
 });

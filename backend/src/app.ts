@@ -96,7 +96,7 @@ const samlStrategy = new Strategy(
       } as Error);
     }
     const profile = samlProfile as Profile;
-    const { firstname: givenName, Surname: surname, citizenIdentifier } = profile;
+    const { givenName, Surname: surname, citizenIdentifier } = profile;
 
     if (!givenName || !surname || !citizenIdentifier) {
       return done(null, undefined, {

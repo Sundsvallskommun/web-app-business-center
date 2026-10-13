@@ -96,9 +96,11 @@ const samlStrategy = new Strategy(
       } as Error);
     }
     const profile = samlProfile as Profile;
-    const { givenName, Surname: surname, citizenIdentifier } = profile;
+    const { givenName, surname, citizenIdentifier } = profile;
 
     console.log(givenName);
+    console.log(surname);
+    console.log(citizenIdentifier);
     console.log(JSON.stringify(profile));
 
     if (!givenName || !surname || !citizenIdentifier) {

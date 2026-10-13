@@ -98,6 +98,9 @@ const samlStrategy = new Strategy(
     const profile = samlProfile as Profile;
     const { givenName, Surname: surname, citizenIdentifier } = profile;
 
+    console.log(givenName);
+    console.log(JSON.stringify(profile));
+
     if (!givenName || !surname || !citizenIdentifier) {
       return done(null, undefined, {
         name: 'SAML_MISSING_ATTRIBUTES',

@@ -105,6 +105,15 @@ describe('case.service', () => {
         } as CaseStatusResponse),
       ).toBe(false);
     });
+
+    it('rejects OPEN_E_PLATFORM drafts, which have not been submitted and have no one to read messages', () => {
+      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Sparat' } as CaseStatusResponse)).toBe(false);
+      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Väntar på flerpartssignering' } as CaseStatusResponse)).toBe(false);
+    });
+
+    it('still allows a submitted OPEN_E_PLATFORM case', () => {
+      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Inskickat' } as CaseStatusResponse)).toBe(true);
+    });
   });
 
   describe('withMessagePermission', () => {
@@ -116,6 +125,11 @@ describe('case.service', () => {
         system: 'BYGGR',
         messagesAllowed: false,
       });
+    });
+
+    it('flags a draft as not allowing messages', () => {
+      const draft = { caseId: 'c2', system: 'OPEN_E_PLATFORM', externalStatus: 'Sparat' } as CaseStatusResponse;
+      expect(withMessagePermission(draft)).toEqual({ ...draft, messagesAllowed: false });
     });
   });
 

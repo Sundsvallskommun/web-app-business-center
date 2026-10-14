@@ -22,7 +22,8 @@ const systemIsAllowed = (c: CaseStatusResponse): boolean => !!c?.system && allow
 
 // A case is shown when its namespace is whitelisted, or — when it has no
 // namespace at all — when its originating system is whitelisted.
-// Drafts are currently only allowed if they are from OPEN_E_PLATFORM
+// Drafts are currently only allowed if they are from OPEN_E_PLATFORM. A draft has not
+// been submitted yet, so it is listed but can never send or receive messages.
 const draftStatuses: ReadonlySet<string> = new Set(['Sparat', 'Väntar på flerpartssignering']);
 const isDraft = (c: CaseStatusResponse): boolean => !!c.externalStatus && draftStatuses.has(c.externalStatus);
 export const caseIsAllowed = (c: CaseStatusResponse): boolean =>
@@ -30,7 +31,7 @@ export const caseIsAllowed = (c: CaseStatusResponse): boolean =>
 
 const allowedMessageSystems: ReadonlySet<string> = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM']);
 
-export const caseMessagesAllowed = (c: CaseStatusResponse): boolean => !!c.system && allowedMessageSystems.has(c.system);
+export const caseMessagesAllowed = (c: CaseStatusResponse): boolean => !!c.system && allowedMessageSystems.has(c.system) && !isDraft(c);
 
 export const withMessagePermission = (c: CaseStatusResponse): CaseStatusResponseWithPermissions => ({
   ...c,

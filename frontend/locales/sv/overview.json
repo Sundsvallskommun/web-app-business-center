@@ -19,6 +19,8 @@
     "noTodos": "Du har inga ärenden att hantera.",
     "complementNeeded": "Komplettering behövs på ärende #{{caseId}}",
     "complementDescription": "Du behöver skicka in fler uppgifter. Klicka på \"Till ärendet\" och skicka uppgifterna som ett meddelande till oss.",
+    "signingNeeded": "Ärende #{{caseId}} väntar på signering",
+    "signingDescription": "Ärendet behöver signeras av alla parter innan det skickas in. Klicka på \"Till ärendet\" för att se ärendet.",
     "goToCase": "Till ärendet",
     "contract": {
       "title": "Förnya avtal X",

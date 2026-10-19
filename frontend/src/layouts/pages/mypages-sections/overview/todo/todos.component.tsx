@@ -5,7 +5,7 @@ import { CaseStatusResponse } from '@data-contracts/backend/data-contracts';
 import { CasesData, ICaseStatusResponse } from '@interfaces/case';
 import { useApi } from '@services/api-service';
 import { isParkingPermit, soonExpiring } from '@services/asset-service';
-import { casesHandler, getCasesInNeedOfData } from '@services/case-service';
+import { casesHandler, getCasesRequiringAction } from '@services/case-service';
 import { Divider, Spinner, useThemeQueries } from '@sk-web-gui/react';
 import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -55,7 +55,7 @@ export const Todos = () => {
   });
 
   const todoCases: TodoItem<TodoType.CASE>[] = cases
-    ? getCasesInNeedOfData(cases)?.cases.map((data) => dataToTodo<TodoType.CASE>(data, TodoType.CASE))
+    ? getCasesRequiringAction(cases)?.cases.map((data) => dataToTodo<TodoType.CASE>(data, TodoType.CASE))
     : [];
 
   const todoPermitExpiry: TodoItem<TodoType.PARKING_PERMIT_EXPIRY>[] = assets

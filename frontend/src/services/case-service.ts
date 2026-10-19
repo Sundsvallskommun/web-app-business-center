@@ -84,8 +84,8 @@ export const getClosed: (cs: CasesData) => CasesData = (cs) => ({
     .sort(sortCasesByDate),
 });
 
-export const complementStatuses = ['Väntar på komplettering', 'Påminnelse om komplettering', 'Komplettering behövs'];
-export const signingStatuses = ['Väntar på flerpartssignering'];
+const complementStatuses = ['Väntar på komplettering', 'Påminnelse om komplettering', 'Komplettering behövs'];
+const signingStatuses = ['Väntar på flerpartssignering'];
 
 export const caseNeedsComplement = (c: ICaseStatusResponse): boolean => complementStatuses.includes(c.status.label);
 export const caseNeedsSigning = (c: ICaseStatusResponse): boolean => signingStatuses.includes(c.status.label);

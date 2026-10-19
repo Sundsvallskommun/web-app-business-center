@@ -84,12 +84,17 @@ export const getClosed: (cs: CasesData) => CasesData = (cs) => ({
     .sort(sortCasesByDate),
 });
 
-export const getCasesInNeedOfData: (cs: CasesData) => CasesData = (cs) => ({
+export const complementStatuses = ['Väntar på komplettering', 'Påminnelse om komplettering', 'Komplettering behövs'];
+export const signingStatuses = ['Väntar på flerpartssignering'];
+
+export const caseNeedsComplement = (c: ICaseStatusResponse): boolean => complementStatuses.includes(c.status.label);
+export const caseNeedsSigning = (c: ICaseStatusResponse): boolean => signingStatuses.includes(c.status.label);
+
+// Cases that should show up under "Att göra" on the overview page.
+export const getCasesRequiringAction: (cs: CasesData) => CasesData = (cs) => ({
   ...cs,
   labels: ongoingCasesLabels,
-  cases: cs.cases.filter((c) =>
-    ['Väntar på komplettering', 'Påminnelse om komplettering', 'Komplettering behövs'].includes(c.status.label)
-  ),
+  cases: cs.cases.filter((c) => caseNeedsComplement(c) || caseNeedsSigning(c)),
 });
 
 export const getCaseMessageAttachment: (url: string) => Promise<string> = (url) =>

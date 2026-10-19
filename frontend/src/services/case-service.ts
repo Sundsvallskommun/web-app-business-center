@@ -84,11 +84,15 @@ export const getClosed: (cs: CasesData) => CasesData = (cs) => ({
     .sort(sortCasesByDate),
 });
 
-const complementStatuses = ['Väntar på komplettering', 'Påminnelse om komplettering', 'Komplettering behövs'];
-const signingStatuses = ['Väntar på flerpartssignering'];
+const complementStatuses: ReadonlySet<string> = new Set([
+  'Väntar på komplettering',
+  'Påminnelse om komplettering',
+  'Komplettering behövs',
+]);
+const signingStatuses: ReadonlySet<string> = new Set(['Väntar på flerpartssignering']);
 
-export const caseNeedsComplement = (c: ICaseStatusResponse): boolean => complementStatuses.includes(c.status.label);
-export const caseNeedsSigning = (c: ICaseStatusResponse): boolean => signingStatuses.includes(c.status.label);
+export const caseNeedsComplement = (c: ICaseStatusResponse): boolean => complementStatuses.has(c.status.label);
+export const caseNeedsSigning = (c: ICaseStatusResponse): boolean => signingStatuses.has(c.status.label);
 
 // Cases that should show up under "Att göra" on the overview page.
 export const getCasesRequiringAction: (cs: CasesData) => CasesData = (cs) => ({

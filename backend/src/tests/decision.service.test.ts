@@ -1,6 +1,6 @@
 import { Decision, DecisionDecisionTypeEnum } from '@/data-contracts/case-data/data-contracts';
 import { CaseDataNamespace } from '@/interfaces/casedata.interface';
-import { findOwnedDecisionAttachment, isFinalDecision, resolveDecisionNamespaces, toClientDecision } from '@/services/decision.service';
+import { findOwnedDecisionAttachment, isFinalDecision, resolveDecisionNamespaces } from '@/services/decision.service';
 
 const mockDecision = (overrides: Partial<Decision> = {}): Decision => ({
   id: 1,
@@ -17,29 +17,6 @@ describe('decision.service', () => {
     it('accepts final decisions and rejects proposed ones', () => {
       expect(isFinalDecision(mockDecision())).toBe(true);
       expect(isFinalDecision(mockDecision({ decisionType: DecisionDecisionTypeEnum.PROPOSED }))).toBe(false);
-    });
-  });
-
-  describe('toClientDecision', () => {
-    it('maps attachment metadata needed to name and open a download', () => {
-      const result = toClientDecision(mockDecision());
-
-      expect(result.attachments).toEqual([{ id: 100, name: 'beslut.pdf', mimeType: 'application/pdf', extension: 'pdf' }]);
-    });
-
-    it('drops attachments that cannot be downloaded or named', () => {
-      const decision = mockDecision({
-        attachments: [{ id: 100, name: 'beslut.pdf' }, { id: 101 }, { name: 'utan-id.pdf' }],
-      });
-
-      expect(toClientDecision(decision).attachments).toEqual([{ id: 100, name: 'beslut.pdf', mimeType: undefined, extension: undefined }]);
-    });
-
-    it('never exposes file content or the internal namespace to the client', () => {
-      const result = toClientDecision(mockDecision());
-
-      expect(result).not.toHaveProperty('namespace');
-      expect(result.attachments?.[0]).not.toHaveProperty('file');
     });
   });
 

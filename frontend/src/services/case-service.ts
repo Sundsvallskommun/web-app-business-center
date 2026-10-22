@@ -84,19 +84,22 @@ export const getClosed: (cs: CasesData) => CasesData = (cs) => ({
     .sort(sortCasesByDate),
 });
 
-export const getCasesInNeedOfData: (cs: CasesData) => CasesData = (cs) => ({
+const complementStatuses: ReadonlySet<string> = new Set([
+  'Väntar på komplettering',
+  'Påminnelse om komplettering',
+  'Komplettering behövs',
+]);
+const signingStatuses: ReadonlySet<string> = new Set(['Väntar på flerpartssignering']);
+
+export const caseNeedsComplement = (c: ICaseStatusResponse): boolean => complementStatuses.has(c.status.label);
+export const caseNeedsSigning = (c: ICaseStatusResponse): boolean => signingStatuses.has(c.status.label);
+
+// Cases that should show up under "Att göra" on the overview page.
+export const getCasesRequiringAction: (cs: CasesData) => CasesData = (cs) => ({
   ...cs,
   labels: ongoingCasesLabels,
-  cases: cs.cases.filter((c) =>
-    ['Väntar på komplettering', 'Påminnelse om komplettering', 'Komplettering behövs'].includes(c.status.label)
-  ),
+  cases: cs.cases.filter((c) => caseNeedsComplement(c) || caseNeedsSigning(c)),
 });
-
-export const getCasePdf: (caseId: string) => Promise<string> = (caseId) =>
-  apiService
-    .get<ApiResponse<string>>(`cases/${caseId}/pdf`)
-    .then((res) => res.data.data)
-    .catch(() => '');
 
 export const getCaseMessageAttachment: (url: string) => Promise<string> = (url) =>
   apiService

@@ -1,4 +1,5 @@
 import { ICaseStatusResponse } from '@interfaces/case';
+import { caseNeedsSigning } from '@services/case-service';
 import { Button, Icon } from '@sk-web-gui/react';
 import { getCaseReference } from '@utils/case-reference';
 import { getCaseTypeLabel } from '@utils/casetype-label-mapper';
@@ -13,6 +14,9 @@ interface TodoCaseProps {
 
 export const TodoCase = ({ data }: TodoCaseProps) => {
   const { t } = useTranslation('overview');
+  const needsSigning = caseNeedsSigning(data);
+  const headingKey = needsSigning ? 'overview:todo.signingNeeded' : 'overview:todo.complementNeeded';
+  const descriptionKey = needsSigning ? 'overview:todo.signingDescription' : 'overview:todo.complementDescription';
 
   return (
     <div className={styles['todo']}>
@@ -21,10 +25,8 @@ export const TodoCase = ({ data }: TodoCaseProps) => {
           <Icon className={styles['todo-type-icon']} icon={<FilePen />} />
         </div>
         <div className={styles['todo-content']}>
-          <h2 className={styles['todo-content-heading']}>{t('overview:todo.complementNeeded', { caseId: data.errandNumber })}</h2>
-          <p className={styles['todo-content-text']}>
-            {t('overview:todo.complementDescription')}
-          </p>
+          <h2 className={styles['todo-content-heading']}>{t(headingKey, { caseId: data.errandNumber })}</h2>
+          <p className={styles['todo-content-text']}>{t(descriptionKey)}</p>
         </div>
       </div>
       <div className={styles['todo-action']}>

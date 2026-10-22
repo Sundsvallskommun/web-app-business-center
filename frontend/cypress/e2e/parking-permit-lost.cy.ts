@@ -1,5 +1,6 @@
 import { RepresentingMode } from '@interfaces/app';
 import { getAssets } from 'cypress/fixtures/getAssets';
+import { getDocuments, toDocumentDetails } from 'cypress/fixtures/getDocuments';
 import { setIntercepts } from 'cypress/support/e2e';
 
 describe('Report Lost Parking Permit', () => {
@@ -7,21 +8,22 @@ describe('Report Lost Parking Permit', () => {
     setIntercepts(RepresentingMode.PRIVATE);
 
     cy.intercept('GET', /(.*)api\/assets$/, getAssets(RepresentingMode.PRIVATE)).as('getAssets');
+    cy.intercept('GET', '**/api/documents', getDocuments(RepresentingMode.PRIVATE)).as('getDocuments');
     cy.intercept('POST', '**/api/assets/parkingpermit/lost', {
       data: { success: true },
       message: 'ok',
     }).as('reportLostPermit');
 
     cy.visit('/privat/beslut-och-dokument');
-    cy.wait('@getAssets');
+    cy.wait('@getDocuments');
   });
 
   // Helper to navigate to asset page
   const navigateToAssetPage = () => {
     const assets = getAssets(RepresentingMode.PRIVATE);
-    cy.intercept('GET', '**/api/assets/*', { data: assets.data[0], message: 'success' }).as('getAsset');
-    cy.get('ul[aria-label="Dokument"] li a').first().click();
-    cy.wait('@getAsset');
+    cy.intercept('GET', '**/api/documents/*', toDocumentDetails(assets.data[0])).as('getDocument');
+    cy.get('ul[aria-label="Dokument"] > li a').first().click();
+    cy.wait('@getDocument');
   };
 
   it('should display report lost permit button for parking permit', () => {

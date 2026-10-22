@@ -11,7 +11,7 @@ import { useRepresentingSwitch } from '@layouts/site-menu/site-menu-items';
 import { useCombinedBusinessEngagements } from '@services/organisation-service';
 import { Button, Icon, Pagination, RadioButton, Spinner, Table, cx, useThemeQueries } from '@sk-web-gui/react';
 import { getAdjustedPathname, getRepresentingModeRoute } from '@utils/representingModeRoute';
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -60,6 +60,12 @@ export default function ValjForetag() {
     }
   }, [currentPage, engagements, pageSize]);
 
+  const goPrivate = async () => {
+    const res = await setRepresenting({ mode: RepresentingMode.PRIVATE, organizationNumber: undefined });
+    if (res?.error) return;
+    router.push('/privat/oversikt');
+  };
+
   // Logged in user have no engagements
   if (!engagementsIsLoading && engagements?.length == 0) {
     return (
@@ -83,16 +89,14 @@ export default function ValjForetag() {
           className="!py-0 !medium-device:py-40 !px-0"
         >
           <div className="w-full max-w-[80rem]">
-            <CardElevated className="py-24 lg:py-40 px-14 lg:px-80">
+            <CardElevated className="py-24 mb-80 lg:py-40 px-14 lg:px-80">
               <Main>
                 <div>
                   <h1 className="text-h1-small lg:text-h2-lg">{t('valj-foretag:subtitle')}</h1>
                 </div>
                 <div className="break-words lg:my-56">
                   {!hasEngagements ? (
-                    <div className="rounded max-w-prose">
-                      {t('valj-foretag:noEngagements')}
-                    </div>
+                    <div className="rounded max-w-prose">{t('valj-foretag:noEngagements')}</div>
                   ) : (
                     <Table background className={cx('mt-40', !isMinDesktop && '[&_.sk-table-thead]:sr-only')}>
                       <Table.Header>
@@ -125,7 +129,9 @@ export default function ValjForetag() {
                                 </Table.Column>
                                 <Table.Column>
                                   <span className="font-bold">{e.organizationName}</span>
-                                  {e.isRepresentative ? <span className="ml-[.5em]">{t('common:isRepresentative')}</span> : null}
+                                  {e.isRepresentative ? (
+                                    <span className="ml-[.5em]">{t('common:isRepresentative')}</span>
+                                  ) : null}
                                 </Table.Column>
                                 <Table.Column>{e.organizationNumber}</Table.Column>
                               </>
@@ -142,7 +148,9 @@ export default function ValjForetag() {
                                     <div className="flex flex-col gap-y-4">
                                       <div className="font-bold">
                                         <span className="font-bold">{e.organizationName}</span>
-                                        {e.isRepresentative ? <span className="ml-[.5em]">{t('common:isRepresentative')}</span> : null}
+                                        {e.isRepresentative ? (
+                                          <span className="ml-[.5em]">{t('common:isRepresentative')}</span>
+                                        ) : null}
                                       </div>
                                     </div>
                                     <div className="flex flex-col gap-y-4">
@@ -167,11 +175,12 @@ export default function ValjForetag() {
                       </Table.Footer>
                     </Table>
                   )}
-                  <p className="pt-12 pb-12">
-                    {t('valj-foretag:disclaimer')}
-                  </p>
+                  <p className="pt-12 pb-12">{t('valj-foretag:disclaimer')}</p>
                 </div>
-                <div className="flex justify-end">
+                <div className="flex md:flex-row flex-col md:justify-between md:gap-0 gap-16">
+                  <Button variant="secondary" onClick={() => goPrivate()} leftIcon={<Icon icon={<ArrowLeft />} />}>
+                    {t('common:noRepresent.goBack')}
+                  </Button>
                   <Button
                     data-cy="representingEntityButton"
                     loading={engagementsIsLoading}

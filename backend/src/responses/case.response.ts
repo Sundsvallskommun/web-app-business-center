@@ -1,15 +1,14 @@
 import { AttachmentResponse as AttachmentResponseType, MessageResponseDirectionEnum } from '@/data-contracts/case-data/data-contracts';
-import { CaseStatusResponse as CaseStatusResponseType } from '@/data-contracts/casestatus/data-contracts';
-import { FrontendMessageResponse as FrontendMessageResponseType } from '@/interfaces/case.interface';
+import { CaseStatusResponseWithPermissions, FrontendMessageResponse as FrontendMessageResponseType } from '@/interfaces/case.interface';
 import { ApiResponse } from '@/interfaces/service';
 import { Type } from 'class-transformer';
-import { IsArray, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 // DTOs mirroring the parts of the external case-data / casestatus contracts that
 // the frontend actually consumes, exposed through this backend's OpenAPI so they
 // are regenerated into the frontend via `generate:contracts`.
 
-class CaseStatusResponse implements CaseStatusResponseType {
+class CaseStatusResponse implements CaseStatusResponseWithPermissions {
   @IsString()
   @IsOptional()
   caseId?: string;
@@ -44,6 +43,9 @@ class CaseStatusResponse implements CaseStatusResponseType {
   @IsString({ each: true })
   @IsOptional()
   propertyDesignations?: string[];
+  // Computed by this backend, not part of the casestatus contract.
+  @IsBoolean()
+  messagesAllowed!: boolean;
 }
 
 class AttachmentResponse implements AttachmentResponseType {
@@ -74,10 +76,10 @@ class FrontendMessageResponse implements FrontendMessageResponseType {
   attachments!: AttachmentResponseType[];
 }
 
-export class CasesApiResponse implements ApiResponse<CaseStatusResponseType[]> {
+export class CasesApiResponse implements ApiResponse<CaseStatusResponseWithPermissions[]> {
   @ValidateNested({ each: true })
   @Type(() => CaseStatusResponse)
-  data!: CaseStatusResponseType[];
+  data!: CaseStatusResponseWithPermissions[];
   @IsString()
   message!: string;
 }

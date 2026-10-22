@@ -2,7 +2,7 @@ import { Asset } from '@/data-contracts/partyassets/data-contracts';
 import { Relation } from '@/data-contracts/relations/data-contracts';
 import { CaseDataNamespace } from '@/interfaces/casedata.interface';
 import { asOwned } from '@/interfaces/owned';
-import { findSourceErrandForAsset } from '@/services/asset-relations.service';
+import { findSourceErrandForAsset, findSourceErrandsForAsset } from '@/services/asset-relations.service';
 import { createMockApiService } from './helpers/mockApiService';
 import { mockUser } from './helpers/fixtures';
 
@@ -143,6 +143,80 @@ describe('asset-relations.service', () => {
 
       await expect(findSourceErrandForAsset(ownedAsset(undefined), mockUser, api)).resolves.toBeUndefined();
       expect(api.get).not.toHaveBeenCalled();
+    });
+  });
+});
+
+describe('findSourceErrandsForAsset', () => {
+  const secondLink = errandAssetLink({
+    id: 'a1b2c3d4-0000-4000-8000-000000000002',
+    source: { resourceId: OTHER_ERRAND_ID, type: 'case', service: 'casedata', namespace: CaseDataNamespace.SBK_PARKING_PERMIT },
+  });
+
+  it('returns every errand linked to the asset, in the order the relations service returned them', async () => {
+    const api = createMockApiService();
+    api.get.mockReturnValue(respondWith([errandAssetLink(), secondLink]));
+
+    await expect(findSourceErrandsForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual([
+      { id: ERRAND_ID, namespace: CaseDataNamespace.SBK_PARKING_PERMIT },
+      { id: OTHER_ERRAND_ID, namespace: CaseDataNamespace.SBK_PARKING_PERMIT },
+    ]);
+  });
+
+  it('drops links that lack an errand id or a namespace but keeps the usable ones', async () => {
+    const api = createMockApiService();
+    api.get.mockReturnValue(
+      respondWith([
+        errandAssetLink({ source: { resourceId: '', type: 'case', service: 'casedata', namespace: CaseDataNamespace.SBK_PARKING_PERMIT } }),
+        errandAssetLink({ source: { resourceId: ERRAND_ID, type: 'case', service: 'casedata' } }),
+        secondLink,
+      ]),
+    );
+
+    await expect(findSourceErrandsForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual([
+      { id: OTHER_ERRAND_ID, namespace: CaseDataNamespace.SBK_PARKING_PERMIT },
+    ]);
+  });
+
+  it('ignores relations that are not errand-to-asset links or target another asset', async () => {
+    const api = createMockApiService();
+    api.get.mockReturnValue(
+      respondWith([
+        errandAssetLink({ type: 'REFERRED_FROM' }),
+        errandAssetLink({ target: { resourceId: OTHER_ASSET_ID, type: 'asset', service: 'partyassets' } }),
+        errandAssetLink(),
+      ]),
+    );
+
+    await expect(findSourceErrandsForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual([
+      { id: ERRAND_ID, namespace: CaseDataNamespace.SBK_PARKING_PERMIT },
+    ]);
+  });
+
+  it('returns an empty list when the asset has no relations, no id, or the relations API fails', async () => {
+    const api = createMockApiService();
+
+    api.get.mockReturnValue(respondWith([]));
+    await expect(findSourceErrandsForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual([]);
+
+    await expect(findSourceErrandsForAsset(ownedAsset(undefined), mockUser, api)).resolves.toEqual([]);
+
+    api.get.mockRejectedValue(new Error('relations unavailable'));
+    await expect(findSourceErrandsForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual([]);
+  });
+
+  it('is what the single-errand lookup takes its first usable link from', async () => {
+    const api = createMockApiService();
+    api.get.mockReturnValue(
+      respondWith([
+        errandAssetLink({ source: { resourceId: '', type: 'case', service: 'casedata', namespace: CaseDataNamespace.SBK_PARKING_PERMIT } }),
+        secondLink,
+      ]),
+    );
+
+    await expect(findSourceErrandForAsset(OWNED_ASSET, mockUser, api)).resolves.toEqual({
+      id: OTHER_ERRAND_ID,
+      namespace: CaseDataNamespace.SBK_PARKING_PERMIT,
     });
   });
 });

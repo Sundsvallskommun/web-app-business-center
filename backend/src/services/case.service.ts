@@ -4,6 +4,7 @@ import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepIn
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
 import { CaseStatusResponseWithPermissions, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import { CaseDataNamespace } from '@/interfaces/casedata.interface';
+import { SupportManagementNamespace } from '@/interfaces/supportmanagement.interface';
 import { User } from '@/interfaces/users.interface';
 import dayjs from 'dayjs';
 
@@ -12,8 +13,9 @@ import dayjs from 'dayjs';
 const allowedNamespaces: ReadonlySet<string> = new Set([
   CaseDataNamespace.SBK_MEX,
   CaseDataNamespace.SBK_PARKING_PERMIT,
-  CaseDataNamespace.CONTACTSUNDSVALL,
-  CaseDataNamespace.BOU,
+  SupportManagementNamespace.CONTACTSUNDSVALL,
+  SupportManagementNamespace.BOU,
+  SupportManagementNamespace.SERVICECENTERFINANCE,
 ]);
 const namespaceIsAllowed = (c: CaseStatusResponse): boolean => !!c?.namespace && allowedNamespaces.has(c.namespace);
 

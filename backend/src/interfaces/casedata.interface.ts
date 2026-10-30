@@ -1,8 +1,6 @@
 export enum CaseDataNamespace {
   SBK_MEX = 'SBK_MEX',
   SBK_PARKING_PERMIT = 'SBK_PARKING_PERMIT',
-  CONTACTSUNDSVALL = 'CONTACTSUNDSVALL',
-  BOU = 'BOU',
 }
 
 export enum ParkingPermitCaseType {

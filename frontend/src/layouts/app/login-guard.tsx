@@ -2,12 +2,12 @@
 
 import { useAppContext } from '@contexts/app.context';
 import { RepresentingEntity, RepresentingMode } from '@interfaces/app';
+import { InactivityAlert } from '@components/inactivity-alert/inactivity-alert.component';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { usePathname, useRouter } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
+import { Suspense, useCallback, useEffect } from 'react';
 import { User } from '../../interfaces/user';
 import { useApi } from '../../services/api-service';
-import { useInactivityAlert } from '../../utils/use-inactivity-trigger.hook';
 
 export const LoginGuard: React.FC<{ tabKey?: string; children?: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
@@ -23,14 +23,9 @@ export const LoginGuard: React.FC<{ tabKey?: string; children?: React.ReactNode 
     method: 'get',
   });
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     router.push('/logout');
-  };
-
-  useInactivityAlert({
-    logoutCallback: handleLogout,
-    inactivityCondition: !userIsFetching && !userError && !pathname?.includes('login'),
-  });
+  }, [router]);
 
   useEffect(() => {
     if (!userIsFetching && userError && !pathname?.includes('login')) {
@@ -50,5 +45,13 @@ export const LoginGuard: React.FC<{ tabKey?: string; children?: React.ReactNode 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [representingIsLoading, representingIsFetching]);
 
-  return <Suspense>{children}</Suspense>;
+  return (
+    <Suspense>
+      {children}
+      <InactivityAlert
+        onLogout={handleLogout}
+        enabled={!userIsFetching && !userError && !pathname?.includes('logout')}
+      />
+    </Suspense>
+  );
 };

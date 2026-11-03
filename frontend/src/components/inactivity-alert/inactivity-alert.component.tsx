@@ -4,10 +4,10 @@ import { Button, Dialog } from '@sk-web-gui/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 const WARNING_TIMEOUT = process.env.NEXT_PUBLIC_INACTIVITY_WARNING_TIMEOUT
-  ? parseInt(process.env.NEXT_PUBLIC_INACTIVITY_WARNING_TIMEOUT, 10)
+  ? Number.parseInt(process.env.NEXT_PUBLIC_INACTIVITY_WARNING_TIMEOUT, 10)
   : 10 * 60 * 1000;
 const COUNTDOWN_TIMEOUT = process.env.NEXT_PUBLIC_INACTIVITY_COUNTDOWN_TIMEOUT
-  ? parseInt(process.env.NEXT_PUBLIC_INACTIVITY_COUNTDOWN_TIMEOUT, 10)
+  ? Number.parseInt(process.env.NEXT_PUBLIC_INACTIVITY_COUNTDOWN_TIMEOUT, 10)
   : 5 * 60 * 1000;
 
 interface InactivityAlertProps {

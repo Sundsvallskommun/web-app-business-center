@@ -158,6 +158,27 @@ describe('documents.service', () => {
 
       expect(sorted.map(d => d.id)).toEqual(['c', 'b', 'a']);
     });
+
+    it('lets a decision newer than the issue date lift a document, so an old case with recent decisions does not sink', () => {
+      const oldCase = document({
+        id: 'a',
+        issued: '2019-01-01',
+        decisions: [clientDecision({ decidedAt: '2019-01-01' }), clientDecision({ id: 'cd-2', decidedAt: '2025-06-01' })],
+      });
+
+      const sorted = sortDocuments([document({ id: 'b', issued: '2024-01-01' }), oldCase, document({ id: 'c', issued: '2025-01-01' })]);
+
+      expect(sorted.map(d => d.id)).toEqual(['a', 'c', 'b']);
+    });
+
+    it('still places a document last when neither it nor its decisions carry a date', () => {
+      const sorted = sortDocuments([
+        document({ id: 'a', issued: undefined, decisions: [clientDecision({ decidedAt: undefined })] }),
+        document({ id: 'b' }),
+      ]);
+
+      expect(sorted.map(d => d.id)).toEqual(['b', 'a']);
+    });
   });
 
   describe('collectDocuments', () => {
@@ -248,6 +269,82 @@ describe('documents.service', () => {
 
       await expect(getDocumentDetails('xx-asset-1', ctx, [adapter('PARTYASSETS', fetch)])).resolves.toBeUndefined();
       expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it('returns undefined without collecting when no enabled adapter owns the source', async () => {
+      const fetch = vi.fn();
+
+      await expect(getDocumentDetails('br-BYGG 2024-000123', ctx, [adapter('PARTYASSETS', fetch)])).resolves.toBeUndefined();
+      expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it('sorts the decisions newest first', async () => {
+      const older = clientDecision({ id: 'cd-1', decidedAt: '2024-01-01T00:00:00Z' });
+      const newer = clientDecision({ id: 'cd-2', decidedAt: '2025-01-01T00:00:00Z' });
+
+      const details = await getDocumentDetails('pa-asset-1', ctx, [
+        documentsOnly([document()]),
+        decisionsOnly([
+          { ...older, matchKey: ERRAND_ID },
+          { ...newer, matchKey: ERRAND_ID },
+        ]),
+      ]);
+
+      expect(details?.decisions.map(d => d.id)).toEqual(['cd-2', 'cd-1']);
+    });
+
+    describe('with an adapter that fetches details on demand', () => {
+      const byggr = { caseNumber: 'BYGG 2024-000123', description: 'Nybyggnad av garage' };
+      const detailed = (overrides: Partial<SourceDocument> = {}): SourceDocument =>
+        document({ id: 'br-BYGG 2024-000123', source: 'BYGGR', title: 'Nybyggnad av garage', matchKeys: [], byggr, ...overrides });
+
+      const lazyAdapter = (fetchDetails: DocumentSourceAdapter['fetchDetails'], fetch: DocumentSourceAdapter['fetch'] = vi.fn()) => ({
+        ...adapter('BYGGR', fetch),
+        fetchDetails,
+      });
+
+      it('asks only that adapter, with the id within its source, and never runs the collection', async () => {
+        const fetchDetails = vi.fn().mockResolvedValue(detailed());
+        const listing = vi.fn();
+        const otherListing = vi.fn();
+
+        const details = await getDocumentDetails('br-BYGG 2024-000123', ctx, [
+          adapter('PARTYASSETS', otherListing),
+          lazyAdapter(fetchDetails, listing),
+        ]);
+
+        expect(fetchDetails).toHaveBeenCalledWith('BYGG 2024-000123', ctx);
+        expect(listing).not.toHaveBeenCalled();
+        expect(otherListing).not.toHaveBeenCalled();
+        expect(details).toMatchObject({ id: 'br-BYGG 2024-000123', title: 'Nybyggnad av garage', byggr });
+        expect(details).not.toHaveProperty('matchKeys');
+        expect(details).not.toHaveProperty('asset');
+      });
+
+      it('returns undefined when the adapter has no such document', async () => {
+        await expect(getDocumentDetails('br-BYGG 2024-000999', ctx, [lazyAdapter(vi.fn().mockResolvedValue(undefined))])).resolves.toBeUndefined();
+      });
+
+      it('sorts the decisions the adapter returns newest first', async () => {
+        const older = clientDecision({ id: 'br-1:BYGG 2024-000123', source: 'BYGGR', decidedAt: '2024-01-01' });
+        const newer = clientDecision({ id: 'br-2:BYGG 2024-000123', source: 'BYGGR', decidedAt: '2025-01-01' });
+
+        const details = await getDocumentDetails('br-BYGG 2024-000123', ctx, [
+          lazyAdapter(vi.fn().mockResolvedValue(detailed({ decisions: [older, newer] }))),
+        ]);
+
+        expect(details?.decisions.map(d => d.id)).toEqual(['br-2:BYGG 2024-000123', 'br-1:BYGG 2024-000123']);
+      });
+    });
+  });
+
+  describe('getDocumentsOverview', () => {
+    it('strips the byggr payload from the listing', async () => {
+      const byggr = { caseNumber: 'BYGG 2024-000123' };
+
+      const overview = await getDocumentsOverview(ctx, [documentsOnly([document({ byggr })])]);
+
+      expect(overview.documents[0]).not.toHaveProperty('byggr');
     });
   });
 

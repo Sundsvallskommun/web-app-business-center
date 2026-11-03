@@ -42,7 +42,7 @@ export default function ByggrDocument() {
     [decision.title || t('decisions:decision'), formatAssetDate(decision.decidedAt)].filter(Boolean).join(', ');
 
   return (
-    <Card className="bg-gronsta-background-300">
+    <Card>
       <div className="flex flex-col desktop:flex-row gap-x-24 gap-y-20 desktop:items-center">
         <div className="flex gap-x-8 desktop:gap-x-24">
           <div className="list-item-card-content-icon">

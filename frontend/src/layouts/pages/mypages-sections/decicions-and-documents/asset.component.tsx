@@ -14,6 +14,7 @@ import { ArrowRight, Car, Cog, FileCheck2, PlusCircle } from 'lucide-react';
 import { ReactNode, useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AssetsContext } from './asset-layout.component';
+import ByggrDocument from './byggr-document.component';
 import { DecisionList } from './decision-card.component';
 import ParkingPermitLost from './parkingpermits/parkingpermit-lost.component';
 import ParkingPermitRenewalAlert from './parkingpermits/parkingpermit-renewal-alert.component';
@@ -47,7 +48,7 @@ const Section = ({ icon, label, children }: { icon?: ReactNode; label: string; c
   </div>
 );
 
-export default function Asset() {
+function PartyassetsAsset() {
   const { t } = useTranslation('decisions');
   const [isEditing, setisEditing] = useState<null | 'PERMIT_RENEWAL' | 'LOST_PERMIT'>(null);
   const { document, assetData } = useContext(AssetsContext);
@@ -156,4 +157,13 @@ export default function Asset() {
       ) : null}
     </Card>
   );
+}
+
+export default function Asset() {
+  const { document } = useContext(AssetsContext);
+
+  if (document?.source === 'BYGGR') {
+    return <ByggrDocument />;
+  }
+  return <PartyassetsAsset />;
 }

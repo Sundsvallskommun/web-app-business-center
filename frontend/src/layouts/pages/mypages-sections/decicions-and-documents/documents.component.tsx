@@ -1,7 +1,8 @@
 import { CardList } from '@components/cards/cards.component';
 import { useAppContext } from '@contexts/app.context';
 import { DocumentItem } from '@data-contracts/backend/data-contracts';
-import { formatAssetValidity, getAssetStatusProps } from '@services/asset-service';
+import { getAssetStatusProps } from '@services/asset-service';
+import { getDocumentSubtitle } from '@services/document-service';
 import { Button, Icon, Label } from '@sk-web-gui/react';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
 import { ChevronRight, FileCheck2 } from 'lucide-react';
@@ -12,7 +13,7 @@ const DocumentCard: React.FC<{ item: DocumentItem }> = ({ item }) => {
   const { representingMode } = useAppContext();
   const { t } = useTranslation('decisions');
   const statusProps = getAssetStatusProps(item.status);
-  const validity = formatAssetValidity(item, t);
+  const subtitle = getDocumentSubtitle(item, t);
 
   return (
     <NextLink
@@ -28,14 +29,16 @@ const DocumentCard: React.FC<{ item: DocumentItem }> = ({ item }) => {
             </div>
             <div>
               <div className="list-item-card-content-title">{item.title}</div>
-              <div className="list-item-card-content-subtitle">{validity}</div>
+              {subtitle ? <div className="list-item-card-content-subtitle">{subtitle}</div> : null}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-16">
-          <Label rounded inverted color={statusProps.color}>
-            {t(statusProps.tKey)}
-          </Label>
+          {item.status ? (
+            <Label rounded inverted color={statusProps.color}>
+              {t(statusProps.tKey)}
+            </Label>
+          ) : null}
           <div className="list-item-card-button">
             <Button
               as="span"

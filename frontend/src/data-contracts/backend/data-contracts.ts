@@ -402,7 +402,7 @@ export interface DecisionAttachment {
 
 export interface DecisionItem {
   id: string;
-  source: "PARTYASSETS" | "CASEDATA";
+  source: "PARTYASSETS" | "CASEDATA" | "BYGGR";
   title?: string;
   outcome?: string;
   decidedAt?: string;
@@ -410,12 +410,19 @@ export interface DecisionItem {
   validTo?: string;
   errandId?: number;
   errandNumber?: string;
+  mainDecision?: boolean;
   attachments: DecisionAttachment[];
+}
+
+export interface ByggrErrandDetails {
+  caseNumber: string;
+  description?: string;
+  propertyDesignation?: string;
 }
 
 export interface DocumentItem {
   id: string;
-  source: "PARTYASSETS" | "CASEDATA";
+  source: "PARTYASSETS" | "CASEDATA" | "BYGGR";
   title: string;
   status?: "ACTIVE" | "EXPIRED" | "BLOCKED" | "TEMPORARY";
   issued?: string;
@@ -441,8 +448,9 @@ export interface DocumentsOverviewApiResponse {
 
 export interface DocumentDetails {
   asset?: Asset;
+  byggr?: ByggrErrandDetails;
   id: string;
-  source: "PARTYASSETS" | "CASEDATA";
+  source: "PARTYASSETS" | "CASEDATA" | "BYGGR";
   title: string;
   status?: "ACTIVE" | "EXPIRED" | "BLOCKED" | "TEMPORARY";
   issued?: string;

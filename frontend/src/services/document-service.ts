@@ -1,7 +1,9 @@
 import { DecisionItem, DocumentItem, SourceStatus } from '@data-contracts/backend/data-contracts';
 import { ApiResponse, apiService } from './api-service';
+import { formatAssetValidity } from './asset-service';
 
 type DocumentSource = DocumentItem['source'];
+type Translate = (key: string, options?: Record<string, unknown>) => string;
 
 // Ids on the documents API are composite, `<source key>-<id in that source>`, so a
 // document can be addressed regardless of which upstream it came from. Mirrors
@@ -9,6 +11,7 @@ type DocumentSource = DocumentItem['source'];
 const documentSourceKeys: Record<DocumentSource, string> = {
   PARTYASSETS: 'pa',
   CASEDATA: 'cd',
+  BYGGR: 'br',
 };
 
 export const toDocumentId = (source: DocumentSource, nativeId: string): string =>
@@ -19,9 +22,17 @@ export const getDecisionAttachment: (decisionId: string, attachmentId: number) =
   attachmentId
 ) =>
   apiService
-    .get<ApiResponse<string>>(`/documents/decisions/${decisionId}/attachments/${attachmentId}`)
+    .get<ApiResponse<string>>(`/documents/decisions/${encodeURIComponent(decisionId)}/attachments/${attachmentId}`)
     .then((res) => res.data.data)
     .catch(() => null);
+
+export const getDocumentSubtitle = (
+  document: Pick<DocumentItem, 'source' | 'issued' | 'validTo'>,
+  t: Translate
+): string => {
+  if (document.source === 'BYGGR' && !document.issued) return '';
+  return formatAssetValidity(document, t);
+};
 
 const decisionOutcomeLabels: Record<string, string> = {
   APPROVAL: 'Bifall',

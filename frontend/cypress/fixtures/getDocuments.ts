@@ -57,16 +57,77 @@ export const toDocumentDetails = (asset: Asset, decisions: DecisionItem[] = []):
   message: 'success',
 });
 
+export const BYGGR_CASE_NUMBER = 'BYGG 2024-000123';
+export const BYGGR_DOCUMENT_ID = `br-${BYGGR_CASE_NUMBER}`;
+export const BYGGR_DESCRIPTION = 'Nybyggnad av garage';
+
+export const byggrMainDecision = (): DecisionItem => ({
+  id: `br-101:${BYGGR_CASE_NUMBER}`,
+  source: 'BYGGR',
+  title: 'Beslut om bygglov',
+  outcome: 'Bifall',
+  decidedAt: '2024-03-01',
+  validTo: '2029-03-01',
+  mainDecision: true,
+  attachments: [
+    { id: 4711, name: 'Beslut.pdf', mimeType: 'application/pdf', extension: 'pdf' },
+    { id: 4712, name: 'Ritning.pdf', mimeType: 'application/pdf', extension: 'pdf' },
+  ],
+});
+
+export const byggrStartDecision = (): DecisionItem => ({
+  id: `br-102:${BYGGR_CASE_NUMBER}`,
+  source: 'BYGGR',
+  title: 'Startbesked',
+  decidedAt: '2024-05-15',
+  mainDecision: false,
+  attachments: [{ id: 4713, name: 'Startbesked.pdf', mimeType: 'application/pdf', extension: 'pdf' }],
+});
+
+export const byggrListDocument = (): DocumentItem => ({
+  id: BYGGR_DOCUMENT_ID,
+  source: 'BYGGR',
+  title: BYGGR_DESCRIPTION,
+  status: 'ACTIVE',
+  issued: '2024-03-01',
+  validTo: '2029-03-01',
+  decisions: [],
+});
+
+export const getByggrDocument = (): ApiResponse<DocumentDetails> => ({
+  data: {
+    ...byggrListDocument(),
+    decisions: [byggrStartDecision(), byggrMainDecision()],
+    byggr: { caseNumber: BYGGR_CASE_NUMBER, description: BYGGR_DESCRIPTION, propertyDesignation: 'SUNDSVALL 1:1' },
+  },
+  message: 'success',
+});
+
+export const getByggrDocumentWithoutDecisions = (): ApiResponse<DocumentDetails> => ({
+  data: {
+    id: BYGGR_DOCUMENT_ID,
+    source: 'BYGGR',
+    title: BYGGR_CASE_NUMBER,
+    decisions: [],
+    byggr: { caseNumber: BYGGR_CASE_NUMBER },
+  },
+  message: 'success',
+});
+
 export const getDocuments = (
   representingMode: RepresentingMode = representingModeDefault,
   assets: Asset[] = getAssets(representingMode).data
 ): ApiResponse<DocumentsOverview> => ({
   data: {
-    documents: assets.map((asset, index) => toDocument(asset, index === 0 ? [linkedDecision(representingMode)] : [])),
+    documents: [
+      ...assets.map((asset, index) => toDocument(asset, index === 0 ? [linkedDecision(representingMode)] : [])),
+      byggrListDocument(),
+    ],
     unlinkedDecisions: [unlinkedDecision()],
     sources: [
       { source: 'PARTYASSETS', status: 'OK' },
       { source: 'CASEDATA', status: 'OK' },
+      { source: 'BYGGR', status: 'OK' },
     ],
   },
   message: 'success',

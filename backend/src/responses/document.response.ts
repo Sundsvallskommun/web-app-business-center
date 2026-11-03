@@ -1,4 +1,5 @@
 import {
+  ByggrErrandDetails as ByggrErrandDetailsType,
   DecisionAttachment as DecisionAttachmentType,
   DecisionItem as DecisionItemType,
   DocumentDetails as DocumentDetailsType,
@@ -13,7 +14,7 @@ import {
 import { ApiResponse } from '@/interfaces/service';
 import { Asset } from '@/responses/asset.response';
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 const SOURCE_STATUSES = ['OK', 'UNAVAILABLE'] as const;
 
@@ -56,9 +57,23 @@ class DecisionItem implements DecisionItemType {
   @IsString()
   @IsOptional()
   errandNumber?: string;
+  @IsBoolean()
+  @IsOptional()
+  mainDecision?: boolean;
   @ValidateNested({ each: true })
   @Type(() => DecisionAttachment)
   attachments!: DecisionAttachment[];
+}
+
+class ByggrErrandDetails implements ByggrErrandDetailsType {
+  @IsString()
+  caseNumber!: string;
+  @IsString()
+  @IsOptional()
+  description?: string;
+  @IsString()
+  @IsOptional()
+  propertyDesignation?: string;
 }
 
 class DocumentItem implements DocumentItemType {
@@ -114,6 +129,10 @@ class DocumentDetails extends DocumentItem implements DocumentDetailsType {
   @Type(() => Asset)
   @IsOptional()
   asset?: Asset;
+  @ValidateNested()
+  @Type(() => ByggrErrandDetails)
+  @IsOptional()
+  byggr?: ByggrErrandDetails;
 }
 
 export class DocumentDetailsApiResponse implements ApiResponse<DocumentDetailsType> {

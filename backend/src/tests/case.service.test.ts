@@ -2,7 +2,7 @@ import { Message, MessageResponseDirectionEnum, MessageTypeEnum } from '@/data-c
 import { CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import { MessageDTO, MessageDtoDirectionEnum } from '@/data-contracts/webmessagecollector/data-contracts';
 import { FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
-import { CaseDataNamespace } from '@/interfaces/casedata.interface';
+import { CaseDataNamespace, SalaryAndPensionCaseType } from '@/interfaces/casedata.interface';
 import { User } from '@/interfaces/users.interface';
 import {
   buildMessagingWebMessageRequest,
@@ -41,6 +41,29 @@ describe('case.service', () => {
       expect(caseIsAllowed({ namespace: CaseDataNamespace.SBK_MEX } as CaseStatusResponse)).toBe(true);
       expect(caseIsAllowed({ namespace: CaseDataNamespace.SBK_PARKING_PERMIT } as CaseStatusResponse)).toBe(true);
       expect(caseIsAllowed({ namespace: CaseDataNamespace.CONTACTSUNDSVALL } as CaseStatusResponse)).toBe(true);
+    });
+
+    it('allows SALARYANDPENSION cases only for whitelisted case types', () => {
+      const salaryCase = (caseType?: string): CaseStatusResponse =>
+        ({ namespace: CaseDataNamespace.SALARYANDPENSION, system: 'SUPPORT_MANAGEMENT', caseType }) as CaseStatusResponse;
+
+      // Display names as CaseStatus reports them from the namespace metadata
+      expect(caseIsAllowed(salaryCase('Arbetsgivarintyg'))).toBe(true);
+      expect(caseIsAllowed(salaryCase('Företräde'))).toBe(true);
+      // Raw type names, used by CaseStatus when no display name is configured
+      expect(caseIsAllowed(salaryCase(SalaryAndPensionCaseType.EMPLOYER_CERTIFICATE))).toBe(true);
+      expect(caseIsAllowed(salaryCase(SalaryAndPensionCaseType.PRECEDENCE))).toBe(true);
+      // Matching is case-insensitive and ignores surrounding whitespace
+      expect(caseIsAllowed(salaryCase('arbetsgivarintyg'))).toBe(true);
+      expect(caseIsAllowed(salaryCase(' FÖRETRÄDE '))).toBe(true);
+
+      expect(caseIsAllowed(salaryCase('Okategoriserat'))).toBe(false);
+      expect(caseIsAllowed(salaryCase(''))).toBe(false);
+      expect(caseIsAllowed(salaryCase(undefined))).toBe(false);
+    });
+
+    it('does not apply the case type restriction to other namespaces', () => {
+      expect(caseIsAllowed({ namespace: CaseDataNamespace.SBK_MEX, caseType: 'Okategoriserat' } as CaseStatusResponse)).toBe(true);
     });
 
     it('rejects cases with a non-whitelisted namespace, regardless of system', () => {

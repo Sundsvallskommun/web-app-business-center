@@ -18,7 +18,7 @@ const toFiles = (decisions: DecisionItem[]): DecisionFile[] =>
 
 const NO_UPLOADS: UploadFile[] = [];
 
-export default function ByggrDetails({ document }: { document: DocumentDetails }) {
+export default function ByggrDetails({ document }: Readonly<{ document: DocumentDetails }>) {
   const { t } = useTranslation('decisions');
   const files = toFiles(document.decisions);
 

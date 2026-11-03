@@ -14,7 +14,7 @@ import ParkingPermitRenewalAlert from './parkingpermits/parkingpermit-renewal-al
 export type EditingMode = null | 'PERMIT_RENEWAL' | 'LOST_PERMIT';
 type SetEditing = Dispatch<SetStateAction<EditingMode>>;
 
-const Chips = ({ items, emptyText }: { items?: string[]; emptyText: string }) => {
+const Chips = ({ items, emptyText }: Readonly<{ items?: string[]; emptyText: string }>) => {
   if (!items || items.length === 0) {
     return <span className="text-small text-dark-disabled italic">{emptyText}</span>;
   }
@@ -32,7 +32,7 @@ const Chips = ({ items, emptyText }: { items?: string[]; emptyText: string }) =>
   );
 };
 
-const Section = ({ icon, label, children }: { icon?: ReactNode; label: string; children: ReactNode }) => (
+const Section = ({ icon, label, children }: Readonly<{ icon?: ReactNode; label: string; children: ReactNode }>) => (
   <div className="flex flex-col items-start gap-8">
     <div className="flex items-center gap-6 text-small font-bold text-dark-secondary uppercase tracking-wide">
       {icon}
@@ -42,7 +42,10 @@ const Section = ({ icon, label, children }: { icon?: ReactNode; label: string; c
   </div>
 );
 
-const ParkingPermitActions = ({ permit, setEditing }: { permit: AssetWithService; setEditing: SetEditing }) => {
+const ParkingPermitActions = ({
+  permit,
+  setEditing,
+}: Readonly<{ permit: AssetWithService; setEditing: SetEditing }>) => {
   const { t } = useTranslation('decisions');
 
   return (
@@ -63,7 +66,7 @@ const ParkingPermitActions = ({ permit, setEditing }: { permit: AssetWithService
   );
 };
 
-const AssetServiceDetails = ({ service }: { service: ServiceDetails }) => {
+const AssetServiceDetails = ({ service }: Readonly<{ service: ServiceDetails }>) => {
   const { t } = useTranslation('decisions');
 
   return (
@@ -92,7 +95,7 @@ const AssetServiceDetails = ({ service }: { service: ServiceDetails }) => {
   );
 };
 
-const DocumentDecisions = ({ document }: { document: DocumentDetails }) => {
+const DocumentDecisions = ({ document }: Readonly<{ document: DocumentDetails }>) => {
   const { t } = useTranslation('decisions');
   const label = t('decisions:decisionsForDocument', { title: document.title });
 
@@ -111,11 +114,11 @@ export default function PartyassetsDetails({
   document,
   asset,
   setEditing,
-}: {
+}: Readonly<{
   document: DocumentDetails;
   asset?: AssetWithService;
   setEditing: SetEditing;
-}) {
+}>) {
   const parkingPermit = asset && isParkingPermit(asset) ? asset : undefined;
 
   return (

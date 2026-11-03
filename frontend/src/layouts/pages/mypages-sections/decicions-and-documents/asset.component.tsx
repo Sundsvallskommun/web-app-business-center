@@ -18,11 +18,11 @@ const DocumentHeader = ({
   document,
   subtitle,
   children,
-}: {
+}: Readonly<{
   document: DocumentDetails;
   subtitle?: string;
   children?: ReactNode;
-}) => {
+}>) => {
   const { t } = useTranslation('decisions');
   const statusProps = getAssetStatusProps(document.status);
 
@@ -49,7 +49,7 @@ const DocumentHeader = ({
   );
 };
 
-const DocumentFacts = ({ facts }: { facts: DocumentFact[] }) => {
+const DocumentFacts = ({ facts }: Readonly<{ facts: DocumentFact[] }>) => {
   if (facts.length === 0) return null;
 
   return (

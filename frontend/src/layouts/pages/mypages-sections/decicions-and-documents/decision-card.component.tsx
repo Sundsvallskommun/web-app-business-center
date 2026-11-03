@@ -54,6 +54,13 @@ export const AttachmentDownload = ({
   const iconOnly = isPhone && !showName;
   const label = showName ? attachment.name : t('decisions:download');
 
+  let ariaLabel: string | undefined;
+  if (attachment.name) {
+    ariaLabel = t('decisions:downloadNamed', { name: attachment.name });
+  } else if (iconOnly) {
+    ariaLabel = label;
+  }
+
   return (
     <Button
       iconButton={iconOnly}
@@ -63,9 +70,7 @@ export const AttachmentDownload = ({
       loading={isDownloading}
       disabled={isDownloading}
       onClick={handleDownload}
-      aria-label={
-        attachment.name ? t('decisions:downloadNamed', { name: attachment.name }) : iconOnly ? label : undefined
-      }
+      aria-label={ariaLabel}
       data-cy="decision-attachment-download"
     >
       {!iconOnly ? label : null}

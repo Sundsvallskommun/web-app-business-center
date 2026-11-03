@@ -1,6 +1,12 @@
-import { DecisionItem, DocumentItem, SourceStatus } from '@data-contracts/backend/data-contracts';
+import {
+  Asset,
+  DecisionItem,
+  DocumentDetails,
+  DocumentItem,
+  SourceStatus,
+} from '@data-contracts/backend/data-contracts';
 import { ApiResponse, apiService } from './api-service';
-import { formatAssetValidity } from './asset-service';
+import { formatAssetDate, formatAssetValidity } from './asset-service';
 
 type DocumentSource = DocumentItem['source'];
 type Translate = (key: string, options?: Record<string, unknown>) => string;
@@ -32,6 +38,36 @@ export const getDocumentSubtitle = (
 ): string => {
   if (document.source === 'BYGGR' && !document.issued) return '';
   return formatAssetValidity(document, t);
+};
+
+export interface DocumentFact {
+  label: string;
+  value: string;
+}
+
+export const getDocumentFacts = (
+  document: DocumentDetails,
+  asset: Pick<Asset, 'assetId'> | undefined,
+  t: Translate
+): DocumentFact[] => {
+  const issued = formatAssetDate(document.issued);
+  const facts: { label: string; value?: string }[] =
+    document.source === 'BYGGR'
+      ? [
+          { label: t('decisions:byggr.caseNumber'), value: document.byggr?.caseNumber },
+          { label: t('decisions:byggr.propertyDesignation'), value: document.byggr?.propertyDesignation },
+          { label: t('decisions:byggr.decided'), value: issued },
+        ]
+      : [
+          { label: t('decisions:asset.cardNumber'), value: asset?.assetId },
+          {
+            label: t('decisions:asset.validityPeriod'),
+            value: document.issued || document.validTo ? formatAssetValidity(document, t) : undefined,
+          },
+          { label: t('decisions:asset.decided'), value: issued },
+        ];
+
+  return facts.filter((fact): fact is DocumentFact => !!fact.value);
 };
 
 const decisionOutcomeLabels: Record<string, string> = {

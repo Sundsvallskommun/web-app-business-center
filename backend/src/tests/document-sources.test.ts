@@ -37,10 +37,12 @@ describe('composite ids', () => {
     expect(parseCompositeId(toCompositeId('CASEDATA', 12))).toEqual({ source: 'CASEDATA', nativeId: '12' });
     expect(toCompositeId('PARTYASSETS', 'asset-1')).toBe('pa-asset-1');
     expect(toCompositeId('CASEDATA', 12)).toBe('cd-12');
+    expect(toCompositeId('BYGGR', 'BYGG 2024-000123')).toBe('br-BYGG 2024-000123');
   });
 
   it('keeps everything after the first separator as the native id', () => {
     expect(parseCompositeId('pa-dace9046-ac71-4f26')).toEqual({ source: 'PARTYASSETS', nativeId: 'dace9046-ac71-4f26' });
+    expect(parseCompositeId('br-BYGG 2024-000123')).toEqual({ source: 'BYGGR', nativeId: 'BYGG 2024-000123' });
   });
 
   it.each(['', 'asset-1', '-asset-1', 'pa-', 'lc-1'])('rejects %j', id => {

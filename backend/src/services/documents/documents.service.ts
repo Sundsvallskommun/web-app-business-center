@@ -1,11 +1,12 @@
 import { USE_DECISIONS } from '@/config';
 import { DecisionItem, DocumentDetails, DocumentsOverview, parseCompositeId, SourceStatus } from '@/interfaces/document.interface';
 import { logger } from '@/utils/logger';
+import { byggrSource } from './byggr.source';
 import { casedataSource } from './casedata.source';
 import { DocumentSourceAdapter, DocumentSourceContext, SourceDecision, SourceDocument, toClientDecision, toClientDocument } from './document-source';
 import { partyassetsSource } from './partyassets.source';
 
-const getDocumentSources = (): DocumentSourceAdapter[] => [partyassetsSource, ...(USE_DECISIONS ? [casedataSource] : [])];
+const getDocumentSources = (): DocumentSourceAdapter[] => [partyassetsSource, ...(USE_DECISIONS ? [casedataSource] : []), byggrSource];
 
 /**
  * The key a decision and a document are matched on: a casedata errand id. Surrounding whitespace
@@ -24,8 +25,21 @@ const timestamp = (date?: string): number => {
 export const sortDecisions = (decisions: DecisionItem[]): DecisionItem[] =>
   [...decisions].sort((a, b) => timestamp(b.decidedAt) - timestamp(a.decidedAt));
 
-export const sortDocuments = <T extends { issued?: string }>(documents: T[]): T[] =>
-  [...documents].sort((a, b) => timestamp(b.issued) - timestamp(a.issued));
+interface Dated {
+  issued?: string;
+  decisions?: { decidedAt?: string }[];
+}
+
+/**
+ * When a document was last acted on: its issue date or the newest decision under it, whichever
+ * is later. A byggR errand is issued on its main decision, which can be years older than the
+ * latest decision on the case, and should not sink below permits issued in between.
+ */
+const latestActivity = (document: Dated): number =>
+  Math.max(timestamp(document.issued), ...(document.decisions ?? []).map(decision => timestamp(decision.decidedAt)));
+
+/** Newest activity first; documents without any date last. */
+export const sortDocuments = <T extends Dated>(documents: T[]): T[] => [...documents].sort((a, b) => latestActivity(b) - latestActivity(a));
 
 /**
  * Attach every decision to the documents that own it.
@@ -125,18 +139,32 @@ export const getDocumentsOverview = async (ctx: DocumentSourceContext, adapters?
   };
 };
 
+const toDocumentDetails = (document: SourceDocument): DocumentDetails => ({
+  ...toClientDocument(document),
+  decisions: sortDecisions(document.decisions),
+  ...(document.asset && { asset: document.asset }),
+  ...(document.byggr && { byggr: document.byggr }),
+});
+
 export const getDocumentDetails = async (
   id: string,
   ctx: DocumentSourceContext,
-  adapters?: DocumentSourceAdapter[],
+  adapters: DocumentSourceAdapter[] = getDocumentSources(),
 ): Promise<DocumentDetails | undefined> => {
-  if (!parseCompositeId(id)) return undefined;
+  const parsed = parseCompositeId(id);
+  if (!parsed) return undefined;
+
+  const adapter = adapters.find(candidate => candidate.source === parsed.source);
+  if (!adapter) return undefined;
+
+  if (adapter.fetchDetails) {
+    const document = await adapter.fetchDetails(parsed.nativeId, ctx);
+    return document ? toDocumentDetails(document) : undefined;
+  }
 
   const collected = await collectDocuments(ctx, adapters);
   const document = collected.documents.find(candidate => candidate.id === id);
-  if (!document) return undefined;
-
-  return { ...toClientDocument(document), asset: document.asset };
+  return document ? toDocumentDetails(document) : undefined;
 };
 
 export const getDecisionAttachment = async (

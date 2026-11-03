@@ -8,7 +8,9 @@
   "decisionsForDocument": "Beslut och dokument kopplade till {{title}}",
   "case": "Ärende",
   "download": "Ladda ner",
+  "downloadNamed": "Ladda ner {{name}}",
   "downloadError": "Det gick inte att hämta beslutet. Försök igen senare.",
+  "mainDecision": "Huvudbeslut",
   "documents": "Dokument",
   "noDocuments": "Du har inga beslut eller dokument ännu.",
   "loadingDocuments": "Laddar beslut och dokument",
@@ -20,7 +22,14 @@
   "and": "och",
   "sources": {
     "PARTYASSETS": "dina dokument",
-    "CASEDATA": "beslut i dina ärenden"
+    "CASEDATA": "beslut i dina ärenden",
+    "BYGGR": "dina bygglovsärenden"
+  },
+  "byggr": {
+    "caseNumber": "Ärendenummer",
+    "propertyDesignation": "Fastighetsbeteckning",
+    "decided": "Beslutad",
+    "noDocuments": "Det finns inga dokument ännu."
   },
   "goToDecisions": "Gå till beslut",
   "asset": {

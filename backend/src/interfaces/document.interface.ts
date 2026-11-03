@@ -1,7 +1,7 @@
 import { AssetWithService } from '@/interfaces/asset.interface';
 
 /** Upstream systems a document or decision can come from. Extend when a new source is wired in. */
-export const DOCUMENT_SOURCES = ['PARTYASSETS', 'CASEDATA'] as const;
+export const DOCUMENT_SOURCES = ['PARTYASSETS', 'CASEDATA', 'BYGGR'] as const;
 export type DocumentSource = (typeof DOCUMENT_SOURCES)[number];
 export const DOCUMENT_STATUSES = ['ACTIVE', 'EXPIRED', 'BLOCKED', 'TEMPORARY'] as const;
 export type DocumentStatus = (typeof DOCUMENT_STATUSES)[number];
@@ -27,7 +27,15 @@ export interface DecisionItem {
   errandId?: number;
   /** Human readable case number. Also the key a decision is matched to a document on. */
   errandNumber?: string;
+  /** Whether this is the main decision on its case. Only set by sources that distinguish one. */
+  mainDecision?: boolean;
   attachments: DecisionAttachment[];
+}
+
+export interface ByggrErrandDetails {
+  caseNumber: string;
+  description?: string;
+  propertyDesignation?: string;
 }
 
 export interface DocumentItem {
@@ -55,11 +63,13 @@ export interface DocumentsOverview {
 
 export interface DocumentDetails extends DocumentItem {
   asset?: AssetWithService;
+  byggr?: ByggrErrandDetails;
 }
 
 const DOCUMENT_SOURCE_KEYS: Record<DocumentSource, string> = {
   PARTYASSETS: 'pa',
   CASEDATA: 'cd',
+  BYGGR: 'br',
 };
 
 const ID_SEPARATOR = '-';

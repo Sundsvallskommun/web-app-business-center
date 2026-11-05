@@ -34,6 +34,11 @@ services:
       LOG_DIR: ${LOG_DIR-../../data/logs}
       CREDENTIALS: ${CREDENTIALS-true}
       WHITELIST_ASSET_TYPES: ${WHITELIST_ASSET_TYPES-PERMIT,PARKINGPERMIT,FTErrandAssets,ParatransitPermitLocal}
+      # Slack error reporting. Leave unset to disable entirely.
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL-}
+      SLACK_APP_NAME: ${SLACK_APP_NAME-Mina sidor företag}
+      SLACK_IGNORE_STATUSES: ${SLACK_IGNORE_STATUSES-}
+      SLACK_IGNORE_MESSAGES: ${SLACK_IGNORE_MESSAGES-NOT_AUTHORIZED,AUTH_FAILED}
   frontend:
     environment:
       # URL to backend

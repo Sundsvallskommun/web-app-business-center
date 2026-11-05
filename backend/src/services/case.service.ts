@@ -4,8 +4,7 @@ import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepIn
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
 import { CaseStatusResponseWithPermissions, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import { CaseDataNamespace } from '@/interfaces/casedata.interface';
-import { SupportManagementNamespace } from '@/interfaces/supportmanagement.interface';
-import { SalaryAndPensionCaseType, SalaryAndPensionCaseTypeDisplayName } from '@/interfaces/casedata.interface';
+import { SalaryAndPensionCaseType, SalaryAndPensionCaseTypeDisplayName, SupportManagementNamespace } from '@/interfaces/supportmanagement.interface';
 import { User } from '@/interfaces/users.interface';
 import dayjs from 'dayjs';
 

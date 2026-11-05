@@ -60,6 +60,10 @@ export const APIS = [
     name: 'relations',
     version: '1.1',
   },
+  {
+    name: 'byggrintegrator',
+    version: '2.5',
+  },
 ] as const;
 
 export const getApiBase = (name: string) => {

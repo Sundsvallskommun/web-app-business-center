@@ -62,7 +62,7 @@ describe('Privat', () => {
         .should('be.visible')
         .and('contain.text', 'Beslut i dina ärenden kunde inte hämtas just nu.');
       // The rest of the page still renders from the sources that answered
-      cy.get('ul[aria-label="Dokument"] > li').should('have.length', 1);
+      cy.get('ul[aria-label="Dokument"] > li').should('have.length', 2);
     });
   });
 });

@@ -6,6 +6,7 @@ import authMiddleware from '@/middlewares/auth.middleware';
 import { DocumentDetailsApiResponse, DocumentsOverviewApiResponse } from '@/responses/document.response';
 import { DocumentSourceContext } from '@/services/documents/document-source';
 import { getDecisionAttachment, getDocumentDetails, getDocumentsOverview } from '@/services/documents/documents.service';
+import { getRepresentedIdentifier } from '@/utils/getRepresentedIdentifier';
 import { getRepresentedPartyId } from '@/utils/getRepresentedPartyId';
 import { Controller, Get, Param, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
@@ -27,7 +28,13 @@ export class DocumentsController {
       req.destroy();
     });
 
-    return { partyId, user: req.user, signal: controller.signal };
+    return {
+      partyId,
+      identifier: getRepresentedIdentifier(representing, req.user),
+      representingMode: representing?.mode,
+      user: req.user,
+      signal: controller.signal,
+    };
   }
 
   @Get('/documents')

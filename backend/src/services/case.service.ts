@@ -4,6 +4,7 @@ import { WebMessageRequest as MessagingWebMessageRequest, WebMessageRequestOepIn
 import { MessageDTO } from '@/data-contracts/webmessagecollector/data-contracts';
 import { CaseStatusResponseWithPermissions, FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
 import { CaseDataNamespace } from '@/interfaces/casedata.interface';
+import { SalaryAndPensionCaseType, SalaryAndPensionCaseTypeDisplayName, SupportManagementNamespace } from '@/interfaces/supportmanagement.interface';
 import { User } from '@/interfaces/users.interface';
 import dayjs from 'dayjs';
 
@@ -12,10 +13,26 @@ import dayjs from 'dayjs';
 const allowedNamespaces: ReadonlySet<string> = new Set([
   CaseDataNamespace.SBK_MEX,
   CaseDataNamespace.SBK_PARKING_PERMIT,
-  CaseDataNamespace.CONTACTSUNDSVALL,
-  CaseDataNamespace.BOU,
+  SupportManagementNamespace.CONTACTSUNDSVALL,
+  SupportManagementNamespace.BOU,
+  SupportManagementNamespace.SERVICECENTERFINANCE,
+  SupportManagementNamespace.SALARYANDPENSION,
 ]);
-const namespaceIsAllowed = (c: CaseStatusResponse): boolean => !!c?.namespace && allowedNamespaces.has(c.namespace);
+
+const normalizeCaseType = (caseType: string): string => caseType.trim().toLowerCase();
+const salaryAndPensionCaseTypes: readonly string[] = [
+  ...Object.values(SalaryAndPensionCaseType),
+  ...Object.values(SalaryAndPensionCaseTypeDisplayName),
+];
+const allowedCaseTypesByNamespace: ReadonlyMap<string, ReadonlySet<string>> = new Map([
+  [SupportManagementNamespace.SALARYANDPENSION, new Set(salaryAndPensionCaseTypes.map(normalizeCaseType))],
+]);
+const caseTypeIsAllowed = (c: CaseStatusResponse): boolean => {
+  const allowedCaseTypes = c.namespace ? allowedCaseTypesByNamespace.get(c.namespace) : undefined;
+  return allowedCaseTypes === undefined || (!!c.caseType && allowedCaseTypes.has(normalizeCaseType(c.caseType)));
+};
+
+const namespaceIsAllowed = (c: CaseStatusResponse): boolean => !!c?.namespace && allowedNamespaces.has(c.namespace) && caseTypeIsAllowed(c);
 
 const allowedSystems: ReadonlySet<string> = new Set(['OPEN_E_PLATFORM', 'BYGGR', 'ECOS']);
 const systemIsAllowed = (c: CaseStatusResponse): boolean => !!c?.system && allowedSystems.has(c.system);

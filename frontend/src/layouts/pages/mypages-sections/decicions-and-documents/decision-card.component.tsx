@@ -1,7 +1,7 @@
 import { useAppContext } from '@contexts/app.context';
-import { DecisionItem } from '@data-contracts/backend/data-contracts';
+import { DecisionAttachment, DecisionItem } from '@data-contracts/backend/data-contracts';
 import { getDecisionAttachment, getDecisionTitle } from '@services/document-service';
-import { Button, Divider, Icon, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
+import { Button, Divider, Icon, Label, useSnackbar, useThemeQueries } from '@sk-web-gui/react';
 import { getCaseReference } from '@utils/case-reference';
 import { downloadBlob } from '@utils/download-blob';
 import { getRepresentingModeRoute } from '@utils/representingModeRoute';
@@ -14,19 +14,27 @@ import { useTranslation } from 'react-i18next';
 
 dayjs.locale(sv);
 
-export const DecisionCard: React.FC<{ item: DecisionItem }> = ({ item }) => {
-  const attachment = item.attachments[0];
-  const { representingMode } = useAppContext();
+// One download button per attachment. A casedata decision carries one file; a byggR decision may
+// carry several, and then the file name is what tells the buttons apart. The file name is always
+// in the accessible name, so identical "Ladda ner" buttons on one page can still be told apart.
+export const AttachmentDownload = ({
+  decisionId,
+  attachment,
+  showName,
+}: {
+  decisionId: string;
+  attachment: DecisionAttachment;
+  showName: boolean;
+}) => {
   const { t } = useTranslation('decisions');
   const { isPhone } = useThemeQueries();
   const [isDownloading, setIsDownloading] = useState(false);
   const toastMessage = useSnackbar();
 
   const handleDownload = useCallback(async () => {
-    if (!attachment) return;
     setIsDownloading(true);
     try {
-      const base64 = await getDecisionAttachment(item.id, attachment.id);
+      const base64 = await getDecisionAttachment(decisionId, attachment.id);
       if (!base64) {
         toastMessage({
           position: 'bottom',
@@ -41,7 +49,42 @@ export const DecisionCard: React.FC<{ item: DecisionItem }> = ({ item }) => {
     } finally {
       setIsDownloading(false);
     }
-  }, [attachment, item.id, t, toastMessage]);
+  }, [attachment, decisionId, t, toastMessage]);
+
+  const iconOnly = isPhone && !showName;
+  const label = showName ? attachment.name : t('decisions:download');
+
+  let ariaLabel: string | undefined;
+  if (attachment.name) {
+    ariaLabel = t('decisions:downloadNamed', { name: attachment.name });
+  } else if (iconOnly) {
+    ariaLabel = label;
+  }
+
+  return (
+    <Button
+      iconButton={iconOnly}
+      rightIcon={<Icon icon={<Download />} />}
+      variant="tertiary"
+      size="sm"
+      loading={isDownloading}
+      disabled={isDownloading}
+      onClick={handleDownload}
+      aria-label={ariaLabel}
+      data-cy="decision-attachment-download"
+    >
+      {!iconOnly ? label : null}
+    </Button>
+  );
+};
+
+export const DecisionCard: React.FC<{ item: DecisionItem }> = ({ item }) => {
+  const { representingMode } = useAppContext();
+  const { t } = useTranslation('decisions');
+  const title = getDecisionTitle(item, t('decisions:decision'));
+  // Without a heading from the source the outcome is already part of the title, so it is only
+  // shown on its own when there is a heading.
+  const outcome = item.title ? item.outcome : undefined;
 
   return (
     <div>
@@ -51,8 +94,16 @@ export const DecisionCard: React.FC<{ item: DecisionItem }> = ({ item }) => {
             <Icon icon={<File />} />
           </div>
           <div>
-            <div className="list-item-card-content-title">{getDecisionTitle(item, t('decisions:decision'))}</div>
-            <div className="flex gap-x-16">
+            <div className="flex flex-wrap items-center gap-x-12 gap-y-4">
+              <div className="list-item-card-content-title">{title}</div>
+              {item.mainDecision ? (
+                <Label rounded inverted color="info">
+                  {t('decisions:mainDecision')}
+                </Label>
+              ) : null}
+            </div>
+            <div className="flex flex-wrap gap-x-16">
+              {outcome ? <div className="list-item-card-content-subtitle">{outcome}</div> : null}
               {item.decidedAt ? (
                 <div className="list-item-card-content-subtitle">
                   {t('decisions:decidedAt', { date: dayjs(item.decidedAt).format('D MMMM YYYY') })}
@@ -75,20 +126,18 @@ export const DecisionCard: React.FC<{ item: DecisionItem }> = ({ item }) => {
             </div>
           </div>
         </div>
-        {attachment && (
-          <Button
-            iconButton={isPhone}
-            rightIcon={<Icon icon={<Download />} />}
-            variant="tertiary"
-            size="sm"
-            loading={isDownloading}
-            disabled={isDownloading}
-            onClick={handleDownload}
-            aria-label={isPhone ? t('decisions:download') : undefined}
-          >
-            {!isPhone ? t('decisions:download') : null}
-          </Button>
-        )}
+        {item.attachments.length > 0 ? (
+          <div className="flex flex-col items-end gap-4 shrink-0">
+            {item.attachments.map((attachment) => (
+              <AttachmentDownload
+                key={attachment.id}
+                decisionId={item.id}
+                attachment={attachment}
+                showName={item.attachments.length > 1}
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
       <Divider className="mt-12" />
     </div>

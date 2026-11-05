@@ -41,6 +41,7 @@ const caseTypeLabelMap: Record<string, string> = {
   LOST_PARKING_PERMIT: 'Borttappat parkeringstillstånd',
   APPEAL: 'Överklagan',
   DOCUMENTATION_ERRAND: 'Dokumentationsärende',
+  PARATRANSIT_FROM_KS: 'Ärende från Kontakt Sundsvall',
 
   PARATRANSIT: 'Ansökan färdtjänst',
   PARATRANSIT_RENEWAL: 'Ansökan fortsatt färdtjänst',

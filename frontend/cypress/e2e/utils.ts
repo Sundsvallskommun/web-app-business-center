@@ -6,6 +6,7 @@ import { getRepresentingModeName } from '@utils/representingModeRoute';
 import { getCase } from 'cypress/fixtures/getCase';
 import { getCaseMessages } from 'cypress/fixtures/getCaseMessages';
 import { getContactSettings } from 'cypress/fixtures/getContactSettings';
+import { BYGGR_DESCRIPTION } from 'cypress/fixtures/getDocuments';
 import { getPdf } from 'cypress/fixtures/getPdf';
 import { representingModeDefault } from 'cypress/support/e2e';
 
@@ -259,14 +260,25 @@ export const testDocumentPage = (representingMode: RepresentingMode = representi
 };
 
 export const testDocuments = (representingMode: RepresentingMode = representingModeDefault) => {
-  cy.get('ul[aria-label="Dokument"] > li').should('have.length', 1);
-  cy.get('ul[aria-label="Dokument"] > li').within(() => {
-    cy.contains('Parkeringstillstånd för funktionshindrad').should('exist');
-    cy.contains(RepresentingMode[representingMode]).should('exist');
-    cy.contains('1 jan 2021').should('exist');
-    // The decisions a document owns are shown on its detail page, not in the listing
-    cy.get('[data-cy="document-decisions"]').should('not.exist');
-  });
+  cy.get('ul[aria-label="Dokument"] > li').should('have.length', 2);
+  cy.get('ul[aria-label="Dokument"] > li')
+    .first()
+    .within(() => {
+      cy.contains('Parkeringstillstånd för funktionshindrad').should('exist');
+      cy.contains(RepresentingMode[representingMode]).should('exist');
+      cy.contains('1 jan 2021').should('exist');
+      cy.contains('Aktiv').should('exist');
+      // The decisions a document owns are shown on its detail page, not in the listing
+      cy.get('[data-cy="document-decisions"]').should('not.exist');
+    });
+  // A byggR errand is listed like any other document, summarised by its main decision
+  cy.get('ul[aria-label="Dokument"] > li')
+    .eq(1)
+    .within(() => {
+      cy.contains(BYGGR_DESCRIPTION).should('exist');
+      cy.contains('1 mar 2024 - 1 mar 2029').should('exist');
+      cy.contains('Aktiv').should('exist');
+    });
   cy.get('ul[aria-label="Dokument"] > li a[aria-label*="Parkeringstillstånd för funktionshindrad"]')
     .click()
     .then(() => {

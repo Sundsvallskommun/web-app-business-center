@@ -1,5 +1,6 @@
 import { Decision, DecisionDecisionTypeEnum } from '@/data-contracts/case-data/data-contracts';
 import { CaseDataNamespace } from '@/interfaces/casedata.interface';
+import { SupportManagementNamespace } from '@/interfaces/supportmanagement.interface';
 import { findOwnedDecisionAttachment, isFinalDecision, resolveDecisionNamespaces } from '@/services/decision.service';
 
 const mockDecision = (overrides: Partial<Decision> = {}): Decision => ({
@@ -56,13 +57,15 @@ describe('decision.service', () => {
     it('prefers the namespace of the decision', () => {
       const decision = mockDecision({ namespace: CaseDataNamespace.SBK_MEX });
 
-      expect(resolveDecisionNamespaces(decision, { namespace: CaseDataNamespace.CONTACTSUNDSVALL })).toEqual([CaseDataNamespace.SBK_MEX]);
+      expect(resolveDecisionNamespaces(decision, { namespace: SupportManagementNamespace.CONTACTSUNDSVALL })).toEqual([CaseDataNamespace.SBK_MEX]);
     });
 
     it('falls back to the namespace of the attachment', () => {
       const decision = mockDecision({ namespace: undefined });
 
-      expect(resolveDecisionNamespaces(decision, { namespace: CaseDataNamespace.CONTACTSUNDSVALL })).toEqual([CaseDataNamespace.CONTACTSUNDSVALL]);
+      expect(resolveDecisionNamespaces(decision, { namespace: SupportManagementNamespace.CONTACTSUNDSVALL })).toEqual([
+        SupportManagementNamespace.CONTACTSUNDSVALL,
+      ]);
     });
 
     it('falls back to every namespace this app serves when neither carries one', () => {

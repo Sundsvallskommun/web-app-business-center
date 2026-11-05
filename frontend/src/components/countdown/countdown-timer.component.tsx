@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface CountdownTimerProps {
   timeout: number; // timeout in milliseconds
@@ -7,35 +7,28 @@ interface CountdownTimerProps {
 }
 
 const CountdownTimer: React.FC<CountdownTimerProps> = ({ timeout, onChangeTime, className }) => {
+  // Counts towards a fixed deadline instead of subtracting a second per tick: browsers throttle
+  // timers in background tabs, and the display would fall behind the time actually left.
+  const [deadline] = useState(() => Date.now() + timeout);
   const [timeLeft, setTimeLeft] = useState<number>(timeout);
-  const timerIdRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const tick = () => {
-      setTimeLeft((prevTime) => {
-        const newTime = prevTime - 1000;
-        onChangeTime?.(newTime);
-        return newTime;
-      });
-    };
+    if (deadline <= Date.now()) return;
 
-    timerIdRef.current = setInterval(tick, 1000);
-
-    return () => {
-      if (timerIdRef.current) {
-        clearInterval(timerIdRef.current);
+    const timerId = setInterval(() => {
+      const newTime = Math.max(deadline - Date.now(), 0);
+      setTimeLeft(newTime);
+      onChangeTime?.(newTime);
+      if (newTime === 0) {
+        clearInterval(timerId);
       }
-    };
-  }, [onChangeTime]);
+    }, 1000);
 
-  useEffect(() => {
-    if (timeLeft <= 0 && timerIdRef.current) {
-      clearInterval(timerIdRef.current);
-    }
-  }, [timeLeft]);
+    return () => clearInterval(timerId);
+  }, [deadline, onChangeTime]);
 
   const formatTime = (milliseconds: number): string => {
-    const totalSeconds = Math.max(Math.floor(milliseconds / 1000), 0);
+    const totalSeconds = Math.ceil(milliseconds / 1000);
     const minutes = Math.floor(totalSeconds / 60)
       .toString()
       .padStart(2, '0');

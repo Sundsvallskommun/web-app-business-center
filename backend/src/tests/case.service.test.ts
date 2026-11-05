@@ -2,7 +2,8 @@ import { Message, MessageResponseDirectionEnum, MessageTypeEnum } from '@/data-c
 import { CaseStatusResponse } from '@/data-contracts/casestatus/data-contracts';
 import { MessageDTO, MessageDtoDirectionEnum } from '@/data-contracts/webmessagecollector/data-contracts';
 import { FrontendMessageResponse, MessageWithConversationId } from '@/interfaces/case.interface';
-import { CaseDataNamespace, SalaryAndPensionCaseType } from '@/interfaces/casedata.interface';
+import { CaseDataNamespace } from '@/interfaces/casedata.interface';
+import { SalaryAndPensionCaseType, SupportManagementNamespace } from '@/interfaces/supportmanagement.interface';
 import { User } from '@/interfaces/users.interface';
 import {
   buildMessagingWebMessageRequest,
@@ -40,12 +41,13 @@ describe('case.service', () => {
     it('allows cases with a whitelisted namespace', () => {
       expect(caseIsAllowed({ namespace: CaseDataNamespace.SBK_MEX } as CaseStatusResponse)).toBe(true);
       expect(caseIsAllowed({ namespace: CaseDataNamespace.SBK_PARKING_PERMIT } as CaseStatusResponse)).toBe(true);
-      expect(caseIsAllowed({ namespace: CaseDataNamespace.CONTACTSUNDSVALL } as CaseStatusResponse)).toBe(true);
+      expect(caseIsAllowed({ namespace: SupportManagementNamespace.CONTACTSUNDSVALL } as CaseStatusResponse)).toBe(true);
+      expect(caseIsAllowed({ namespace: SupportManagementNamespace.SERVICECENTERFINANCE } as CaseStatusResponse)).toBe(true);
     });
 
     it('allows SALARYANDPENSION cases only for whitelisted case types', () => {
       const salaryCase = (caseType?: string): CaseStatusResponse =>
-        ({ namespace: CaseDataNamespace.SALARYANDPENSION, system: 'SUPPORT_MANAGEMENT', caseType }) as CaseStatusResponse;
+        ({ namespace: SupportManagementNamespace.SALARYANDPENSION, system: 'SUPPORT_MANAGEMENT', caseType }) as CaseStatusResponse;
 
       // Display names as CaseStatus reports them from the namespace metadata
       expect(caseIsAllowed(salaryCase('Arbetsgivarintyg'))).toBe(true);

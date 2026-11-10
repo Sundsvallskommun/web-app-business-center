@@ -1,8 +1,8 @@
 import { ContactSettingAddress } from '@/interfaces/contact-settings';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { User } from '../interfaces/users.interface';
-import { IsNullable } from '../utils/custom-validation-classes';
+import { User } from '@interfaces/users.interface';
+import { IsNullable } from '@utils/custom-validation-classes';
 
 class ClientContactSettingNotifications {
   @IsBoolean()
@@ -23,7 +23,13 @@ class ClientContactSettingDecicionsAndDocuments {
 export class ClientContactSettingAddress implements ContactSettingAddress {
   @IsString()
   @IsOptional()
+  careOf?: string;
+  @IsString()
+  @IsOptional()
   street?: string;
+  @IsString()
+  @IsOptional()
+  apartmentNumber?: string;
   @IsString()
   @IsOptional()
   postcode?: string;

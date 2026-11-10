@@ -12,7 +12,9 @@ export interface ClientContactSettingDecicionsAndDocuments {
 }
 
 export interface ClientContactSettingAddress {
+  careOf?: string;
   street: string;
+  apartmentNumber?: string;
   postcode: string;
   city: string;
 }

@@ -14,12 +14,21 @@ const EmptyField = (text: string) => {
   return <span className="italic">{text}</span>;
 };
 
-const getAddress = (address: { street?: string; postcode?: string; city?: string } | null | undefined) => {
-  if (address) {
-    return `${address.street ? `${_.capitalize(address.street)}, ` : ''}${address.postcode} ${_.capitalize(address.city)}`;
-  } else {
+const getAddress = (
+  address:
+    { careOf?: string; street?: string; apartmentNumber?: string; postcode?: string; city?: string } | null | undefined
+) => {
+  if (!address) {
     return null;
   }
+  const postalArea = [address.postcode, address.city && _.capitalize(address.city)].filter(Boolean).join(' ');
+  const parts = [
+    address.careOf && `c/o ${address.careOf}`,
+    address.street && _.capitalize(address.street),
+    address.apartmentNumber && `lgh ${address.apartmentNumber}`,
+    postalArea,
+  ].filter(Boolean);
+  return parts.length ? parts.join(', ') : null;
 };
 
 export const ContactDetails = () => {

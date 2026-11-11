@@ -7,15 +7,14 @@ import { apiURL } from '@/utils/util';
 import authMiddleware from '@middlewares/auth.middleware';
 import { Body, Controller, Delete, Get, HttpCode, OnUndefined, Param, Patch, Post, QueryParam, Req, UseBefore } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
-import { MUNICIPALITY_ID } from '../config';
-import { ContactSetting, ContactSettingAddress, NewContactSettings, UpdateContactSettings } from '../interfaces/contact-settings';
-import { RepresentingMode } from '../interfaces/representing.interface';
-import { ApiResponse, ResponseData } from '../interfaces/service';
-import { validationMiddleware } from '../middlewares/validation.middleware';
-import { ClientContactSetting } from '../responses/contactsettings.response';
-import { getRepresentedPartyId } from '../utils/getRepresentedPartyId';
-import { getBusinessAddress, getBusinessName } from './contact-settings/utils';
-import { LEAddress } from '@/data-contracts/legalentity/data-contracts';
+import { MUNICIPALITY_ID } from '@config';
+import { ContactSetting, NewContactSettings, UpdateContactSettings } from '@interfaces/contact-settings';
+import { RepresentingMode } from '@interfaces/representing.interface';
+import { ApiResponse, ResponseData } from '@interfaces/service';
+import { validationMiddleware } from '@middlewares/validation.middleware';
+import { ClientContactSetting } from '@/responses/contactsettings.response';
+import { getRepresentedPartyId } from '@utils/getRepresentedPartyId';
+import { getBusinessAddress, getBusinessName, mapBusinessAddress, mapCitizenAddress } from './contact-settings/utils';
 import { logger } from '@/utils/logger';
 import {
   contactSettingBelongsToParty,
@@ -79,15 +78,6 @@ export class ContactSettingsController {
       }
     }
 
-    // Accepts any address-like shape (LEAddress, business Address, citizen address).
-    // Only LEAddress-style fields are read; absent ones resolve to undefined as before.
-    type MappableAddress = Partial<Pick<LEAddress, 'city' | 'addressArea' | 'adressNumber' | 'postalCode'>>;
-    const mapAdress = (adress: MappableAddress | null | undefined): ContactSettingAddress => ({
-      city: adress?.city ?? undefined,
-      street: !adress?.addressArea || !adress?.adressNumber ? undefined : `${adress.addressArea} ${adress.adressNumber}`,
-      postcode: adress?.postalCode ?? undefined,
-    });
-
     try {
       // res may be undefined on a 404; makeClientContactSetting optional-chains its input
       const clientContactSetting = makeClientContactSetting(res?.data?.[0] as ContactSetting);
@@ -96,7 +86,7 @@ export class ContactSettingsController {
         case RepresentingMode.BUSINESS:
           // name is declared string but is intentionally nullable at runtime (see makeClientContactSetting)
           clientContactSetting.name = getBusinessName(representing) as ClientContactSetting['name'];
-          clientContactSetting.address = mapAdress(getBusinessAddress(representing));
+          clientContactSetting.address = mapBusinessAddress(getBusinessAddress(representing));
           break;
         case RepresentingMode.PRIVATE:
           {
@@ -108,8 +98,7 @@ export class ContactSettingsController {
             };
             const citizenRes = await this.apiService.get<CitizenExtended>({ url, params }, req.user);
             if (citizenRes.data) {
-              const address = citizenRes.data.addresses?.[0];
-              clientContactSetting.address = address?.city ? mapAdress(address) : null;
+              clientContactSetting.address = mapCitizenAddress(citizenRes.data.addresses?.[0]);
             }
           }
           break;
@@ -216,15 +205,17 @@ export class ContactSettingsController {
       throw new HttpException(404, 'Contact setting not found');
     }
 
+    let deletionOk: boolean;
     try {
-      const deletionOk = await deleteContactSetting(contactSettingId, req);
-      if (!deletionOk) {
-        throw new HttpException(500, 'Internal Server Error');
-      }
-      return { data: deletionOk, message: 'Deleted contact setting' };
+      deletionOk = await deleteContactSetting(contactSettingId, req);
     } catch (error) {
       logger.error('Error deleting contactsetting', error);
       throw new HttpException(500, 'Internal server error');
     }
+
+    if (!deletionOk) {
+      throw new HttpException(500, 'Internal Server Error');
+    }
+    return { data: deletionOk, message: 'Deleted contact setting' };
   }
 }

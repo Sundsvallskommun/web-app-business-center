@@ -51,7 +51,9 @@ export interface NewContactSettings extends UpdateContactSettings {
 }
 
 export interface ContactSettingAddress {
+  careOf?: string;
   street?: string;
+  apartmentNumber?: string;
   postcode?: string;
   city?: string;
 }

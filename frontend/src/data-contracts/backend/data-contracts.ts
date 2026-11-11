@@ -39,7 +39,7 @@ export interface AttachmentResponse {
 export interface FrontendMessageResponse {
   conversationId: string;
   messageId: string;
-  direction: "INBOUND" | "OUTBOUND";
+  direction: 'INBOUND' | 'OUTBOUND';
   message: string;
   sent: string;
   sender: string;
@@ -67,7 +67,7 @@ export interface CreateReadNotificationsDto {
 export interface RepresentsDto {
   organizationNumber?: string;
   personNumber?: string;
-  mode?: "PRIVATE" | "BUSINESS" | 0 | 1;
+  mode?: 'PRIVATE' | 'BUSINESS' | 0 | 1;
 }
 
 export interface ContactSettingChannel {
@@ -100,7 +100,9 @@ export interface ClientContactSettingDecicionsAndDocuments {
 }
 
 export interface ClientContactSettingAddress {
+  careOf?: string;
   street?: string;
+  apartmentNumber?: string;
   postcode?: string;
   city?: string;
 }
@@ -141,7 +143,7 @@ export interface Information {
 export interface RepresentingEntity {
   BUSINESS?: RepresentingBusinessEntity;
   PRIVATE?: RepresentingPrivateEntity;
-  mode: "PRIVATE" | "BUSINESS" | 0 | 1;
+  mode: 'PRIVATE' | 'BUSINESS' | 0 | 1;
 }
 
 export interface ClientRepresentingApiResponse {
@@ -150,7 +152,7 @@ export interface ClientRepresentingApiResponse {
 }
 
 export interface PatchUserSettingsDto {
-  feedbackLifespan: "untilRemoved" | "oneMonth" | "twoWeeks";
+  feedbackLifespan: 'untilRemoved' | 'oneMonth' | 'twoWeeks';
 }
 
 export interface Asset {
@@ -161,13 +163,7 @@ export interface Asset {
   type?: string;
   issued?: string;
   validTo?: string;
-  status?:
-    | "ACTIVE"
-    | "DRAFT"
-    | "EXPIRED"
-    | "BLOCKED"
-    | "TEMPORARY"
-    | "REPLACED";
+  status?: 'ACTIVE' | 'DRAFT' | 'EXPIRED' | 'BLOCKED' | 'TEMPORARY' | 'REPLACED';
   statusReason?: string;
   description?: string;
   replacesId?: string;
@@ -242,7 +238,7 @@ export interface MandateDefaults {
   activeFrom: string;
   /** @pattern \d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d.\d+Z? */
   inactiveAfter?: string;
-  status: "ACTIVE" | "INACTIVE" | "EXPIRED" | "DELETED";
+  status: 'ACTIVE' | 'INACTIVE' | 'EXPIRED' | 'DELETED';
   whitelisted?: boolean;
 }
 
@@ -258,7 +254,7 @@ export interface Mandate {
   activeFrom: string;
   /** @pattern \d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d.\d+Z? */
   inactiveAfter?: string;
-  status: "ACTIVE" | "INACTIVE" | "EXPIRED" | "DELETED";
+  status: 'ACTIVE' | 'INACTIVE' | 'EXPIRED' | 'DELETED';
   whitelisted?: boolean;
 }
 
@@ -274,7 +270,7 @@ export interface MandatePopulated {
   activeFrom: string;
   /** @pattern \d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d.\d+Z? */
   inactiveAfter?: string;
-  status: "ACTIVE" | "INACTIVE" | "EXPIRED" | "DELETED";
+  status: 'ACTIVE' | 'INACTIVE' | 'EXPIRED' | 'DELETED';
   whitelisted?: boolean;
 }
 
@@ -313,13 +309,13 @@ export interface PopulatedMandatesApiResponse {
 
 export interface SignDto {
   visible: string;
-  format: "PLAIN_TEXT" | "MARKDOWN" | "HTML";
+  format: 'PLAIN_TEXT' | 'MARKDOWN' | 'HTML';
   details?: object;
 }
 
 export interface SignMandateDto {
   visible: string;
-  format: "PLAIN_TEXT" | "MARKDOWN" | "HTML";
+  format: 'PLAIN_TEXT' | 'MARKDOWN' | 'HTML';
   mandate: SignMandateDetails;
 }
 
@@ -331,7 +327,7 @@ export interface Sign {
 
 export interface SubjectIdentifier {
   value: string;
-  type: "TIN" | "EMAIL";
+  type: 'TIN' | 'EMAIL';
 }
 
 export interface User {
@@ -344,14 +340,14 @@ export interface User {
 }
 
 export interface Status {
-  status: "COMPLETE" | "FAILED" | "CANCELLED" | "PENDING";
+  status: 'COMPLETE' | 'FAILED' | 'CANCELLED' | 'PENDING';
   substatus: string | null;
   message: string;
 }
 
 export interface ValidationInfo {
   signature: string;
-  signatureFormat: "xmldsig" | "pkcs7" | "jws";
+  signatureFormat: 'xmldsig' | 'pkcs7' | 'jws';
   ocspResponse?: string;
 }
 
@@ -402,7 +398,7 @@ export interface DecisionAttachment {
 
 export interface DecisionItem {
   id: string;
-  source: "PARTYASSETS" | "CASEDATA" | "BYGGR";
+  source: 'PARTYASSETS' | 'CASEDATA' | 'BYGGR';
   title?: string;
   outcome?: string;
   decidedAt?: string;
@@ -422,9 +418,9 @@ export interface ByggrErrandDetails {
 
 export interface DocumentItem {
   id: string;
-  source: "PARTYASSETS" | "CASEDATA" | "BYGGR";
+  source: 'PARTYASSETS' | 'CASEDATA' | 'BYGGR';
   title: string;
-  status?: "ACTIVE" | "EXPIRED" | "BLOCKED" | "TEMPORARY";
+  status?: 'ACTIVE' | 'EXPIRED' | 'BLOCKED' | 'TEMPORARY';
   issued?: string;
   validTo?: string;
   decisions: DecisionItem[];
@@ -432,7 +428,7 @@ export interface DocumentItem {
 
 export interface SourceStatus {
   source: string;
-  status: "OK" | "UNAVAILABLE";
+  status: 'OK' | 'UNAVAILABLE';
 }
 
 export interface DocumentsOverview {
@@ -450,9 +446,9 @@ export interface DocumentDetails {
   asset?: Asset;
   byggr?: ByggrErrandDetails;
   id: string;
-  source: "PARTYASSETS" | "CASEDATA" | "BYGGR";
+  source: 'PARTYASSETS' | 'CASEDATA' | 'BYGGR';
   title: string;
-  status?: "ACTIVE" | "EXPIRED" | "BLOCKED" | "TEMPORARY";
+  status?: 'ACTIVE' | 'EXPIRED' | 'BLOCKED' | 'TEMPORARY';
   issued?: string;
   validTo?: string;
   decisions: DecisionItem[];

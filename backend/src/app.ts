@@ -26,7 +26,6 @@ import {
 import errorMiddleware from '@middlewares/error.middleware';
 import { Profile as SamlProfile, Strategy, VerifiedCallback } from '@node-saml/passport-saml';
 import { logger, stream } from '@utils/logger';
-import prisma from '@utils/prisma';
 import bodyParser from 'body-parser';
 import { defaultMetadataStorage } from 'class-transformer/cjs/storage';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
@@ -137,17 +136,6 @@ const samlStrategy = new Strategy(
         sessionIndex: profile.sessionIndex ?? '',
       };
 
-      const userSettings = await prisma.userSettings.findFirst({ where: { userId: findUser.partyId } });
-      // Create user settings for new users
-      if (!userSettings) {
-        await prisma.userSettings.create({
-          data: {
-            userId: findUser.partyId,
-            feedbackLifespan: 'oneMonth',
-            readNotificationsClearedDate: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
-          },
-        });
-      }
       done(null, findUser);
     } catch (err) {
       if (err instanceof HttpException && err?.status === 404) {
@@ -505,10 +493,6 @@ class App {
   }
 
   private initializeDataFolders() {
-    const databaseDir: string = join(__dirname, '../data/database');
-    if (!existsSync(databaseDir)) {
-      mkdirSync(databaseDir, { recursive: true });
-    }
     const logsDir: string = join(__dirname, '../data/logs');
     if (!existsSync(logsDir)) {
       mkdirSync(logsDir, { recursive: true });

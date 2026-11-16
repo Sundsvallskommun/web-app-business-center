@@ -2,7 +2,6 @@ import App from '@/app';
 import { CaseController } from '@controllers/case.controller';
 import { FeedbackController } from '@controllers/feedback.controller';
 import { IndexController } from '@controllers/index.controller';
-import { NotificationsController } from '@controllers/notifications.controller';
 import { RepresentingController } from '@controllers/representing.controller';
 import { UserController } from '@controllers/user.controller';
 import validateEnv from '@utils/validateEnv';
@@ -26,7 +25,6 @@ const app = new App([
   DocumentsController,
   RepresentingController,
   UserController,
-  NotificationsController,
   FeedbackController,
   InvoicesController,
   HealthController,

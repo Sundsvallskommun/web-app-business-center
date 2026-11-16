@@ -60,10 +60,6 @@ export interface FeedbackDto {
   body: string;
 }
 
-export interface CreateReadNotificationsDto {
-  caseId: string;
-}
-
 export interface RepresentsDto {
   organizationNumber?: string;
   personNumber?: string;
@@ -149,10 +145,6 @@ export interface RepresentingEntity {
 export interface ClientRepresentingApiResponse {
   data: RepresentingEntity;
   message: string;
-}
-
-export interface PatchUserSettingsDto {
-  feedbackLifespan: 'untilRemoved' | 'oneMonth' | 'twoWeeks';
 }
 
 export interface Asset {

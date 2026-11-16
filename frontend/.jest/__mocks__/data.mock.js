@@ -3,9 +3,6 @@ import { invoicesLabels } from '@services/invoice-service';
 
 export const user = {
   name: 'Karin',
-  userSettings: {
-    feedbackLifespan: 2,
-  },
 };
 
 export const representingEntity = {

@@ -34,6 +34,14 @@ services:
       LOG_DIR: ${LOG_DIR-../../data/logs}
       CREDENTIALS: ${CREDENTIALS-true}
       WHITELIST_ASSET_TYPES: ${WHITELIST_ASSET_TYPES-PERMIT,PARKINGPERMIT,FTErrandAssets,ParatransitPermitLocal}
+      # Redis is required for multi-instance deployments. Leave REDIS_HOST empty
+      # only for single-instance local development.
+      REDIS_HOST: ${REDIS_HOST-}
+      # Must be unique per application when Redis is shared (defaults to web-app-business-center).
+      REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX-}
+      # The application defaults to 6379 when REDIS_HOST is set.
+      REDIS_PORT: ${REDIS_PORT-}
+      REDIS_PASSWORD: ${REDIS_PASSWORD-}
   frontend:
     environment:
       # URL to backend

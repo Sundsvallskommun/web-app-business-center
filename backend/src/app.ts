@@ -9,6 +9,7 @@ import {
   NODE_ENV,
   ORIGIN,
   PORT,
+  REDIS_CONFIG,
   SAML_CALLBACK_URL,
   SAML_ENTRY_SSO,
   SAML_FAILURE_REDIRECT,
@@ -37,29 +38,23 @@ import session from 'express-session';
 import { existsSync, mkdirSync } from 'fs';
 import helmet from 'helmet';
 import hpp from 'hpp';
-import createMemoryStore from 'memorystore';
 import morgan from 'morgan';
 import passport from 'passport';
+import type { Server } from 'node:http';
 import { join } from 'path';
 import { getMetadataArgsStorage, useExpressServer } from 'routing-controllers';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
-import createFileStore from 'session-file-store';
+import { createLocalSessionStore } from '@utils/session-store';
 import swaggerUi from 'swagger-ui-express';
 import { getApiBase } from './config/api-config';
-import { HttpException } from './exceptions/HttpException';
-import { Profile } from './interfaces/profile.interface';
-import { RepresentingMode } from './interfaces/representing.interface';
-import { User } from './interfaces/users.interface';
-import { additionalConverters } from './utils/custom-validation-classes';
-import { isValidUrl } from './utils/util';
-import { getBusinessEngagements, mapEngagements } from './services/legal-entity.service';
+import { HttpException } from '@exceptions/HttpException';
+import { Profile } from '@interfaces/profile.interface';
+import { RepresentingMode } from '@interfaces/representing.interface';
+import { User } from '@interfaces/users.interface';
+import { additionalConverters } from '@utils/custom-validation-classes';
+import { isValidUrl } from '@utils/util';
+import { getBusinessEngagements, mapEngagements } from '@services/legal-entity.service';
 
-const SessionStoreCreate = SESSION_MEMORY ? createMemoryStore(session) : createFileStore(session);
-const sessionTTL = 12 * 60 * 60;
-// NOTE: memory uses ms while file uses seconds
-const sessionStore = new SessionStoreCreate(
-  SESSION_MEMORY ? { ttl: sessionTTL * 1000, checkPeriod: sessionTTL * 1000 } : { sessionTTL, path: './data/sessions' },
-);
 const apiService = new ApiService();
 
 passport.serializeUser(function (user, done) {
@@ -157,7 +152,14 @@ class App {
   public port: string | number;
   public swaggerEnabled: boolean;
 
-  constructor(Controllers: ControllerClass[]) {
+  /**
+   * In production the store comes from `createSessionStore()` in server.ts (Redis when
+   * REDIS_HOST is set). The local default keeps tests and single-instance use simple.
+   */
+  constructor(
+    Controllers: ControllerClass[],
+    private readonly sessionStore: session.Store = createLocalSessionStore(),
+  ) {
     this.app = express();
     this.env = NODE_ENV || 'development';
     this.port = PORT || 3000;
@@ -173,8 +175,8 @@ class App {
     this.initializeErrorHandling();
   }
 
-  public listen() {
-    this.app.listen(this.port, () => {
+  public listen(): Server {
+    return this.app.listen(this.port, () => {
       logger.info(`=================================`);
       logger.info(`======= ENV: ${this.env} =======`);
       logger.info(`🚀 App listening on the port ${this.port}`);
@@ -206,14 +208,14 @@ class App {
         secret: SECRET_KEY ?? '',
         resave: false,
         saveUninitialized: false,
-        store: sessionStore,
+        store: this.sessionStore,
         cookie: {
           httpOnly: true,
           sameSite: 'lax',
           secure: this.env === 'production' && process.env.ENVIRONMENT !== 'LOCAL',
           // No maxAge → session cookie: dropped on browser close (matters on shared/public devices).
           // Idle sessions are logged out client-side (~15 min) via a full SAML logout; the server-side
-          // store TTL (sessionTTL, refreshed per request via store.touch) is the idle backstop.
+          // store TTL (SESSION_TTL_SECONDS, refreshed per request via store.touch) is the idle backstop.
         },
       }),
     );
@@ -497,9 +499,12 @@ class App {
     if (!existsSync(logsDir)) {
       mkdirSync(logsDir, { recursive: true });
     }
-    const sessionsDir: string = join(__dirname, '../data/sessions');
-    if (!existsSync(sessionsDir)) {
-      mkdirSync(sessionsDir, { recursive: true });
+    // Only the file session store needs local disk. Redis and memory keep the pod stateless.
+    if (!REDIS_CONFIG.enabled && !SESSION_MEMORY) {
+      const sessionsDir: string = join(__dirname, '../data/sessions');
+      if (!existsSync(sessionsDir)) {
+        mkdirSync(sessionsDir, { recursive: true });
+      }
     }
   }
 }

@@ -3,6 +3,9 @@
 /node_modules
 /dist
 
+# runtime data (logs, local sessions) - created fresh in the container
+/data
+
 # local secrets / env (provided at runtime via container env)
 .env
 .env.*.local

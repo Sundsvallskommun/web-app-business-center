@@ -49,13 +49,29 @@ describe('api-token.service', () => {
     expect(await service.getToken()).toBe('tok-3');
 
     mockedAxios.mockResolvedValue({ data: { access_token: 'tok-4', expires_in: 60 } });
-    vi.advanceTimersByTime(60 * 1000); // past the 60s TTL (which is shortened by a 10s margin)
+    vi.advanceTimersByTime(60 * 1000); // past the 60s TTL (shortened by a 10 % margin, max 10s)
 
     expect(await service.getToken()).toBe('tok-4');
   });
 
   it('throws 502 Bad Gateway when the token request fails', async () => {
     mockedAxios.mockRejectedValue(new Error('network down'));
+
+    await expect(new ApiTokenService().getToken()).rejects.toMatchObject({ status: 502 });
+  });
+
+  it('fetches the token once for concurrent callers', async () => {
+    mockedAxios.mockResolvedValue({ data: { access_token: 'tok-5', expires_in: 3600 } });
+    const service = new ApiTokenService();
+
+    const tokens = await Promise.all([service.getToken(), service.getToken(), service.getToken()]);
+
+    expect(tokens).toEqual(['tok-5', 'tok-5', 'tok-5']);
+    expect(mockedAxios).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a response without a usable token', async () => {
+    mockedAxios.mockResolvedValue({ data: { access_token: '' } });
 
     await expect(new ApiTokenService().getToken()).rejects.toMatchObject({ status: 502 });
   });

@@ -30,9 +30,13 @@ RUN addgroup --system --gid 1001 nodejs \
 
 COPY --from=builder --chown=nodejs:nodejs /app/ ./
 
-# Writable folders for sessions and logs
-RUN mkdir -p /app/data/sessions /app/data/logs \
- && chown -R nodejs:nodejs /app/data
+# The only runtime writes are rotating log files under /app/data/logs (and ./data/sessions when
+# REDIS_HOST is unset, which is not the case in OpenShift). Sessions and the gateway token live in
+# Redis, so the pod needs no volume and can run with several replicas.
+# OpenShift runs the container as an arbitrary UID in group 0, so group write is required.
+RUN mkdir -p /app/data \
+ && chown nodejs:0 /app/data \
+ && chmod g+w /app/data
 
 USER nodejs
 

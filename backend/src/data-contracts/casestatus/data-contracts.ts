@@ -31,19 +31,6 @@ export interface ConstraintViolationProblem {
   /** @format uri */
   instance?: string;
   detail?: string;
-  causeAsProblem?: ThrowableProblem;
-}
-
-export interface ThrowableProblem {
-  /** @format uri */
-  type?: string;
-  title?: string;
-  /** @format int32 */
-  status?: number;
-  detail?: string;
-  /** @format uri */
-  instance?: string;
-  causeAsProblem?: any;
 }
 
 export interface Violation {
@@ -61,6 +48,8 @@ export interface CaseStatusResponse {
   caseType?: string;
   /** Status */
   status?: string;
+  /** If messages can be managed */
+  allowMessages?: boolean;
   /** External status */
   externalStatus?: string;
   /** First submitted */

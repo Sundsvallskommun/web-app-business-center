@@ -3,19 +3,11 @@ import { promisify } from 'util';
 import path from 'path';
 import fs from 'node:fs';
 
-import { APIS, API_BASE_URL, CAREMANAGEMENT_BASE_URL } from './config/index';
+import { APIS, API_BASE_URL } from './config/index';
 
 const execAsync = promisify(exec);
 
 const PATH_TO_OUTPUT_DIR = path.resolve(process.cwd(), './src/data-contracts');
-
-/**
- * caremanagement is reached directly on its own host (Dokploy), not via the API gateway,
- * so its OpenAPI document is downloaded straight from that instance. The service exposes
- * the docs at /api-docs (the same path the gateway proxies as /caremanagement/1.0/api-docs).
- * Override with CAREMANAGEMENT_OPENAPI_URL if the document lives elsewhere.
- */
-const CAREMANAGEMENT_OPENAPI_URL = process.env.CAREMANAGEMENT_OPENAPI_URL || `${CAREMANAGEMENT_BASE_URL}/api-docs`;
 
 const generateContract = async (name: string, swaggerUrl: string) => {
   const outputDir = `${PATH_TO_OUTPUT_DIR}/${name}`;
@@ -50,9 +42,6 @@ const main = async () => {
   for (const api of APIS) {
     await generateContract(api.name, `${API_BASE_URL}/${api.name}/${api.version}/api-docs`);
   }
-
-  // caremanagement — fetched directly from its own instance (Dokploy).
-  await generateContract('caremanagement', CAREMANAGEMENT_OPENAPI_URL);
 };
 
 main();

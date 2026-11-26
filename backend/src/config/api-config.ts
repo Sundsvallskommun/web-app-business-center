@@ -14,11 +14,8 @@ export const APIS = [
   { name: 'employee', version: '2.0' },
   { name: 'simulatorserver', version: '2.0' },
   { name: 'myrepresentatives', version: '4.4' },
+  { name: 'caremanagement', version: '1.0' },
 ] as const;
-
-// NOTE: caremanagement is intentionally NOT in APIS. It is reached directly on its own
-// host (Dokploy) via CAREMANAGEMENT_BASE_URL, not through the shared API gateway, so its
-// data contract is generated separately — see swagger-typescript-api.ts.
 
 export const getApiBase = (name: string) => {
   const api = APIS.find(api => api.name === name);

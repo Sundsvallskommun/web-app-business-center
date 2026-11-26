@@ -6,7 +6,7 @@ import axios from 'axios';
 /**
  * Transport for the templating service.
  *
- * Like caremanagement, templating is reached directly on TEMPLATING_BASE_URL (Drakel), not through
+ * Templating is reached directly on TEMPLATING_BASE_URL (Drakel), not through
  * the shared API gateway, and (in dev) requires no authorization. We use the "direct" render
  * endpoint: the caller provides the full template contents (here: a finished HTML document) and the
  * service returns a rendered PDF. No template needs to be pre-registered.

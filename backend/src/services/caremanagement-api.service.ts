@@ -2,6 +2,18 @@ import { HttpException } from '@/exceptions/HttpException';
 import { ApiResponse } from '@/interfaces/service';
 import { logger } from '@utils/logger';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import ApiTokenService from './api-token.service';
+
+const apiTokenService = new ApiTokenService();
+
+/** Gateway auth + tracing headers, matching what {@link ApiService} sends on every call. */
+const gatewayHeaders = async (): Promise<Record<string, string>> => {
+  const token = await apiTokenService.getToken();
+  const requestId = uuidv4();
+  logger.info(`x-request-id: ${requestId}`);
+  return { Authorization: `Bearer ${token}`, 'X-Request-Id': requestId };
+};
 
 /**
  * Logs the real upstream error from caremanagement and maps it to an HttpException.
@@ -32,17 +44,17 @@ export interface CaremanagementResponse<T> extends ApiResponse<T> {
 }
 
 /**
- * Transport for the caremanagement API.
+ * Transport for the caremanagement API, called through the shared API gateway (WSO2).
  *
- * Unlike {@link ApiService}, caremanagement is called directly on CAREMANAGEMENT_BASE_URL rather
- * than through the shared API gateway, and (in dev) requires no authorization. Callers pass the
- * absolute URL built by {@link caremanagementUrl}; it is used verbatim.
+ * Kept separate from {@link ApiService} because callers need the Location header (201 Created)
+ * and the upstream 4xx detail. Callers pass the absolute URL built by {@link caremanagementUrl};
+ * it is used verbatim.
  */
 class CaremanagementApiService {
   private async request<T>(config: AxiosRequestConfig): Promise<CaremanagementResponse<T>> {
     const preparedConfig: AxiosRequestConfig = {
       ...config,
-      headers: { 'Content-Type': 'application/json', ...config.headers },
+      headers: { 'Content-Type': 'application/json', ...(await gatewayHeaders()), ...config.headers },
     };
 
     try {
@@ -75,7 +87,13 @@ class CaremanagementApiService {
    */
   public async postForm<T>(config: AxiosRequestConfig): Promise<CaremanagementResponse<T>> {
     try {
-      const res = await axios({ ...config, method: 'POST' });
+      const res = await axios({
+        ...config,
+        method: 'POST',
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+        headers: { ...(await gatewayHeaders()), ...config.headers },
+      });
       return { data: res.data, message: 'success', location: res.headers?.location };
     } catch (error: unknown) {
       throw toHttpException(error, { ...config, method: 'POST' });

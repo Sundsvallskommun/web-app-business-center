@@ -57,7 +57,7 @@ export class CaseController {
 
   /**
    * Fetches the citizen's own caremanagement errands (by reporterUserId) and maps them onto the
-   * CaseStatusResponse shape. caremanagement is not aggregated by casestatus, so we read it directly
+   * CaseStatusResponse shape. caremanagement is not aggregated by casestatus, so we read it separately
    * and merge into the private case list. Best-effort: a caremanagement outage must not break /cases.
    */
   private async fetchCareManagementCases(partyId: string): Promise<CaseStatusResponse[]> {
@@ -482,7 +482,7 @@ export class CaseController {
 
     const _case = (await this.getCase(req, caseId)).data;
 
-    // caremanagement uses its own transport (not the shared gateway), so handle it up front and return.
+    // caremanagement has its own multipart message endpoint, so handle it up front and return.
     // The applicant's message is INBOUND, authored by their partyId. Sent as multipart: a JSON
     // `message` part plus zero or more `attachments` file parts (mirrors the conversation API).
     if (_case.system === CARE_MANAGEMENT_SYSTEM) {

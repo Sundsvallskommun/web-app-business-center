@@ -36,9 +36,25 @@ describe('createHealthConfig', () => {
     );
   });
 
+  it('falls back to NEXT_PUBLIC_API_URL when INTERNAL_API_URL is unset', () => {
+    expect(
+      createHealthConfig({
+        HEALTH_AUTH: 'false',
+        INTERNAL_API_URL: '',
+        NEXT_PUBLIC_API_URL: 'https://example.test/api',
+      })
+    ).toMatchObject({ backendHealthUrl: 'https://example.test/api/health/up' });
+  });
+
+  it('prefers INTERNAL_API_URL over NEXT_PUBLIC_API_URL', () => {
+    expect(createHealthConfig({ ...baseEnvironment(), NEXT_PUBLIC_API_URL: 'https://example.test/api' })).toMatchObject(
+      { backendHealthUrl: 'http://backend:3000/api/health/up' }
+    );
+  });
+
   it('requires an HTTP or HTTPS internal API URL', () => {
     expect(() => createHealthConfig({ ...baseEnvironment(), INTERNAL_API_URL: '' })).toThrow(
-      'INTERNAL_API_URL is required'
+      'INTERNAL_API_URL or NEXT_PUBLIC_API_URL is required'
     );
     expect(() => createHealthConfig({ ...baseEnvironment(), INTERNAL_API_URL: 'ftp://backend/api' })).toThrow(
       'INTERNAL_API_URL must use http or https'

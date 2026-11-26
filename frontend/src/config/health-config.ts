@@ -44,10 +44,10 @@ const parseAuthentication = (environment: Environment): HealthAuthentication => 
 };
 
 const parseBackendHealthUrl = (environment: Environment): string => {
-  const internalApiUrl = environment.INTERNAL_API_URL?.trim();
+  const internalApiUrl = environment.INTERNAL_API_URL?.trim() || environment.NEXT_PUBLIC_API_URL?.trim();
 
   if (!internalApiUrl) {
-    throw new Error('INTERNAL_API_URL is required');
+    throw new Error('INTERNAL_API_URL or NEXT_PUBLIC_API_URL is required');
   }
 
   const baseUrl = new URL(internalApiUrl.endsWith('/') ? internalApiUrl : `${internalApiUrl}/`);

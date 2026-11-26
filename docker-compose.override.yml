@@ -46,7 +46,8 @@ services:
     environment:
       # URL to backend
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?err}
-      # Server-only backend address used by the /api/health/up proxy. The default Compose
-      # network resolves the backend service name; do not use the browser-facing localhost URL here.
+      # Server-only backend address used by the /api/health/up proxy. Both services are on the
+      # project's Compose network (no network_mode: bridge), so the backend service name resolves
+      # from the frontend container. The browser-facing localhost URL would not work from inside it.
       INTERNAL_API_URL: "http://backend:3000${BASE_URL_PREFIX:?err}"
       HEALTH_REQUEST_TIMEOUT_MS: ${HEALTH_REQUEST_TIMEOUT_MS-3000}

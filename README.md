@@ -81,6 +81,12 @@ Om `REDIS_HOST` är satt måste Redis gå att nå vid start, annars startar inte
 
 Lokal utveckling kräver ingen Redis, samma kodbas används i alla miljöer.
 
+### Liveness-routes
+
+Backend svarar på `GET /health` (utan `BASE_URL_PREFIX`) och frontend på `GET /api/health` med `{ "status": "OK" }` utan att anropa några beroenden. Dessa används som liveness-probes i OpenShift. `GET /api/health/up` i frontend anropar backend via `INTERNAL_API_URL` och kontrollerar hela kedjan.
+
+`INTERNAL_API_URL` används bara server-side och ska peka direkt på backend-servicen i namespacet (t.ex. `http://<app>-backend:3000/api`), inte på den publika routen i `NEXT_PUBLIC_API_URL`. Timeout för anropet styrs med `HEALTH_REQUEST_TIMEOUT_MS` (default 3000).
+
 ## Git Hooks
 
 Behöver man skippa Git hooks (Husky) så kan man följa: https://typicode.github.io/husky/#/?id=bypass-hooks

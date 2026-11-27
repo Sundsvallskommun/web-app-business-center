@@ -54,6 +54,7 @@ import { User } from '@interfaces/users.interface';
 import { additionalConverters } from '@utils/custom-validation-classes';
 import { isValidUrl } from '@utils/util';
 import { getBusinessEngagements, mapEngagements } from '@services/legal-entity.service';
+import { livenessHandler } from '@/routes/liveness.route';
 
 const apiService = new ApiService();
 
@@ -167,6 +168,7 @@ class App {
 
     this.initializeDataFolders();
 
+    this.initializeLivenessRoute();
     this.initializeMiddlewares();
     this.initializeRoutes(Controllers);
     if (this.swaggerEnabled) {
@@ -186,6 +188,15 @@ class App {
 
   public getServer() {
     return this.app;
+  }
+
+  /**
+   * Registers the liveness probe outside the routing-controllers prefix, so the path stays
+   * `/health` whatever BASE_URL_PREFIX is set to, and ahead of the shared middleware chain,
+   * so probe traffic is never rate limited, session-loaded or written to the request log.
+   */
+  private initializeLivenessRoute() {
+    this.app.get('/health', livenessHandler);
   }
 
   private initializeMiddlewares() {

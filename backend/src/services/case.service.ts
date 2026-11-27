@@ -46,9 +46,10 @@ const isDraft = (c: CaseStatusResponse): boolean => !!c.externalStatus && draftS
 export const caseIsAllowed = (c: CaseStatusResponse): boolean =>
   (namespaceIsAllowed(c) || (c.namespace === undefined && systemIsAllowed(c))) && (!isDraft(c) || c.system === 'OPEN_E_PLATFORM');
 
-const allowedMessageSystems: ReadonlySet<string> = new Set(['SUPPORT_MANAGEMENT', 'CASE_DATA', 'OPEN_E_PLATFORM']);
-
-export const caseMessagesAllowed = (c: CaseStatusResponse): boolean => !!c.system && allowedMessageSystems.has(c.system) && !isDraft(c);
+// CaseStatus decides whether messages can be managed for a case (allowMessages).
+// OpenE drafts are still blocked here regardless of that flag: a draft has not
+// been submitted, so there is no one to read or answer its messages.
+export const caseMessagesAllowed = (c: CaseStatusResponse): boolean => c.allowMessages === true && !isDraft(c);
 
 export const withMessagePermission = (c: CaseStatusResponse): CaseStatusResponseWithPermissions => ({
   ...c,

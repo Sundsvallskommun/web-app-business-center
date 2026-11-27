@@ -90,70 +90,52 @@ describe('case.service', () => {
   });
 
   describe('caseMessagesAllowed', () => {
-    it('allows the systems that have a message channel', () => {
-      expect(caseMessagesAllowed({ system: 'SUPPORT_MANAGEMENT' } as CaseStatusResponse)).toBe(true);
-      expect(caseMessagesAllowed({ system: 'CASE_DATA' } as CaseStatusResponse)).toBe(true);
-      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM' } as CaseStatusResponse)).toBe(true);
+    it('follows the allowMessages flag from casestatus', () => {
+      expect(caseMessagesAllowed({ system: 'SUPPORT_MANAGEMENT', allowMessages: true } as CaseStatusResponse)).toBe(true);
+      expect(caseMessagesAllowed({ system: 'CASE_DATA', allowMessages: true } as CaseStatusResponse)).toBe(true);
+      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', allowMessages: true } as CaseStatusResponse)).toBe(true);
+      expect(caseMessagesAllowed({ system: 'CASE_DATA', allowMessages: false } as CaseStatusResponse)).toBe(false);
     });
 
-    it('rejects systems without a message channel, and cases with no system at all', () => {
-      expect(caseMessagesAllowed({ system: 'BYGGR' } as CaseStatusResponse)).toBe(false);
-      expect(caseMessagesAllowed({ system: 'ECOS' } as CaseStatusResponse)).toBe(false);
+    it('rejects a case when casestatus omits the flag', () => {
+      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM' } as CaseStatusResponse)).toBe(false);
       expect(caseMessagesAllowed({} as CaseStatusResponse)).toBe(false);
     });
 
-    it('does not care about errandNumber, which every system may carry', () => {
-      expect(caseMessagesAllowed({ system: 'CASE_DATA', errandNumber: 'PRH-2026-000001' } as CaseStatusResponse)).toBe(true);
-      expect(caseMessagesAllowed({ system: 'SUPPORT_MANAGEMENT', errandNumber: 'KC-2026-000001' } as CaseStatusResponse)).toBe(true);
-      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', errandNumber: 'MK-2026-000123' } as CaseStatusResponse)).toBe(true);
-    });
-
-    it('lists a case forwarded to Ecos but gives it no messages', () => {
+    it('lists a case forwarded to Ecos but gives it no messages when casestatus says so', () => {
       const ecosCase = {
         caseId: 'ab137f67-5bee-41d4-b7e6-be3f1a0bb8c7',
         errandNumber: 'MK-2026-13',
         externalCaseId: '5788',
         caseType: 'Ansökan/anmälan eget avlopp',
         system: 'ECOS',
+        allowMessages: false,
       } as CaseStatusResponse;
       expect(caseIsAllowed(ecosCase)).toBe(true);
       expect(caseMessagesAllowed(ecosCase)).toBe(false);
     });
 
-    it('rejects a case forwarded to ByggR, which casestatus reports under its destination system', () => {
+    it('rejects OPEN_E_PLATFORM drafts even when casestatus allows messages', () => {
+      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Sparat', allowMessages: true } as CaseStatusResponse)).toBe(false);
       expect(
-        caseMessagesAllowed({
-          caseId: 'BYGG 2026-000051',
-          errandNumber: 'BYGG 2026-000051',
-          externalCaseId: '5745',
-          system: 'BYGGR',
-        } as CaseStatusResponse),
+        caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Väntar på flerpartssignering', allowMessages: true } as CaseStatusResponse),
       ).toBe(false);
     });
 
-    it('rejects OPEN_E_PLATFORM drafts, which have not been submitted and have no one to read messages', () => {
-      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Sparat' } as CaseStatusResponse)).toBe(false);
-      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Väntar på flerpartssignering' } as CaseStatusResponse)).toBe(false);
-    });
-
-    it('still allows a submitted OPEN_E_PLATFORM case', () => {
-      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Inskickat' } as CaseStatusResponse)).toBe(true);
+    it('allows a submitted OPEN_E_PLATFORM case when casestatus allows messages', () => {
+      expect(caseMessagesAllowed({ system: 'OPEN_E_PLATFORM', externalStatus: 'Inskickat', allowMessages: true } as CaseStatusResponse)).toBe(true);
     });
   });
 
   describe('withMessagePermission', () => {
     it('keeps the case untouched and adds the computed flag', () => {
-      const _case = { caseId: 'c1', system: 'OPEN_E_PLATFORM', caseType: 'Ansökan/anmälan eget avlopp' } as CaseStatusResponse;
+      const _case = { caseId: 'c1', system: 'OPEN_E_PLATFORM', caseType: 'Ansökan/anmälan eget avlopp', allowMessages: true } as CaseStatusResponse;
       expect(withMessagePermission(_case)).toEqual({ ..._case, messagesAllowed: true });
-      expect(withMessagePermission({ ..._case, system: 'BYGGR' })).toEqual({
-        ..._case,
-        system: 'BYGGR',
-        messagesAllowed: false,
-      });
+      expect(withMessagePermission({ ..._case, allowMessages: false })).toEqual({ ..._case, allowMessages: false, messagesAllowed: false });
     });
 
     it('flags a draft as not allowing messages', () => {
-      const draft = { caseId: 'c2', system: 'OPEN_E_PLATFORM', externalStatus: 'Sparat' } as CaseStatusResponse;
+      const draft = { caseId: 'c2', system: 'OPEN_E_PLATFORM', externalStatus: 'Sparat', allowMessages: true } as CaseStatusResponse;
       expect(withMessagePermission(draft)).toEqual({ ...draft, messagesAllowed: false });
     });
   });
